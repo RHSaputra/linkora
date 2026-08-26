@@ -1,8 +1,8 @@
 "use client"
 
-import { useRef } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { ArrowRight, Play, Sparkles } from "lucide-react"
+import { useRef, useState } from "react"
+import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion"
+import { ArrowRight, Play } from "lucide-react"
 import Link from "next/link"
 import { LinkoraText } from "@/components/ui/linkora-text"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,12 @@ export function Hero() {
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
+  })
+
+  // Video 2 (phone screen) hanya dimuat saat user mulai scroll
+  const [showPhoneVideo, setShowPhoneVideo] = useState(false)
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (!showPhoneVideo && v > 0.03) setShowPhoneVideo(true)
   })
 
   // Video 1 (Pure Video - Liko Mascot) Transitions
@@ -93,7 +99,7 @@ export function Hero() {
                         loop
                         muted
                         playsInline
-                        preload="auto"
+                        preload="metadata"
                         disablePictureInPicture
                         disableRemotePlayback
                         controls={false}
@@ -103,11 +109,7 @@ export function Hero() {
                         poster="/maskot.jpeg"
                         src="/vidio-liko.webm"
                         style={{ pointerEvents: "none", userSelect: "none" }}
-                      >
-                        <source src="/vidio-liko.webm" type="video/webm" />
-                        <source src="/vidio%20liko.webm" type="video/webm" />
-                        <source src="/liko-animation.webm" type="video/webm" />
-                      </video>
+                      />
                     </div>
 
                     {/* Pure Video Live Badge */}
@@ -184,24 +186,27 @@ export function Hero() {
                         {/* Screen Glare Reflection Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent pointer-events-none z-20" />
 
-                        {/* Video 2 Content (Hero Demo Video Inside Phone Screen) */}
-                        <video 
-                          ref={video2Ref}
-                          className="w-full h-full object-cover relative z-10 pointer-events-none select-none"
-                          autoPlay 
-                          loop 
-                          muted 
-                          playsInline
-                          disablePictureInPicture
-                          disableRemotePlayback
-                          controls={false}
-                          tabIndex={-1}
-                          aria-hidden="true"
-                          onContextMenu={(e) => e.preventDefault()}
-                          style={{ pointerEvents: "none", userSelect: "none" }}
-                        >
-                          <source src="/hero-video.webm" type="video/webm" />
-                        </video>
+                        {/* Video 2 Content (Hero Demo Video Inside Phone Screen) - lazy: dimuat saat scroll */}
+                        {showPhoneVideo && (
+                          <video
+                            ref={video2Ref}
+                            className="w-full h-full object-cover relative z-10 pointer-events-none select-none"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            preload="metadata"
+                            disablePictureInPicture
+                            disableRemotePlayback
+                            controls={false}
+                            tabIndex={-1}
+                            aria-hidden="true"
+                            onContextMenu={(e) => e.preventDefault()}
+                            style={{ pointerEvents: "none", userSelect: "none" }}
+                          >
+                            <source src="/hero-video.webm" type="video/webm" />
+                          </video>
+                        )}
 
                         {/* Bottom Home Indicator Bar */}
                         <div className="absolute bottom-2 inset-x-0 z-30 flex justify-center pointer-events-none">

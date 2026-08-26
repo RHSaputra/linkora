@@ -14,8 +14,13 @@ export function CursorFollower() {
   const y = useSpring(cursorY, springConfig)
 
   useEffect(() => {
-    // Matikan di perangkat sentuh/HP
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    // Matikan di perangkat sentuh/HP dan saat user memilih reduced motion
+    if (
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
 
     let hasBeenVisible = false;
 

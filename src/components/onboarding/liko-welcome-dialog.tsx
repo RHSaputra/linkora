@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import {
   Dialog,
@@ -105,8 +104,6 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
                   style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)", willChange: "transform", pointerEvents: "none", userSelect: "none" }}
                 >
                   <source src="/vidio-liko.webm" type="video/webm" />
-                  <source src="/vidio%20liko.webm" type="video/webm" />
-                  <source src="/liko-animation.webm" type="video/webm" />
                 </video>
               </div>
 
