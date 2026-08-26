@@ -1,6 +1,8 @@
 "use client";
 
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
+import { useEditor, EditorContent, Editor, Extension } from "@tiptap/react";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
@@ -8,6 +10,8 @@ import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -64,6 +68,10 @@ import {
   Maximize2,
   ZoomIn,
   ZoomOut,
+  Superscript as SuperscriptIcon,
+  Subscript as SubscriptIcon,
+  IndentIncrease,
+  IndentDecrease,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -90,6 +98,8 @@ import { toast } from "@/components/ui/custom-toast";
 import { FontFamily, FONT_FAMILIES } from "@/lib/tiptap-font-family";
 import { FontSize, FONT_SIZE_PRESETS } from "@/lib/tiptap-font-size";
 import { PageBreak } from "@/lib/tiptap-page-break";
+import { LineHeight, LINE_HEIGHT_PRESETS } from "@/lib/tiptap-line-height";
+import { Indent } from "@/lib/tiptap-indent";
 import {
   type DocumentSettings,
   DEFAULT_DOCUMENT_SETTINGS,
@@ -288,7 +298,11 @@ function FontSizeSelector({
     : `${defaultFontSize}`;
 
   const handleSetSize = (size: string) => {
-    editor.chain().focus().setFontSize(`${size}pt`).run();
+    // Word mengizinkan 1–1638pt; kita clamp ke rentang wajar 1–200pt
+    const parsed = parseFloat(size);
+    if (!isFinite(parsed)) return;
+    const clamped = Math.min(200, Math.max(1, parsed));
+    editor.chain().focus().setFontSize(`${clamped}pt`).run();
     setOpen(false);
   };
 
@@ -378,6 +392,95 @@ function FontSizeSelector({
             >
               <RotateCcw className="h-3 w-3" />
               <span>Reset</span>
+            </button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Line Spacing Selector (Word Parity) ────────────────────
+
+function LineSpacingSelector({ editor }: { editor: Editor }) {
+  const [open, setOpen] = useState(false);
+
+  const currentLineHeight =
+    editor?.getAttributes("paragraph")?.lineHeight ||
+    editor?.getAttributes("heading")?.lineHeight ||
+    null;
+  const display = currentLineHeight ? `${parseFloat(currentLineHeight)}×` : "1.75×";
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "h-8 px-2 inline-flex items-center gap-1 rounded-lg text-xs transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-w-[58px]",
+                open
+                  ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+              )}
+            >
+              <span className="text-[11px] font-mono font-semibold tabular-nums">{display}</span>
+              <ChevronDown className="h-3 w-3 shrink-0 opacity-60 ml-0.5" />
+            </button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs py-1 px-2.5 shadow-lg border border-border/60">
+          <span>Spasi Baris</span>
+        </TooltipContent>
+      </Tooltip>
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="p-2 rounded-2xl bg-popover border border-border shadow-2xl z-[100] w-[190px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">
+          Spasi Baris
+        </div>
+        {LINE_HEIGHT_PRESETS.map((p) => {
+          const isSelected =
+            !!currentLineHeight && parseFloat(currentLineHeight) === parseFloat(p.value);
+          return (
+            <button
+              key={p.value}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editor.chain().focus().setLineHeight(p.value).run();
+                setOpen(false);
+              }}
+              className={cn(
+                "w-full text-left px-2.5 py-1.5 rounded-lg text-sm transition-colors cursor-pointer flex items-center justify-between",
+                isSelected
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "hover:bg-foreground/5 text-foreground"
+              )}
+            >
+              <span>{p.label}</span>
+              {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+            </button>
+          );
+        })}
+        {currentLineHeight && (
+          <div className="mt-1 pt-1 border-t border-border/50">
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                editor.chain().focus().unsetLineHeight().run();
+                setOpen(false);
+              }}
+              className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 cursor-pointer flex items-center gap-1.5"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Reset ke Default</span>
             </button>
           </div>
         )}
@@ -671,7 +774,6 @@ function ColorPicker({ editor }: { editor: Editor }) {
                         e.stopPropagation();
                         handleApplyColor(c.color);
                       }}
-                      onClick={() => handleApplyColor(c.color)}
                       className={cn(
                         "w-7 h-7 rounded-lg border transition-all duration-150 hover:scale-110 cursor-pointer flex items-center justify-center text-xs font-bold relative shadow-xs",
                         isSelected
@@ -738,7 +840,6 @@ function ColorPicker({ editor }: { editor: Editor }) {
               e.stopPropagation();
               handleApplyCustomColor(customHex);
             }}
-            onClick={() => handleApplyCustomColor(customHex)}
             className="px-2 py-1 text-[11px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 cursor-pointer"
           >
             Terapkan
@@ -755,7 +856,6 @@ function ColorPicker({ editor }: { editor: Editor }) {
                 e.stopPropagation();
                 handleApplyColor("");
               }}
-              onClick={() => handleApplyColor("")}
               className="w-full flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground hover:text-foreground py-1 rounded-lg hover:bg-muted transition-colors cursor-pointer"
             >
               <RotateCcw className="h-3 w-3" />
@@ -861,7 +961,6 @@ function HighlightPicker({ editor }: { editor: Editor }) {
                   e.stopPropagation();
                   handleApplyHighlight(h.color);
                 }}
-                onClick={() => handleApplyHighlight(h.color)}
                 className={cn(
                   "w-8 h-8 rounded-xl border-2 transition-all duration-150 hover:scale-110 cursor-pointer flex items-center justify-center relative shadow-xs",
                   isSelected
@@ -887,7 +986,6 @@ function HighlightPicker({ editor }: { editor: Editor }) {
                 e.stopPropagation();
                 handleApplyHighlight("");
               }}
-              onClick={() => handleApplyHighlight("")}
               className="w-full flex items-center justify-center gap-1.5 text-center text-xs text-destructive hover:text-destructive/80 py-1 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer font-medium"
             >
               <Trash2 className="h-3 w-3" />
@@ -988,7 +1086,6 @@ function TablePicker({ editor }: { editor: Editor }) {
                     e.stopPropagation();
                     handleSelectTable(rowNum, colNum);
                   }}
-                  onClick={() => handleSelectTable(rowNum, colNum)}
                   className={cn(
                     "w-5 h-5 rounded-[4px] border transition-colors cursor-pointer",
                     isSelected
@@ -1021,7 +1118,6 @@ function TablePicker({ editor }: { editor: Editor }) {
                   e.stopPropagation();
                   handleSelectTable(p.r, p.c);
                 }}
-                onClick={() => handleSelectTable(p.r, p.c)}
                 className="px-1.5 py-1 text-[11px] font-medium bg-muted/80 hover:bg-primary hover:text-primary-foreground rounded-lg transition-colors cursor-pointer text-center font-mono"
               >
                 {p.l}
@@ -1175,10 +1271,19 @@ function LinkButton({ editor }: { editor: Editor }) {
     if (trimmed) {
       const finalUrl = trimmed.match(/^https?:\/\//i) ? trimmed : `https://${trimmed}`;
       if (editor.state.selection.empty && !editor.isActive("link")) {
+        // Sisip via node schema (bukan string HTML) agar URL dengan karakter
+        // khusus seperti tanda kutip tidak merusak markup.
         editor
           .chain()
           .focus()
-          .insertContent(`<a href="${finalUrl}">${finalUrl}</a> `)
+          .insertContent([
+            {
+              type: "text",
+              text: finalUrl,
+              marks: [{ type: "link", attrs: { href: finalUrl } }],
+            },
+            { type: "text", text: " " },
+          ])
           .run();
       } else {
         editor
@@ -1514,6 +1619,32 @@ function DocumentSettingsPanel({
               ))}
             </select>
           </div>
+
+          {/* Header & Footer Text */}
+          <div>
+            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Teks Header
+            </label>
+            <input
+              type="text"
+              value={draft.headerText}
+              onChange={(e) => setDraft((prev) => ({ ...prev, headerText: e.target.value }))}
+              placeholder="Kosong = tanpa header"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              Teks Footer
+            </label>
+            <input
+              type="text"
+              value={draft.footerText}
+              onChange={(e) => setDraft((prev) => ({ ...prev, footerText: e.target.value }))}
+              placeholder="Kosong = tanpa footer"
+              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
         </div>
 
         {/* Page dimensions info */}
@@ -1535,10 +1666,6 @@ function DocumentSettingsPanel({
         <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-end gap-2">
           <button
             type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleCancel();
-            }}
             onClick={handleCancel}
             className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
           >
@@ -1546,10 +1673,6 @@ function DocumentSettingsPanel({
           </button>
           <button
             type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleApplyAndSave();
-            }}
             onClick={handleApplyAndSave}
             className="px-3.5 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
           >
@@ -1674,6 +1797,109 @@ function ExportMenu({
   );
 }
 
+// ─── Pagination Spacers (lompatan halaman ala Word) ─────────
+// Konten yang melewati batas cetak halaman didorong agar dimulai
+// tepat di margin-atas halaman berikutnya memakai widget decoration
+// (murni visual — tidak mengubah isi dokumen).
+
+export const PAGE_GAP_PX = 36; // tinggi strip pembatas antar lembar (h-9)
+
+const paginationKey = new PluginKey("paginationSpacers");
+
+const paginationSpacersPlugin = new Plugin({
+  key: paginationKey,
+  state: {
+    init: () => DecorationSet.empty,
+    apply: (tr, old) => {
+      const meta = tr.getMeta(paginationKey);
+      if (meta !== undefined) return meta as DecorationSet;
+      return tr.docChanged ? DecorationSet.empty : old;
+    },
+  },
+  props: {
+    decorations: (state) => paginationKey.getState(state),
+  },
+});
+
+const paginationSpacersExtension = Extension.create({
+  name: "paginationSpacers",
+  addProseMirrorPlugins() {
+    return [paginationSpacersPlugin];
+  },
+});
+
+interface PageSpacer {
+  pos: number;
+  height: number;
+}
+
+function computePageSpacers(
+  editor: Editor,
+  geo: {
+    paperHeightPx: number;
+    marginTopPx: number;
+    marginBottomPx: number;
+    totalPages: number;
+    zoomScale: number;
+  }
+): PageSpacer[] {
+  const { view } = editor;
+  const pmEl = view.dom as HTMLElement;
+  const pmRect = pmEl.getBoundingClientRect();
+  const scale = geo.zoomScale || 1;
+  const unscale = (v: number) => v / scale;
+  const { paperHeightPx: H, marginTopPx: MT, marginBottomPx: MB, totalPages } = geo;
+
+  if (!pmEl.firstElementChild || totalPages < 2) return [];
+
+  // Abaikan spacer dari perhitungan sebelumnya agar tidak dihitung ganda
+  const blocks = Array.from(pmEl.children).filter(
+    (el) => !(el as HTMLElement).classList?.contains("pagination-spacer")
+  ) as HTMLElement[];
+  const tops: number[] = [];
+  const bottoms: number[] = [];
+  const positions: number[] = [];
+  try {
+    for (const el of blocks) {
+      const r = el.getBoundingClientRect();
+      tops.push(MT + unscale(r.top - pmRect.top));
+      bottoms.push(MT + unscale(r.bottom - pmRect.top));
+      const resolved = view.state.doc.resolve(view.posAtDOM(el, 0));
+      positions.push(resolved.before(Math.max(1, resolved.depth)));
+    }
+  } catch {
+    return [];
+  }
+
+  const spacers: PageSpacer[] = [];
+  let shift = 0;
+  let idx = 0;
+
+  for (let page = 0; page < totalPages - 1 && idx < blocks.length; page++) {
+    const limit = page * (H + PAGE_GAP_PX) + (H - MB);
+
+    // Cari blok pertama yang melintasi batas halaman ini
+    let boundary = -1;
+    for (let i = idx; i < blocks.length; i++) {
+      if (bottoms[i] + shift > limit + 1) {
+        boundary = i;
+        break;
+      }
+      idx = i + 1;
+    }
+    if (boundary === -1 || boundary === 0) break; // blok pertama tak dipaksa lompat
+
+    const nextStart = (page + 1) * (H + PAGE_GAP_PX) + MT;
+    const height = nextStart - (tops[boundary] + shift);
+    if (height <= 2) break;
+
+    spacers.push({ pos: positions[boundary], height });
+    shift += height;
+  }
+
+  return spacers;
+}
+
 // ─── Main Toolbar ───────────────────────────────────────────
 
 function EditorToolbar({
@@ -1759,6 +1985,20 @@ function EditorToolbar({
         label="Coret"
         shortcut="Ctrl+Shift+X"
       />
+      <MenuButton
+        onClick={() => editor.chain().focus().toggleSuperscript().run()}
+        isActive={editor.isActive("superscript")}
+        icon={<SuperscriptIcon className="h-4 w-4" />}
+        label="Superscript (pangkat)"
+        shortcut="Ctrl+."
+      />
+      <MenuButton
+        onClick={() => editor.chain().focus().toggleSubscript().run()}
+        isActive={editor.isActive("subscript")}
+        icon={<SubscriptIcon className="h-4 w-4" />}
+        label="Subscript (indeks)"
+        shortcut="Ctrl+,"
+      />
 
       {/* Highlight & Text Color */}
       <HighlightPicker editor={editor} />
@@ -1817,6 +2057,21 @@ function EditorToolbar({
         label="Rata Kiri-Kanan"
       />
 
+      {/* Indent / Outdent (paragraf biasa, ala Word) */}
+      <MenuButton
+        onClick={() => editor.chain().focus().indentBlock().run()}
+        disabled={!editor.can().indentBlock()}
+        icon={<IndentIncrease className="h-4 w-4" />}
+        label="Tambah Indentasi"
+      />
+      <MenuButton
+        onClick={() => editor.chain().focus().outdentBlock().run()}
+        disabled={!editor.can().outdentBlock()}
+        icon={<IndentDecrease className="h-4 w-4" />}
+        label="Kurangi Indentasi"
+      />
+      <LineSpacingSelector editor={editor} />
+
       <ToolbarDivider />
 
       {/* Lists */}
@@ -1858,8 +2113,9 @@ function EditorToolbar({
       )}
       <MenuButton
         onClick={() => editor.chain().focus().setPageBreak().run()}
+        disabled={editor.isActive("table")}
         icon={<SeparatorHorizontal className="h-4 w-4" />}
-        label="Sisipkan Page Break"
+        label={editor.isActive("table") ? "Page Break tidak tersedia di dalam tabel" : "Sisipkan Page Break"}
         shortcut="Ctrl+Enter"
       />
 
@@ -1991,10 +2247,16 @@ export function NoteEditor({
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const [zoomPercent, setZoomPercent] = useState<number>(100);
 
+  // Header/Footer editing ala Word: dbl-click zona → panel kecil muncul
+  const [hfEditing, setHfEditing] = useState<"header" | "footer" | null>(null);
+  const [hfDraft, setHfDraft] = useState("");
+
   const onUpdateRef = useRef(onUpdate);
   const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
   const contentWrapperRef = useRef<HTMLDivElement>(null);
   const deskContainerRef = useRef<HTMLDivElement>(null);
+  const lastSpacerSigRef = useRef("");
+  const hasDecorRef = useRef(false);
 
   useEffect(() => {
     onUpdateRef.current = onUpdate;
@@ -2029,10 +2291,15 @@ export function NoteEditor({
       Underline,
       TextStyle,
       Color,
+      Subscript,
+      Superscript,
+      LineHeight,
+      Indent,
       FontFamily,
       FontSize,
       PageBreak,
       AdvancedImage,
+      paginationSpacersExtension,
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
@@ -2173,8 +2440,18 @@ export function NoteEditor({
       rafId = requestAnimationFrame(() => {
         if (contentWrapperRef.current) {
           const pmEl = contentWrapperRef.current.querySelector(".ProseMirror") as HTMLElement;
-          const nextHeight = pmEl ? pmEl.scrollHeight : contentWrapperRef.current.scrollHeight;
-          setMeasuredHeight((prev) => (Math.abs(prev - nextHeight) > 1 ? nextHeight : prev));
+          if (pmEl) {
+            // Kurangi tinggi spacer pagination agar tidak memicu loop
+            // penambahan halaman semu.
+            let spacerTotal = 0;
+            pmEl.querySelectorAll<HTMLElement>(".pagination-spacer").forEach((sp) => {
+              spacerTotal += sp.offsetHeight;
+            });
+            const nextHeight = Math.max(0, pmEl.scrollHeight - spacerTotal);
+            setMeasuredHeight((prev) => (Math.abs(prev - nextHeight) > 1 ? nextHeight : prev));
+          } else {
+            setMeasuredHeight(contentWrapperRef.current.scrollHeight);
+          }
         }
       });
     };
@@ -2218,6 +2495,77 @@ export function NoteEditor({
 
   // Compute total pages automatically based on printable height per page
   const totalPages = Math.max(1, Math.ceil((measuredHeight || 1) / printableHeightPx));
+
+  // Terapkan spacer antar-halaman (lompatan ala Word)
+  const applyPagination = useCallback(() => {
+    if (!editor || !editor.view || editor.isDestroyed) return;
+
+    if (!isPageView) {
+      if (hasDecorRef.current) {
+        hasDecorRef.current = false;
+        lastSpacerSigRef.current = "";
+        try {
+          editor.view.dispatch(
+            editor.state.tr.setMeta(paginationKey, DecorationSet.empty)
+          );
+        } catch {
+          /* view mungkin sedang update */
+        }
+      }
+      return;
+    }
+
+    const spacers = computePageSpacers(editor, {
+      paperHeightPx,
+      marginTopPx,
+      marginBottomPx,
+      totalPages,
+      zoomScale: zoomPercent / 100,
+    });
+
+    const sig = JSON.stringify(spacers);
+    if (sig === lastSpacerSigRef.current) return;
+    lastSpacerSigRef.current = sig;
+    hasDecorRef.current = true;
+
+    try {
+      const decos = DecorationSet.create(
+        editor.state.doc,
+        spacers.map((s) =>
+          Decoration.widget(
+            s.pos,
+            () => {
+              const el = document.createElement("div");
+              el.className = "pagination-spacer";
+              el.style.height = `${s.height}px`;
+              el.setAttribute("contenteditable", "false");
+              return el;
+            },
+            { side: -1, ignoreSelection: true, key: `${s.pos}-${Math.round(s.height)}` }
+          )
+        )
+      );
+      editor.view.dispatch(editor.state.tr.setMeta(paginationKey, decos));
+    } catch {
+      /* posisi bisa basi saat dokumen berubah cepat; iterasi berikutnya memperbaiki */
+    }
+  }, [editor, isPageView, paperHeightPx, marginTopPx, marginBottomPx, totalPages, zoomPercent]);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(applyPagination);
+    return () => cancelAnimationFrame(raf);
+  }, [applyPagination]);
+
+  const openHeaderFooterEditor = useCallback((zone: "header" | "footer") => {
+    setHfDraft(zone === "header" ? localSettings.headerText : localSettings.footerText);
+    setHfEditing(zone);
+  }, [localSettings.headerText, localSettings.footerText]);
+
+  const commitHeaderFooter = useCallback(() => {
+    if (!hfEditing) return;
+    handleSettingsChange({ ...localSettings, [hfEditing]: hfDraft.trim() });
+    setHfEditing(null);
+  }, [hfEditing, hfDraft, localSettings, handleSettingsChange]);
 
   const handleFitWidth = () => {
     if (!deskContainerRef.current) return;
@@ -2282,8 +2630,9 @@ export function NoteEditor({
                 e.preventDefault();
                 editor.chain().focus().setPageBreak().run();
               }}
-              className="px-2.5 py-1 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-foreground text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer border border-border/50"
-              title="Sisipkan Lembar Baru (Ctrl+Enter)"
+              disabled={editor.isActive("table")}
+              className="px-2.5 py-1 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-foreground text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer border border-border/50 disabled:opacity-40 disabled:cursor-not-allowed"
+              title={editor.isActive("table") ? "Tidak tersedia di dalam tabel" : "Sisipkan Lembar Baru (Ctrl+Enter)"}
             >
               <Plus className="w-3.5 h-3.5 text-primary" />
               <span className="hidden sm:inline">Tambah Lembar Baru</span>
@@ -2352,7 +2701,7 @@ export function NoteEditor({
           >
             {/* Word Document Paper Sheet Simulation */}
             <div
-              className="relative bg-white text-[#111827] shadow-[0_12px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-neutral-300 dark:border-neutral-700/80 rounded-xs cursor-text"
+              className="paper-surface relative bg-white text-[#111827] shadow-[0_12px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-neutral-300 dark:border-neutral-700/80 rounded-xs cursor-text"
               style={{
                 width: `${paperWidthPx}px`,
                 minHeight: `${paperHeightPx * totalPages + (totalPages - 1) * 36}px`,
@@ -2376,10 +2725,6 @@ export function NoteEditor({
                 const footerBoundaryY = pageBottom - marginBottomPx;
 
                 // Word uses approx 1/3 of top/bottom margin as header/footer distance
-                const headerDistancePx = Math.round(marginTopPx * 0.4);
-                const footerDistancePx = Math.round(marginBottomPx * 0.4);
-
-                // Corner mark length
                 const cornerLen = 12;
 
                 return (
@@ -2477,29 +2822,71 @@ export function NoteEditor({
                       }}
                     />
 
-                    {/* ── Header Area Label (shown subtly inside header zone) ── */}
+                    {/* ── Header Zone (ala Word: hanya bisa diedit via double-click) ── */}
                     <div
-                      className="absolute z-10 flex items-center justify-center"
+                      className="group absolute z-20 flex items-end justify-center pointer-events-auto cursor-text select-none transition-colors hover:bg-slate-500/5"
                       style={{
-                        top: `${pageTop + headerDistancePx}px`,
-                        left: `${marginLeftPx}px`,
-                        right: `${marginRightPx}px`,
-                        height: `${marginTopPx - headerDistancePx}px`,
-                        opacity: 0.0,
+                        top: `${pageTop}px`,
+                        left: '0px',
+                        right: '0px',
+                        height: `${headerBoundaryY - pageTop}px`,
+                        paddingLeft: `${marginLeftPx}px`,
+                        paddingRight: `${marginRightPx}px`,
+                        paddingBottom: '4px',
                       }}
-                    />
+                      title={editable ? "Klik dua kali untuk mengedit Header" : undefined}
+                      onDoubleClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (editable) openHeaderFooterEditor("header");
+                      }}
+                    >
+                      {localSettings.headerText ? (
+                        <span
+                          className="w-full text-center truncate text-slate-500"
+                          style={{ fontSize: "9pt", lineHeight: 1.2 }}
+                        >
+                          {localSettings.headerText}
+                        </span>
+                      ) : (
+                        <span className="text-[8px] uppercase tracking-[0.2em] text-slate-400 opacity-0 group-hover:opacity-70 transition-opacity">
+                          Header — klik dua kali untuk edit
+                        </span>
+                      )}
+                    </div>
 
-                    {/* ── Footer Area Label (shown subtly inside footer zone) ── */}
+                    {/* ── Footer Zone (ala Word: hanya bisa diedit via double-click) ── */}
                     <div
-                      className="absolute z-10 flex items-center justify-center"
+                      className="group absolute z-20 flex items-start justify-center pointer-events-auto cursor-text select-none transition-colors hover:bg-slate-500/5"
                       style={{
                         top: `${footerBoundaryY}px`,
-                        left: `${marginLeftPx}px`,
-                        right: `${marginRightPx}px`,
-                        height: `${marginBottomPx - footerDistancePx}px`,
-                        opacity: 0.0,
+                        left: '0px',
+                        right: '0px',
+                        height: `${Math.max(12, pageBottom - footerBoundaryY)}px`,
+                        paddingLeft: `${marginLeftPx}px`,
+                        paddingRight: `${marginRightPx}px`,
+                        paddingTop: '4px',
                       }}
-                    />
+                      title={editable ? "Klik dua kali untuk mengedit Footer" : undefined}
+                      onDoubleClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (editable) openHeaderFooterEditor("footer");
+                      }}
+                    >
+                      {localSettings.footerText ? (
+                        <span
+                          className="w-full text-center truncate text-slate-500"
+                          style={{ fontSize: "9pt", lineHeight: 1.2 }}
+                        >
+                          {localSettings.footerText}
+                        </span>
+                      ) : (
+                        <span className="text-[8px] uppercase tracking-[0.2em] text-slate-400 opacity-0 group-hover:opacity-70 transition-opacity">
+                          Footer — klik dua kali untuk edit
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -2550,12 +2937,63 @@ export function NoteEditor({
               fontFamily: `${localSettings.defaultFont}, sans-serif`,
               fontSize: `${localSettings.defaultFontSize}pt`,
             }}
-            className="w-full bg-card text-card-foreground p-6 rounded-2xl border border-border/70 shadow-lg"
+            className="paper-surface w-full bg-white text-[#111827] p-6 rounded-2xl border border-border/70 shadow-lg"
           >
             <EditorContent editor={editor} />
           </div>
         )}
       </div>
+
+      {/* Floating Header/Footer Editor (dibuka via double-click zona) */}
+      {hfEditing && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] w-[440px] max-w-[92%] rounded-2xl border border-border bg-popover shadow-2xl p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Settings2 className="h-3.5 w-3.5 text-primary" />
+              Edit {hfEditing === "header" ? "Header" : "Footer"} Dokumen
+            </span>
+            <button
+              type="button"
+              onClick={() => setHfEditing(null)}
+              className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-medium"
+            >
+              Tutup
+            </button>
+          </div>
+          <textarea
+            autoFocus
+            rows={2}
+            value={hfDraft}
+            onChange={(e) => setHfDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setHfEditing(null);
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                commitHeaderFooter();
+              }
+            }}
+            placeholder={
+              hfEditing === "header"
+                ? "Teks header tampil di atas setiap halaman..."
+                : "Teks footer tampil di bawah setiap halaman..."
+            }
+            className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
+          />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[10px] text-muted-foreground">
+              Tersimpan di seluruh halaman • Ctrl+Enter simpan
+            </span>
+            <button
+              type="button"
+              onClick={commitHeaderFooter}
+              className="px-3.5 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Simpan
+            </button>
+          </div>
+        </div>
+      )}
 
       {editable && <EditorStatusBar editor={editor} />}
     </div>

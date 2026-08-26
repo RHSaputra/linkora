@@ -34,6 +34,9 @@ import {
   Packer,
   PageOrientation,
   ImageRun,
+  Header,
+  Footer,
+  LineRuleType,
 } from "docx";
 import { saveAs } from "file-saver";
 import {
@@ -61,6 +64,8 @@ interface TextFormat {
   fontFamily?: string;
   fontSize?: number; // in half-points (docx standard: 24 half-points = 12pt in Word)
   href?: string;
+  superScript?: boolean;
+  subScript?: boolean;
 }
 
 function parseColor(color: string | undefined): string | undefined {
@@ -122,6 +127,8 @@ function getInlineFormatFromElement(
   if (tag === "em" || tag === "i") format.italic = true;
   if (tag === "u") format.underline = true;
   if (tag === "s" || tag === "del") format.strike = true;
+  if (tag === "sub") format.subScript = true;
+  if (tag === "sup") format.superScript = true;
   if (tag === "mark") {
     format.highlight =
       style.backgroundColor || el.getAttribute("data-color") || "FFFF00";
@@ -162,6 +169,8 @@ function createTextRun(text: string, format: TextFormat): TextRun {
       : undefined,
     font: format.fontFamily || undefined,
     size: format.fontSize || undefined,
+    superScript: format.superScript,
+    subScript: format.subScript,
   });
 }
 
@@ -327,11 +336,20 @@ function processBlockElement(
     }
 
     const heading = getHeadingLevel(tag);
+    const blockStyle = (el as HTMLElement).style;
+    const mlPx = parseInt(blockStyle.marginLeft || "0", 10) || 0; // px @96dpi
+    const lhMult = parseFloat(blockStyle.lineHeight || "");
+    const isFiniteLh = isFinite(lhMult) && lhMult > 0;
+
     results.push(
       new Paragraph({
         children: runs,
         heading,
         alignment: getAlignment(el),
+        indent: mlPx > 0 ? { left: Math.round(mlPx * (1440 / 96)) } : undefined,
+        spacing: isFiniteLh
+          ? { line: Math.round(lhMult * 240), lineRule: LineRuleType.AUTO }
+          : undefined,
       })
     );
     return results;
@@ -617,6 +635,44 @@ export async function exportToDocx(
           },
         },
         children: elements,
+        headers: settings.headerText
+          ? {
+              default: new Header({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: settings.headerText,
+                        size: 18, // 9pt
+                        color: "64748B",
+                        font: defaultFontName,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }
+          : undefined,
+        footers: settings.footerText
+          ? {
+              default: new Footer({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: settings.footerText,
+                        size: 18, // 9pt
+                        color: "64748B",
+                        font: defaultFontName,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }
+          : undefined,
       },
     ],
     numbering: {

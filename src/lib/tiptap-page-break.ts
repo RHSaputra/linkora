@@ -62,7 +62,12 @@ export const PageBreak = Node.create({
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Enter": () => this.editor.commands.setPageBreak(),
+      // Page break tidak valid di dalam sel tabel (perilaku Word) —
+      // kembalikan false agar shortcut default tetap jalan.
+      "Mod-Enter": () => {
+        if (this.editor.isActive("table")) return false;
+        return this.editor.commands.setPageBreak();
+      },
     };
   },
 });

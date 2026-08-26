@@ -382,6 +382,24 @@ export async function exportToPdf(
           undefined,
           "FAST"
         );
+
+        // Header/Footer teks di zona margin (ala Word)
+        if (settings.headerText) {
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9);
+          pdf.setTextColor(100, 116, 139);
+          pdf.text(settings.headerText, pageWidthMm / 2, Math.max(5, settings.margins.top - 4), {
+            align: "center",
+          });
+        }
+        if (settings.footerText) {
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9);
+          pdf.setTextColor(100, 116, 139);
+          pdf.text(settings.footerText, pageWidthMm / 2, pageHeightMm - settings.margins.bottom + 4, {
+            align: "center",
+          });
+        }
       }
     }
 

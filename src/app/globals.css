@@ -199,6 +199,26 @@
 
 
 /* Tiptap / ProseMirror Editor Styling */
+
+/* ─── Word-style Paper Surface ───────────────────────────────
+   Mengunci permukaan dokumen ke warna "kertas" (print WYSIWYG)
+   di kedua mode terang/gelap — hanya UI di sekitarnya yang
+   mengikuti tema. Semua token di dalamnya (tabel, quote, code,
+   placeholder) otomatis resolve ke nilai kertas. */
+.paper-surface {
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #111827;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  color-scheme: light;
+}
+
 .ProseMirror {
   outline: none;
   min-height: 350px;
@@ -296,7 +316,7 @@
 }
 
 .ProseMirror pre {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--muted);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1rem;
@@ -316,15 +336,11 @@
 
 .ProseMirror mark {
   background-color: rgba(254, 240, 138, 0.6);
-  color: #111827;
+  color: inherit;
   padding: 0.12rem 0.3rem;
   border-radius: 0.3rem;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-}
-
-.ProseMirror mark[data-color] {
-  color: #111827;
 }
 
 /* Professional Table Styles */

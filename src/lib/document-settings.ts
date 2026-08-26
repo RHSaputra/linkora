@@ -92,6 +92,8 @@ export interface DocumentSettings {
   margins: MarginValues;
   defaultFont: string;     // Font family name, e.g. "Arial"
   defaultFontSize: number; // in px, e.g. 12
+  headerText: string;      // Teks header dokumen (kosong = tanpa header)
+  footerText: string;      // Teks footer dokumen (kosong = tanpa footer)
 }
 
 export const DEFAULT_DOCUMENT_SETTINGS: DocumentSettings = {
@@ -100,6 +102,8 @@ export const DEFAULT_DOCUMENT_SETTINGS: DocumentSettings = {
   margins: { top: 25.4, bottom: 25.4, left: 25.4, right: 25.4 },
   defaultFont: "Arial",
   defaultFontSize: 12,
+  headerText: "",
+  footerText: "",
 };
 
 // ─── Conversion Helpers ─────────────────────────────────────
@@ -200,6 +204,8 @@ export function deserializeDocumentSettings(
       },
       defaultFont: parsed.defaultFont || DEFAULT_DOCUMENT_SETTINGS.defaultFont,
       defaultFontSize: parsed.defaultFontSize || DEFAULT_DOCUMENT_SETTINGS.defaultFontSize,
+      headerText: typeof parsed.headerText === "string" ? parsed.headerText : DEFAULT_DOCUMENT_SETTINGS.headerText,
+      footerText: typeof parsed.footerText === "string" ? parsed.footerText : DEFAULT_DOCUMENT_SETTINGS.footerText,
     };
   } catch {
     return { ...DEFAULT_DOCUMENT_SETTINGS };
