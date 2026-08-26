@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React from 'react';
 
 export function LinkoraText({ 
   className = "", 
@@ -9,10 +9,11 @@ export function LinkoraText({
   spin?: boolean; 
   spinDuration?: string; 
 }) {
-  const id = useId().replace(/:/g, "-");
-  const gradLeftId = `linkora-grad-left-${id}`;
-  const gradRightId = `linkora-grad-right-${id}`;
-  const gradBottomId = `linkora-grad-bottom-${id}`;
+  // ID gradien dibuat statis (bukan useId) agar stabil antara SSR dan hydrasi,
+  // termasuk di dalam boundary next/dynamic. Isi gradien semua instance identik.
+  const gradLeftId = "linkora-grad-left";
+  const gradRightId = "linkora-grad-right";
+  const gradBottomId = "linkora-grad-bottom";
 
   return (
     <span className={`inline-flex items-baseline ${className}`}>
