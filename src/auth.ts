@@ -49,11 +49,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
+        const safeImage = (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300)
+          ? user.image
+          : null
+
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          image: user.image,
+          image: safeImage,
         }
       }
     })
@@ -63,8 +67,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id
         token.name = user.name
-        // Cegah penyimpanan base64 data URL berukuran besar ke dalam cookie JWT (mencegah HTTP 431)
-        if (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 500) {
+        delete token.picture
+        if (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300) {
           token.image = user.image
         } else {
           token.image = null
@@ -72,21 +76,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (trigger === "update" && session) {
         if (session.name !== undefined) token.name = session.name
+        delete token.picture
         if (session.image !== undefined) {
-          if (typeof session.image === "string" && !session.image.startsWith("data:") && session.image.length < 500) {
+          if (typeof session.image === "string" && !session.image.startsWith("data:") && session.image.length < 300) {
             token.image = session.image
           } else {
             token.image = null
           }
         }
       }
+      // Pastikan token.picture selalu dihapus agar NextAuth tidak menyimpan avatar/base64 besar ke dalam cookie JWT
+      delete token.picture
       return token
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = ((token.id as string) || (token.sub as string)) || session.user.id
         if (token.name) session.user.name = token.name as string
-        if (token.image) session.user.image = token.image as string
+        if (token.image) {
+          session.user.image = token.image as string
+        } else {
+          session.user.image = null
+        }
       }
       return session
     }
