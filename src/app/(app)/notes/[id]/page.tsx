@@ -8,8 +8,21 @@ import {
   serializeDocumentSettings,
 } from "@/lib/document-settings";
 import { useRouter } from "next/navigation";
-import { NoteEditor } from "@/components/notes/note-editor";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+
+// The Tiptap editor (and its 20+ extensions) is a very large module. Load it
+// lazily so the note route's initial JS stays small and the page paints a
+// skeleton immediately while the editor chunk downloads.
+const NoteEditor = dynamic(
+  () => import("@/components/notes/note-editor").then((m) => m.NoteEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[70vh] rounded-2xl glass-panel border border-border/40 animate-pulse bg-card/40" />
+    ),
+  }
+);
 import {
   ArrowLeft,
   Star,
@@ -54,6 +67,7 @@ import {
   type NoteDraft,
 } from "@/hooks/use-note-draft";
 import { getCachedData, setCachedData, invalidateCache } from "@/hooks/use-data";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 const COLOR_OPTIONS = [
   "#6366f1", // Indigo
@@ -72,6 +86,7 @@ type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline" | "conflict"
 export default function NotePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
+  const { t, locale } = useTranslation();
 
   // In-memory cache initialization for instant transition
   const cached = getCachedData<any>(`/api/notes/${id}`);
@@ -433,7 +448,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
       return (
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          <span>Memuat...</span>
+          <span>{t("common.loading")}</span>
         </span>
       );
     }
@@ -443,21 +458,21 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         return (
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-            <span>Menyimpan...</span>
+            <span>{t("notes.saveStatusSaving")}</span>
           </span>
         );
       case "saved":
         return (
           <span className="flex items-center gap-1.5 text-emerald-500">
             <Check className="w-3.5 h-3.5" />
-            <span>Tersimpan {lastSavedAt ? format(lastSavedAt, "HH:mm") : ""}</span>
+            <span>{t("notes.saveStatusSaved")} {lastSavedAt ? format(lastSavedAt, "HH:mm") : ""}</span>
           </span>
         );
       case "offline":
         return (
           <span className="flex items-center gap-1.5 text-amber-500" title="Tersimpan lokal di browser">
             <WifiOff className="w-3.5 h-3.5" />
-            <span>Mode Offline (Disimpan Lokal)</span>
+            <span>{t("notes.saveStatusOffline")}</span>
           </span>
         );
       case "conflict":
@@ -468,7 +483,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
             title="Catatan telah diubah di sesi lain. Klik untuk menyegarkan."
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Ada versi baru — Segarkan</span>
+            <span>{t("notes.saveStatusConflict")}</span>
           </button>
         );
       case "error":
@@ -479,15 +494,15 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
             title="Gagal menyimpan ke server. Klik untuk coba lagi."
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Gagal simpan — Coba lagi</span>
+            <span>{t("notes.saveStatusError")}</span>
           </button>
         );
       default:
         return (
           <span className="text-muted-foreground/60">
             {note?.updatedAt
-              ? `Tersimpan ${format(new Date(note.updatedAt), "d MMM, HH:mm", { locale: idLocale })}`
-              : "Semua perubahan tersimpan"}
+              ? `${t("notes.saveStatusSaved")} ${format(new Date(note.updatedAt), "d MMM, HH:mm", { locale: locale === "en" ? undefined : idLocale })}`
+              : t("editor.allChangesSaved")}
           </span>
         );
     }
@@ -502,23 +517,23 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         <div className="p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>Ditemukan draft lokal yang belum tersimpan dari sesi sebelumnya ({format(new Date(draftRecovery.savedAt), "d MMM, HH:mm", { locale: idLocale })}).</span>
+            <span>{t("notes.draftRecoveryDesc", { time: format(new Date(draftRecovery.savedAt), "d MMM, HH:mm", { locale: locale === "en" ? undefined : idLocale }) })}</span>
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={handleDiscardDraft}
-              className="gap-1.5 bg-background text-xs"
+              className="gap-1.5 bg-background text-xs cursor-pointer"
             >
-              <X className="w-3.5 h-3.5" /> Abaikan
+              <X className="w-3.5 h-3.5" /> {t("notes.discardDraft")}
             </Button>
             <Button
               size="sm"
               onClick={handleRecoverDraft}
-              className="gap-1.5 text-xs bg-yellow-500 hover:bg-yellow-500/90 text-black"
+              className="gap-1.5 text-xs bg-yellow-500 hover:bg-yellow-500/90 text-black cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Pulihkan Draft
+              <RotateCcw className="w-3.5 h-3.5" /> {t("notes.restoreDraft")}
             </Button>
           </div>
         </div>
@@ -529,14 +544,14 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         <div className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Trash2 className="w-4 h-4 shrink-0" />
-            <span>Catatan ini berada di folder Sampah.</span>
+            <span>{locale === "en" ? "This note is in the Trash folder." : "Catatan ini berada di folder Sampah."}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleRestore} className="gap-1.5 bg-background">
-              <RotateCcw className="w-3.5 h-3.5" /> Pulihkan Catatan
+            <Button size="sm" variant="outline" onClick={handleRestore} className="gap-1.5 bg-background cursor-pointer">
+              <RotateCcw className="w-3.5 h-3.5" /> {t("notes.restoreNote")}
             </Button>
-            <Button size="sm" variant="destructive" onClick={() => setDeleteOpen(true)}>
-              Hapus Permanen
+            <Button size="sm" variant="destructive" onClick={() => setDeleteOpen(true)} className="cursor-pointer">
+              {t("notes.deletePermanently")}
             </Button>
           </div>
         </div>
@@ -554,8 +569,8 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
               }
               router.push("/notes");
             }}
-            className="text-muted-foreground hover:text-foreground shrink-0 rounded-xl"
-            title="Kembali ke Catatan"
+            className="text-muted-foreground hover:text-foreground shrink-0 rounded-xl cursor-pointer"
+            title={t("notes.backToNotes")}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -573,22 +588,22 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-xs font-medium rounded-xl border-border/60 bg-background/50 hidden sm:inline-flex"
+                className="gap-2 text-xs font-medium rounded-xl border-border/60 bg-background/50 hidden sm:inline-flex cursor-pointer"
               >
                 <div
                   className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: note?.folder?.color || "var(--primary)" }}
                 />
                 <span className="truncate max-w-[100px]">
-                  {note?.folder?.name || "Tanpa Folder"}
+                  {note?.folder?.name || t("notes.noFolder")}
                 </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 glass-panel">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Pilih Folder</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs text-muted-foreground">{t("notes.selectFolder")}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setFolder(null)} className="cursor-pointer">
                 <FolderIcon className="w-4 h-4 mr-2 text-muted-foreground" />
-                <span>Tanpa Folder</span>
+                <span>{t("notes.noFolder")}</span>
                 {!note?.folderId && <Check className="ml-auto w-3.5 h-3.5 text-primary" />}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -608,7 +623,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
                 className="text-primary font-medium cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4 mr-2" />
-                <span>Folder Baru...</span>
+                <span>{t("notes.newFolder")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -619,10 +634,10 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
             size="icon"
             onClick={togglePin}
             className={cn(
-              "rounded-xl transition-colors",
+              "rounded-xl transition-colors cursor-pointer",
               note?.isPinned ? "text-blue-500 bg-blue-500/10 hover:bg-blue-500/20" : "text-muted-foreground hover:text-foreground"
             )}
-            title={note?.isPinned ? "Lepaskan Sematan" : "Sematkan Catatan"}
+            title={note?.isPinned ? t("notes.unpinNote") : t("notes.pinNote")}
           >
             <Pin className={cn("w-4 h-4", note?.isPinned && "fill-blue-500")} />
           </Button>
@@ -633,10 +648,10 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
             size="icon"
             onClick={toggleFavorite}
             className={cn(
-              "rounded-xl transition-colors",
+              "rounded-xl transition-colors cursor-pointer",
               note?.isFavorite ? "text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20" : "text-muted-foreground hover:text-foreground"
             )}
-            title={note?.isFavorite ? "Hapus dari Favorit" : "Tambah ke Favorit"}
+            title={note?.isFavorite ? t("notes.removeFromFavorites") : t("notes.addToFavorites")}
           >
             <Star className={cn("w-4 h-4", note?.isFavorite && "fill-yellow-500")} />
           </Button>
@@ -644,13 +659,13 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
           {/* More Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-foreground cursor-pointer">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 glass-panel">
               <DropdownMenuItem onClick={() => setNewFolderOpen(true)} className="sm:hidden cursor-pointer">
-                <FolderPlus className="w-4 h-4 mr-2" /> Folder Baru...
+                <FolderPlus className="w-4 h-4 mr-2" /> {t("notes.newFolder")}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="sm:hidden" />
               <DropdownMenuItem
@@ -658,7 +673,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
                 className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                {isTrash ? "Hapus Permanen" : "Pindahkan ke Sampah"}
+                {isTrash ? t("notes.deletePermanently") : t("notes.moveToTrash")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -672,7 +687,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
           type="text"
           value={title}
           onChange={handleTitleChange}
-          placeholder="Catatan Tanpa Judul"
+          placeholder={t("notes.untitledNote")}
           className="w-full text-3xl sm:text-4xl md:text-5xl font-heading font-bold bg-transparent border-none outline-none mb-4 placeholder:text-muted-foreground/30 focus:ring-0 text-foreground"
         />
 
@@ -682,8 +697,8 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
             <Calendar className="w-3.5 h-3.5" />
             <span>
               {note?.updatedAt
-                ? `Diperbarui ${format(new Date(note.updatedAt), "d MMMM yyyy, HH:mm", { locale: idLocale })}`
-                : "Baru saja"}
+                ? t("notes.updatedAt", { time: format(new Date(note.updatedAt), "d MMMM yyyy, HH:mm", { locale: locale === "en" ? undefined : idLocale }) })
+                : t("notes.justNow")}
             </span>
           </div>
 
@@ -708,7 +723,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
                 documentSettings: serializeDocumentSettings(newSettings),
               });
             }}
-            noteTitle={title || "Catatan"}
+            noteTitle={title || t("notes.untitledNote")}
           />
         ) : (
           <div className="space-y-4 py-8 animate-pulse">
@@ -724,14 +739,14 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={isTrash ? "Hapus Catatan Permanen?" : "Pindahkan ke Sampah?"}
+        title={isTrash ? t("notes.deleteConfirmTitle") : (locale === "en" ? "Move to Trash?" : "Pindahkan ke Sampah?")}
         description={
           isTrash
-            ? "Catatan ini akan dihapus secara permanen dari brankas Anda dan tidak dapat dipulihkan."
-            : "Catatan ini akan dipindahkan ke folder Sampah. Anda masih dapat memulihkannya nanti jika diperlukan."
+            ? t("notes.deleteConfirmDesc")
+            : (locale === "en" ? "This note will be moved to the Trash folder. You can restore it later if needed." : "Catatan ini akan dipindahkan ke folder Sampah. Anda masih dapat memulihkannya nanti jika diperlukan.")
         }
-        confirmText={isTrash ? "Hapus Permanen" : "Pindahkan ke Sampah"}
-        cancelText="Batal"
+        confirmText={isTrash ? t("notes.deletePermanently") : t("notes.moveToTrash")}
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={handleDelete}
       />
@@ -740,15 +755,15 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
         <DialogContent className="sm:max-w-md glass-panel">
           <DialogHeader>
-            <DialogTitle>Buat Folder Catatan</DialogTitle>
+            <DialogTitle>{t("notes.folderModalTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateFolder} className="space-y-4 py-2">
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
-                Nama Folder
+                {t("notes.folderNameLabel")}
               </label>
               <Input
-                placeholder="Contoh: Pekerjaan, Ide Proyek, Pribadi..."
+                placeholder={t("notes.folderNamePlaceholder")}
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 autoFocus
@@ -758,7 +773,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
 
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-2 block">
-                Pilih Warna
+                {t("notes.folderColorLabel")}
               </label>
               <div className="flex items-center gap-2 flex-wrap">
                 {COLOR_OPTIONS.map((color) => (
@@ -780,10 +795,10 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
 
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" onClick={() => setNewFolderOpen(false)}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={creatingFolder || !newFolderName.trim()}>
-                {creatingFolder ? "Membuat..." : "Buat Folder"}
+                {creatingFolder ? t("common.loading") : t("notes.createFolderBtn")}
               </Button>
             </DialogFooter>
           </form>

@@ -73,7 +73,7 @@ export function CursorFollower() {
         className="relative flex items-center justify-center w-8 h-8 animate-[spin_4s_linear_infinite]"
       >
         {/* SVG Cincin Mini Linkora yang Menyala */}
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(var(--primary),0.6)]" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="grad-left-cursor" x1="85%" y1="15%" x2="15%" y2="85%">
               <stop offset="0%" stopColor="#c052f8" />

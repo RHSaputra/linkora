@@ -33,23 +33,30 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md rounded-2xl sm:rounded-3xl">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          <DialogTitle className="text-base sm:text-lg font-bold font-heading">{title}</DialogTitle>
+          <DialogDescription className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
             {description}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="mt-4 flex sm:justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="mt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-border/50">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto"
+          >
             {cancelText}
           </Button>
           <Button
+            type="button"
             variant={destructive ? "destructive" : "default"}
             onClick={() => {
               onConfirm();
               onOpenChange(false);
             }}
+            className="w-full sm:w-auto font-semibold shadow-md"
           >
             {confirmText}
           </Button>

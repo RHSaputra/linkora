@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/ai-cache";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -70,8 +71,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const isEn = body?.locale === "en";
+
     if (links.length === 0) {
-      return NextResponse.json({ message: "Tidak ada tautan yang perlu dirapikan saat ini.", processed: 0 });
+      return NextResponse.json({
+        message: isEn ? "No links need organizing right now." : "Tidak ada tautan yang perlu dirapikan saat ini.",
+        processed: 0,
+      });
     }
 
     const linksData = links.map(l => ({ id: l.id, title: l.title, description: l.description, url: l.url }));
@@ -93,13 +99,16 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
 
     for (const modelName of MODELS) {
       try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: [
-            { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-          ],
-          config: { responseMimeType: "application/json" }
-        });
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: modelName,
+            contents: [
+              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
+            ],
+            config: { responseMimeType: "application/json" }
+          }),
+          30000
+        );
         if (response.text) {
           responseText = response.text;
           break;
@@ -140,14 +149,16 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
     }
 
     return NextResponse.json({
-      message: `Berhasil merapikan ${updatedCount} tautan!`,
+      message: isEn
+        ? `Successfully organized ${updatedCount} links!`
+        : `Berhasil merapikan ${updatedCount} tautan!`,
       processed: updatedCount,
-      changes
+      changes,
     });
   } catch (error: any) {
     console.error("Error in AI organize:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Gagal merapikan tautan" },
+      { error: error instanceof Error ? error.message : "Failed to organize links" },
       { status: 500 }
     );
   }

@@ -17,6 +17,7 @@ import { Link2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { getFaviconUrl } from "@/lib/utils";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface AddLinksToCollectionDialogProps {
   collection: SerializedCollection;
@@ -35,6 +36,7 @@ export function AddLinksToCollectionDialog({
 }: AddLinksToCollectionDialogProps) {
   const { links, loading } = useLinks();
   const [isSaving, setIsSaving] = useState(false);
+  const { t, locale } = useTranslation();
 
   const [localLinks, setLocalLinks] = useState<Set<string>>(new Set(existingLinks.map(l => l.id)));
 
@@ -94,9 +96,10 @@ export function AddLinksToCollectionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Tambah / Hapus Tautan</DialogTitle>
+          <DialogTitle>{locale === "en" ? "Manage Collection Links" : "Tambah / Hapus Tautan"}</DialogTitle>
           <DialogDescription>
-            Atur tautan yang masuk ke dalam koleksi <strong>{collection.name}</strong>.
+            {locale === "en" ? `Organize links included in the collection ` : `Atur tautan yang masuk ke dalam koleksi `}
+            <strong>{collection.name}</strong>.
           </DialogDescription>
         </DialogHeader>
         
@@ -110,8 +113,8 @@ export function AddLinksToCollectionDialog({
           ) : links.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <Link2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Belum ada tautan tersimpan.</p>
-              <p className="text-xs mt-1">Tambahkan tautan baru dari sidebar terlebih dahulu.</p>
+              <p className="text-sm">{locale === "en" ? "No links saved yet." : "Belum ada tautan tersimpan."}</p>
+              <p className="text-xs mt-1">{locale === "en" ? "Add new links from the sidebar first." : "Tambahkan tautan baru dari sidebar terlebih dahulu."}</p>
             </div>
           ) : (
             <ScrollArea className="h-[50vh] pr-4">
@@ -146,7 +149,15 @@ export function AddLinksToCollectionDialog({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{link.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{new URL(link.url).hostname}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {(() => {
+                              try {
+                                return new URL(link.url).hostname;
+                              } catch {
+                                return link.url;
+                              }
+                            })()}
+                          </p>
                         </div>
                       </Label>
                     </div>
@@ -162,14 +173,16 @@ export function AddLinksToCollectionDialog({
             variant="outline" 
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
+            className="cursor-pointer"
           >
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button 
             onClick={handleSave}
             disabled={isSaving || loading}
+            className="cursor-pointer"
           >
-            {isSaving ? "Menyimpan..." : "Simpan"}
+            {isSaving ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </DialogContent>

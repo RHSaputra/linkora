@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, Plus } from "lucide-react";
+import { Loader2, X, Plus, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,11 +32,14 @@ import {
   scheduleCapacitorLocalNotification, 
   requestWebNotificationPermission 
 } from "@/lib/notification-service";
+import { useTags } from "@/hooks/use-data";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface AddLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (savedLink?: SerializedLink) => void;
   editLink?: SerializedLink | null;
 }
 
@@ -46,6 +49,8 @@ export function AddLinkDialog({
   onSuccess,
   editLink,
 }: AddLinkDialogProps) {
+  const { requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -60,6 +65,13 @@ export function AddLinkDialog({
   const [fetchingMeta, setFetchingMeta] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Duplicate detection state
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    type: "exact" | "similar_url" | "similar_title" | "none";
+    message: string | null;
+    duplicates: { id: string; title: string; url: string }[];
+  } | null>(null);
 
   const resetForm = useCallback(() => {
     setUrl("");
@@ -98,15 +110,43 @@ export function AddLinkDialog({
 
   const handleUrlPaste = async (value: string) => {
     setUrl(value);
+    setDuplicateWarning(null);
     if (!editLink && value.startsWith("http")) {
       setFetchingMeta(true);
       try {
-        const meta = await fetchMetadata(value);
+        // Run metadata fetch and duplicate check in parallel
+        const [meta, dupRes] = await Promise.all([
+          fetchMetadata(value),
+          fetch("/api/ai/check-duplicate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: value }),
+          }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
+
         if (meta) {
           if (meta.title) setTitle(meta.title);
           if (meta.description) setDescription(meta.description);
           if (meta.favicon) setFavicon(meta.favicon);
           if (meta.thumbnail) setThumbnail(meta.thumbnail);
+
+          // If we have a title now but no dup from URL, do a title-based check
+          if (dupRes?.type === "none" && meta.title) {
+            try {
+              const titleCheck = await fetch("/api/ai/check-duplicate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: value, title: meta.title }),
+              }).then((r) => (r.ok ? r.json() : null));
+              if (titleCheck && titleCheck.type !== "none") {
+                setDuplicateWarning(titleCheck);
+              }
+            } catch {}
+          }
+        }
+
+        if (dupRes && dupRes.type !== "none") {
+          setDuplicateWarning(dupRes);
         }
       } finally {
         setFetchingMeta(false);
@@ -131,6 +171,12 @@ export function AddLinkDialog({
 
   const handleAnalyze = async () => {
     if (!url) return;
+    if (requireAuth(
+      locale === "en" ? "Automatic AI Analysis" : "Analisis AI Otomatis",
+      locale === "en" ? "Sign in or register for free to analyze links automatically using AI." : "Masuk atau daftar gratis untuk menganalisis link secara otomatis menggunakan AI."
+    )) {
+      return;
+    }
     setIsAnalyzing(true);
     try {
       const res = await fetch("/api/analyze", {
@@ -194,6 +240,9 @@ export function AddLinkDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (requireAuth(t("links.saveLink"), t("auth.authRequiredDesc"))) {
+      return;
+    }
     setSaving(true);
 
     try {
@@ -258,19 +307,19 @@ export function AddLinkDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editLink ? "Edit Link" : "Tambah Link Baru"}</DialogTitle>
+          <DialogTitle>{editLink ? t("links.modalEditTitle") : t("links.modalAddTitle")}</DialogTitle>
           <DialogDescription>
-            Tempel URL untuk mengambil metadata otomatis
+            {t("links.modalAddDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="url">URL Website</Label>
+              <Label htmlFor="url">{t("links.urlLabel")}</Label>
               {url && !isAnalyzing && (
                 <span className="text-xs text-primary font-medium flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> Siap dianalisis
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> {t("links.readyToAnalyze")}
                 </span>
               )}
             </div>
@@ -279,7 +328,7 @@ export function AddLinkDialog({
                 <Input
                   id="url"
                   type="url"
-                  placeholder="https://example.com"
+                  placeholder={t("links.urlPlaceholder")}
                   value={url}
                   onChange={(e) => handleUrlPaste(e.target.value)}
                   required
@@ -290,39 +339,73 @@ export function AddLinkDialog({
                   </div>
                 )}
               </div>
-              <div className="relative flex-shrink-0">
-                {/* Glowing aura when URL is available */}
-                {url && !isAnalyzing && (
-                  <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-primary via-cyan-500 to-purple-600 opacity-80 blur-sm animate-pulse pointer-events-none" />
-                )}
+              <div className="relative shrink-0">
                 <Button
                   type="button"
                   disabled={!url || isAnalyzing || fetchingMeta}
                   onClick={handleAnalyze}
-                  className={`relative font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
+                  className={`relative font-semibold transition-all duration-150 flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
                     url && !isAnalyzing
-                      ? "bg-gradient-to-r from-primary via-indigo-600 to-purple-600 hover:opacity-95 text-white shadow-[0_0_20px_rgba(var(--primary),0.4)] hover:scale-105 active:scale-95"
+                      ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm hover:shadow-md active:scale-95"
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
                   {isAnalyzing && (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   )}
-                  <span>Analisis AI</span>
+                  <span>{t("links.analyzeBtn")}</span>
                 </Button>
               </div>
             </div>
             
+            {/* Duplicate warning banner */}
+            <AnimatePresence>
+              {duplicateWarning && duplicateWarning.type !== "none" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className={`flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 mt-1.5 border ${
+                    duplicateWarning.type === "exact"
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                      : "bg-orange-500/8 border-orange-500/20 text-orange-700 dark:text-orange-400"
+                  }`}>
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold">{duplicateWarning.message}</p>
+                      {duplicateWarning.duplicates.length > 0 && (
+                        <div className="mt-1 space-y-0.5">
+                          {duplicateWarning.duplicates.slice(0, 2).map((dup) => (
+                            <p key={dup.id} className="text-[11px] opacity-80 truncate">
+                              {dup.title || dup.url}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setDuplicateWarning(null)}
+                        className="text-[11px] underline opacity-60 hover:opacity-100 mt-1 cursor-pointer"
+                      >
+                        Tutup peringatan
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Guide hint when URL is pasted */}
-            {url && !isAnalyzing && (
+            {url && !isAnalyzing && !duplicateWarning && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-2 bg-gradient-to-r from-primary/10 via-accent/10 to-transparent border border-primary/20 rounded-xl px-3 py-2 mt-1.5"
               >
-                <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                 <p className="text-xs text-foreground/90 leading-tight">
-                  Tautan sudah ditempel! Klik <span className="font-bold text-primary">Analisis AI</span> agar Liko otomatis mengisi kategori, deskripsi, & tag cerdas.
+                  Tautan siap dianalisis. Fitur <span className="font-bold text-primary">Analisis AI</span> akan mengisi kategori, deskripsi, dan tag secara otomatis.
                 </p>
               </motion.div>
             )}
@@ -353,30 +436,30 @@ export function AddLinkDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title">Judul</Label>
+            <Label htmlFor="title">{t("links.titleLabel")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Judul link"
+              placeholder={t("links.titlePlaceholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Deskripsi</Label>
+            <Label htmlFor="description">{t("links.descLabel")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Deskripsi singkat"
+              placeholder={t("links.descPlaceholder")}
               rows={2}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Kategori</Label>
+              <Label>{t("links.categoryLabel")}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue />
@@ -392,7 +475,7 @@ export function AddLinkDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder">Reminder (opsional)</Label>
+              <Label htmlFor="reminder">{t("links.reminderLabel")}</Label>
               <Input
                 id="reminder"
                 type="datetime-local"
@@ -403,12 +486,12 @@ export function AddLinkDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Tag</Label>
+            <Label>{t("links.tagsLabel")}</Label>
             <div className="flex gap-2">
               <Input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                placeholder="Tambah tag..."
+                placeholder={t("links.tagsPlaceholder")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -435,31 +518,31 @@ export function AddLinkDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Catatan Pribadi</Label>
+            <Label htmlFor="notes">{t("links.notesLabel")}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Catatan untuk diri sendiri (atau hasil rangkuman AI)..."
+              placeholder={t("links.notesPlaceholder")}
               rows={8}
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
             <div>
-              <Label htmlFor="favorite" className="cursor-pointer">Tandai Favorit</Label>
-              <p className="text-xs text-muted-foreground">Pin link penting di dashboard</p>
+              <Label htmlFor="favorite" className="cursor-pointer">{t("links.favoriteLabel")}</Label>
+              <p className="text-xs text-muted-foreground">{t("links.favoriteDesc")}</p>
             </div>
             <Switch id="favorite" checked={isFavorite} onCheckedChange={setIsFavorite} />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Batal
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {editLink ? "Simpan" : "Tambah Link"}
+              {editLink ? t("common.save") : t("links.modalAddTitle")}
             </Button>
           </div>
         </form>
@@ -478,7 +561,7 @@ export function AddLinkDialog({
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.85, opacity: 0, y: 20 }}
                 transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                className="relative w-full max-w-sm rounded-3xl p-8 bg-card/95 border border-primary/30 shadow-[0_20px_60px_-15px_rgba(var(--primary),0.3)] flex flex-col items-center text-center overflow-hidden"
+                className="relative w-full max-w-sm rounded-3xl p-8 bg-card/95 border border-primary/30 shadow-2xl shadow-primary/25 flex flex-col items-center text-center overflow-hidden"
               >
                 {/* Background ambient glow */}
                 <div className="absolute -top-12 -right-12 w-40 h-40 bg-primary/25 blur-3xl rounded-full pointer-events-none" />

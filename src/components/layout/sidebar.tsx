@@ -22,10 +22,13 @@ import {
   Loader2,
   Volume2,
   VolumeX,
+  LogIn,
+  ArrowRight,
 } from "lucide-react";
 import { playNotificationSound, requestWebNotificationPermission } from "@/lib/notification-service";
 import { LinkoraText } from "@/components/ui/linkora-text";
 import { cn } from "@/lib/utils";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,18 +40,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect, useTransition } from "react";
-import { motion } from "framer-motion";
 import { useRealtime } from "@/components/providers/realtime-provider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-const navItems = [
-  { href: "/dashboard", label: "Dasbor", icon: LayoutDashboard, tourId: "dashboard" },
-  { href: "/links", label: "Semua Tautan", icon: Link2, tourId: "links" },
-  { href: "/collections", label: "Koleksi", icon: FolderOpen, tourId: "collections" },
-  { href: "/notes", label: "Personal Notes", icon: PenBox, tourId: "notes" },
-];
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useLinks } from "@/hooks/use-data";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface SidebarProps {
   onAddLink: () => void;
@@ -78,11 +76,26 @@ function NavContent({
   snoozeNotification,
   unreadCount,
 }: NavContentProps) {
+  const { links } = useLinks();
+  const { isAuthenticated, requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const navItems = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, tourId: "dashboard" },
+    { href: "/links", label: t("nav.links"), icon: Link2, tourId: "links" },
+    { href: "/collections", label: t("nav.collections"), icon: FolderOpen, tourId: "collections" },
+    { href: "/notes", label: t("nav.notes"), icon: PenBox, tourId: "notes" },
+  ];
+
+  const now = new Date();
+  const upcomingReminders = (links || [])
+    .filter((l) => l.reminderAt && new Date(l.reminderAt) > now)
+    .sort((a, b) => new Date(a.reminderAt!).getTime() - new Date(b.reminderAt!).getTime());
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -128,7 +141,7 @@ function NavContent({
             <div className="mt-8 text-center space-y-2">
               <h2 className="text-2xl font-heading font-bold text-foreground"><LinkoraText /></h2>
               <p className="text-sm text-muted-foreground font-medium tracking-widest uppercase">Save. Organize. Understand.</p>
-              <p className="text-xs text-muted-foreground/60 mt-4 pt-4 border-t border-border/50">Versi 1.0.0 &copy; 2026</p>
+              <p className="text-xs text-muted-foreground/60 mt-4 pt-4 border-t border-border/50">{locale === "en" ? "Version 1.0.0" : "Versi 1.0.0"} &copy; 2026</p>
             </div>
           </DialogContent>
         </Dialog>
@@ -137,19 +150,24 @@ function NavContent({
       <div className="px-4 mb-6 flex gap-2">
         <Button 
           data-tour="add-link"
-          onClick={onAddLink} 
-          className="flex-1 gap-2 bg-foreground/5 hover:bg-foreground/10 text-foreground border border-border shadow-sm hover:shadow-md transition-all duration-300"
+          onClick={() => {
+            if (requireAuth(t("links.addLink"), t("auth.authRequiredDesc"))) {
+              return;
+            }
+            onAddLink();
+          }} 
+          className="flex-1 gap-2 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold shadow-sm hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          <span>Tautan Baru</span>
+          <span>{t("links.addLink")}</span>
         </Button>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               size="icon"
-              className="relative bg-foreground/5 hover:bg-foreground/10 text-foreground border border-border shadow-sm transition-all duration-300 shrink-0"
-              title="Notifikasi Pengingat"
+              className="relative bg-background/80 hover:bg-muted text-foreground border border-border shadow-xs transition-all duration-150 shrink-0"
+              title={t("reminders.title")}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
@@ -159,57 +177,112 @@ function NavContent({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0 glass-panel border-primary/20 bg-background/95 shadow-xl rounded-2xl z-[100]" align="start">
-            <div className="flex items-center justify-between p-3 border-b border-border">
-              <span className="text-xs font-bold text-foreground">Pengingat Aktif</span>
-              {unreadCount > 0 && (
-                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-bold">
-                  {unreadCount} Baru
-                </span>
-              )}
-            </div>
-            {unreadCount === 0 ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">
-                Tidak ada pengingat aktif saat ini.
-              </div>
-            ) : (
-              <ScrollArea className="max-h-64 overflow-y-auto">
-                <div className="divide-y divide-border/50">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="p-3 text-xs flex flex-col gap-2 hover:bg-foreground/5 transition-colors">
-                      <div>
-                        <p className="font-bold text-foreground">{n.title}</p>
-                        <p className="text-muted-foreground mt-0.5 leading-normal">{n.description}</p>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {n.type === "link" && n.url && (
-                          <a
-                            href={n.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2 py-1.5 rounded bg-primary hover:bg-primary/95 active:scale-95 text-primary-foreground text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
-                          >
-                            Buka <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        <button
-                          onClick={() => dismissNotification(n.id)}
-                          className="px-2 py-1.5 rounded bg-foreground/10 hover:bg-foreground/15 active:scale-95 text-foreground text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
-                        >
-                          <Check className="h-3 w-3" /> Selesai
-                        </button>
-                        <button
-                          onClick={() => snoozeNotification(n.id, 15)}
-                          className="px-2 py-1.5 rounded bg-foreground/5 hover:bg-foreground/10 active:scale-95 text-muted-foreground text-[10px] font-medium flex items-center gap-1 transition-all cursor-pointer"
-                        >
-                          <Clock className="h-3 w-3" /> Tunda 15m
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          <PopoverContent 
+            side="right" 
+            align="start" 
+            sideOffset={12} 
+            className="w-[340px] max-w-[calc(100vw-24px)] p-0 glass-panel border-primary/20 bg-card/95 shadow-2xl rounded-2xl z-60 overflow-hidden flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-3.5 border-b border-border/50 bg-foreground/[0.02]">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-warning-muted text-warning">
+                  <Bell className="w-4 h-4" />
                 </div>
-              </ScrollArea>
-            )}
+                <div>
+                  <p className="text-xs font-bold text-foreground">{t("reminders.title")}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {unreadCount > 0
+                      ? `${unreadCount} ${locale === "en" ? "ready to review" : "siap ditinjau"}`
+                      : `${upcomingReminders.length} ${locale === "en" ? "active" : "aktif"}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <ScrollArea className="max-h-[min(460px,70vh)] overflow-y-auto">
+              <div className="p-3 space-y-3">
+                {/* ── BAGIAN 1: NOTIFIKASI JATUH TEMPO ── */}
+                {notifications.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1 flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-ping" />
+                        {t("reminders.dueSection", { count: notifications.length })}
+                      </span>
+                    </div>
+                    {notifications.map((n) => (
+                      <div key={n.id} className="p-3 text-xs flex flex-col gap-2.5 rounded-xl bg-destructive-muted border border-destructive/25 shadow-xs">
+                        <div>
+                          <p className="font-bold text-foreground leading-snug">{n.title}</p>
+                          <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">{n.description}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {n.type === "link" && n.url && (
+                            <a
+                              href={n.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-95 text-primary-foreground text-[10px] font-bold flex items-center gap-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                            >
+                              {t("common.open")} <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => dismissNotification(n.id)}
+                            className="px-2.5 py-1.5 rounded-lg bg-foreground/10 hover:bg-foreground/15 active:scale-95 text-foreground text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                          >
+                            <Check className="h-3 w-3" /> {t("reminders.doneAction")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => snoozeNotification(n.id, 15)}
+                            className="px-2.5 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 active:scale-95 text-muted-foreground text-[10px] font-medium flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                          >
+                            <Clock className="h-3 w-3" /> {t("reminders.snooze15m")}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── BAGIAN 2: PENGINGAT TERJADWAL ── */}
+                {upcomingReminders.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="px-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-warning">
+                        {t("reminders.upcomingSection", { count: upcomingReminders.length })}
+                      </span>
+                    </div>
+                    {upcomingReminders.map((link) => (
+                      <div key={link.id} className="p-3 rounded-xl bg-card/80 border border-border/70 hover:border-warning/40 flex items-start justify-between gap-2.5 transition-all shadow-xs">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{link.title}</p>
+                          <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground font-medium">
+                            <Clock className="w-3.5 h-3.5 text-warning shrink-0" />
+                            <span>{new Date(link.reminderAt!).toLocaleString(locale === "en" ? "en-US" : "id-ID", { dateStyle: "medium", timeStyle: "short" })}</span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-muted text-muted-foreground shrink-0 border border-border/50">
+                          {link.category}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── STATE KOSONG ── */}
+                {notifications.length === 0 && upcomingReminders.length === 0 && (
+                  <div className="py-8 px-4 text-center text-xs text-muted-foreground space-y-1.5">
+                    <Bell className="w-7 h-7 mx-auto mb-2 text-muted-foreground/40" />
+                    <p className="font-semibold text-foreground/90 text-sm">{t("reminders.emptyActive")}</p>
+                    <p className="text-[11px] leading-relaxed text-muted-foreground/80">{t("reminders.emptyDesc")}</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </PopoverContent>
         </Popover>
       </div>
@@ -241,11 +314,7 @@ function NavContent({
                 )}
               >
                 {isActive && (
-                  <motion.div 
-                    layoutId="activeNavIndicator"
-                    className="absolute inset-0 bg-foreground/5 rounded-xl border border-border shadow-sm"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
+                  <div className="absolute inset-0 bg-foreground/5 rounded-xl border border-border shadow-sm" />
                 )}
                 
                 {/* Hover Glow */}
@@ -264,13 +333,13 @@ function NavContent({
 
       {/* User Info & Logout */}
       <div className="p-4 mt-auto">
-        {session?.user && (
+        {session?.user ? (
           <button
             type="button"
             data-tour="profile"
             onClick={onEditProfile}
             className="flex items-center gap-3 w-full px-2.5 py-2 mb-3 rounded-2xl bg-foreground/[0.04] hover:bg-foreground/[0.08] border border-border hover:border-primary/40 transition-all duration-200 text-left group cursor-pointer shadow-xs"
-            title="Klik untuk Atur Profil"
+            title={t("profile.title")}
           >
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20 shadow-xs flex-shrink-0 overflow-hidden">
               {session.user.image ? (
@@ -281,52 +350,87 @@ function NavContent({
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                {session.user.name || "Komandan"}
+                {session.user.name || "Linkorian"}
               </p>
               <p className="text-[10px] text-primary font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Atur Profil
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                {t("nav.profile")}
               </p>
             </div>
           </button>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-3 w-full px-3 py-2.5 mb-3 rounded-2xl bg-primary/10 hover:bg-primary/15 border border-primary/30 transition-all duration-200 text-left group cursor-pointer shadow-xs active:scale-95"
+            title={t("nav.login")}
+          >
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xs shrink-0">
+              <User className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                {t("nav.guest")}
+              </p>
+              <p className="text-[10px] text-primary font-semibold flex items-center gap-1">
+                {t("nav.login")} / {t("nav.signUp")}
+              </p>
+            </div>
+            <ArrowRight className="h-3.5 w-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         )}
         <div className="flex items-center justify-between gap-1.5 pt-1">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => window.dispatchEvent(new Event("restart-onboarding-tour"))}
-            className="flex-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl gap-1.5 h-9 px-2 border border-border/50 hover:border-primary/40 transition-all group cursor-pointer"
-            title="Panduan Penggunaan Linkora"
+            className="flex-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl gap-1.5 h-9 px-2.5 border border-border/50 hover:border-primary/40 transition-all duration-150 group cursor-pointer"
+            title={t("nav.guide")}
           >
-            <div className="flex items-center gap-1 shrink-0">
-              <Compass className="h-3.5 w-3.5 text-primary group-hover:rotate-45 transition-transform duration-300" />
-              <BookOpen className="h-3.5 w-3.5 text-cyan-400" />
-            </div>
-            <span>Panduan</span>
+            <Compass className="h-4 w-4 text-primary group-hover:rotate-45 transition-transform duration-300 shrink-0" />
+            <span>{t("nav.guide")}</span>
           </Button>
 
+          <LanguageSwitcher />
           <ThemeToggle />
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             onClick={toggleSound}
             className={cn(
-              "cursor-pointer h-9 w-9 rounded-xl transition-all",
+              "cursor-pointer h-9 w-9 rounded-xl transition-all duration-150",
               soundEnabled ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-foreground/5"
             )}
-            title={soundEnabled ? "Suara Notifikasi: Aktif (Klik untuk Mematikan)" : "Suara Notifikasi: Senyap (Klik untuk Mengaktifkan)"}
+            title={soundEnabled ? t("nav.soundOn") : t("nav.soundOff")}
           >
             {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 text-muted-foreground/60" />}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer h-9 w-9 rounded-xl"
-            onClick={() => setLogoutDialogOpen(true)}
-            title="Keluar"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
+          {session?.user ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer h-9 w-9 rounded-xl transition-all duration-150"
+              onClick={() => setLogoutDialogOpen(true)}
+              title={t("nav.logout")}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              asChild
+              className="text-primary hover:bg-primary/10 cursor-pointer h-9 w-9 rounded-xl transition-all duration-150"
+              title={t("nav.login")}
+            >
+              <Link href="/login">
+                <LogIn className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -340,17 +444,17 @@ function NavContent({
               </div>
               <div className="text-left">
                 <DialogTitle className="text-lg font-bold font-heading text-foreground">
-                  Konfirmasi Keluar Akun
+                  {t("auth.logoutConfirmTitle")}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Apakah Anda yakin ingin keluar dari Linkora?
+                  {t("auth.logoutConfirmDesc")}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           <p className="text-xs text-muted-foreground leading-relaxed py-2">
-            Anda akan diarahkan ke halaman login dan perlu masuk kembali untuk mengakses data Anda.
+            {t("auth.logoutWarning")}
           </p>
 
           <DialogFooter className="pt-3 border-t border-border/40 flex sm:justify-end gap-2">
@@ -361,7 +465,7 @@ function NavContent({
               onClick={() => setLogoutDialogOpen(false)}
               className="rounded-xl text-xs font-semibold"
             >
-              Batal
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -373,12 +477,12 @@ function NavContent({
               {isLoggingOut ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Keluar...
+                  {t("common.deleting")}
                 </>
               ) : (
                 <>
                   <LogOut className="h-3.5 w-3.5" />
-                  Ya, Keluar Akun
+                  {t("auth.logoutBtn")}
                 </>
               )}
             </Button>

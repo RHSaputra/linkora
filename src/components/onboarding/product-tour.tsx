@@ -445,9 +445,10 @@ export function ProductTour() {
               {/* Navigation buttons */}
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={prevStep}
                   disabled={!hasPrev}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-foreground border border-border hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-foreground border border-border hover:bg-muted/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                   aria-label="Langkah sebelumnya"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -455,15 +456,17 @@ export function ProductTour() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={requestSkip}
-                  className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
+                  className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                 >
                   Lewati
                 </button>
 
                 <button
+                  type="button"
                   onClick={nextStep}
-                  className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
+                  className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                   aria-label="Langkah berikutnya"
                 >
                   Berikutnya

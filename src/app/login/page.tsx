@@ -7,10 +7,12 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { Loader2, Lock, Mail } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, locale } = useTranslation()
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [loading, setLoading] = useState(false)
@@ -22,35 +24,28 @@ function LoginFormContent() {
     const resetParam = searchParams.get("reset")
 
     if (registeredParam) {
-      setSuccessMessage("Pendaftaran berhasil! Akun Anda telah aktif, silakan masuk.")
+      setSuccessMessage(locale === "en" ? "Registration successful! Your account is active, please sign in." : "Pendaftaran berhasil! Akun Anda telah aktif, silakan masuk.")
     } else if (resetParam) {
-      setSuccessMessage("Password berhasil diperbarui! Silakan masuk dengan kata sandi baru.")
+      setSuccessMessage(locale === "en" ? "Password updated successfully! Please sign in with your new password." : "Password berhasil diperbarui! Silakan masuk dengan kata sandi baru.")
     }
 
     if (errorParam === "OAuthAccountNotLinked") {
-      setError("Email ini sudah terdaftar dengan metode login lain.")
-    } else if (errorParam === "OAuthSignin" || errorParam === "OAuthCallbackError") {
-      setError("Gagal terhubung dengan akun Google. Silakan coba lagi.")
-    } else if (errorParam === "Configuration") {
-      setError("Konfigurasi Google Auth belum lengkap di server.")
-    } else if (errorParam === "AccessDenied") {
-      setError("Akses ditolak oleh pengguna.")
+      setError(locale === "en" ? "This email is already registered using another method. Please sign in with your original method." : "Email ini sudah terdaftar dengan metode lain. Silakan masuk menggunakan metode yang Anda gunakan sebelumnya.")
+    } else if (errorParam) {
+      setError(locale === "en" ? "Failed to sign in. Please check your email and password." : "Gagal masuk. Silakan periksa kembali email dan kata sandi Anda.")
     }
-  }, [searchParams])
+  }, [searchParams, locale])
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoading(true)
     setError("")
-    setSuccessMessage("")
+    setLoading(true)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
     try {
-      // Clear greeting flag so Liko welcome dialog shows after login
-      sessionStorage.removeItem("linkora_session_greeted")
       const res = await signIn("credentials", {
         email,
         password,
@@ -58,27 +53,25 @@ function LoginFormContent() {
       })
 
       if (res?.error) {
-        setError("Email atau kata sandi tidak valid")
-        setLoading(false)
+        setError(locale === "en" ? "Invalid email or password." : "Email atau kata sandi yang Anda masukkan salah.")
       } else {
-        window.location.href = "/dashboard"
+        router.push("/dashboard")
+        router.refresh()
       }
     } catch (_err) {
-      setError("Terjadi kesalahan saat masuk ke sistem")
+      setError(locale === "en" ? "An error occurred. Please try again." : "Terjadi kesalahan. Silakan coba lagi.")
+    } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  async function handleGoogleSignIn() {
+    setError("")
+    setGoogleLoading(true)
     try {
-      setGoogleLoading(true)
-      setError("")
-      setSuccessMessage("")
-      // Clear greeting flag so Liko welcome dialog shows after login
-      sessionStorage.removeItem("linkora_session_greeted")
       await signIn("google", { callbackUrl: "/dashboard" })
     } catch (_err) {
-      setError("Gagal menginisialisasi login Google")
+      setError(locale === "en" ? "Failed to initialize Google login" : "Gagal menginisialisasi login Google")
       setGoogleLoading(false)
     }
   }
@@ -87,16 +80,16 @@ function LoginFormContent() {
     <div className="glass-panel rounded-3xl p-8 lg:p-10 shadow-2xl">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          Masuk ke Akun Anda
+          {locale === "en" ? "Sign In to Your Account" : "Masuk ke Akun Anda"}
         </h2>
-        <p className="text-sm text-muted-foreground">Silakan identifikasi diri Anda, Komandan.</p>
+        <p className="text-sm text-muted-foreground">{locale === "en" ? "Sign in to access your workspace and digital assets." : "Masuk untuk mengakses seluruh ruang kerja dan aset digital Anda."}</p>
       </div>
 
       <button
         type="button"
         disabled={googleLoading || loading}
         onClick={handleGoogleSignIn}
-        className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl shadow-sm text-sm font-medium text-foreground bg-foreground/5 hover:bg-foreground/10 transition-all mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl shadow-xs text-sm font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 active:scale-95 transition-all duration-150 mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -108,7 +101,7 @@ function LoginFormContent() {
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
           </svg>
         )}
-        <span>{googleLoading ? "Menghubungkan ke Google..." : "Masuk dengan Google"}</span>
+        <span>{googleLoading ? (locale === "en" ? "Connecting to Google..." : "Menghubungkan ke Google...") : (locale === "en" ? "Continue with Google" : "Masuk dengan Google")}</span>
       </button>
 
       <div className="relative mb-6">
@@ -116,7 +109,7 @@ function LoginFormContent() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-card text-muted-foreground">Atau masuk manual</span>
+          <span className="px-2 bg-card text-muted-foreground">{locale === "en" ? "Or sign in manually" : "Atau masuk manual"}</span>
         </div>
       </div>
 
@@ -142,7 +135,7 @@ function LoginFormContent() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-1.5 ml-1">Alamat Email</label>
+          <label className="block text-sm font-medium text-foreground/80 mb-1.5 ml-1">{locale === "en" ? "Email Address" : "Alamat Email"}</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Mail className="h-5 w-5 text-muted-foreground" />
@@ -153,19 +146,19 @@ function LoginFormContent() {
               required
               disabled={loading || googleLoading}
               className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
-              placeholder="Masukkan alamat email Anda"
+              placeholder={locale === "en" ? "Enter your email address" : "Masukkan alamat email Anda"}
             />
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1.5 ml-1 mr-1">
-            <label className="block text-sm font-medium text-foreground/80">Kata Sandi</label>
+            <label className="block text-sm font-medium text-foreground/80">{locale === "en" ? "Password" : "Kata Sandi"}</label>
             <Link
               href="/forgot-password"
               className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              Lupa kata sandi?
+              {locale === "en" ? "Forgot password?" : "Lupa kata sandi?"}
             </Link>
           </div>
           <div className="relative">
@@ -178,7 +171,7 @@ function LoginFormContent() {
               required
               disabled={loading || googleLoading}
               className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
-              placeholder="Masukkan kata sandi Anda"
+              placeholder={locale === "en" ? "Enter your password" : "Masukkan kata sandi Anda"}
             />
           </div>
         </div>
@@ -186,17 +179,17 @@ function LoginFormContent() {
         <button
           type="submit"
           disabled={loading || googleLoading}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer"
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Akses Sistem"}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (locale === "en" ? "Sign In" : "Masuk ke Akun")}
         </button>
       </form>
 
       <div className="mt-8 text-center border-t border-border pt-6">
         <p className="text-sm text-muted-foreground">
-          Belum punya izin akses?{" "}
+          {locale === "en" ? "Don't have an account yet?" : "Belum memiliki akun?"}{" "}
           <Link href="/register" className="font-bold text-primary hover:text-primary/80 transition-colors">
-            Daftar Sekarang
+            {locale === "en" ? "Register Now" : "Daftar Sekarang"}
           </Link>
         </p>
       </div>
@@ -205,6 +198,8 @@ function LoginFormContent() {
 }
 
 export default function LoginPage() {
+  const { locale } = useTranslation();
+
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background overflow-hidden relative">
       {/* Background Decorations */}
@@ -215,7 +210,7 @@ export default function LoginPage() {
 
       {/* Bagian Kiri: Welcome Hero Animasi */}
       <div className="lg:w-1/2 w-full p-8 lg:p-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm min-h-[40vh] lg:min-h-screen">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(var(--primary),0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
         <div className="relative z-10 text-center max-w-md mx-auto space-y-8">
           <motion.div
@@ -226,7 +221,7 @@ export default function LoginPage() {
               opacity: { duration: 0.5 },
               y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-64 lg:w-96 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-[0_0_50px_rgba(var(--primary),0.3)] border border-primary/30 relative overflow-hidden"
+            className="mx-auto w-64 lg:w-96 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent/40 blur-xl" />
             <div className="absolute inset-0 z-20">
@@ -247,7 +242,7 @@ export default function LoginPage() {
               transition={{ delay: 0.2 }}
               className="text-4xl lg:text-5xl font-bold font-heading"
             >
-              Selamat Datang di <br />
+              {locale === "en" ? "Welcome to" : "Selamat Datang di"} <br />
               <LinkoraText />
             </motion.h1>
             <motion.p
@@ -256,7 +251,7 @@ export default function LoginPage() {
               transition={{ delay: 0.3 }}
               className="text-muted-foreground text-lg"
             >
-              Ruang kerja digital imersif yang ditenagai oleh AI untuk mengelola semua tautan Anda.
+              {locale === "en" ? "An immersive AI-powered workspace to organize and supercharge all your links and notes." : "Ruang kerja digital imersif yang ditenagai oleh AI untuk mengelola semua tautan Anda."}
             </motion.p>
           </div>
         </div>

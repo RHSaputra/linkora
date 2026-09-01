@@ -35,14 +35,16 @@ export function OnboardingSkipConfirm() {
 
         <div className="px-6 pb-6 flex gap-2.5">
           <button
+            type="button"
             onClick={cancelSkip}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted/50 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted/50 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
             Lanjutkan Panduan
           </button>
           <button
+            type="button"
             onClick={confirmSkip}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-muted text-foreground hover:bg-muted/80 active:scale-[0.98] transition-all cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-muted text-foreground hover:bg-muted/80 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
             Lewati
           </button>

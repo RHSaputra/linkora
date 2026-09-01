@@ -24,11 +24,13 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useDashboard } from "@/hooks/use-data";
+import { useDashboard, subscribeRefresh } from "@/hooks/use-data";
 import { CATEGORY_COLORS } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
 import { LinkoraText } from "@/components/ui/linkora-text";
 import { useSession } from "next-auth/react";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface DashboardPageProps {
   refreshKey: number;
@@ -42,7 +44,9 @@ export function DashboardPage({
   openEditLink
 }: DashboardPageProps) {
   const { data: session } = useSession();
-  const userName = session?.user?.name || "Komandan";
+  const { isAuthenticated, requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
+  const userName = session?.user?.name || "Linkorian";
 
   const { stats, loading, refresh } = useDashboard();
 
@@ -58,8 +62,7 @@ export function DashboardPage({
       recentCacheRef.current = {};
       refresh(true);
     };
-    window.addEventListener("refreshData", handleRefresh);
-    return () => window.removeEventListener("refreshData", handleRefresh);
+    return subscribeRefresh(handleRefresh, "dashboard");
   }, [refresh]);
 
   const [isOrganizing, setIsOrganizing] = useState(false);
@@ -110,9 +113,19 @@ export function DashboardPage({
   }, [recentFilter, stats]);
 
   const handleOrganize = async () => {
+    if (requireAuth(
+      locale === "en" ? "Organize Links with AI Liko" : "Merapikan Tautan dengan AI Liko",
+      locale === "en" ? "Sign in or register for free to use AI Liko assistant to automatically group and organize all your links." : "Masuk atau daftar gratis untuk menggunakan asisten AI Liko yang otomatis mengelompokkan dan merapikan seluruh tautan Anda."
+    )) {
+      return;
+    }
     setIsOrganizing(true);
     try {
-      const res = await fetch("/api/ai/organize", { method: "POST" });
+      const res = await fetch("/api/ai/organize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale: locale || "id" }),
+      });
       const data = await res.json();
       if (res.ok) {
         setOrganizeResult({
@@ -122,7 +135,7 @@ export function DashboardPage({
         });
         refresh();
       } else {
-        setOrganizeResult({ message: "Gagal", processed: 0, error: data.error });
+        setOrganizeResult({ message: locale === "en" ? "Failed" : "Gagal", processed: 0, error: data.error });
       }
     } catch (e: any) {
       setOrganizeResult({ message: "Error", processed: 0, error: e.message });
@@ -160,17 +173,17 @@ export function DashboardPage({
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full"
       >
-        <div className="relative glass-panel rounded-[2.5rem] p-6 sm:p-10 lg:p-12 overflow-hidden border border-border/80 shadow-[0_20px_50px_-15px_rgba(99,102,241,0.12)] bg-gradient-to-br from-card/90 via-card/75 to-primary/[0.04]">
+        <div className="relative glass-panel rounded-[2.5rem] p-6 sm:p-10 lg:p-12 overflow-hidden border border-border/80 shadow-xl shadow-primary/10 bg-gradient-to-br from-card/90 via-card/75 to-primary/[0.04]">
           {/* Cybernetic Angled Corner Accents */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/40 rounded-tl-2xl pointer-events-none" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/40 rounded-tr-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-2xl pointer-events-none" />
 
           {/* Ambient Right Sphere & Orbit Nodes */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-            <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-br from-cyan-400/20 via-primary/15 to-purple-500/15 blur-2xl animate-pulse" />
-            <div className="absolute right-12 top-8 w-20 h-20 rounded-full border border-cyan-400/25 opacity-70 animate-[spin_20s_linear_infinite]" />
-            <div className="absolute right-36 bottom-10 w-3 h-3 rounded-full bg-cyan-400/40 blur-[1px]" />
-            <div className="absolute right-10 top-1/3 w-3.5 h-3.5 rounded-full bg-primary/60 shadow-[0_0_10px_var(--primary)]" />
+            <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-br from-accent/20 via-primary/15 to-purple-500/15 blur-2xl animate-pulse" />
+            <div className="absolute right-12 top-8 w-20 h-20 rounded-full border border-accent/25 opacity-70 animate-[spin_20s_linear_infinite]" />
+            <div className="absolute right-36 bottom-10 w-3 h-3 rounded-full bg-accent/40 blur-[1px]" />
+            <div className="absolute right-10 top-1/3 w-3.5 h-3.5 rounded-full bg-primary/60" />
           </div>
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 w-full">
@@ -178,19 +191,21 @@ export function DashboardPage({
             <div className="space-y-1.5 text-left">
 
               <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans">
-                Selamat Datang,
+                {isAuthenticated
+                  ? (locale === "en" ? "Welcome back," : "Selamat Datang,")
+                  : (locale === "en" ? "Hello," : "Halo,")}
               </h2>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] via-[#8b5cf6] to-[#06b6d4] font-sans leading-tight">
-                {userName}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent font-sans leading-tight">
+                {userName} {!isAuthenticated && "👋"}
               </h1>
               <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
-                <span>Ruang Anda</span> <LinkoraText />
+                <span>{locale === "en" ? "Your workspace on" : "Ruang Anda"}</span> <LinkoraText />
               </div>
               <div className="flex items-center gap-2.5 pt-1.5 text-xs sm:text-sm text-muted-foreground font-medium">
                 <div className="w-6 h-6 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-xs">
                   <Shield className="h-3.5 w-3.5" />
                 </div>
-                <span>Semua catatan, tautan, dan dokumen terenkripsi dengan aman.</span>
+                <span>{locale === "en" ? "All notes, links, and documents are securely encrypted." : "Semua catatan, tautan, dan dokumen terenkripsi dengan aman."}</span>
               </div>
             </div>
 
@@ -202,35 +217,29 @@ export function DashboardPage({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
-                whileHover={{ scale: 1.03, y: -3 }}
-                whileTap={{ scale: 0.97 }}
-                className="relative w-full lg:w-auto lg:min-w-[280px] text-left glass-panel bg-card/85 hover:bg-card/95 backdrop-blur-xl border border-primary/30 hover:border-primary/60 rounded-2xl p-4 sm:p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] transition-all duration-300 group cursor-pointer overflow-hidden"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full lg:w-84 p-4 rounded-2xl glass-panel border border-border/80 hover:border-primary/50 bg-card/60 transition-all duration-300 space-y-3 cursor-pointer text-left group shrink-0"
               >
-                {/* Subtle scanning light effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-
-                <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
-                    Kluster Data
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <PieChart className="w-3.5 h-3.5 text-primary" /> {t("dashboard.dataCluster")}
+                  </span>
+                  <span className="text-[11px] font-semibold text-primary flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                    {t("dashboard.viewDetails")} <ChevronRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
-                  <div className="flex items-center gap-1 text-xs text-primary font-bold group-hover:translate-x-1 transition-transform">
-                    <span>Lihat Rincian</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </div>
-                </div>
 
-                {/* Visual Distribution Segment Bar */}
-                <div className="h-2.5 rounded-full bg-muted/80 overflow-hidden flex mb-3 p-[1px] shadow-inner">
-                  {s.categoryStats.map((cat) => {
-                    const pct = s.totalLinks > 0 ? (cat.count / s.totalLinks) * 100 : 0;
-                    const color = CATEGORY_COLORS[cat.category] || CATEGORY_COLORS.Custom;
+                {/* Progress Cluster Bar */}
+                <div className="h-3 w-full bg-muted rounded-full overflow-hidden flex gap-0.5 p-0.5">
+                  {s.categoryStats.map((cat, idx) => {
+                    const pct = Math.max(4, (cat.count / s.totalLinks) * 100);
+                    const color = CATEGORY_COLORS[cat.category] || "bg-primary";
                     return (
                       <div
-                        key={cat.category}
-                        className="h-full transition-all hover:opacity-80 rounded-sm"
-                        style={{ width: `${pct}%`, backgroundColor: color }}
+                        key={idx}
+                        style={{ width: `${pct}%` }}
+                        className={`h-full rounded-full transition-all duration-500 ${color}`}
                         title={`${cat.category}: ${cat.count}`}
                       />
                     );
@@ -240,10 +249,10 @@ export function DashboardPage({
                 {/* Minimalist Summary Footer */}
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-muted-foreground">
-                    <strong className="text-foreground font-bold">{s.categoryStats.length}</strong> Kategori Aktif
+                    <strong className="text-foreground font-bold">{s.categoryStats.length}</strong> {t("dashboard.activeCategories")}
                   </span>
                   <span className="font-mono bg-primary/15 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                    {s.totalLinks} Tautan
+                    {s.totalLinks} {t("dashboard.totalLinks")}
                   </span>
                 </div>
               </motion.button>
@@ -261,11 +270,11 @@ export function DashboardPage({
         transition={{ duration: 0.6, delay: 0.15 }}
         className="relative z-20"
       >
-        <div className="relative glass-panel rounded-3xl p-6 sm:p-8 lg:p-8 border-2 border-primary/30 overflow-hidden bg-card/90 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(99,102,241,0.2)]">
+        <div className="relative glass-panel rounded-3xl p-6 sm:p-8 lg:p-8 border-2 border-primary/30 overflow-hidden bg-card/90 backdrop-blur-2xl shadow-2xl shadow-primary/15">
           {/* Holographic Glowing Gradients & Stepped Shard Accents */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-cyan-500/10 opacity-70 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-70 pointer-events-none" />
           <div className="absolute right-0 top-0 w-80 h-80 bg-primary/20 blur-[110px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-500/15 blur-[90px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/15 blur-[90px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
           {/* Overlapping Interior Card with Neon Rings & Dynamic Action */}
           <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
@@ -333,39 +342,45 @@ export function DashboardPage({
             {/* AI Text Insight & Recommendation */}
             <div className="flex-1 text-left space-y-2.5">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold">
-                Liko Asisten AI
+                {t("dashboard.aiAssistant")}
               </div>
 
               <h3 className="text-xl sm:text-2xl font-bold text-foreground font-heading">
-                {uncatCount > 0
-                  ? `Ditemukan ${uncatCount} tautan yang perlu dirapikan!`
-                  : "Semua koleksi tautanmu sudah tersusun rapi!"}
+                {s.totalLinks === 0
+                  ? t("dashboard.aiEmptyTitle")
+                  : uncatCount > 0
+                    ? t("dashboard.aiUncatTitle", { count: uncatCount })
+                    : t("dashboard.aiOrganizedTitle")}
               </h3>
 
               <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
-                {uncatCount > 0
-                  ? `Hai! Liko mendeteksi ${uncatCount} tautan belum memiliki kategori yang spesifik. Klik tombol di samping agar Liko secara otomatis menganalisis judul dan konten tautanmu untuk mengelompokkannya.`
-                  : "Semua tautanmu sudah terorganisir dengan rapi dalam kluster yang tepat. Saat kamu menambahkan tautan baru di masa mendatang, Liko akan selalu siap membantumu."}
+                {s.totalLinks === 0
+                  ? t("dashboard.aiEmptyDesc")
+                  : uncatCount > 0
+                    ? t("dashboard.aiUncatDesc", { count: uncatCount })
+                    : t("dashboard.aiOrganizedDesc")}
               </p>
             </div>
 
             {/* AI Action CTA Button */}
             <div className="flex-shrink-0 w-full lg:w-auto">
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: s.totalLinks === 0 ? 1 : 1.05 }}
+                whileTap={{ scale: s.totalLinks === 0 ? 1 : 0.95 }}
                 onClick={handleOrganize}
-                disabled={isOrganizing}
-                className="relative w-full lg:w-auto px-7 py-3.5 sm:px-8 sm:py-3.5 rounded-2xl bg-gradient-to-r from-primary via-indigo-500 to-cyan-500 hover:from-primary/90 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-[0_10px_30px_-5px_rgba(99,102,241,0.45)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed overflow-hidden group"
+                disabled={isOrganizing || s.totalLinks === 0}
+                className="relative w-full lg:w-auto px-7 py-3.5 sm:px-8 sm:py-3.5 rounded-2xl bg-gradient-to-r from-primary via-indigo-500 to-accent hover:from-primary/90 hover:to-accent text-white font-bold text-sm tracking-wide shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                 {isOrganizing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Menganalisis & Merapikan...</span>
+                    <span>{t("dashboard.organizingBtn")}</span>
                   </>
+                ) : s.totalLinks === 0 ? (
+                  <span>{t("dashboard.noLinksBtn")}</span>
                 ) : (
-                  <span>Bantu Rapikan, Liko!</span>
+                  <span>{t("dashboard.aiOrganizeBtn")}</span>
                 )}
               </motion.button>
             </div>
@@ -392,7 +407,7 @@ export function DashboardPage({
                   <Star className="h-5 w-5 fill-amber-500" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black font-heading text-foreground tracking-tight">
-                  Link Prioritas
+                  {t("dashboard.priorityLinks")}
                 </h2>
               </div>
 
@@ -429,9 +444,9 @@ export function DashboardPage({
               <div className="flex items-center p-1 rounded-xl bg-background/80 border border-border/80 shadow-inner">
                 {(
                   [
-                    { id: "added", label: "Baru Ditambahkan" },
-                    { id: "edited", label: "Baru Diedit" },
-                    { id: "opened", label: "Baru Dibuka" }
+                    { id: "added", label: t("dashboard.filterAdded") },
+                    { id: "edited", label: t("dashboard.filterEdited") },
+                    { id: "opened", label: t("dashboard.filterOpened") }
                   ] as const
                 ).map((tab) => {
                   const isActive = recentFilter === tab.id;
@@ -440,10 +455,10 @@ export function DashboardPage({
                       key={tab.id}
                       type="button"
                       onClick={() => setRecentFilter(tab.id)}
-                      className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         isActive
                           ? "text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                       }`}
                     >
                       {isActive && (
@@ -464,7 +479,7 @@ export function DashboardPage({
                 prefetch={true}
                 className="px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold flex items-center gap-1.5 transition-all group"
               >
-                <span>Lihat Semua</span>
+                <span>{t("common.viewAll")}</span>
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -491,7 +506,7 @@ export function DashboardPage({
             ) : (
               <div className="glass-panel p-10 rounded-2xl border border-dashed border-border text-center">
                 <p className="text-muted-foreground text-sm font-medium">
-                  Tidak ada tautan untuk filter ini.
+                  {t("links.noLinksFound")}
                 </p>
               </div>
             )}
@@ -507,14 +522,14 @@ export function DashboardPage({
           >
             <div className="glass-panel bg-card/70 p-12 rounded-[3rem] text-center border-dashed border-2 border-primary/30 max-w-md w-full shadow-2xl relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-              <div className="mx-auto w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 text-primary shadow-[0_0_25px_rgba(var(--primary),0.2)]">
+              <div className="mx-auto w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 text-primary shadow-lg shadow-primary/20">
                 <FolderOpen className="h-12 w-12" />
               </div>
               <h3 className="text-2xl font-black text-foreground font-heading">
-                Brankas Belum Terisi
+                {t("dashboard.emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                Belum ada aliran data terdeteksi. Mulai tambahkan tautan baru di bilah samping atau gunakan fitur import otomatis.
+                {t("dashboard.emptyDesc")}
               </p>
             </div>
           </motion.div>
@@ -528,12 +543,14 @@ export function DashboardPage({
         <DialogContent className="glass-panel border-primary/30 sm:max-w-md bg-card/95 backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-black font-heading text-primary">
-              {organizeResult?.error ? "Terjadi Kesalahan" : "Laporan Wawasan AI Liko"}
+              {organizeResult?.error ? t("common.error") : (locale === "en" ? "Liko AI Insights Report" : "Laporan Wawasan AI Liko")}
             </DialogTitle>
             <DialogDescription>
               {organizeResult?.error
-                ? "Gagal mengorganisir tautan."
-                : `Berhasil menganalisis dan mengelompokkan ${organizeResult?.processed || 0} tautan ke dalam kategori yang sesuai.`}
+                ? (locale === "en" ? "Failed to organize links." : "Gagal mengorganisir tautan.")
+                : (locale === "en"
+                    ? `Successfully analyzed and grouped ${organizeResult?.processed || 0} links into relevant categories.`
+                    : `Berhasil menganalisis dan mengelompokkan ${organizeResult?.processed || 0} tautan ke dalam kategori yang sesuai.`)}
             </DialogDescription>
           </DialogHeader>
 
@@ -565,7 +582,7 @@ export function DashboardPage({
               </div>
             ) : (
               <div className="text-center py-6 px-4 bg-foreground/5 rounded-2xl border border-dashed border-border text-muted-foreground text-sm font-medium">
-                Semua tautan sudah memiliki kategori yang tepat saat ini.
+                {locale === "en" ? "All links are already categorized accurately." : "Semua tautan sudah memiliki kategori yang tepat saat ini."}
               </div>
             )}
           </div>
@@ -575,7 +592,7 @@ export function DashboardPage({
               onClick={() => setOrganizeResult(null)}
               className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-95 shadow-md cursor-pointer"
             >
-              Tutup Laporan
+              {t("common.close")}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -593,10 +610,10 @@ export function DashboardPage({
               </div>
               <div className="text-left">
                 <DialogTitle className="text-xl sm:text-2xl font-black font-heading text-foreground">
-                  Distribusi Kluster Data
+                  {t("dashboard.clusterModalTitle")}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Rincian {s.totalLinks} tautan dalam {s.categoryStats.length} kategori aktif.
+                  {t("dashboard.clusterModalDesc", { total: s.totalLinks, categories: s.categoryStats.length })}
                 </DialogDescription>
               </div>
             </div>
@@ -644,7 +661,7 @@ export function DashboardPage({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold text-foreground">
-                        {cat.count} tautan
+                        {cat.count} {locale === "en" ? (cat.count === 1 ? "link" : "links") : "tautan"}
                       </span>
                       <span className="text-[11px] font-mono text-muted-foreground">
                         ({pct.toFixed(1)}%)
@@ -672,13 +689,13 @@ export function DashboardPage({
               onClick={() => setClusterDialogOpen(false)}
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              Buka Semua Tautan <ArrowRight className="h-3.5 w-3.5" />
+              {locale === "en" ? "Open All Links" : "Buka Semua Tautan"} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <button
               onClick={() => setClusterDialogOpen(false)}
               className="px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground font-bold text-xs transition-colors cursor-pointer"
             >
-              Tutup
+              {t("common.close")}
             </button>
           </DialogFooter>
         </DialogContent>

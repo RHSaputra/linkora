@@ -83,7 +83,6 @@ export function Showcase() {
                       <Search className="w-3 h-3 text-primary" />
                       <span>Cari tautan, beasiswa, catatan...</span>
                     </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">⌘K</span>
                   </div>
 
                   {/* Stat Cards */}

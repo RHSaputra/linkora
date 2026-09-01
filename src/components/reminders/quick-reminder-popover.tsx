@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { format, addHours, addDays, nextSaturday, nextMonday, setHours, setMinutes } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
-import { Bell, BellOff, Calendar, Clock, Sparkles, Check, ChevronRight } from "lucide-react";
+import { Bell, BellOff, Calendar, Clock, Check, ChevronRight } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -18,6 +18,8 @@ import {
   requestWebNotificationPermission,
   playNotificationSound,
 } from "@/lib/notification-service";
+import { dispatchRefresh } from "@/hooks/use-data";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface QuickReminderPopoverProps {
   targetId: string;
@@ -27,6 +29,7 @@ interface QuickReminderPopoverProps {
   currentReminderAt?: string | null;
   onReminderChange?: (newReminderAt: string | null) => void;
   className?: string;
+  showLabel?: boolean;
   buttonVariant?: "ghost" | "secondary" | "outline";
   buttonSize?: "icon" | "sm" | "default";
 }
@@ -39,9 +42,11 @@ export function QuickReminderPopover({
   currentReminderAt,
   onReminderChange,
   className,
+  showLabel = false,
   buttonVariant = "ghost",
   buttonSize = "icon",
 }: QuickReminderPopoverProps) {
+  const { t, locale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [customDateTime, setCustomDateTime] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -52,6 +57,7 @@ export function QuickReminderPopover({
   // Helper function to calculate preset dates
   const getPresets = () => {
     const now = new Date();
+    const activeLocale = locale === "en" ? undefined : idLocale;
 
     // 1 Hour Later
     const in1Hour = addHours(now, 1);
@@ -74,36 +80,36 @@ export function QuickReminderPopover({
     return [
       {
         id: "1h",
-        label: "1 Jam Lagi",
-        timeLabel: format(in1Hour, "HH:mm", { locale: idLocale }),
+        label: t("reminders.in1Hour"),
+        timeLabel: format(in1Hour, "HH:mm", { locale: activeLocale }),
         date: in1Hour,
         icon: Clock,
       },
       {
         id: "tonight",
-        label: "Malam Ini",
-        timeLabel: format(tonight, "HH:mm", { locale: idLocale }),
+        label: t("reminders.tonight"),
+        timeLabel: format(tonight, "HH:mm", { locale: activeLocale }),
         date: tonight,
-        icon: Sparkles,
+        icon: Clock,
       },
       {
         id: "tomorrow",
-        label: "Besok Pagi",
-        timeLabel: format(tomorrowMorning, "EEE, 09:00", { locale: idLocale }),
+        label: t("reminders.tomorrowMorning"),
+        timeLabel: format(tomorrowMorning, "EEE, 09:00", { locale: activeLocale }),
         date: tomorrowMorning,
         icon: Calendar,
       },
       {
         id: "weekend",
-        label: "Akhir Pekan (Sabtu)",
-        timeLabel: format(weekend, "d MMM, 10:00", { locale: idLocale }),
+        label: t("reminders.weekend"),
+        timeLabel: format(weekend, "d MMM, 10:00", { locale: activeLocale }),
         date: weekend,
         icon: Calendar,
       },
       {
         id: "next_week",
-        label: "Minggu Depan (Senin)",
-        timeLabel: format(nextWeek, "d MMM, 09:00", { locale: idLocale }),
+        label: t("reminders.nextWeek"),
+        timeLabel: format(nextWeek, "d MMM, 09:00", { locale: activeLocale }),
         date: nextWeek,
         icon: Calendar,
       },
@@ -134,26 +140,26 @@ export function QuickReminderPopover({
         requestWebNotificationPermission().catch(() => {});
         scheduleCapacitorLocalNotification({
           id: notificationId,
-          title: `⏰ Pengingat ${type === "link" ? "Tautan" : "Catatan"}: ${title}`,
-          body: `Waktunya meninjau: ${title}`,
+          title: locale === "en" ? `⏰ Reminder for ${type === "link" ? "Link" : "Note"}: ${title}` : `⏰ Pengingat ${type === "link" ? "Tautan" : "Catatan"}: ${title}`,
+          body: locale === "en" ? `Time to review: ${title}` : `Waktunya meninjau: ${title}`,
           scheduleDate: targetDate,
           url,
           targetId,
         }).catch(() => {});
 
         playNotificationSound();
-        const formattedDate = format(targetDate, "EEEE, d MMMM yyyy 'pukul' HH:mm", { locale: idLocale });
-        toast.success(`Pengingat disetel untuk ${formattedDate}`, "Pengingat Aktif");
+        const formattedDate = format(targetDate, locale === "en" ? "EEEE, MMMM d, yyyy 'at' HH:mm" : "EEEE, d MMMM yyyy 'pukul' HH:mm", { locale: locale === "en" ? undefined : idLocale });
+        toast.success(locale === "en" ? `Reminder set for ${formattedDate}` : `Pengingat disetel untuk ${formattedDate}`, locale === "en" ? "Reminder Active" : "Pengingat Aktif");
       } else {
         cancelCapacitorLocalNotification(notificationId).catch(() => {});
-        toast.info("Pengingat berhasil dinonaktifkan.", "Pengingat Dihapus");
+        toast.info(locale === "en" ? "Reminder successfully disabled." : "Pengingat berhasil dinonaktifkan.", locale === "en" ? "Reminder Cleared" : "Pengingat Dihapus");
       }
 
       onReminderChange?.(isoString);
-      window.dispatchEvent(new CustomEvent("refreshData"));
+      dispatchRefresh(["links", "notes"]);
       setOpen(false);
     } catch (err: any) {
-      toast.error(err?.message || "Terjadi kesalahan sistem", "Gagal");
+      toast.error(err?.message || (locale === "en" ? "System error occurred" : "Terjadi kesalahan sistem"), locale === "en" ? "Failed" : "Gagal");
     } finally {
       setIsUpdating(false);
     }
@@ -164,7 +170,7 @@ export function QuickReminderPopover({
     if (!customDateTime) return;
     const date = new Date(customDateTime);
     if (isNaN(date.getTime()) || date <= new Date()) {
-      toast.error("Waktu pengingat harus berada di masa mendatang.", "Waktu Tidak Valid");
+      toast.error(locale === "en" ? "Reminder time must be in the future." : "Waktu pengingat harus berada di masa mendatang.", locale === "en" ? "Invalid Time" : "Waktu Tidak Valid");
       return;
     }
     handleApplyReminder(date);
@@ -180,21 +186,28 @@ export function QuickReminderPopover({
             setOpen(true);
           }}
           className={cn(
-            "p-1.5 rounded-xl transition-all duration-200 cursor-pointer relative group/bell flex items-center justify-center",
+            "transition-all duration-200 cursor-pointer relative group/bell flex items-center justify-center select-none",
             hasActiveReminder
               ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 shadow-xs"
               : "text-muted-foreground/60 hover:text-amber-500 hover:bg-amber-500/10",
-            className
+            className || "p-1.5 rounded-xl"
           )}
           title={
             hasActiveReminder
-              ? `Pengingat Aktif: ${format(new Date(currentReminderAt!), "d MMM yyyy, HH:mm", { locale: idLocale })} (Klik untuk ubah)`
-              : "Atur Pengingat Cepat"
+              ? (locale === "en"
+                  ? `Active Reminder: ${format(new Date(currentReminderAt!), "d MMM yyyy, HH:mm")}`
+                  : `Pengingat Aktif: ${format(new Date(currentReminderAt!), "d MMM yyyy, HH:mm", { locale: idLocale })}`)
+              : t("reminders.quickPopoverTitle")
           }
         >
-          <Bell className={cn("w-3.5 h-3.5", hasActiveReminder && "fill-amber-500")} />
+          <Bell className={cn("w-3.5 h-3.5 shrink-0", hasActiveReminder && "fill-amber-500")} />
           {hasActiveReminder && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[10px] font-bold ml-1 tracking-tight">
+              {format(new Date(currentReminderAt!), "d MMM, HH:mm", { locale: locale === "en" ? undefined : idLocale })}
+            </span>
+          )}
+          {!hasActiveReminder && showLabel && (
+            <span className="text-[10px] font-medium ml-1">{locale === "en" ? "Remind" : "Ingatkan"}</span>
           )}
         </button>
       </PopoverTrigger>
@@ -214,7 +227,7 @@ export function QuickReminderPopover({
                 <Bell className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground">Atur Pengingat Cepat</p>
+                <p className="text-xs font-bold text-foreground">{t("reminders.quickPopoverTitle")}</p>
                 <p className="text-[10px] text-muted-foreground truncate max-w-[180px]">
                   {title}
                 </p>
@@ -226,16 +239,16 @@ export function QuickReminderPopover({
             <div className="mt-2.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-[11px] text-amber-600 dark:text-amber-400 font-medium">
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 shrink-0" />
-                {format(new Date(currentReminderAt!), "d MMM, HH:mm", { locale: idLocale })}
+                {format(new Date(currentReminderAt!), "d MMM, HH:mm", { locale: locale === "en" ? undefined : idLocale })}
               </span>
               <button
                 type="button"
                 disabled={isUpdating}
                 onClick={() => handleApplyReminder(null)}
                 className="text-[10px] font-bold text-destructive hover:underline cursor-pointer flex items-center gap-1"
-                title="Batalkan Pengingat"
+                title={locale === "en" ? "Cancel Reminder" : "Batalkan Pengingat"}
               >
-                <BellOff className="w-3 h-3" /> Hapus
+                <BellOff className="w-3 h-3" /> {t("common.delete")}
               </button>
             </div>
           )}
@@ -244,7 +257,7 @@ export function QuickReminderPopover({
         {/* 1-Click Presets */}
         <div className="p-2 space-y-0.5">
           <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Pilihan Cepat
+            {locale === "en" ? "Quick Presets" : "Pilihan Cepat"}
           </p>
           {getPresets().map((preset) => {
             const Icon = preset.icon;
@@ -273,7 +286,7 @@ export function QuickReminderPopover({
         <div className="p-3 border-t border-border/40 bg-foreground/[0.01]">
           <form onSubmit={handleCustomSubmit} className="space-y-2">
             <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Kustom Tanggal & Waktu
+              {t("reminders.customDateTime")}
             </label>
             <div className="flex gap-1.5">
               <input

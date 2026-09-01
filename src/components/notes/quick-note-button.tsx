@@ -10,7 +10,6 @@ import {
   Check,
   FolderOpen,
   Send,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +27,13 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/custom-toast";
-import { setCachedData, invalidateCache, useNoteFolders } from "@/hooks/use-data";
+import { setCachedData, invalidateCache, useNoteFolders, dispatchRefresh } from "@/hooks/use-data";
+import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 export function QuickNoteButton() {
+  const { requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -62,7 +65,7 @@ export function QuickNoteButton() {
   const handleQuickSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    const noteTitle = title.trim() || "Catatan Cepat";
+    const noteTitle = title.trim() || (locale === "en" ? "Quick Note" : "Catatan Cepat");
     const noteContent = content.trim() ? `<p>${content.trim().replace(/\n/g, "<br/>")}</p>` : "";
     const folderId = selectedFolderId || undefined;
 
@@ -87,15 +90,18 @@ export function QuickNoteButton() {
         // Pre-cache and refresh
         setCachedData(`/api/notes/${data.id}`, data);
         invalidateCache("/api/notes");
-        window.dispatchEvent(new Event("refreshData"));
+        dispatchRefresh(["notes", "noteFolders"]);
 
-        toast.success(`"${noteTitle}" berhasil disimpan!`, "Catatan Cepat Tersimpan");
+        toast.success(
+          locale === "en" ? `"${noteTitle}" saved successfully!` : `"${noteTitle}" berhasil disimpan!`,
+          locale === "en" ? "Quick Note Saved" : "Catatan Cepat Tersimpan"
+        );
       } else {
-        toast.error(data.error || "Gagal menyimpan catatan", "Error");
+        toast.error(data.error || (locale === "en" ? "Failed to save note" : "Gagal menyimpan catatan"), "Error");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Gagal menyimpan catatan cepat", "Error");
+      toast.error(locale === "en" ? "Failed to save quick note" : "Gagal menyimpan catatan cepat", "Error");
     } finally {
       setSaving(false);
     }
@@ -103,7 +109,7 @@ export function QuickNoteButton() {
 
   // Open in Full Editor: Instant close + parallel create + immediate 0ms transition
   const handleOpenFullEditor = async () => {
-    const noteTitle = title.trim() || "Catatan Cepat";
+    const noteTitle = title.trim() || (locale === "en" ? "Quick Note" : "Catatan Cepat");
     const noteContent = content.trim() ? `<p>${content.trim().replace(/\n/g, "<br/>")}</p>` : "";
     const folderId = selectedFolderId || undefined;
 
@@ -128,15 +134,15 @@ export function QuickNoteButton() {
         // Pre-cache for 0ms loading in the full editor
         setCachedData(`/api/notes/${data.id}`, data);
         invalidateCache("/api/notes");
-        window.dispatchEvent(new Event("refreshData"));
+        dispatchRefresh(["notes", "noteFolders"]);
 
         router.push(`/notes/${data.id}`);
       } else {
-        toast.error(data.error || "Gagal membuat catatan", "Error");
+        toast.error(data.error || (locale === "en" ? "Failed to create note" : "Gagal membuat catatan"), "Error");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Gagal membuka editor catatan", "Error");
+      toast.error(locale === "en" ? "Failed to open note editor" : "Gagal membuka editor catatan", "Error");
     } finally {
       setNavigating(false);
     }
@@ -154,14 +160,22 @@ export function QuickNoteButton() {
               <Button
                 size="icon"
                 className="h-12 w-12 rounded-full glass-panel bg-card/90 hover:bg-card text-foreground shadow-xl border border-primary/40 transition-all cursor-pointer backdrop-blur-2xl"
-                onClick={() => setOpen(true)}
+                onClick={() => {
+                  if (requireAuth(
+                    locale === "en" ? "Create Quick Note" : "Membuat Catatan Cepat",
+                    locale === "en" ? "Sign in or register for free to write instant memos and ideas from anywhere." : "Masuk atau daftar gratis untuk menulis memo dan ide cepat langsung dari mana saja."
+                  )) {
+                    return;
+                  }
+                  setOpen(true);
+                }}
               >
                 <PenBox className="h-5 w-5 text-primary" />
               </Button>
             </motion.div>
           </TooltipTrigger>
           <TooltipContent side="left" className="text-xs font-semibold py-1.5 px-3">
-            <p>Catatan Cepat</p>
+            <p>{t("quickNote.title")}</p>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -177,10 +191,10 @@ export function QuickNoteButton() {
                 </div>
                 <div>
                   <DialogTitle className="text-base font-bold font-heading text-foreground">
-                    Catatan Cepat
+                    {t("quickNote.title")}
                   </DialogTitle>
                   <p className="text-[11px] text-muted-foreground">
-                    Tulis ide instan tanpa berpindah halaman
+                    {t("quickNote.subtitle")}
                   </p>
                 </div>
               </div>
@@ -192,14 +206,14 @@ export function QuickNoteButton() {
                 onClick={handleOpenFullEditor}
                 disabled={navigating}
                 className="text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 rounded-xl h-8 px-2.5"
-                title="Buka di Editor Lengkap"
+                title={t("quickNote.openFullEditorTooltip")}
               >
                 {navigating ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <>
                     <Maximize2 className="h-3.5 w-3.5" />
-                    <span>Editor Penuh</span>
+                    <span>{t("quickNote.fullEditorBtn")}</span>
                   </>
                 )}
               </Button>
@@ -213,7 +227,7 @@ export function QuickNoteButton() {
                 ref={titleInputRef}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Judul Catatan..."
+                placeholder={t("quickNote.titlePlaceholder")}
                 className="text-sm font-semibold rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
               />
             </div>
@@ -223,7 +237,7 @@ export function QuickNoteButton() {
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Tuliskan ide, memo, atau catatan cepat Anda di sini..."
+                placeholder={t("quickNote.contentPlaceholder")}
                 rows={5}
                 className="text-xs leading-relaxed resize-none rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
               />
@@ -233,7 +247,7 @@ export function QuickNoteButton() {
             {folders && folders.length > 0 && (
               <div className="flex items-center gap-1.5 overflow-x-auto py-1">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0 flex items-center gap-1 mr-1">
-                  <FolderOpen className="h-3 w-3 text-primary" /> Folder:
+                  <FolderOpen className="h-3 w-3 text-primary" /> {t("quickNote.folderLabel")}
                 </span>
                 <button
                   type="button"
@@ -244,7 +258,7 @@ export function QuickNoteButton() {
                       : "bg-foreground/[0.04] text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Utama
+                  {t("quickNote.folderGeneral")}
                 </button>
                 {folders.map((f: any) => (
                   <button
@@ -268,40 +282,34 @@ export function QuickNoteButton() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-border/40">
-              <span className="text-[10px] text-muted-foreground">
-                Tekan Enter untuk simpan
-              </span>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl text-xs"
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving || navigating}
-                  size="sm"
-                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 shadow-sm active:scale-95 cursor-pointer"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-3.5 w-3.5" />
-                      Simpan Catatan
-                    </>
-                  )}
-                </Button>
-              </div>
+            <div className="flex items-center justify-end pt-2 border-t border-border/40 gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setOpen(false)}
+                className="rounded-xl text-xs font-semibold"
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={saving || navigating}
+                size="sm"
+                className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {t("common.saving")}
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-3.5 w-3.5" />
+                    {t("quickNote.saveNoteBtn")}
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </DialogContent>

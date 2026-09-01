@@ -82,7 +82,7 @@ export function Pricing() {
               transition={{ delay: i * 0.1 }}
               className={`relative rounded-3xl p-8 ${
                 plan.isPopular 
-                ? "bg-gradient-to-b from-primary/10 to-background border-primary/30 border shadow-[0_0_30px_rgba(var(--primary),0.15)]" 
+                ? "bg-gradient-to-b from-primary/10 to-background border-primary/30 border shadow-xl shadow-primary/15" 
                 : "bg-foreground/[0.02] border border-foreground/5"
               }`}
             >
@@ -102,7 +102,7 @@ export function Pricing() {
               
               <Link 
                 href="/register" 
-                className={`w-full flex items-center justify-center rounded-full py-3 px-6 text-sm font-medium transition-all mb-8 ${
+                className={`w-full flex items-center justify-center rounded-full py-3 px-6 text-sm font-semibold transition-all duration-150 mb-8 active:scale-95 touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   plan.isPopular 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:scale-105" 
                   : "bg-foreground/5 text-foreground hover:bg-foreground/10"

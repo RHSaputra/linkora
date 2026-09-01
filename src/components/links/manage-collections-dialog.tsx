@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { FolderOpen } from "lucide-react";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface ManageCollectionsDialogProps {
   link: SerializedLink;
@@ -30,6 +31,7 @@ export function ManageCollectionsDialog({
 }: ManageCollectionsDialogProps) {
   const { collections, loading } = useCollections();
   const [isSaving, setIsSaving] = useState(false);
+  const { t, locale } = useTranslation();
 
   // Original state to track changes
   const originalCollections = new Set(link.collections?.map((c: any) => c.collectionId) || []);
@@ -86,9 +88,9 @@ export function ManageCollectionsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Atur Koleksi</DialogTitle>
+          <DialogTitle>{t("links.manageCollection")}</DialogTitle>
           <DialogDescription>
-            Pilih koleksi mana saja yang menyimpan tautan ini.
+            {locale === "en" ? "Select which collections should include this link." : "Pilih koleksi mana saja yang menyimpan tautan ini."}
           </DialogDescription>
         </DialogHeader>
 
@@ -102,8 +104,8 @@ export function ManageCollectionsDialog({
           ) : collections.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Belum ada koleksi yang dibuat.</p>
-              <p className="text-xs mt-1">Buat koleksi baru di halaman Collections.</p>
+              <p className="text-sm">{t("collections.emptyTitle")}</p>
+              <p className="text-xs mt-1">{locale === "en" ? "Create a new collection on the Collections page." : "Buat koleksi baru di halaman Collections."}</p>
             </div>
           ) : (
             <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
@@ -147,14 +149,16 @@ export function ManageCollectionsDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
+            className="cursor-pointer"
           >
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving || loading}
+            className="cursor-pointer"
           >
-            {isSaving ? "Menyimpan..." : "Simpan"}
+            {isSaving ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </DialogContent>

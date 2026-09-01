@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FolderOpen, Plus, Briefcase, GraduationCap, Code, Trash2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FolderOpen, Plus, Trash2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +16,12 @@ import {
 } from "@/components/ui/dialog";
 import { LinkCard } from "@/components/links/link-card";
 import { useCollections, deleteCollection } from "@/hooks/use-data";
-import { COLLECTION_PRESETS } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 
 import { AddLinksToCollectionDialog } from "@/components/links/add-links-to-collection-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  briefcase: Briefcase,
-  "graduation-cap": GraduationCap,
-  code: Code,
-  folder: FolderOpen,
-};
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface CollectionsPageProps {
   refreshKey: number;
@@ -40,6 +34,8 @@ export function CollectionsPage({
   triggerRefresh,
   openEditLink,
 }: CollectionsPageProps) {
+  const { requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
   const { collections, loading, refresh } = useCollections();
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -76,15 +72,21 @@ export function CollectionsPage({
     }
   };
 
+  const handleOpenCreate = () => {
+    if (requireAuth(
+      locale === "en" ? "Create New Collection" : "Membuat Koleksi Baru",
+      locale === "en" ? "Sign in or register for free to group and organize links into collections." : "Masuk atau daftar gratis untuk mengelompokkan dan mengorganisir tautan ke dalam folder koleksi."
+    )) {
+      return;
+    }
+    setCreateOpen(true);
+  };
+
   const handleCreate = async () => {
     if (!newName.trim()) return;
     await createCollection(newName.trim(), newColor);
     setNewName("");
     setCreateOpen(false);
-  };
-
-  const handlePreset = async (preset: (typeof COLLECTION_PRESETS)[0]) => {
-    await createCollection(preset.name, preset.color, preset.icon);
   };
 
   const executeDeleteCollection = async () => {
@@ -96,6 +98,12 @@ export function CollectionsPage({
   };
 
   const handleDeleteCollection = () => {
+    if (requireAuth(
+      locale === "en" ? "Manage Collections" : "Mengelola Koleksi",
+      locale === "en" ? "Sign in or register to edit or delete collection folders." : "Masuk atau daftar untuk mengubah atau menghapus folder koleksi."
+    )) {
+      return;
+    }
     setDeleteDialogOpen(true);
   };
 
@@ -105,79 +113,62 @@ export function CollectionsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Collections</h1>
-          <p className="text-muted-foreground mt-1">Organisasi link dalam folder</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("collections.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("collections.subtitle")}</p>
         </motion.div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
+        <Button onClick={handleOpenCreate} className="gap-1.5 rounded-xl text-xs font-semibold cursor-pointer">
           <Plus className="h-4 w-4" />
-          Buat Koleksi
+          <span>{t("collections.createBtn")}</span>
         </Button>
       </div>
 
+      {/* ── CLEAN & PROFESSIONAL EMPTY STATE ── */}
       {collections.length === 0 && !loading && (
-        <Card className="glass">
-          <CardHeader>
-            <CardTitle className="text-base">Quick Start</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Buat koleksi preset atau buat sendiri
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {COLLECTION_PRESETS.map((preset) => {
-                const Icon = iconMap[preset.icon] || FolderOpen;
-                return (
-                  <button
-                    key={preset.name}
-                    onClick={() => handlePreset(preset)}
-                    className="flex items-center gap-3 p-4 rounded-xl border border-border hover:border-primary/30 hover:bg-accent/50 transition-all cursor-pointer text-left"
-                  >
-                    <div
-                      className="p-2.5 rounded-lg"
-                      style={{ backgroundColor: `${preset.color}20`, color: preset.color }}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <span className="font-medium text-sm">{preset.name}</span>
-                  </button>
-                );
-              })}
+        <Card className="border border-border/80 bg-card rounded-2xl shadow-xs">
+          <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5 max-w-2xl">
+              <h2 className="text-base font-semibold text-foreground">{t("collections.emptyTitle")}</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {t("collections.emptyDesc")}
+              </p>
             </div>
+            <Button onClick={handleOpenCreate} className="gap-2 rounded-xl text-xs font-medium shrink-0 cursor-pointer">
+              <Plus className="h-4 w-4" />
+              <span>{t("collections.createNewBtn")}</span>
+            </Button>
           </CardContent>
         </Card>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {loading ? (
             [...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-muted/60 rounded-xl animate-pulse" />
             ))
           ) : (
             collections.map((col, i) => {
-              const Icon = iconMap[col.icon] || FolderOpen;
               return (
                 <motion.button
                   key={col.id}
+                  type="button"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: i * 0.04 }}
                   onClick={() => setSelectedId(col.id)}
-                  className={`flex items-center gap-3 w-full p-4 rounded-xl border transition-all cursor-pointer text-left ${
+                  className={`flex items-center gap-3 w-full p-3.5 rounded-xl border transition-all duration-150 active:scale-[0.98] cursor-pointer text-left touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     selectedId === col.id
-                      ? "border-primary/40 bg-primary/5"
-                      : "border-border hover:border-primary/20 hover:bg-accent/30"
+                      ? "border-primary/50 bg-primary/5 shadow-xs"
+                      : "border-border/70 bg-card hover:border-border hover:bg-muted/40"
                   }`}
                 >
                   <div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${col.color}20`, color: col.color }}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: col.color }}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{col.name}</p>
-                    <p className="text-xs text-muted-foreground">{col.linkCount} links</p>
+                    <p className="font-semibold text-sm truncate text-foreground">{col.name}</p>
+                    <p className="text-xs text-muted-foreground">{t("collections.linkCount", { count: col.linkCount })}</p>
                   </div>
                 </motion.button>
               );
@@ -187,62 +178,71 @@ export function CollectionsPage({
 
         <div className="lg:col-span-2">
           {selected ? (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">{selected.name}</h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Atur Isi Koleksi
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/80">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full shrink-0"
+                    style={{ backgroundColor: selected.color }}
+                  />
+                  <div>
+                    <h2 className="font-bold text-base text-foreground">{selected.name}</h2>
+                    <p className="text-xs text-muted-foreground">{t("collections.savedLinksCount", { count: collectionLinks.length })}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)} className="rounded-lg text-xs h-8">
+                    {t("collections.manageLinks")}
                   </Button>
-                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDeleteCollection}>
+                  <Button variant="ghost" size="icon" onClick={handleDeleteCollection} className="text-destructive hover:bg-destructive/10 rounded-lg h-8 w-8">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
+
               {loadingLinks ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-36 bg-muted rounded-xl animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
                   ))}
                 </div>
-              ) : collectionLinks.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              ) : collectionLinks.length === 0 ? (
+                <Card className="border-dashed rounded-xl min-h-[220px] flex items-center justify-center bg-card/50">
+                  <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                    <p className="text-xs font-medium text-muted-foreground">{t("collections.emptyInCollection")}</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 gap-1.5 rounded-lg text-xs"
+                      onClick={() => setManageLinksOpen(true)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>{t("common.add")}</span>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {collectionLinks.map((link, i) => (
                     <LinkCard
                       key={link.id}
                       link={link}
                       index={i}
-                      collectionId={selectedId ?? undefined}
+                      collectionId={selected.id}
                       onUpdate={() => {
                         triggerRefresh();
+                        refresh();
                       }}
                       onEdit={openEditLink}
                     />
                   ))}
                 </div>
-              ) : (
-                <div className="flex justify-center py-8">
-                  <Card className="glass border-dashed max-w-sm w-full">
-                    <CardContent className="py-12 text-center">
-                      <FolderOpen className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Koleksi ini masih kosong.
-                      </p>
-                      <Button onClick={() => setManageLinksOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Tambah Tautan
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
               )}
             </div>
           ) : (
-            <Card className="glass border-dashed h-full min-h-[300px]">
-              <CardContent className="flex flex-col items-center justify-center h-full py-16">
-                <FolderOpen className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground text-sm">Pilih koleksi untuk melihat isinya</p>
+            <Card className="border-dashed rounded-xl h-full min-h-[260px] flex items-center justify-center bg-card/30">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                <p className="text-xs font-medium">{t("collections.selectCollectionHint")}</p>
               </CardContent>
             </Card>
           )}
@@ -250,36 +250,42 @@ export function CollectionsPage({
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[420px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Buat Koleksi Baru</DialogTitle>
-            <DialogDescription>Organisasi link dalam folder kustom</DialogDescription>
+            <DialogTitle className="text-base font-bold">{t("collections.modalCreateTitle")}</DialogTitle>
+            <DialogDescription className="text-xs">{t("collections.modalCreateDesc")}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="col-name">Nama Koleksi</Label>
+          <div className="space-y-4 pt-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="col-name" className="text-xs font-semibold">{t("collections.nameLabel")}</Label>
               <Input
                 id="col-name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Magang 2026"
+                placeholder={t("collections.namePlaceholder")}
+                className="rounded-xl text-xs h-9"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="col-color">Warna</Label>
-              <Input
-                id="col-color"
-                type="color"
-                value={newColor}
-                onChange={(e) => setNewColor(e.target.value)}
-                className="h-10 w-full cursor-pointer"
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="col-color" className="text-xs font-semibold">{t("collections.colorLabel")}</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="col-color"
+                  type="color"
+                  value={newColor}
+                  onChange={(e) => setNewColor(e.target.value)}
+                  className="h-8 w-16 p-0.5 rounded-lg cursor-pointer"
+                />
+                <span className="text-xs text-muted-foreground">{t("collections.colorDesc")}</span>
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                Batal
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
+              <Button variant="outline" size="sm" onClick={() => setCreateOpen(false)} className="rounded-xl text-xs">
+                {t("common.cancel")}
               </Button>
-              <Button onClick={handleCreate}>Buat</Button>
+              <Button size="sm" onClick={handleCreate} className="rounded-xl text-xs font-medium">
+                {t("collections.createBtn")}
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -298,8 +304,8 @@ export function CollectionsPage({
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Hapus Koleksi"
-        description="Hapus koleksi ini secara permanen? Semua tautan di dalamnya tidak akan terhapus, hanya koleksinya saja yang hilang."
+        title={t("collections.deleteConfirmTitle")}
+        description={t("collections.deleteConfirmDesc")}
         onConfirm={executeDeleteCollection}
       />
     </div>

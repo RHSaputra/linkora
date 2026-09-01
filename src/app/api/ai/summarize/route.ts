@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/ai-cache";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -44,13 +45,16 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-      ],
-      config: { responseMimeType: "application/json" }
-    });
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
+        ],
+        config: { responseMimeType: "application/json" }
+      }),
+      30000
+    );
 
     let parsedResponse: { id: string, aiSummary: string }[] = [];
     try {

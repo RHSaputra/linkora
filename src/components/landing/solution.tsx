@@ -3,79 +3,86 @@
 import { useRef, useState } from "react"
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
 import { Link2, FileEdit, GraduationCap, Search, BrainCircuit, CalendarClock } from "lucide-react"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 // ── Data 6 Card Solusi — Warna Senada & Harmonis dengan Brand Linkora ──
-const solutions = [
+const getSolutions = (locale: string) => [
   {
     title: "Smart Link Vault",
-    description: "Simpan semua tautan penting dengan metadata otomatis tanpa takut terselip atau rusak.",
+    description: locale === "en" 
+      ? "Save every essential link with automatic metadata fetching without worrying about losing them." 
+      : "Simpan semua tautan penting dengan metadata otomatis tanpa takut terselip atau rusak.",
     icon: Link2,
     color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-500/30",
     activeBorder: "border-2 border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-950/40 ring-2 ring-blue-500/20",
     activeText: "text-blue-600 dark:text-blue-400",
     topBar: "via-blue-500",
-    // Arah Masuk: Kiri Atas
     initialOffset: { x: -120, y: -50 },
   },
   {
-    title: "Catatan & Knowledge Hub",
-    description: "Editor kaya fitur dengan Word-style image management, tabel, checklist, dan format profesional.",
+    title: locale === "en" ? "Notes & Knowledge Hub" : "Catatan & Knowledge Hub",
+    description: locale === "en"
+      ? "Rich document editor featuring Word-style image management, tables, checklists, and professional formatting."
+      : "Editor kaya fitur dengan Word-style image management, tabel, checklist, dan format profesional.",
     icon: FileEdit,
     color: "text-indigo-600 dark:text-indigo-400",
     bg: "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-200 dark:border-indigo-500/30",
     activeBorder: "border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 ring-2 ring-indigo-500/20",
     activeText: "text-indigo-600 dark:text-indigo-400",
     topBar: "via-indigo-500",
-    // Arah Masuk: Atas Tengah
     initialOffset: { x: 0, y: -70 },
   },
   {
     title: "Opportunity Tracker",
-    description: "Lacak magang, beasiswa, lomba, dan peluang karir dengan status tahapan terstruktur.",
+    description: locale === "en"
+      ? "Track internships, scholarships, competitions, and career milestones with clear status workflows."
+      : "Lacak magang, beasiswa, lomba, dan peluang karir dengan status tahapan terstruktur.",
     icon: GraduationCap,
     color: "text-violet-600 dark:text-violet-400",
     bg: "bg-violet-50 dark:bg-violet-500/15 border-violet-200 dark:border-violet-500/30",
     activeBorder: "border-2 border-violet-500 dark:border-violet-400 bg-violet-50/80 dark:bg-violet-950/40 ring-2 ring-violet-500/20",
     activeText: "text-violet-600 dark:text-violet-400",
     topBar: "via-violet-500",
-    // Arah Masuk: Kanan Atas
     initialOffset: { x: 120, y: -50 },
   },
   {
     title: "Smart Semantic Search",
-    description: "Temukan kembali link & catatan lama dalam hitungan milidetik hanya dengan kata kunci alami.",
+    description: locale === "en"
+      ? "Find archived links & notes in milliseconds using intuitive, natural language keywords."
+      : "Temukan kembali link & catatan lama dalam hitungan milidetik hanya dengan kata kunci alami.",
     icon: Search,
     color: "text-cyan-600 dark:text-cyan-400",
     bg: "bg-cyan-50 dark:bg-cyan-500/15 border-cyan-200 dark:border-cyan-500/30",
     activeBorder: "border-2 border-cyan-500 dark:border-cyan-400 bg-cyan-50/80 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20",
     activeText: "text-cyan-600 dark:text-cyan-400",
     topBar: "via-cyan-500",
-    // Arah Masuk: Kiri Bawah
     initialOffset: { x: -120, y: 50 },
   },
   {
-    title: "AI Summary & Wawasan",
-    description: "Ekstrak ringkasan intisari otomatis dari konten panjang langsung di dalam dashboard.",
+    title: locale === "en" ? "AI Summaries & Insights" : "AI Summary & Wawasan",
+    description: locale === "en"
+      ? "Extract key summaries and action items automatically from lengthy webpages right inside your dashboard."
+      : "Ekstrak ringkasan intisari otomatis dari konten panjang langsung di dalam dashboard.",
     icon: BrainCircuit,
     color: "text-purple-600 dark:text-purple-400",
     bg: "bg-purple-50 dark:bg-purple-500/15 border-purple-200 dark:border-purple-500/30",
     activeBorder: "border-2 border-purple-500 dark:border-purple-400 bg-purple-50/80 dark:bg-purple-950/40 ring-2 ring-purple-500/20",
     activeText: "text-purple-600 dark:text-purple-400",
     topBar: "via-purple-500",
-    // Arah Masuk: Bawah Tengah
     initialOffset: { x: 0, y: 70 },
   },
   {
-    title: "Deadline & Pengingat",
-    description: "Jangan pernah melewatkan batas waktu pendaftaran atau deadline tugas penting.",
+    title: locale === "en" ? "Deadlines & Reminders" : "Deadline & Pengingat",
+    description: locale === "en"
+      ? "Never miss an important registration deadline or project due date again."
+      : "Jangan pernah melewatkan batas waktu pendaftaran atau deadline tugas penting.",
     icon: CalendarClock,
     color: "text-sky-600 dark:text-sky-400",
     bg: "bg-sky-50 dark:bg-sky-500/15 border-sky-200 dark:border-sky-500/30",
     activeBorder: "border-2 border-sky-500 dark:border-sky-400 bg-sky-50/80 dark:bg-sky-950/40 ring-2 ring-sky-500/20",
     activeText: "text-sky-600 dark:text-sky-400",
     topBar: "via-sky-500",
-    // Arah Masuk: Kanan Bawah
     initialOffset: { x: 120, y: 50 },
   },
 ]
@@ -83,24 +90,15 @@ const solutions = [
 export function Solution() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeCardIndex, setActiveCardIndex] = useState<number>(-1)
+  const { t, locale } = useTranslation()
+
+  const solutions = getSolutions(locale)
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   })
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // SCROLL TIMELINE: KONTEN TETAP STAY 100% & TIDAK PERNAH HILANG
-  //
-  // Step Denyut Berurutan (Card 1 s/d 6):
-  // - 0.10 s/d 0.24 : Card 1 Berdenyut Tegas (Smart Link Vault)
-  // - 0.24 s/d 0.38 : Card 2 Berdenyut Tegas (Catatan Hub)
-  // - 0.38 s/d 0.52 : Card 3 Berdenyut Tegas (Opportunity Tracker)
-  // - 0.52 s/d 0.66 : Card 4 Berdenyut Tegas (Semantic Search)
-  // - 0.66 s/d 0.80 : Card 5 Berdenyut Tegas (AI Summary)
-  // - 0.80 s/d 0.94 : Card 6 Berdenyut Tegas (Deadline & Reminder)
-  // - 0.94 s/d 1.00 : Semua Konten Tetap Stay di Layar, Lanjut ke Session Baru
-  // ─────────────────────────────────────────────────────────────────────────
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (latest >= 0.10 && latest < 0.24) {
       setActiveCardIndex(0)
@@ -120,13 +118,19 @@ export function Solution() {
   })
 
   return (
-    <section id="solusi" ref={containerRef} className="relative h-[350vh] bg-background">
-      {/* ── Viewport Sticky: Konten Selalu Terlihat & Tetap Stay ── */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center py-[3vh] sm:py-[4vh]">
-        <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-[94vh] w-full">
+    <section 
+      id="solusi" 
+      ref={containerRef}
+      className="relative w-full h-[350vh] bg-slate-50 dark:bg-background"
+    >
+      <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center">
+        {/* Glow ambient background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-primary/10 rounded-full blur-[130px] pointer-events-none z-0" />
+
+        <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
-          {/* ── Judul Section: Meluncur Mulus dari Kiri & Kanan, Lalu TETAP STAY 100% ── */}
-          <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6 overflow-hidden py-1">
+          {/* Header Section */}
+          <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 md:mb-3 text-slate-900 dark:text-foreground flex flex-col items-center gap-1">
               <motion.span
                 initial={{ x: -140 }}
@@ -140,7 +144,7 @@ export function Solution() {
                 }}
                 className="inline-block"
               >
-                Satu Ekosistem Untuk Semua
+                {locale === "en" ? "One Unified Ecosystem for All" : "Satu Ekosistem Untuk Semua"}
               </motion.span>
               <motion.span
                 initial={{ x: 140 }}
@@ -155,7 +159,7 @@ export function Solution() {
                 }}
                 className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400"
               >
-                Kebutuhan Produktivitas Anda
+                {locale === "en" ? "Your Productivity Needs" : "Kebutuhan Produktivitas Anda"}
               </motion.span>
             </h2>
             <motion.p
@@ -170,11 +174,13 @@ export function Solution() {
               }}
               className="text-sm md:text-base text-slate-600 dark:text-muted-foreground"
             >
-              Didesain khusus untuk mahasiswa, pencari kerja, dan profesional yang ingin ruang kerja digital yang rapi dan terorganisir.
+              {locale === "en"
+                ? "Tailored for students, job seekers, and professionals who demand a clean, organized digital workspace."
+                : "Didesain khusus untuk mahasiswa, pencari kerja, dan profesional yang ingin ruang kerja digital yang rapi dan terorganisir."}
             </motion.p>
           </div>
 
-          {/* ── Grid 6 Cards: Ukuran Konsisten 100% Seragam & Smooth Entrance ── */}
+          {/* Grid 6 Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4 max-w-6xl mx-auto w-full items-stretch">
             {solutions.map((item, idx) => {
               const Icon = item.icon
@@ -195,7 +201,6 @@ export function Solution() {
                   }}
                   className="h-full flex flex-col"
                 >
-                  {/* ── Card Body: Tinggi Seragam & Sorotan Denyut Empuk ── */}
                   <motion.div
                     animate={
                       isActive

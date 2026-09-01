@@ -11,7 +11,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const { id } = await params;
-    const note = await prisma.note.findUnique({
+    const note = await prisma.note.findFirst({
       where: { id, userId: session.user.id },
       include: {
         folder: true,
@@ -42,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { title, content, folderId, isFavorite, isPinned, status, reminderAt, expectedVersion, documentSettings } = body;
 
     // Verify ownership
-    const existing = await prisma.note.findUnique({
+    const existing = await prisma.note.findFirst({
       where: { id, userId: session.user.id },
     });
 
@@ -83,7 +83,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (status !== undefined) updateData.status = status;
-    if (reminderAt !== undefined) updateData.reminderAt = reminderAt;
+    if (reminderAt !== undefined) updateData.reminderAt = reminderAt ? new Date(reminderAt) : null;
     if (documentSettings !== undefined) updateData.documentSettings = typeof documentSettings === 'string' ? documentSettings : JSON.stringify(documentSettings);
 
     // Increment version when content or title changes
@@ -104,11 +104,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       if (documentSettings !== undefined) {
         const settingsStr = typeof documentSettings === 'string' ? documentSettings : JSON.stringify(documentSettings);
         try {
-          await prisma.$executeRawUnsafe(
-            `UPDATE Note SET documentSettings = ? WHERE id = ?`,
-            settingsStr,
-            id
-          );
+          await prisma.$executeRaw`UPDATE "Note" SET "documentSettings" = ${settingsStr} WHERE "id" = ${id}`;
         } catch (rawErr) {
           console.error("Raw documentSettings update error:", rawErr);
         }
@@ -139,7 +135,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { searchParams } = new URL(req.url);
     const permanent = searchParams.get("permanent") === "true";
 
-    const existing = await prisma.note.findUnique({
+    const existing = await prisma.note.findFirst({
       where: { id, userId: session.user.id },
     });
 

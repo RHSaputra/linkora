@@ -213,6 +213,9 @@ export const AdvancedImage = Node.create({
 
         dom.setAttribute("data-align", align);
         dom.setAttribute("data-wrap", wrap);
+        if (attrs.src && img.src !== attrs.src) {
+          img.src = attrs.src;
+        }
         img.alt = attrs.alt || "";
         img.title = attrs.title || "";
 

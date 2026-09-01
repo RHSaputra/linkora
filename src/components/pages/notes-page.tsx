@@ -38,12 +38,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotesList, useNoteFolders, invalidateCache, setCachedData } from "@/hooks/use-data";
 import { QuickReminderPopover } from "@/components/reminders/quick-reminder-popover";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 const COLOR_OPTIONS = [
   "#6366f1", // Indigo
@@ -62,6 +64,8 @@ type FilterType = "all" | "pinned" | "favorites" | "trash";
 export function NotesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
 
   // Active filters
   const [activeFilter, setActiveFilter] = useState<FilterType>(
@@ -117,6 +121,9 @@ export function NotesPage() {
   const { folders, refresh: fetchFolders, setFolders } = useNoteFolders();
 
   const createNote = async (initialFolderId?: string | null) => {
+    if (requireAuth(t("notes.newNoteBtn"), t("auth.authRequiredDesc"))) {
+      return;
+    }
     setCreatingNote(true);
     try {
       const targetFolder = initialFolderId || activeFolderId || null;
@@ -124,7 +131,7 @@ export function NotesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "Catatan Baru",
+          title: locale === "en" ? "New Note" : "Catatan Baru",
           folderId: targetFolder,
         }),
       });
@@ -232,6 +239,12 @@ export function NotesPage() {
   };
 
   const handleOpenFolderDialog = (folder?: any) => {
+    if (requireAuth(
+      locale === "en" ? "Manage Note Folders" : "Mengelola Folder Catatan",
+      locale === "en" ? "Sign in or register for free to create and manage note folders." : "Masuk atau daftar gratis untuk membuat dan mengatur folder catatan Anda."
+    )) {
+      return;
+    }
     if (folder) {
       setEditingFolder(folder);
       setFolderName(folder.name);
@@ -308,10 +321,10 @@ export function NotesPage() {
             <span className="p-2 rounded-2xl bg-primary/10 text-primary border border-primary/20">
               <FileText className="w-7 h-7" />
             </span>
-            Catatan Pribadi
+            {t("notes.title")}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Simpan ide, draft artikel, daftar tugas, dan catatan penting Anda dalam satu brankas.
+            {t("notes.subtitle")}
           </p>
         </div>
 
@@ -320,7 +333,7 @@ export function NotesPage() {
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cari catatan..."
+              placeholder={t("notes.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-sm h-11"
@@ -341,7 +354,7 @@ export function NotesPage() {
             className="gap-2 rounded-xl shadow-md h-11 px-5 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>{creatingNote ? "Membuat..." : "Catatan Baru"}</span>
+            <span>{creatingNote ? t("common.loading") : t("notes.newNoteBtn")}</span>
           </Button>
         </div>
       </div>
@@ -357,7 +370,7 @@ export function NotesPage() {
               <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">Total Catatan</p>
+              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.allNotes")}</p>
             </div>
           </div>
 
@@ -369,7 +382,7 @@ export function NotesPage() {
               <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.filter((n) => n.isFavorite).length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">Catatan Favorit</p>
+              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.favorites")}</p>
             </div>
           </div>
 
@@ -381,7 +394,7 @@ export function NotesPage() {
               <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.filter((n) => n.isPinned).length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">Disematkan</p>
+              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.pinned")}</p>
             </div>
           </div>
 
@@ -409,21 +422,22 @@ export function NotesPage() {
         {/* Main Category Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {[
-            { id: "all", label: "Semua Catatan", icon: Layers },
-            { id: "pinned", label: "Disematkan", icon: Pin },
-            { id: "favorites", label: "Favorit", icon: Star },
-            { id: "trash", label: "Sampah", icon: Trash2 },
+            { id: "all", label: t("notes.allNotes"), icon: Layers },
+            { id: "pinned", label: t("notes.pinned"), icon: Pin },
+            { id: "favorites", label: t("notes.favorites"), icon: Star },
+            { id: "trash", label: t("notes.trash"), icon: Trash2 },
           ].map((tab) => {
             const isActive = activeFilter === tab.id && !activeFolderId;
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => {
                   setActiveFilter(tab.id as FilterType);
                   setActiveFolderId(null);
                 }}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shrink-0 cursor-pointer",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-95 shrink-0 cursor-pointer touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "glass-panel text-muted-foreground hover:text-foreground hover:bg-foreground/5 border-border/40"
@@ -545,17 +559,17 @@ export function NotesPage() {
               </div>
               <h3 className="text-xl font-bold font-heading mb-1 text-foreground">
                 {search
-                  ? "Tidak ada catatan yang cocok"
+                  ? (locale === "en" ? "No matching notes" : "Tidak ada catatan yang cocok")
                   : isTrashView
-                  ? "Sampah kosong"
-                  : "Belum ada catatan"}
+                  ? (locale === "en" ? "Trash is empty" : "Sampah kosong")
+                  : (locale === "en" ? "No notes yet" : "Belum ada catatan")}
               </h3>
               <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
                 {search
-                  ? `Tidak menemukan catatan dengan kata kunci "${search}".`
+                  ? (locale === "en" ? `No notes found matching "${search}".` : `Tidak menemukan catatan dengan kata kunci "${search}".`)
                   : isTrashView
-                  ? "Semua catatan yang dihapus akan muncul di sini."
-                  : "Mulai tuangkan ide, rangkuman, dan tugas Anda dalam catatan baru."}
+                  ? (locale === "en" ? "All deleted notes will appear here." : "Semua catatan yang dihapus akan muncul di sini.")
+                  : (locale === "en" ? "Capture ideas, summaries, and tasks in a new note." : "Mulai tuangkan ide, rangkuman, dan tugas Anda dalam catatan baru.")}
               </p>
               {!isTrashView && (
                 <Button
@@ -621,7 +635,7 @@ export function NotesPage() {
                                   ? "text-yellow-500 hover:bg-yellow-500/10"
                                   : "text-muted-foreground/40 hover:text-yellow-500 opacity-0 group-hover:opacity-100"
                               )}
-                              title={note.isFavorite ? "Hapus Favorit" : "Favorit"}
+                              title={note.isFavorite ? (locale === "en" ? "Remove Favorite" : "Hapus Favorit") : (locale === "en" ? "Add to Favorites" : "Favorit")}
                             >
                               <Star
                                 className={cn(
@@ -750,20 +764,20 @@ export function NotesPage() {
         onOpenChange={(open) => !open && setDeleteNoteTarget(null)}
         title={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
-            ? "Hapus Catatan Permanen"
-            : "Pindahkan ke Sampah"
+            ? (locale === "en" ? "Permanently Delete Note" : "Hapus Catatan Permanen")
+            : (locale === "en" ? "Move to Trash" : "Pindahkan ke Sampah")
         }
         description={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
-            ? "Catatan ini akan dihapus selamanya dan tidak dapat dipulihkan."
-            : "Catatan ini akan dipindahkan ke folder Sampah. Anda masih dapat memulihkannya kapan saja."
+            ? (locale === "en" ? "This note will be permanently deleted and cannot be recovered." : "Catatan ini akan dihapus selamanya dan tidak dapat dipulihkan.")
+            : (locale === "en" ? "This note will be moved to Trash. You can still restore it anytime." : "Catatan ini akan dipindahkan ke folder Sampah. Anda masih dapat memulihkannya kapan saja.")
         }
         confirmText={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
-            ? "Hapus Permanen"
-            : "Pindahkan ke Sampah"
+            ? (locale === "en" ? "Delete Permanently" : "Hapus Permanen")
+            : (locale === "en" ? "Move to Trash" : "Pindahkan ke Sampah")
         }
-        cancelText="Batal"
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={confirmDeleteNote}
       />
@@ -772,10 +786,10 @@ export function NotesPage() {
       <ConfirmDialog
         open={!!deleteFolderTarget}
         onOpenChange={(open) => !open && setDeleteFolderTarget(null)}
-        title="Hapus Folder Catatan"
-        description="Apakah Anda yakin ingin menghapus folder ini? Catatan di dalamnya tidak akan terhapus, melainkan dipindahkan menjadi Tanpa Folder."
-        confirmText="Hapus Folder"
-        cancelText="Batal"
+        title={locale === "en" ? "Delete Note Folder" : "Hapus Folder Catatan"}
+        description={locale === "en" ? "Are you sure you want to delete this folder? Notes inside will not be deleted, but moved to Uncategorized." : "Apakah Anda yakin ingin menghapus folder ini? Catatan di dalamnya tidak akan terhapus, melainkan dipindahkan menjadi Tanpa Folder."}
+        confirmText={locale === "en" ? "Delete Folder" : "Hapus Folder"}
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={confirmDeleteFolder}
       />
@@ -785,16 +799,18 @@ export function NotesPage() {
         <DialogContent className="sm:max-w-md glass-panel">
           <DialogHeader>
             <DialogTitle>
-              {editingFolder ? "Edit Folder Catatan" : "Buat Folder Catatan"}
+              {editingFolder
+                ? (locale === "en" ? "Edit Note Folder" : "Edit Folder Catatan")
+                : (locale === "en" ? "Create Note Folder" : "Buat Folder Catatan")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveFolder} className="space-y-4 py-2">
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
-                Nama Folder
+                {locale === "en" ? "Folder Name" : "Nama Folder"}
               </label>
               <Input
-                placeholder="Contoh: Pekerjaan, Ide Proyek, Pribadi..."
+                placeholder={locale === "en" ? "e.g., Work, Project Ideas, Personal..." : "Contoh: Pekerjaan, Ide Proyek, Pribadi..."}
                 value={folderName}
                 onChange={(e) => setFolderName(e.target.value)}
                 autoFocus
@@ -804,7 +820,7 @@ export function NotesPage() {
 
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-2 block">
-                Pilih Warna
+                {locale === "en" ? "Choose Color" : "Pilih Warna"}
               </label>
               <div className="flex items-center gap-2 flex-wrap">
                 {COLOR_OPTIONS.map((color) => (
@@ -813,12 +829,13 @@ export function NotesPage() {
                     type="button"
                     onClick={() => setFolderColor(color)}
                     className={cn(
-                      "w-7 h-7 rounded-full transition-transform cursor-pointer flex items-center justify-center",
+                      "w-7 h-7 rounded-full transition-all duration-150 active:scale-95 cursor-pointer flex items-center justify-center touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                       folderColor === color
-                        ? "scale-125 ring-2 ring-foreground"
+                        ? "scale-110 ring-2 ring-foreground shadow-sm"
                         : "hover:scale-110"
                     )}
                     style={{ backgroundColor: color }}
+                    aria-label={`Pilih warna ${color}`}
                   >
                     {folderColor === color && (
                       <Check className="w-3.5 h-3.5 text-white" />
@@ -834,10 +851,14 @@ export function NotesPage() {
                 variant="outline"
                 onClick={() => setFolderDialogOpen(false)}
               >
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={savingFolder || !folderName.trim()}>
-                {savingFolder ? "Menyimpan..." : editingFolder ? "Simpan Perubahan" : "Buat Folder"}
+                {savingFolder
+                  ? (locale === "en" ? "Saving..." : "Menyimpan...")
+                  : editingFolder
+                  ? (locale === "en" ? "Save Changes" : "Simpan Perubahan")
+                  : (locale === "en" ? "Create Folder" : "Buat Folder")}
               </Button>
             </DialogFooter>
           </form>

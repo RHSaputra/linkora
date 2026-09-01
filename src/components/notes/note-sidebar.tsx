@@ -13,10 +13,12 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 export function NoteSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useTranslation();
   const [folders, setFolders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +45,7 @@ export function NoteSidebar() {
       const res = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Catatan Baru" }),
+        body: JSON.stringify({ title: t("notes.untitledNote") }),
       });
       const data = await res.json();
       if (data.id) {
@@ -55,23 +57,24 @@ export function NoteSidebar() {
   };
 
   const navItems = [
-    { href: "/notes", label: "Semua Catatan", icon: Layers },
-    { href: "/notes?filter=pinned", label: "Disematkan", icon: Pin },
-    { href: "/notes?filter=favorites", label: "Favorit", icon: Star },
-    { href: "/notes?filter=trash", label: "Sampah", icon: Trash2 },
+    { href: "/notes", label: t("notes.allNotes"), icon: Layers },
+    { href: "/notes?filter=pinned", label: t("notes.pinned"), icon: Pin },
+    { href: "/notes?filter=favorites", label: t("notes.favorites"), icon: Star },
+    { href: "/notes?filter=trash", label: t("notes.trash"), icon: Trash2 },
   ];
 
   return (
     <aside className="w-64 border-r border-border/50 bg-card/30 flex flex-col h-full rounded-2xl p-2">
       <div className="p-3 flex items-center justify-between">
         <h2 className="text-sm font-bold flex items-center gap-2 text-foreground font-heading">
-          <FileText className="w-4 h-4 text-primary" /> Catatan
+          <FileText className="w-4 h-4 text-primary" /> {t("notes.title")}
         </h2>
         <Button
           variant="ghost"
           size="icon"
           onClick={createNote}
-          className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-xl"
+          className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-xl cursor-pointer"
+          title={t("notes.newNoteBtn")}
         >
           <Plus className="w-4 h-4" />
         </Button>
@@ -105,15 +108,15 @@ export function NoteSidebar() {
         {/* Folders */}
         <div>
           <div className="px-3 mb-2 flex items-center justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            <span>Folder</span>
+            <span>{t("notes.folders")}</span>
           </div>
           <div className="space-y-0.5">
             {loading ? (
               <div className="px-3 text-xs text-muted-foreground animate-pulse">
-                Memuat folder...
+                {t("notes.loadingFolders")}
               </div>
             ) : folders.length === 0 ? (
-              <div className="px-3 text-xs text-muted-foreground">Belum ada folder</div>
+              <div className="px-3 text-xs text-muted-foreground">{t("notes.noFolders")}</div>
             ) : (
               folders.map((folder) => (
                 <Link

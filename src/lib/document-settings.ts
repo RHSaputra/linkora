@@ -132,6 +132,10 @@ export function mmToPt(mm: number): number {
   return (mm / MM_PER_INCH) * 72;
 }
 
+// ─── Header & Footer Zone Dimensions ────────────────────────
+export const HEADER_ZONE_HEIGHT_MM = 10;
+export const FOOTER_ZONE_HEIGHT_MM = 10;
+
 // ─── Effective Page Dimensions ──────────────────────────────
 
 export interface EffectivePageDimensions {
@@ -139,10 +143,16 @@ export interface EffectivePageDimensions {
   pageWidthMm: number;
   /** Total page height in mm */
   pageHeightMm: number;
-  /** Content area width in mm */
+  /** Content area width in mm (between left & right margins) */
   contentWidthMm: number;
-  /** Content area height in mm */
+  /** Content area height in mm (between top & bottom margins) */
   contentHeightMm: number;
+  /** Dedicated Header zone height in mm */
+  headerHeightMm: number;
+  /** Dedicated Footer zone height in mm */
+  footerHeightMm: number;
+  /** Usable body content height in mm (excluding margins, header, and footer) */
+  bodyHeightMm: number;
   /** Total page width in px */
   pageWidthPx: number;
   /** Total page height in px */
@@ -151,6 +161,12 @@ export interface EffectivePageDimensions {
   contentWidthPx: number;
   /** Content area height in px */
   contentHeightPx: number;
+  /** Header zone height in px */
+  headerHeightPx: number;
+  /** Footer zone height in px */
+  footerHeightPx: number;
+  /** Usable body content height in px */
+  bodyHeightPx: number;
 }
 
 export function getEffectivePageDimensions(
@@ -162,20 +178,41 @@ export function getEffectivePageDimensions(
   const pageWidthMm = isLandscape ? paper.heightMm : paper.widthMm;
   const pageHeightMm = isLandscape ? paper.widthMm : paper.heightMm;
 
-  const contentWidthMm =
-    pageWidthMm - settings.margins.left - settings.margins.right;
-  const contentHeightMm =
-    pageHeightMm - settings.margins.top - settings.margins.bottom;
+  // Body content area in mm (between margins)
+  const contentWidthMm = Math.max(
+    30,
+    pageWidthMm - settings.margins.left - settings.margins.right
+  );
+  const contentHeightMm = Math.max(
+    30,
+    pageHeightMm - settings.margins.top - settings.margins.bottom
+  );
+
+  // Outer Header & Footer occupy the top & bottom margin regions
+  const headerHeightMm = settings.margins.top;
+  const footerHeightMm = settings.margins.bottom;
+  const bodyHeightMm = contentHeightMm;
+
+  const headerHeightPx = mmToPx(headerHeightMm);
+  const footerHeightPx = mmToPx(footerHeightMm);
+  const contentHeightPx = mmToPx(contentHeightMm);
+  const bodyHeightPx = contentHeightPx;
 
   return {
     pageWidthMm,
     pageHeightMm,
     contentWidthMm,
     contentHeightMm,
+    headerHeightMm,
+    footerHeightMm,
+    bodyHeightMm,
     pageWidthPx: mmToPx(pageWidthMm),
     pageHeightPx: mmToPx(pageHeightMm),
     contentWidthPx: mmToPx(contentWidthMm),
-    contentHeightPx: mmToPx(contentHeightMm),
+    contentHeightPx,
+    headerHeightPx,
+    footerHeightPx,
+    bodyHeightPx,
   };
 }
 

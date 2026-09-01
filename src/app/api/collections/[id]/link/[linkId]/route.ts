@@ -13,7 +13,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     const { id, linkId } = await params;
 
     // Verify collection belongs to user
-    const collection = await prisma.collection.findUnique({
+    const collection = await prisma.collection.findFirst({
       where: { id, userId: session.user.id },
     });
     if (!collection) {

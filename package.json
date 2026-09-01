@@ -8,6 +8,8 @@
     "start": "cross-env NODE_OPTIONS=--max-http-header-size=1048576 next start",
     "lint": "next lint",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "test:email": "tsx scripts/test-email-auth.ts",
     "postinstall": "prisma generate"

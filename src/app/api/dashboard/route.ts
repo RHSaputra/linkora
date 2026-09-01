@@ -11,7 +11,16 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const emptyStats: DashboardStats = {
+        totalLinks: 0,
+        favoriteCount: 0,
+        categoryStats: [],
+        recentLinks: [],
+        favoriteLinks: [],
+        recentActivity: [],
+        upcomingReminders: [],
+      };
+      return NextResponse.json(emptyStats);
     }
     const userId = session.user.id;
 

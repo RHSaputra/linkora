@@ -1,17 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, CheckCircle, Loader2 } from "lucide-react";
 import { SerializedLink } from "@/lib/types";
-import { invalidateCache } from "@/hooks/use-data";
+import { invalidateCache, dispatchRefresh } from "@/hooks/use-data";
 
 export function LikoSuggestionNotification() {
   const [suggestion, setSuggestion] = useState<{
     link: SerializedLink;
-    status: "idle" | "organizing" | "success" | "error";
+    status: "idle" | "organizing" | "success" | "error" | "already_categorized";
     assignedCategory?: string;
   } | null>(null);
+
+  const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimer = () => {
+    if (autoDismissTimerRef.current) {
+      clearTimeout(autoDismissTimerRef.current);
+      autoDismissTimerRef.current = null;
+    }
+  };
 
   useEffect(() => {
     const handleLinkAdded = (e: Event) => {
@@ -19,25 +28,47 @@ export function LikoSuggestionNotification() {
       const link = customEvent.detail?.link;
 
       if (link) {
+        clearTimer();
         // Check if link is uncategorized or "Custom"
-        const needsCategorizing = !link.category || link.category === "Custom" || link.category === "Uncategorized";
+        const needsCategorizing =
+          !link.category ||
+          link.category === "Custom" ||
+          link.category === "Uncategorized" ||
+          link.category.trim() === "";
+
         if (needsCategorizing) {
-          // Trigger Liko suggestion
+          // Trigger Liko suggestion to organize
           setSuggestion({
             link,
             status: "idle",
           });
+        } else {
+          // Link is already categorized — show Liko confirmation popup
+          setSuggestion({
+            link,
+            status: "already_categorized",
+            assignedCategory: link.category,
+          });
+
+          // Auto-close categorized notification after 4 seconds
+          autoDismissTimerRef.current = setTimeout(() => {
+            setSuggestion(null);
+          }, 4000);
         }
       }
     };
 
     window.addEventListener("liko-link-added", handleLinkAdded);
-    return () => window.removeEventListener("liko-link-added", handleLinkAdded);
+    return () => {
+      window.removeEventListener("liko-link-added", handleLinkAdded);
+      clearTimer();
+    };
   }, []);
 
   const handleOrganizeNow = async () => {
     if (!suggestion?.link?.id) return;
 
+    clearTimer();
     setSuggestion((prev) => (prev ? { ...prev, status: "organizing" } : null));
 
     // Broadcast organizing state to sync animations in main dashboard
@@ -60,25 +91,26 @@ export function LikoSuggestionNotification() {
         invalidateCache("/api/links");
         invalidateCache("/api/dashboard");
         invalidateCache("/api/collections");
-        window.dispatchEvent(new Event("refreshData"));
+        dispatchRefresh(["links", "dashboard", "collections"]);
 
         // Auto close after 4 seconds
-        setTimeout(() => {
+        autoDismissTimerRef.current = setTimeout(() => {
           setSuggestion(null);
         }, 4000);
       } else {
         setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-        setTimeout(() => setSuggestion(null), 3500);
+        autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
       }
     } catch {
       setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-      setTimeout(() => setSuggestion(null), 3500);
+      autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
     } finally {
       window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: false } }));
     }
   };
 
   const handleDismiss = () => {
+    clearTimer();
     setSuggestion(null);
   };
 
@@ -90,7 +122,7 @@ export function LikoSuggestionNotification() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 30, scale: 0.9 }}
           transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          className="fixed bottom-24 left-6 z-[70] max-w-sm w-[calc(100vw-3rem)] sm:w-96 rounded-2xl p-4 glass-panel bg-card/95 border border-primary/40 shadow-[0_15px_40px_rgba(var(--primary),0.25)] backdrop-blur-xl"
+          className="fixed bottom-24 left-6 z-[70] max-w-sm w-[calc(100vw-3rem)] sm:w-96 rounded-2xl p-4 glass-panel bg-card/95 border border-primary/40 shadow-xl shadow-primary/20 backdrop-blur-xl"
         >
           <div className="flex items-start gap-3">
             {/* Mascot Avatar with Rotating Glow */}
@@ -120,7 +152,7 @@ export function LikoSuggestionNotification() {
             <div className="flex-1 text-left min-w-0 pr-4">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-xs font-bold text-primary font-heading tracking-wide uppercase">
-                  Saran dari Liko
+                  {suggestion.status === "already_categorized" ? "Liko Asisten AI" : "Saran dari Liko"}
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
               </div>
@@ -136,19 +168,36 @@ export function LikoSuggestionNotification() {
 
                   <div className="flex items-center gap-2 mt-3">
                     <button
+                      type="button"
                       onClick={handleOrganizeNow}
-                      className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center gap-1 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-hover active:scale-95 text-primary-foreground font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                     >
-                      <Zap className="h-3 w-3" /> Bantu Rapikan
+                      <Zap className="h-3.5 w-3.5" /> Bantu Rapikan
                     </button>
                     <button
+                      type="button"
                       onClick={handleDismiss}
-                      className="px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium hover:bg-muted/50 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl text-muted-foreground hover:text-foreground text-xs font-medium hover:bg-muted/50 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                     >
                       Nanti Saja
                     </button>
                   </div>
                 </>
+              )}
+
+              {suggestion.status === "already_categorized" && (
+                <div className="py-0.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    <span className="truncate">Tautan Berhasil Disimpan</span>
+                  </div>
+                  <p className="text-xs text-foreground/80 mt-1 line-clamp-2">
+                    <span className="font-bold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span>
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Kategori: <span className="font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">{suggestion.assignedCategory}</span>
+                  </p>
+                </div>
               )}
 
               {suggestion.status === "organizing" && (
@@ -165,7 +214,7 @@ export function LikoSuggestionNotification() {
 
               {suggestion.status === "success" && (
                 <div className="py-1">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-500">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-success">
                     <CheckCircle className="h-3.5 w-3.5" />
                     Tautan Berhasil Dirapikan!
                   </div>

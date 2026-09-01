@@ -60,14 +60,14 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
     onOpenEditProfile();
   };
 
-  const userName = session?.user?.name || "Komandan";
+  const userName = session?.user?.name || "Linkorian";
 
   return (
     <Dialog open={open} onOpenChange={(val) => {
       if (!val) handleDismiss();
       else setOpen(true);
     }}>
-      <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-[2.5rem] glass-panel border-primary/30 bg-card/95 shadow-[0_25px_70px_rgba(var(--primary),0.3)]">
+      <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-[2.5rem] glass-panel border-primary/30 bg-card/95 shadow-2xl shadow-primary/25">
         {/* Main Stage with Large Dominant Liko Mascot */}
         <div className="relative w-full pt-10 pb-6 px-6 sm:px-8 text-center bg-gradient-to-b from-primary/20 via-primary/5 to-transparent overflow-hidden">
           {/* Ambient Glow Bubbles */}
@@ -78,7 +78,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
           <div className="relative mx-auto flex flex-col items-center justify-center my-2">
             <div className="relative flex items-center justify-center">
               {/* Lightweight Hardware-Accelerated Static Neon Glow Ring */}
-              <div className="absolute -inset-2 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-400 via-primary to-purple-500 shadow-[0_0_35px_rgba(var(--primary),0.45)] pointer-events-none" />
+              <div className="absolute -inset-2 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-400 via-primary to-purple-500 shadow-lg shadow-primary/30 pointer-events-none" />
 
               {/* Dominant Video Container with Isolated Hardware Layer */}
               <div 

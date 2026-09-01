@@ -5,12 +5,15 @@ import { motion } from "framer-motion"
 import { Menu, X, ChevronRight } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState("")
   const { data: session } = useSession()
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +66,13 @@ export function Navbar() {
     };
   }, []);
 
+  const navLinks = [
+    { id: "solusi", label: t("landing.navSolutions") },
+    { id: "cara-kerja", label: t("landing.navHowItWorks") },
+    { id: "use-cases", label: t("landing.navUseCases") },
+    { id: "demo", label: t("landing.navDemo") },
+  ];
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -90,12 +100,7 @@ export function Navbar() {
             />
           </div>
           <div className="relative z-10 flex items-center gap-8 bg-background/95 backdrop-blur-xl px-6 py-2.5 rounded-full border border-foreground/5">
-            {[
-              { id: "solusi", label: "Solusi" },
-              { id: "cara-kerja", label: "Cara Kerja" },
-              { id: "use-cases", label: "Untuk Siapa" },
-              { id: "demo", label: "Coba Demo" }
-            ].map((item) => (
+            {navLinks.map((item) => (
               <Link 
                 key={item.id}
                 href={`#${item.id}`}
@@ -117,26 +122,35 @@ export function Navbar() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher variant="pill" />
           <ThemeToggle />
           {session ? (
-            <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.4)] hover:bg-primary/90 transition-all hover:scale-105">
-              Buka Dasbor
+            <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary-hover active:scale-95 transition-all duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none">
+              {t("landing.openDashboard")}
             </Link>
           ) : (
             <>
-              <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Masuk</Link>
-              <Link href="/register" className="inline-flex items-center justify-center rounded-full bg-foreground text-background px-6 py-2.5 text-sm font-medium shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-foreground/90 transition-all hover:scale-105">
-                Mulai Sekarang <ChevronRight className="w-4 h-4 ml-1" />
+              <Link href="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring px-3 py-1.5 rounded-lg touch-manipulation select-none">{t("nav.login")}</Link>
+              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold shadow-lg shadow-primary/30 hover:bg-primary-hover active:scale-95 transition-all duration-150 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none">
+                {t("landing.openDashboard")} <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </>
           )}
         </div>
 
         {/* Mobile Toggle */}
-        <button className="md:hidden p-2 text-muted-foreground" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex md:hidden items-center gap-2">
+          <LanguageSwitcher variant="pill" />
+          <button 
+            type="button"
+            aria-label={mobileMenuOpen ? "Tutup Menu" : "Buka Menu"}
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground active:scale-90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -144,37 +158,44 @@ export function Navbar() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border p-6 shadow-2xl flex flex-col gap-4"
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden glass-panel border-b border-foreground/10 px-6 py-6 space-y-4 bg-background/95 backdrop-blur-2xl"
         >
-          {[
-            { id: "solusi", label: "Solusi" },
-            { id: "cara-kerja", label: "Cara Kerja" },
-            { id: "use-cases", label: "Untuk Siapa" },
-            { id: "demo", label: "Coba Demo" }
-          ].map((item) => (
-            <Link 
-              key={item.id}
-              href={`#${item.id}`} 
-              className={`px-4 py-2 text-base font-medium ${activeSection === item.id ? "text-primary" : ""}`}
-              onClick={() => {
-                setActiveSection(item.id)
-                setMobileMenuOpen(false)
-              }}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <hr className="border-border/50 my-2" />
-          {session ? (
-            <Link href="/dashboard" className="w-full text-center rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg" onClick={() => setMobileMenuOpen(false)}>
-              Buka Dasbor
-            </Link>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <Link href="/login" className="w-full text-center rounded-full border border-border px-4 py-3 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>Masuk</Link>
-              <Link href="/register" className="w-full text-center rounded-full bg-foreground text-background px-4 py-3 text-sm font-medium shadow-lg" onClick={() => setMobileMenuOpen(false)}>Mulai Sekarang</Link>
+          <div className="flex flex-col space-y-3">
+            {navLinks.map((item) => (
+              <Link
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={() => {
+                  setActiveSection(item.id)
+                  setMobileMenuOpen(false)
+                }}
+                className={`text-base font-medium py-2 transition-colors ${activeSection === item.id ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">{t("profile.languageSetting")}</span>
+              <ThemeToggle />
             </div>
-          )}
+            {session ? (
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20">
+                {t("landing.openDashboard")}
+              </Link>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 rounded-full border border-border text-foreground font-semibold">
+                  {t("nav.login")}
+                </Link>
+                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20">
+                  {t("landing.openDashboard")}
+                </Link>
+              </div>
+            )}
+          </div>
         </motion.div>
       )}
     </motion.nav>

@@ -8,13 +8,13 @@ import {
   Smartphone,
   Monitor,
   KeyRound,
-  Sparkles,
   Lock,
   ArrowLeft,
   FileText,
   Eye,
   Check,
   Copy,
+  Zap,
 } from "lucide-react"
 
 type EmailType = "otp" | "welcome" | "reset"
@@ -66,7 +66,7 @@ export default function EmailPreviewPage() {
       id: "welcome" as EmailType,
       title: "2. Welcome Email",
       desc: "Email sambutan akun baru terverifikasi",
-      icon: Sparkles,
+      icon: Zap,
       color: "from-indigo-500 to-purple-600",
     },
     {

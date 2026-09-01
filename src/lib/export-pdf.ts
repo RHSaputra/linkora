@@ -15,6 +15,7 @@ import {
   type DocumentSettings,
   DEFAULT_DOCUMENT_SETTINGS,
   getPaperSize,
+  getEffectivePageDimensions,
   mmToPx,
 } from "./document-settings";
 
@@ -221,22 +222,19 @@ export async function exportToPdf(
   title: string,
   settings: DocumentSettings = DEFAULT_DOCUMENT_SETTINGS
 ): Promise<void> {
-  const paper = getPaperSize(settings.pageSize);
-  const isLandscape = settings.orientation === "landscape";
-
-  // Page dimensions in mm
-  const pageWidthMm = isLandscape ? paper.heightMm : paper.widthMm;
-  const pageHeightMm = isLandscape ? paper.widthMm : paper.heightMm;
-
-  // Content area in mm
-  const contentWidthMm =
-    pageWidthMm - settings.margins.left - settings.margins.right;
-  const contentHeightMm =
-    pageHeightMm - settings.margins.top - settings.margins.bottom;
+  const dims = getEffectivePageDimensions(settings);
+  const {
+    pageWidthMm,
+    pageHeightMm,
+    contentWidthMm,
+    bodyHeightMm,
+    headerHeightMm,
+    footerHeightMm,
+  } = dims;
 
   // Create jsPDF instance
   const pdf = new jsPDF({
-    orientation: isLandscape ? "landscape" : "portrait",
+    orientation: settings.orientation === "landscape" ? "landscape" : "portrait",
     unit: "mm",
     format: [pageWidthMm, pageHeightMm],
     compress: true,
@@ -336,8 +334,8 @@ export async function exportToPdf(
       throw new Error("Render canvas menghasilkan dimensi kosong.");
     }
 
-    // Content dimensions in PDF points/pixels
-    const pageContentHeightPx = Math.round(mmToPx(contentHeightMm) * 2);
+    // Body content dimensions in PDF points/pixels
+    const pageContentHeightPx = Math.round(mmToPx(bodyHeightMm) * 2);
     const totalPages = Math.max(1, Math.ceil(canvasHeight / pageContentHeightPx));
 
     for (let page = 0; page < totalPages; page++) {
@@ -372,6 +370,7 @@ export async function exportToPdf(
         const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
         const renderHeightMm = (sliceHeight / canvasWidth) * contentWidthMm;
 
+        // Content is placed in body area between margins
         pdf.addImage(
           imgData,
           "JPEG",
@@ -383,12 +382,12 @@ export async function exportToPdf(
           "FAST"
         );
 
-        // Header/Footer teks di zona margin (ala Word)
+        // Header / Footer in outer margins
         if (settings.headerText) {
           pdf.setFont("helvetica", "normal");
           pdf.setFontSize(9);
           pdf.setTextColor(100, 116, 139);
-          pdf.text(settings.headerText, pageWidthMm / 2, Math.max(5, settings.margins.top - 4), {
+          pdf.text(settings.headerText, pageWidthMm / 2, settings.margins.top / 2 + 1.5, {
             align: "center",
           });
         }
@@ -396,7 +395,7 @@ export async function exportToPdf(
           pdf.setFont("helvetica", "normal");
           pdf.setFontSize(9);
           pdf.setTextColor(100, 116, 139);
-          pdf.text(settings.footerText, pageWidthMm / 2, pageHeightMm - settings.margins.bottom + 4, {
+          pdf.text(settings.footerText, pageWidthMm / 2, pageHeightMm - settings.margins.bottom / 2 + 1.5, {
             align: "center",
           });
         }

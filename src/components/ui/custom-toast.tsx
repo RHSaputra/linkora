@@ -101,7 +101,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Toast Notification Container (Center of Screen) */}
       <div
         aria-live="polite"
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center gap-2.5 max-w-md w-[calc(100vw-2rem)] pointer-events-none select-none"
+        className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2.5 max-w-md w-[calc(100vw-2rem)] pointer-events-none select-none"
       >
         <AnimatePresence mode="popLayout">
           {toasts.map((item) => (
@@ -121,47 +121,48 @@ function ToastCard({
   onDismiss: () => void;
 }) {
   const duration = item.duration ?? 4000;
+  const isEn = typeof document !== "undefined" && (document.documentElement.lang === "en" || (typeof window !== "undefined" && localStorage.getItem("linkora_user_locale") === "en"));
 
   const iconConfig = {
     success: {
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />,
-      bgIcon: "bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/20",
-      accentBorder: "border-emerald-500/30",
-      glow: "shadow-emerald-500/10",
-      barColor: "bg-emerald-500",
-      defaultTitle: "Berhasil",
+      icon: <CheckCircle2 className="w-5 h-5 text-success shrink-0" />,
+      bgIcon: "bg-success-muted border-success/30",
+      accentBorder: "border-success/30",
+      glow: "shadow-success/15",
+      barColor: "bg-success",
+      defaultTitle: isEn ? "Success" : "Berhasil",
     },
     error: {
-      icon: <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />,
-      bgIcon: "bg-rose-500/10 dark:bg-rose-500/20 border-rose-500/20",
-      accentBorder: "border-rose-500/30",
-      glow: "shadow-rose-500/10",
-      barColor: "bg-rose-500",
-      defaultTitle: "Terjadi Kesalahan",
+      icon: <AlertCircle className="w-5 h-5 text-destructive shrink-0" />,
+      bgIcon: "bg-destructive-muted border-destructive/30",
+      accentBorder: "border-destructive/30",
+      glow: "shadow-destructive/15",
+      barColor: "bg-destructive",
+      defaultTitle: isEn ? "Error" : "Terjadi Kesalahan",
     },
     warning: {
-      icon: <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />,
-      bgIcon: "bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/20",
-      accentBorder: "border-amber-500/30",
-      glow: "shadow-amber-500/10",
-      barColor: "bg-amber-500",
-      defaultTitle: "Peringatan",
+      icon: <AlertTriangle className="w-5 h-5 text-warning shrink-0" />,
+      bgIcon: "bg-warning-muted border-warning/30",
+      accentBorder: "border-warning/30",
+      glow: "shadow-warning/15",
+      barColor: "bg-warning",
+      defaultTitle: isEn ? "Warning" : "Peringatan",
     },
     info: {
-      icon: <Info className="w-5 h-5 text-sky-500 shrink-0" />,
-      bgIcon: "bg-sky-500/10 dark:bg-sky-500/20 border-sky-500/20",
-      accentBorder: "border-sky-500/30",
-      glow: "shadow-sky-500/10",
-      barColor: "bg-sky-500",
-      defaultTitle: "Informasi",
+      icon: <Info className="w-5 h-5 text-info shrink-0" />,
+      bgIcon: "bg-info-muted border-info/30",
+      accentBorder: "border-info/30",
+      glow: "shadow-info/15",
+      barColor: "bg-info",
+      defaultTitle: isEn ? "Information" : "Informasi",
     },
     loading: {
       icon: <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />,
-      bgIcon: "bg-primary/10 dark:bg-primary/20 border-primary/20",
+      bgIcon: "bg-primary-muted border-primary/30",
       accentBorder: "border-primary/30",
-      glow: "shadow-primary/10",
+      glow: "shadow-primary/15",
       barColor: "bg-primary",
-      defaultTitle: "Memproses...",
+      defaultTitle: isEn ? "Processing..." : "Memproses...",
     },
   }[item.type];
 
@@ -201,7 +202,7 @@ function ToastCard({
         type="button"
         onClick={onDismiss}
         aria-label="Tutup Notifikasi"
-        className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors cursor-pointer"
+        className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 active:scale-90 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer touch-manipulation"
       >
         <X className="w-3.5 h-3.5" />
       </button>

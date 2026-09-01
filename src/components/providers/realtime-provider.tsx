@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { dispatchRefresh } from "@/hooks/use-data";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, X, Check, Clock, ExternalLink } from "lucide-react";
 
@@ -69,7 +70,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       setToasts((prev) => prev.filter((t) => t.id !== id));
 
       // Trigger a refresh event so other pages know to update
-      window.dispatchEvent(new CustomEvent("refreshData"));
+      dispatchRefresh(["links", "notes"]);
     } catch (error) {
       console.error("Gagal menghapus reminder:", error);
     }
@@ -95,7 +96,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       setToasts((prev) => prev.filter((t) => t.id !== id));
 
-      window.dispatchEvent(new CustomEvent("refreshData"));
+      dispatchRefresh(["links", "notes"]);
     } catch (error) {
       console.error("Gagal menunda reminder:", error);
     }

@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Loader2, Lock, ArrowLeft, KeyRound, AlertTriangle } from "lucide-react"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { locale } = useTranslation()
   const token = searchParams.get("token") || ""
   const email = searchParams.get("email") || ""
 
@@ -23,12 +25,12 @@ function ResetPasswordForm() {
     e.preventDefault()
 
     if (newPassword.length < 6) {
-      setError("Kata sandi baru minimal 6 karakter.")
+      setError(locale === "en" ? "New password must be at least 6 characters." : "Kata sandi baru minimal 6 karakter.")
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Konfirmasi kata sandi tidak cocok.")
+      setError(locale === "en" ? "Password confirmation does not match." : "Konfirmasi kata sandi tidak cocok.")
       return
     }
 
@@ -49,13 +51,13 @@ function ResetPasswordForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Gagal mengatur ulang kata sandi.")
+        setError(data.error || (locale === "en" ? "Failed to reset password." : "Gagal mengatur ulang kata sandi."))
         setLoading(false)
       } else {
         router.push("/login?reset=true")
       }
     } catch (_err) {
-      setError("Terjadi kesalahan pada jaringan. Silakan coba lagi.")
+      setError(locale === "en" ? "A network error occurred. Please try again." : "Terjadi kesalahan pada jaringan. Silakan coba lagi.")
       setLoading(false)
     }
   }
@@ -67,16 +69,16 @@ function ResetPasswordForm() {
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-xl font-bold text-foreground">
-          Link Tidak Valid
+          {locale === "en" ? "Invalid Link" : "Link Tidak Valid"}
         </h2>
         <p className="text-sm text-muted-foreground">
-          Tautan atur ulang kata sandi ini tidak lengkap atau tidak valid. Silakan ajukan permintaan reset baru.
+          {locale === "en" ? "This reset password link is incomplete or invalid. Please request a new reset link." : "Tautan atur ulang kata sandi ini tidak lengkap atau tidak valid. Silakan ajukan permintaan reset baru."}
         </p>
         <Link
           href="/forgot-password"
           className="inline-flex justify-center py-3 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
         >
-          Minta Link Reset Baru
+          {locale === "en" ? "Request New Reset Link" : "Minta Link Reset Baru"}
         </Link>
       </div>
     )
@@ -88,7 +90,7 @@ function ResetPasswordForm() {
         href="/login"
         className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-6 cursor-pointer"
       >
-        <ArrowLeft className="w-4 h-4" /> Kembali ke Halaman Masuk
+        <ArrowLeft className="w-4 h-4" /> {locale === "en" ? "Back to Sign In" : "Kembali ke Halaman Masuk"}
       </Link>
 
       <div className="text-center mb-8">
@@ -96,10 +98,10 @@ function ResetPasswordForm() {
           <KeyRound className="w-6 h-6" />
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          Buat Kata Sandi Baru
+          {locale === "en" ? "Create New Password" : "Buat Kata Sandi Baru"}
         </h2>
         <p className="text-sm text-muted-foreground">
-          Atur ulang kata sandi untuk akun <br />
+          {locale === "en" ? "Reset password for account" : "Atur ulang kata sandi untuk akun"} <br />
           <strong className="text-foreground">{email}</strong>
         </p>
       </div>
@@ -117,7 +119,7 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1.5 ml-1">
-            Kata Sandi Baru
+            {locale === "en" ? "New Password" : "Kata Sandi Baru"}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -131,14 +133,14 @@ function ResetPasswordForm() {
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={loading}
               className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50 text-sm"
-              placeholder="Minimal 6 karakter"
+              placeholder={locale === "en" ? "At least 6 characters" : "Minimal 6 karakter"}
             />
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-foreground/80 mb-1.5 ml-1">
-            Konfirmasi Kata Sandi Baru
+            {locale === "en" ? "Confirm New Password" : "Konfirmasi Kata Sandi Baru"}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -152,7 +154,7 @@ function ResetPasswordForm() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
               className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50 text-sm"
-              placeholder="Ulangi kata sandi baru"
+              placeholder={locale === "en" ? "Repeat new password" : "Ulangi kata sandi baru"}
             />
           </div>
         </div>
@@ -160,15 +162,15 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={loading || !newPassword || !confirmPassword}
-          className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer"
+          className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
         >
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Memperbarui Kata Sandi...</span>
+              <span>{locale === "en" ? "Updating Password..." : "Memperbarui Kata Sandi..."}</span>
             </>
           ) : (
-            "Simpan Kata Sandi Baru"
+            locale === "en" ? "Save New Password" : "Simpan Kata Sandi Baru"
           )}
         </button>
       </form>
@@ -177,6 +179,8 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const { locale } = useTranslation()
+
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background overflow-hidden relative">
       {/* Background Decorations */}
@@ -187,7 +191,7 @@ export default function ResetPasswordPage() {
 
       {/* Hero Left Section */}
       <div className="lg:w-1/2 w-full p-8 lg:p-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm min-h-[35vh] lg:min-h-screen">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(var(--primary),0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
         <div className="relative z-10 text-center max-w-md mx-auto space-y-6">
           <motion.div
@@ -198,7 +202,7 @@ export default function ResetPasswordPage() {
               opacity: { duration: 0.5 },
               y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
             }}
-            className="mx-auto w-48 lg:w-72 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-[0_0_40px_rgba(var(--primary),0.25)] border border-primary/30 relative overflow-hidden"
+            className="mx-auto w-48 lg:w-72 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent/40 blur-xl" />
             <div className="absolute inset-0 z-20">
@@ -217,9 +221,9 @@ export default function ResetPasswordPage() {
               transition={{ delay: 0.2 }}
               className="text-3xl lg:text-4xl font-bold font-heading"
             >
-              Kata Sandi <br />
+              {locale === "en" ? "Your New" : "Kata Sandi"} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-                Baru Anda
+                {locale === "en" ? "Password" : "Baru Anda"}
               </span>
             </motion.h1>
             <motion.p
@@ -228,7 +232,7 @@ export default function ResetPasswordPage() {
               transition={{ delay: 0.3 }}
               className="text-muted-foreground text-sm lg:text-base"
             >
-              Buat kata sandi yang kuat dan terlindungi untuk mengamankan ruang kerja digital Anda.
+              {locale === "en" ? "Create a strong and protected password to secure your digital workspace." : "Buat kata sandi yang kuat dan terlindungi untuk mengamankan ruang kerja digital Anda."}
             </motion.p>
           </div>
         </div>

@@ -57,13 +57,6 @@ export async function middleware(request: NextRequest) {
     return addSecurityHeaders(res)
   }
 
-  // If NOT logged in and trying to access protected pages
-  if (!isAuthRoute && !isPublicRoute && !token) {
-    const loginUrl = new URL("/login", request.url)
-    const res = NextResponse.redirect(loginUrl)
-    return addSecurityHeaders(res)
-  }
-
   const response = NextResponse.next()
   return addSecurityHeaders(response)
 }

@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { id } = await params;
-    const collection = await prisma.collection.findUnique({
+    const collection = await prisma.collection.findFirst({
       where: { id, userId: session.user.id },
       include: {
         _count: { select: { links: true } },
@@ -44,7 +44,11 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { id } = await params;
-    await prisma.collection.delete({ where: { id, userId: session.user.id } });
+    const existing = await prisma.collection.findFirst({ where: { id, userId: session.user.id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Collection not found" }, { status: 404 });
+    }
+    await prisma.collection.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/collections/[id] error:", error);
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Verify collection belongs to user
-    const collection = await prisma.collection.findUnique({
+    const collection = await prisma.collection.findFirst({
       where: { id, userId: session.user.id },
     });
     if (!collection) {
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Verify link belongs to user
-    const link = await prisma.link.findUnique({
+    const link = await prisma.link.findFirst({
       where: { id: linkId, userId: session.user.id },
     });
     if (!link) {

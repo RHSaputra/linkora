@@ -13,7 +13,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     const { name, color, parentId } = body;
 
-    const existing = await prisma.noteFolder.findUnique({
+    const existing = await prisma.noteFolder.findFirst({
       where: { id, userId: session.user.id },
     });
 
@@ -46,7 +46,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     const { id } = await params;
-    const existing = await prisma.noteFolder.findUnique({
+    const existing = await prisma.noteFolder.findFirst({
       where: { id, userId: session.user.id },
     });
 

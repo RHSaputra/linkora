@@ -6,7 +6,7 @@ export async function GET(_req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json([]);
     }
 
     const folders = await prisma.noteFolder.findMany({

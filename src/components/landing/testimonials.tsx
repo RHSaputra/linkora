@@ -3,34 +3,51 @@
 import { motion } from "framer-motion"
 import { Quote } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const testimonials = [
+const getTestimonials = (locale: string) => [
   {
-    quote: <>Dulu semua link magang dan tugas akhir tercecer di WhatsApp. Sejak pakai <LinkoraText />, semua tersusun rapi dan AI membantuku membuat ringkasan jurnal dalam hitungan detik. Benar-benar menyelamatkan skripsiku!</>,
+    quote: locale === "en" ? (
+      <>I used to lose thesis references and internship links inside chat apps. With <LinkoraText />, everything is neatly structured, and AI generates instant paper takeaways in seconds. It truly saved my final project!</>
+    ) : (
+      <>Dulu semua link magang dan tugas akhir tercecer di WhatsApp. Sejak pakai <LinkoraText />, semua tersusun rapi dan AI membantuku membuat ringkasan jurnal dalam hitungan detik. Benar-benar menyelamatkan skripsiku!</>
+    ),
     author: "Nadia L.",
-    role: "Mahasiswa Semester Akhir",
-    univ: "Universitas Indonesia",
+    role: locale === "en" ? "Final Year Student" : "Mahasiswa Semester Akhir",
+    univ: locale === "en" ? "University of Indonesia" : "Universitas Indonesia",
     initial: "N",
     bg: "from-purple-500 to-pink-500",
   },
   {
-    quote: <>Sebagai job seeker, saya menyimpan ratusan referensi portofolio dan lowongan pekerjaan. Smart Search di <LinkoraText /> membuat saya bisa menemukan kembali link perusahaan spesifik yang saya simpan bulan lalu dengan instan.</>,
+    quote: locale === "en" ? (
+      <>As an active job seeker, I bookmark hundreds of design portfolios and job postings. Smart Search in <LinkoraText /> lets me retrieve specific company links I saved weeks ago instantly.</>
+    ) : (
+      <>Sebagai job seeker, saya menyimpan ratusan referensi portofolio dan lowongan pekerjaan. Smart Search di <LinkoraText /> membuat saya bisa menemukan kembali link perusahaan spesifik yang saya simpan bulan lalu dengan instan.</>
+    ),
     author: "Bima S.",
-    role: "Fresh Graduate & Job Seeker",
+    role: locale === "en" ? "Fresh Graduate & Job Seeker" : "Fresh Graduate & Job Seeker",
     univ: "Institut Teknologi Bandung",
     initial: "B",
     bg: "from-blue-500 to-cyan-500",
   },
   {
-    quote: "Fitur Reminder dan Opportunity Tracker sangat membantu. Saya tidak pernah lagi kelewatan deadline pendaftaran beasiswa dan workshop karena semua sudah terekam dan ada pengingat otomatisnya.",
+    quote: locale === "en" ? (
+      <>The Reminders and Opportunity Tracker are game-changers. I haven't missed a single scholarship application deadline or competition date since all due dates are tracked automatically.</>
+    ) : (
+      <>Fitur Reminder dan Opportunity Tracker sangat membantu. Saya tidak pernah lagi kelewatan deadline pendaftaran beasiswa dan workshop karena semua sudah terekam dan ada pengingat otomatisnya.</>
+    ),
     author: "Rizky A.",
-    role: "Awardee Beasiswa",
+    role: locale === "en" ? "Scholarship Awardee" : "Awardee Beasiswa",
     univ: "Universitas Gadjah Mada",
     initial: "R",
     bg: "from-emerald-500 to-teal-500",
   },
   {
-    quote: <>Saya menyimpan banyak artikel riset dan catatan proyek. Tampilan <LinkoraText /> yang premium dan rapi membuat saya lebih betah bekerja. Ini lebih dari sekadar bookmark manager biasa.</>,
+    quote: locale === "en" ? (
+      <>I collect dozens of industry research articles and project notes every week. The sleek, distraction-free interface of <LinkoraText /> makes deep work a delight. It goes far beyond a typical bookmark tool.</>
+    ) : (
+      <>Saya menyimpan banyak artikel riset dan catatan proyek. Tampilan <LinkoraText /> yang premium dan rapi membuat saya lebih betah bekerja. Ini lebih dari sekadar bookmark manager biasa.</>
+    ),
     author: "Dinda M.",
     role: "Product Designer",
     univ: "Tech Startup",
@@ -40,6 +57,9 @@ const testimonials = [
 ]
 
 export function Testimonials() {
+  const { t, locale } = useTranslation()
+  const testimonials = getTestimonials(locale)
+
   return (
     <section className="py-14 md:py-18 relative overflow-hidden bg-background">
       {/* Background glow */}
@@ -53,7 +73,7 @@ export function Testimonials() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-foreground"
           >
-            Disukai oleh Pelajar & Profesional
+            {locale === "en" ? "Loved by Students & Professionals" : "Disukai oleh Pelajar & Profesional"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -62,12 +82,12 @@ export function Testimonials() {
             transition={{ delay: 0.1 }}
             className="text-base md:text-lg text-muted-foreground"
           >
-            Bagaimana <LinkoraText /> membantu ribuan pengguna tetap terorganisir dan produktif.
+            {locale === "en" ? "How " : "Bagaimana "}<LinkoraText /> {locale === "en" ? "empowers thousands of learners and creators to stay organized." : "membantu ribuan pengguna tetap terorganisir dan produktif."}
           </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
-          {testimonials.map((t, idx) => (
+          {testimonials.map((tItem, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 25 }}
@@ -80,17 +100,17 @@ export function Testimonials() {
               <div>
                 <Quote className="absolute top-6 right-6 w-10 h-10 text-foreground/5 pointer-events-none" />
                 <p className="text-sm sm:text-base text-foreground/90 leading-relaxed mb-6 relative z-10 font-normal">
-                  &ldquo;{t.quote}&rdquo;
+                  &ldquo;{tItem.quote}&rdquo;
                 </p>
               </div>
 
               <div className="flex items-center gap-3.5 pt-4 border-t border-border/40">
-                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${t.bg} flex items-center justify-center font-bold text-white shadow-md text-sm shrink-0`}>
-                  {t.initial}
+                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${tItem.bg} flex items-center justify-center font-bold text-white shadow-md text-sm shrink-0`}>
+                  {tItem.initial}
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-bold text-foreground text-sm truncate">{t.author}</h4>
-                  <p className="text-xs text-muted-foreground truncate">{t.role} • {t.univ}</p>
+                  <h4 className="font-bold text-foreground text-sm truncate">{tItem.author}</h4>
+                  <p className="text-xs text-muted-foreground truncate">{tItem.role} • {tItem.univ}</p>
                 </div>
               </div>
             </motion.div>
@@ -100,4 +120,3 @@ export function Testimonials() {
     </section>
   )
 }
-

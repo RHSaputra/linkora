@@ -12,7 +12,7 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { id } = await params;
-    const link = await prisma.link.findUnique({ where: { id, userId: session.user.id } });
+    const link = await prisma.link.findFirst({ where: { id, userId: session.user.id } });
 
     if (!link) {
       return NextResponse.json({ error: "Link not found" }, { status: 404 });

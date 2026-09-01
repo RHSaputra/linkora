@@ -61,6 +61,85 @@ export function setCachedData(url: string, data: unknown) {
   globalCache.set(url, data);
 }
 
+// ─── Granular refresh events ───────────────────────────────────────────────
+// Instead of broadcasting a global "refreshData" that re-fetches every data
+// hook, we carry a list of affected resources so each hook only refreshes
+// what actually changed.
+export type RefreshResource =
+  | "dashboard"
+  | "links"
+  | "collections"
+  | "tags"
+  | "notes"
+  | "noteFolders";
+
+const REFRESH_EVENT = "refreshData";
+
+export function dispatchRefresh(resources: RefreshResource[] = []) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent(REFRESH_EVENT, { detail: { resources } })
+  );
+}
+
+// Subscribe to refresh events. When `resource` is provided, the callback only
+// fires if that resource is in the event's resource list. A legacy event with
+// no detail (old `new Event("refreshData")`) is treated as a full broadcast.
+export function subscribeRefresh(
+  cb: () => void,
+  resource?: RefreshResource
+) {
+  if (typeof window === "undefined") return () => {};
+  const handler = (e: Event) => {
+    const detail = (e as CustomEvent<{ resources?: RefreshResource[] }>).detail;
+    if (detail == null) {
+      cb();
+      return;
+    }
+    if (resource && Array.isArray(detail.resources) && detail.resources.includes(resource)) {
+      cb();
+    }
+  };
+  window.addEventListener(REFRESH_EVENT, handler);
+  return () => window.removeEventListener(REFRESH_EVENT, handler);
+}
+
+// Build the cache key / request URL for /api/links, including optional
+// pagination. When pageSize is omitted the API returns the full list
+// (backward compatible for callers that need every link, e.g. pickers).
+export function buildLinksUrl(
+  filters?: {
+    q?: string;
+    category?: string;
+    tag?: string;
+    favorite?: boolean;
+    collectionId?: string;
+  },
+  page = 1,
+  pageSize?: number
+) {
+  const params = new URLSearchParams();
+  if (filters?.q) params.set("q", filters.q);
+  if (filters?.category) params.set("category", filters.category);
+  if (filters?.tag) params.set("tag", filters.tag);
+  if (filters?.favorite) params.set("favorite", "true");
+  if (filters?.collectionId) params.set("collectionId", filters.collectionId);
+  if (pageSize) {
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+  }
+  const s = params.toString();
+  return `/api/links${s ? `?${s}` : ""}`;
+}
+
+interface LinksPage {
+  items: SerializedLink[];
+  total: number;
+  page: number;
+  pageSize: number | null;
+  hasMore: boolean;
+}
+
 export function useDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>((globalCache.get("/api/dashboard") as DashboardStats) || null);
   const [loading, setLoading] = useState(!globalCache.has("/api/dashboard"));
@@ -81,71 +160,102 @@ export function useDashboard() {
 
   useEffect(() => {
     refresh();
-    const handleDataRefresh = () => refresh(true);
-    window.addEventListener("refreshData", handleDataRefresh);
-    return () => window.removeEventListener("refreshData", handleDataRefresh);
+    return subscribeRefresh(() => refresh(true), "dashboard");
   }, [refresh]);
 
   return { stats, loading, refresh };
 }
 
-export function useLinks(filters?: {
-  q?: string;
-  category?: string;
-  tag?: string;
-  favorite?: boolean;
-  collectionId?: string;
-}) {
-  const getUrl = useCallback(() => {
-    const params = new URLSearchParams();
-    if (filters?.q) params.set("q", filters.q);
-    if (filters?.category) params.set("category", filters.category);
-    if (filters?.tag) params.set("tag", filters.tag);
-    if (filters?.favorite) params.set("favorite", "true");
-    if (filters?.collectionId) params.set("collectionId", filters.collectionId);
-    return `/api/links?${params.toString()}`;
-  }, [filters?.q, filters?.category, filters?.tag, filters?.favorite, filters?.collectionId]);
+export function useLinks(
+  filters?: {
+    q?: string;
+    category?: string;
+    tag?: string;
+    favorite?: boolean;
+    collectionId?: string;
+  },
+  options?: { pageSize?: number }
+) {
+  const pageSize = options?.pageSize;
+  const firstUrl = buildLinksUrl(filters, 1, pageSize);
 
-  const [links, setLinks] = useState<SerializedLink[]>(() => {
-    const url = getUrl();
-    return (globalCache.get(url) as SerializedLink[]) || [];
-  });
-  const [loading, setLoading] = useState(() => {
-    const url = getUrl();
-    return !globalCache.has(url);
-  });
+  const [links, setLinks] = useState<SerializedLink[]>(
+    () => (globalCache.get(firstUrl) as LinksPage | undefined)?.items || []
+  );
+  const [loading, setLoading] = useState(() => !globalCache.has(firstUrl));
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState<number | null>(null);
 
-  const refresh = useCallback(async (force = false) => {
-    const url = getUrl();
-    if (force && !globalCache.has(url)) setLoading(true);
+  const fetchPage = useCallback(
+    async (p: number, force = false): Promise<LinksPage | null> => {
+      const url = buildLinksUrl(filters, p, pageSize);
+      const data = await fetchWithCache<LinksPage>(url, force);
+      return (data as LinksPage) || null;
+    },
+    [filters?.q, filters?.category, filters?.tag, filters?.favorite, filters?.collectionId, pageSize]
+  );
+
+  // Replace the list with page 1 (used on mount, filter change, and forced refresh).
+  const refresh = useCallback(
+    async (force = false) => {
+      setLoading(true);
+      try {
+        const d = await fetchPage(1, force);
+        if (d) {
+          setLinks(d.items);
+          setTotal(d.total);
+          setHasMore(d.hasMore);
+          setPage(1);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchPage]
+  );
+
+  // Append the next page to the existing list.
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading) return;
+    setLoading(true);
     try {
-      const data = await fetchWithCache(url, force);
-      if (Array.isArray(data)) {
-        setLinks((prev) => (prev === data ? prev : (data as SerializedLink[])));
+      const next = page + 1;
+      const d = await fetchPage(next);
+      if (d) {
+        setLinks((prev) => [...prev, ...d.items]);
+        setTotal(d.total);
+        setHasMore(d.hasMore);
+        setPage(next);
       }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [getUrl]);
+  }, [fetchPage, page, hasMore, loading]);
 
   useEffect(() => {
-    const url = getUrl();
+    const url = buildLinksUrl(filters, 1, pageSize);
     if (globalCache.has(url)) {
-      setLinks(globalCache.get(url) as SerializedLink[]);
-      setLoading(false);
+      const cached = globalCache.get(url) as LinksPage | undefined;
+      if (cached) {
+        setLinks(cached.items);
+        setTotal(cached.total);
+        setHasMore(cached.hasMore);
+        setLoading(false);
+      }
     } else {
       setLoading(true);
     }
     refresh();
 
-    const handleDataRefresh = () => refresh(true);
-    window.addEventListener("refreshData", handleDataRefresh);
-    return () => window.removeEventListener("refreshData", handleDataRefresh);
-  }, [refresh, getUrl]);
+    return subscribeRefresh(() => refresh(true), "links");
+  }, [refresh]);
 
-  return { links, loading, refresh, setLinks };
+  return { links, loading, refresh, loadMore, hasMore, total, setLinks };
 }
 
 export function useCollections() {
@@ -168,9 +278,7 @@ export function useCollections() {
 
   useEffect(() => {
     refresh();
-    const handleDataRefresh = () => refresh(true);
-    window.addEventListener("refreshData", handleDataRefresh);
-    return () => window.removeEventListener("refreshData", handleDataRefresh);
+    return subscribeRefresh(() => refresh(true), "collections");
   }, [refresh]);
 
   return { collections, loading, refresh, setCollections };
@@ -192,9 +300,7 @@ export function useTags() {
 
   useEffect(() => {
     refresh();
-    const handleDataRefresh = () => refresh(true);
-    window.addEventListener("refreshData", handleDataRefresh);
-    return () => window.removeEventListener("refreshData", handleDataRefresh);
+    return subscribeRefresh(() => refresh(true), "tags");
   }, [refresh]);
 
   return { tags, refresh };
@@ -242,10 +348,13 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
       setLoading(true);
     }
     refresh();
+    return subscribeRefresh(() => refresh(true), "notes");
   }, [refresh, getUrl]);
 
   return { notes, loading, refresh, setNotes };
 }
+
+export const useNotes = useNotesList;
 
 export function useNoteFolders() {
   const [folders, setFolders] = useState<any[]>(() => {
@@ -268,6 +377,7 @@ export function useNoteFolders() {
 
   useEffect(() => {
     refresh();
+    return subscribeRefresh(() => refresh(true), "noteFolders");
   }, [refresh]);
 
   return { folders, loading, refresh, setFolders };

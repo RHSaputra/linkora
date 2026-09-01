@@ -2,16 +2,43 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, Briefcase, GraduationCap, FileText, MonitorPlay, ArrowRight, Command } from "lucide-react"
+import { Search, Briefcase, GraduationCap, FileText, MonitorPlay, ArrowRight } from "lucide-react"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const searchExamples = [
-  { query: "Magang BCA Tech", icon: Briefcase, result: "12 Tautan Lowongan & Catatan Syarat", tag: "Magang", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
-  { query: "Beasiswa LPDP 2026", icon: GraduationCap, result: "5 Link Pendaftaran & Format Esai", tag: "Beasiswa", color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
-  { query: "Catatan Basis Data", icon: FileText, result: "Ringkasan Kuliah Normalisasi & SQL", tag: "Catatan", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
-  { query: "Workshop UI Design", icon: MonitorPlay, result: "3 Video Tutorial & File Figma", tag: "Resource", color: "text-pink-400 bg-pink-500/10 border-pink-500/20" }
+const getSearchExamples = (locale: string) => [
+  {
+    query: locale === "en" ? "Google Software Internship" : "Magang BCA Tech",
+    icon: Briefcase,
+    result: locale === "en" ? "12 Job Openings & Requirements Checklist" : "12 Tautan Lowongan & Catatan Syarat",
+    tag: locale === "en" ? "Internship" : "Magang",
+    color: "text-blue-400 bg-blue-500/10 border-blue-500/20"
+  },
+  {
+    query: locale === "en" ? "Fulbright Scholarship 2026" : "Beasiswa LPDP 2026",
+    icon: GraduationCap,
+    result: locale === "en" ? "5 Application Links & Essay Templates" : "5 Link Pendaftaran & Format Esai",
+    tag: locale === "en" ? "Scholarship" : "Beasiswa",
+    color: "text-purple-400 bg-purple-500/10 border-purple-500/20"
+  },
+  {
+    query: locale === "en" ? "Database Architecture Notes" : "Catatan Basis Data",
+    icon: FileText,
+    result: locale === "en" ? "Lecture summary on Normalization & SQL optimization" : "Ringkasan Kuliah Normalisasi & SQL",
+    tag: locale === "en" ? "Notes" : "Catatan",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+  },
+  {
+    query: locale === "en" ? "UI Design System Workshop" : "Workshop UI Design",
+    icon: MonitorPlay,
+    result: locale === "en" ? "3 Video Tutorials & Figma Component Files" : "3 Video Tutorial & File Figma",
+    tag: locale === "en" ? "Resource" : "Resource",
+    color: "text-pink-400 bg-pink-500/10 border-pink-500/20"
+  }
 ]
 
 export function SmartSearchDemo() {
+  const { t, locale } = useTranslation()
+  const searchExamples = getSearchExamples(locale)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
@@ -21,9 +48,9 @@ export function SmartSearchDemo() {
       setCurrentIndex((prev) => (prev + 1) % searchExamples.length)
     }, 3200)
     return () => clearInterval(timer)
-  }, [isPaused])
+  }, [isPaused, searchExamples.length])
 
-  const current = searchExamples[currentIndex]
+  const current = searchExamples[currentIndex] || searchExamples[0]
   const Icon = current.icon
 
   return (
@@ -39,8 +66,10 @@ export function SmartSearchDemo() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-foreground"
           >
-            Temukan Informasi Apapun <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">dalam Hitungan Milidetik</span>
+            {locale === "en" ? "Find Any Information " : "Temukan Informasi Apapun "}<br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">
+              {locale === "en" ? "in Milliseconds" : "dalam Hitungan Milidetik"}
+            </span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -49,7 +78,9 @@ export function SmartSearchDemo() {
             transition={{ delay: 0.1 }}
             className="text-base md:text-lg text-muted-foreground"
           >
-            Pencarian pintar memahami konteks maksud Anda, bukan sekadar mencocokkan kata kunci kaku.
+            {locale === "en"
+              ? "Smart search understands what you mean, instead of blindly matching rigid keywords."
+              : "Pencarian pintar memahami konteks maksud Anda, bukan sekadar mencocokkan kata kunci kaku."}
           </motion.p>
         </div>
 
@@ -80,7 +111,7 @@ export function SmartSearchDemo() {
             ))}
           </div>
 
-          <div className="glass-panel rounded-3xl p-3 md:p-5 border border-primary/30 shadow-[0_0_50px_rgba(var(--primary),0.15)] relative overflow-hidden">
+          <div className="glass-panel rounded-3xl p-3 md:p-5 border border-primary/30 shadow-2xl shadow-primary/15 relative overflow-hidden">
             {/* Search Input Simulation */}
             <div className="flex items-center gap-3 bg-foreground/[0.04] rounded-2xl p-4 border border-border/60">
               <Search className="w-6 h-6 text-primary shrink-0 animate-pulse" />
@@ -99,17 +130,14 @@ export function SmartSearchDemo() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="hidden sm:flex items-center gap-1 text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded-lg border border-border/50">
-                <Command className="w-3 h-3" /> K
-              </div>
             </div>
 
             {/* Results preview */}
             <div className="mt-4 px-1">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 font-medium">
-                <span>Hasil Pencarian Cerdas</span>
+                <span>{locale === "en" ? "Smart Search Results" : "Hasil Pencarian Cerdas"}</span>
                 <span className="text-[11px] text-emerald-400 font-medium">
-                  Instan 0.04s
+                  {locale === "en" ? "Instant 0.04s" : "Instan 0.04s"}
                 </span>
               </div>
 
@@ -150,4 +178,3 @@ export function SmartSearchDemo() {
     </section>
   )
 }
-

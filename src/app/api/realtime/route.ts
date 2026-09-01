@@ -102,8 +102,17 @@ export async function GET(request: NextRequest) {
         // Run immediately
         await sendReminders();
 
-        // Check reminders and send heartbeat every 15 seconds to prevent browser/proxy connection timeouts
-        const intervalId = setInterval(sendReminders, 15000);
+        // Check reminders and send heartbeat every 30 seconds. 15s was needlessly
+        // querying the DB (2 queries) for every connected client; 30s halves that
+        // load while still delivering reminders promptly. Also guards against a
+        // slow previous run overlapping.
+        const intervalId = setInterval(() => {
+          if (isClosed || request.signal.aborted) {
+            clearInterval(intervalId);
+            return;
+          }
+          void sendReminders();
+        }, 30000);
 
         // Cleanup on abort
         request.signal.addEventListener("abort", () => {

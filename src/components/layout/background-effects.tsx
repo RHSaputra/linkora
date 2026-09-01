@@ -34,7 +34,7 @@ export function BackgroundEffects() {
       <div
         className="absolute -bottom-[15%] left-[25%] w-[50%] h-[50%] rounded-full opacity-15 dark:opacity-10 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
         style={{
-          background: "radial-gradient(circle, oklch(0.60 0.25 25) 0%, transparent 70%)",
+          background: "radial-gradient(circle, var(--destructive) 0%, transparent 70%)",
         }}
       />
 
@@ -42,7 +42,7 @@ export function BackgroundEffects() {
       <div
         className="absolute inset-0 opacity-15"
         style={{
-          background: "linear-gradient(to bottom, transparent, rgba(var(--foreground-rgb, 100, 100, 150), 0.02) 50%, transparent)",
+          background: "linear-gradient(to bottom, transparent, color-mix(in oklch, var(--foreground) 2%, transparent) 50%, transparent)",
         }}
       />
 

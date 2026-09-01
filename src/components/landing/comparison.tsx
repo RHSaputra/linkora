@@ -3,22 +3,61 @@
 import { motion } from "framer-motion"
 import { Check, X, Minus } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const features = [
-  { name: "Simpan & Arsip Multi-Platform Links", bookmark: "Yes", notes: "Limited", linkora: "Yes" },
-  { name: "Editor Catatan Lengkap (Word-Style Tools)", bookmark: "No", notes: "Yes", linkora: "Yes" },
-  { name: "Opportunity Tracker (Magang, Beasiswa, Lomba)", bookmark: "No", notes: "No", linkora: "Yes" },
-  { name: "AI Ringkasan Intisari Otomatis", bookmark: "No", notes: "No", linkora: "Yes" },
-  { name: "Smart Semantic Search Instan", bookmark: "Limited", notes: "Limited", linkora: "Yes" },
-  { name: "Deadline Tracker & Status Berkas", bookmark: "No", notes: "No", linkora: "Yes" },
-  { name: "All-in-One Ruang Kerja Terpadu", bookmark: "No", notes: "No", linkora: "Yes" },
+const getFeatures = (locale: string) => [
+  {
+    name: locale === "en" ? "Cross-Platform Link Archiving & Previews" : "Simpan & Arsip Multi-Platform Links",
+    bookmark: "Yes",
+    notes: "Limited",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "Rich Document Editor (Word-Style Formatting)" : "Editor Catatan Lengkap (Word-Style Tools)",
+    bookmark: "No",
+    notes: "Yes",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "Opportunity Tracker (Internships, Scholarships, Contests)" : "Opportunity Tracker (Magang, Beasiswa, Lomba)",
+    bookmark: "No",
+    notes: "No",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "Automated AI Summaries & Takeaways" : "AI Ringkasan Intisari Otomatis",
+    bookmark: "No",
+    notes: "No",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "Instant Semantic Natural Language Search" : "Smart Semantic Search Instan",
+    bookmark: "Limited",
+    notes: "Limited",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "Deadline Tracker & Reminder Notifications" : "Deadline Tracker & Status Berkas",
+    bookmark: "No",
+    notes: "No",
+    linkora: "Yes"
+  },
+  {
+    name: locale === "en" ? "All-in-One Unified Digital Hub" : "All-in-One Ruang Kerja Terpadu",
+    bookmark: "No",
+    notes: "No",
+    linkora: "Yes"
+  },
 ]
 
 export function Comparison() {
+  const { t, locale } = useTranslation()
+  const features = getFeatures(locale)
+
   const renderIcon = (status: string, isLinkora: boolean = false) => {
     if (status === "Yes") {
       return (
-        <div className={`mx-auto w-6 h-6 rounded-full flex items-center justify-center ${isLinkora ? 'bg-primary text-primary-foreground shadow-[0_0_12px_rgba(var(--primary),0.6)] font-bold' : 'bg-foreground/10 text-foreground'}`}>
+        <div className={`mx-auto w-6 h-6 rounded-full flex items-center justify-center ${isLinkora ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/40 font-bold' : 'bg-foreground/10 text-foreground'}`}>
           <Check className="w-3.5 h-3.5 stroke-[3]" />
         </div>
       )
@@ -45,7 +84,7 @@ export function Comparison() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-foreground"
           >
-            Mengapa Memilih <LinkoraText />?
+            {locale === "en" ? "Why Choose " : "Mengapa Memilih "}<LinkoraText />?
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -54,7 +93,9 @@ export function Comparison() {
             transition={{ delay: 0.1 }}
             className="text-base md:text-lg text-muted-foreground"
           >
-            Satu sistem terintegrasi yang jauh lebih cerdas, produktif, dan rapi dibandingkan kumpulan aplikasi terpisah.
+            {locale === "en"
+              ? "One integrated system that is far smarter, more productive, and more organized than juggling separate tools."
+              : "Satu sistem terintegrasi yang jauh lebih cerdas, produktif, dan rapi dibandingkan kumpulan aplikasi terpisah."}
           </motion.p>
         </div>
 
@@ -70,9 +111,17 @@ export function Comparison() {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border/60 bg-foreground/[0.02]">
-                    <th className="p-5 sm:p-6 font-bold text-foreground text-sm uppercase tracking-wider w-1/3">Fitur Utama</th>
-                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">Bookmark<br /><span className="text-[11px] font-normal lowercase">browser</span></th>
-                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">Aplikasi<br /><span className="text-[11px] font-normal lowercase">catatan biasa</span></th>
+                    <th className="p-5 sm:p-6 font-bold text-foreground text-sm uppercase tracking-wider w-1/3">
+                      {locale === "en" ? "Key Capabilities" : "Fitur Utama"}
+                    </th>
+                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                      {locale === "en" ? "Browser" : "Bookmark"}<br />
+                      <span className="text-[11px] font-normal lowercase">{locale === "en" ? "bookmarks" : "browser"}</span>
+                    </th>
+                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                      {locale === "en" ? "Standard" : "Aplikasi"}<br />
+                      <span className="text-[11px] font-normal lowercase">{locale === "en" ? "notes app" : "catatan biasa"}</span>
+                    </th>
                     <th className="p-5 sm:p-6 font-bold text-center text-primary text-base w-1/4 bg-primary/10 border-l border-primary/20">
                       <LinkoraText />
                     </th>
@@ -96,4 +145,3 @@ export function Comparison() {
     </section>
   )
 }
-

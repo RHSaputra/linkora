@@ -8,7 +8,14 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        completed: true,
+        version: CURRENT_ONBOARDING_VERSION,
+        step: 0,
+        dismissedAt: null,
+        completedAt: null,
+        currentVersion: CURRENT_ONBOARDING_VERSION,
+      });
     }
 
     // Find or create onboarding record

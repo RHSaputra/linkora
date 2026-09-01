@@ -30,7 +30,9 @@ import {
   BookOpen,
   ArrowUpRight,
 } from "lucide-react";
-import { invalidateCache } from "@/hooks/use-data";
+import { invalidateCache, dispatchRefresh } from "@/hooks/use-data";
+import { useTranslation } from "@/components/providers/i18n-provider";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const AVATARS = [
   { id: "a-1", name: "Maya", url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Maya" },
@@ -54,6 +56,7 @@ interface EditProfileDialogProps {
 
 export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps) {
   const { data: session, update } = useSession();
+  const { t, locale } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -110,13 +113,13 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Pilih berkas berupa gambar (JPG, PNG, WebP)", "Format Salah");
+      toast.error(locale === "en" ? "Select an image file (JPG, PNG, WebP)" : "Pilih berkas berupa gambar (JPG, PNG, WebP)", locale === "en" ? "Invalid Format" : "Format Salah");
       return;
     }
 
     // Limit to 2MB
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 2MB agar performa tetap cepat", "File Terlalu Besar");
+      toast.error(locale === "en" ? "Max photo size is 2MB for fast performance" : "Ukuran foto maksimal 2MB agar performa tetap cepat", locale === "en" ? "File Too Large" : "File Terlalu Besar");
       return;
     }
 
@@ -127,12 +130,12 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
       if (result) {
         setSelectedAvatar(result);
         setCustomAvatarUrl("");
-        toast.success("Foto profil Anda siap disimpan!", "Foto Terpilih");
+        toast.success(locale === "en" ? "Your profile photo is ready to save!" : "Foto profil Anda siap disimpan!", locale === "en" ? "Photo Selected" : "Foto Terpilih");
       }
       setUploadingImage(false);
     };
     reader.onerror = () => {
-      toast.error("Gagal membaca berkas gambar", "Error");
+      toast.error(locale === "en" ? "Failed to read image file" : "Gagal membaca berkas gambar", "Error");
       setUploadingImage(false);
     };
     reader.readAsDataURL(file);
@@ -142,21 +145,21 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Nama tidak boleh kosong", "Validasi");
+      toast.error(locale === "en" ? "Display name cannot be empty" : "Nama tidak boleh kosong", locale === "en" ? "Validation" : "Validasi");
       return;
     }
 
     if (showPasswordSection && newPassword) {
       if (!currentPassword) {
-        toast.error("Masukkan kata sandi saat ini untuk mengubah kata sandi", "Validasi");
+        toast.error(locale === "en" ? "Enter your current password to change password" : "Masukkan kata sandi saat ini untuk mengubah kata sandi", locale === "en" ? "Validation" : "Validasi");
         return;
       }
       if (newPassword.length < 6) {
-        toast.error("Kata sandi baru minimal 6 karakter", "Validasi");
+        toast.error(locale === "en" ? "New password must be at least 6 characters" : "Kata sandi baru minimal 6 karakter", locale === "en" ? "Validation" : "Validasi");
         return;
       }
       if (newPassword !== confirmPassword) {
-        toast.error("Konfirmasi kata sandi tidak cocok", "Validasi");
+        toast.error(locale === "en" ? "Password confirmation does not match" : "Konfirmasi kata sandi tidak cocok", locale === "en" ? "Validation" : "Validasi");
         return;
       }
     }
@@ -195,17 +198,17 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           image: safeImageForSession,
         });
 
-        // Invalidate caches and trigger refresh across the whole app
+        // Profile text is sourced from the session, so no data list needs re-fetch.
         invalidateCache("/api/dashboard");
-        window.dispatchEvent(new Event("refreshData"));
+        dispatchRefresh([]);
 
-        toast.success("Profil Anda berhasil diperbarui!", "Berhasil Disimpan");
+        toast.success(locale === "en" ? "Your profile has been updated successfully!" : "Profil Anda berhasil diperbarui!", locale === "en" ? "Saved Successfully" : "Berhasil Disimpan");
         onOpenChange(false);
       } else {
-        toast.error(data.error || "Gagal memperbarui profil", "Error");
+        toast.error(data.error || (locale === "en" ? "Failed to update profile" : "Gagal memperbarui profil"), "Error");
       }
     } catch (err: any) {
-      toast.error(err?.message || "Terjadi kesalahan sistem", "Error");
+      toast.error(err?.message || (locale === "en" ? "System error occurred" : "Terjadi kesalahan sistem"), "Error");
     } finally {
       setLoading(false);
     }
@@ -223,10 +226,10 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             </div>
             <div className="text-left">
               <DialogTitle className="text-xl font-bold font-heading text-foreground">
-                Pengaturan Profil Saya
+                {t("profile.title")}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Pilih avatar, unggah foto sendiri, dan sesuaikan identitas akun Anda.
+                {t("profile.subtitle")}
               </DialogDescription>
             </div>
           </div>
@@ -236,7 +239,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           {/* Avatar Preview & Selection */}
           <div className="space-y-3">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Foto / Avatar Profil
+              {locale === "en" ? "Profile Photo / Avatar" : "Foto / Avatar Profil"}
             </Label>
 
             {/* Active Preview Banner */}
@@ -273,7 +276,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                     className="rounded-xl text-xs font-semibold gap-1.5 border-primary/30 hover:border-primary hover:bg-primary/10 cursor-pointer"
                   >
                     <Upload className="h-3.5 w-3.5 text-primary" />
-                    Unggah Foto Sendiri
+                    {t("profile.uploadPhotoBtn")}
                   </Button>
 
                   {selectedAvatar && (
@@ -287,12 +290,12 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       }}
                       className="rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground gap-1"
                     >
-                      <RotateCcw className="h-3 w-3" /> Reset
+                      <RotateCcw className="h-3 w-3" /> {t("profile.resetPhotoBtn")}
                     </Button>
                   )}
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Gunakan foto asli Anda dari perangkat atau pilih salah satu karakter preset di bawah.
+                  {t("profile.photoHelpText")}
                 </p>
               </div>
             </div>
@@ -303,24 +306,24 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 <button
                   type="button"
                   onClick={() => setAvatarTab("avatars")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     avatarTab === "avatars"
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  Pilih Avatar
+                  {t("profile.avatarTabPreset")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setAvatarTab("custom")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     avatarTab === "custom"
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  Tautan URL
+                  {t("profile.avatarTabCustom")}
                 </button>
               </div>
 
@@ -365,7 +368,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               {avatarTab === "custom" && (
                 <div className="p-3 rounded-2xl bg-foreground/[0.02] border border-border/50 space-y-2">
                   <Label htmlFor="custom-avatar" className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <ImageIcon className="h-3.5 w-3.5 text-primary" /> Tempel URL Gambar Eksternal
+                    <ImageIcon className="h-3.5 w-3.5 text-primary" /> {locale === "en" ? "Paste External Image URL" : "Tempel URL Gambar Eksternal"}
                   </Label>
                   <Input
                     id="custom-avatar"
@@ -375,7 +378,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       setCustomAvatarUrl(e.target.value);
                       if (e.target.value) setSelectedAvatar("");
                     }}
-                    placeholder="https://example.com/foto-anda.jpg"
+                    placeholder={locale === "en" ? "https://example.com/your-photo.jpg" : "https://example.com/foto-anda.jpg"}
                     className="rounded-xl text-xs bg-background/80"
                   />
                 </div>
@@ -387,13 +390,13 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="profile-name" className="text-xs font-semibold text-foreground">
-                Nama Tampilan <span className="text-primary">*</span>
+                {t("profile.nameLabel")} <span className="text-primary">*</span>
               </Label>
               <Input
                 id="profile-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Masukkan nama lengkap / panggilan Anda"
+                placeholder={t("profile.namePlaceholder")}
                 className="rounded-xl bg-background/60 border-border/60 focus:border-primary"
                 required
               />
@@ -401,9 +404,9 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
             <div className="space-y-1.5">
               <Label htmlFor="profile-email" className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>Alamat Email</span>
+                <span>{t("profile.emailLabel")}</span>
                 <span className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3" /> Akun Terverifikasi
+                  <ShieldCheck className="h-3 w-3" /> {t("profile.verifiedBadge")}
                 </span>
               </Label>
               <Input
@@ -420,7 +423,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-foreground/[0.02] border border-border/40 text-center">
               <div className="p-2">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground font-medium">
-                  <Layers className="h-3 w-3 text-primary" /> Tautan
+                  <Layers className="h-3 w-3 text-primary" /> {t("profile.statsLinks")}
                 </div>
                 <div className="text-base font-bold font-sans tracking-tight tabular-nums text-foreground mt-0.5">
                   {profileStats.totalLinks}
@@ -428,7 +431,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               </div>
               <div className="p-2 border-x border-border/40">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground font-medium">
-                  <FileText className="h-3 w-3 text-accent" /> Catatan
+                  <FileText className="h-3 w-3 text-accent" /> {t("profile.statsNotes")}
                 </div>
                 <div className="text-base font-bold font-sans tracking-tight tabular-nums text-foreground mt-0.5">
                   {profileStats.totalNotes}
@@ -436,14 +439,19 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               </div>
               <div className="p-2">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground font-medium">
-                  <Calendar className="h-3 w-3 text-purple-400" /> Bergabung
+                  <Calendar className="h-3 w-3 text-purple-400" /> {t("profile.statsJoined")}
                 </div>
                 <div className="text-[11px] font-semibold text-foreground mt-1 truncate">
-                  {profileStats.createdAt ? new Date(profileStats.createdAt).toLocaleDateString("id-ID", { month: "short", year: "numeric" }) : "-"}
+                  {profileStats.createdAt ? new Date(profileStats.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "id-ID", { month: "short", year: "numeric" }) : "-"}
                 </div>
               </div>
             </div>
           )}
+
+          {/* Language Preference Section */}
+          <div className="border-t border-border/50 pt-4">
+            <LanguageSwitcher variant="select" />
+          </div>
 
           {/* Security & Password Section Toggle */}
           <div className="border-t border-border/50 pt-4">
@@ -454,43 +462,43 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             >
               <div className="flex items-center gap-2">
                 <KeyRound className="h-3.5 w-3.5 text-primary" />
-                <span>Ubah Kata Sandi (Opsional)</span>
+                <span>{t("profile.changePasswordTitle")}</span>
               </div>
               <span className="text-[11px] text-primary underline">
-                {showPasswordSection ? "Sembunyikan" : "Buka Formulir"}
+                {showPasswordSection ? t("profile.hideForm") : t("profile.showForm")}
               </span>
             </button>
 
             {showPasswordSection && (
               <div className="mt-3 space-y-3 p-4 rounded-2xl bg-foreground/[0.02] border border-border/50">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Kata Sandi Saat Ini</Label>
+                  <Label className="text-xs text-muted-foreground">{t("profile.currentPasswordLabel")}</Label>
                   <Input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Masukkan sandi lama"
+                    placeholder={t("profile.currentPasswordPlaceholder")}
                     className="rounded-xl text-xs bg-background/80"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Kata Sandi Baru</Label>
+                    <Label className="text-xs text-muted-foreground">{t("profile.newPasswordLabel")}</Label>
                     <Input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Min. 6 karakter"
+                      placeholder={t("profile.newPasswordPlaceholder")}
                       className="rounded-xl text-xs bg-background/80"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Ulangi Sandi Baru</Label>
+                    <Label className="text-xs text-muted-foreground">{t("profile.confirmPasswordLabel")}</Label>
                     <Input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Ulangi sandi baru"
+                      placeholder={t("profile.confirmPasswordPlaceholder")}
                       className="rounded-xl text-xs bg-background/80"
                     />
                   </div>
@@ -508,19 +516,12 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 onOpenChange(false);
                 window.dispatchEvent(new Event("restart-onboarding-tour"));
               }}
-              className="text-xs font-semibold text-foreground hover:text-primary hover:border-primary/40 mr-auto flex items-center gap-2 rounded-xl border-border/80 px-3 py-2 bg-foreground/[0.02] hover:bg-primary/5 transition-all group cursor-pointer shadow-2xs"
-              title="Mulai Ulang Panduan Penggunaan"
+              className="text-xs font-semibold text-foreground hover:text-primary hover:border-primary/40 mr-auto flex items-center gap-2 rounded-xl border-border/80 px-3 py-2 bg-foreground/[0.02] hover:bg-primary/5 active:scale-95 transition-all duration-150 group cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title={t("profile.tourGuideBtn")}
             >
-              <div className="flex items-center gap-1.5 shrink-0">
-                <div className="w-6 h-6 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                  <Compass className="h-3.5 w-3.5" />
-                </div>
-                <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
-                  <BookOpen className="h-3 w-3" />
-                </div>
-              </div>
-              <span>Panduan Penggunaan</span>
-              <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <Compass className="h-4 w-4 text-primary group-hover:rotate-45 transition-transform shrink-0" />
+              <span>{t("profile.tourGuideBtn")}</span>
+              <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <Button
@@ -529,7 +530,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 onClick={() => onOpenChange(false)}
                 className="rounded-xl text-xs font-semibold"
               >
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -539,10 +540,10 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 {loading ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                    Menyimpan...
+                    {t("common.saving")}
                   </>
                 ) : (
-                  "Simpan Perubahan"
+                  t("common.saveChanges")
                 )}
               </Button>
             </div>

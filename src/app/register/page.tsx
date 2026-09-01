@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Lock, Mail, User, MapPin, KeyRound, ArrowLeft, RefreshCw, CheckCircle2 } from "lucide-react"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 interface Region {
   id: string;
@@ -14,6 +15,7 @@ interface Region {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { locale } = useTranslation()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -51,7 +53,9 @@ export default function RegisterPage() {
         .then(data => setRegencies(data))
         .catch(console.error)
     } else {
-      setRegencies([]); setDistricts([]); setVillages([])
+      setRegencies([])
+      setDistricts([])
+      setVillages([])
     }
   }, [selProvince])
 
@@ -62,7 +66,8 @@ export default function RegisterPage() {
         .then(data => setDistricts(data))
         .catch(console.error)
     } else {
-      setDistricts([]); setVillages([])
+      setDistricts([])
+      setVillages([])
     }
   }, [selRegency])
 
@@ -79,12 +84,12 @@ export default function RegisterPage() {
 
   // Cooldown countdown timer
   useEffect(() => {
-    if (resendCooldown <= 0) return;
+    if (resendCooldown <= 0) return
     const timer = setInterval(() => {
-      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -115,7 +120,7 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Terjadi kesalahan")
+        setError(data.error || (locale === "en" ? "An error occurred" : "Terjadi kesalahan"))
         setLoading(false)
       } else {
         setRegisteredEmail(email.toLowerCase().trim())
@@ -124,7 +129,7 @@ export default function RegisterPage() {
         setLoading(false)
       }
     } catch (_err) {
-      setError("Terjadi kesalahan yang tidak terduga")
+      setError(locale === "en" ? "An unexpected error occurred" : "Terjadi kesalahan yang tidak terduga")
       setLoading(false)
     }
   }
@@ -132,7 +137,7 @@ export default function RegisterPage() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!otp || otp.trim().length !== 6) {
-      setError("Masukkan 6 digit kode verifikasi dengan benar.")
+      setError(locale === "en" ? "Enter the 6-digit verification code accurately." : "Masukkan 6 digit kode verifikasi dengan benar.")
       return
     }
 
@@ -152,13 +157,13 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Kode verifikasi tidak valid")
+        setError(data.error || (locale === "en" ? "Invalid verification code" : "Kode verifikasi tidak valid"))
         setOtpLoading(false)
       } else {
         router.push("/login?registered=true")
       }
     } catch (_err) {
-      setError("Gagal memverifikasi kode. Silakan periksa koneksi Anda.")
+      setError(locale === "en" ? "Failed to verify code. Please check your connection." : "Gagal memverifikasi kode. Silakan periksa koneksi Anda.")
       setOtpLoading(false)
     }
   }
@@ -180,13 +185,13 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Gagal mengirim ulang kode")
+        setError(data.error || (locale === "en" ? "Failed to resend code" : "Gagal mengirim ulang kode"))
       } else {
-        setResendNotice("Kode verifikasi baru telah dikirim ke email Anda.")
+        setResendNotice(locale === "en" ? "A new verification code has been sent to your email." : "Kode verifikasi baru telah dikirim ke email Anda.")
         setResendCooldown(data.cooldownSeconds || 60)
       }
     } catch (_err) {
-      setError("Terjadi kesalahan saat meminta kode baru")
+      setError(locale === "en" ? "An error occurred while requesting a new code" : "Terjadi kesalahan saat meminta kode baru")
     } finally {
       setResendLoading(false)
     }
@@ -200,7 +205,7 @@ export default function RegisterPage() {
       sessionStorage.removeItem("linkora_session_greeted")
       await signIn("google", { callbackUrl: "/dashboard" })
     } catch (_err) {
-      setError("Gagal menghubungkan dengan Google")
+      setError(locale === "en" ? "Failed to connect with Google" : "Gagal menghubungkan dengan Google")
       setGoogleLoading(false)
     }
   }
@@ -215,7 +220,7 @@ export default function RegisterPage() {
 
       {/* Bagian Kiri: Welcome Hero Animasi */}
       <div className="lg:w-1/3 w-full p-8 lg:p-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm min-h-[30vh] lg:min-h-screen">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(var(--primary),0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
         
         <div className="relative z-10 text-center max-w-sm mx-auto space-y-6">
           <motion.div
@@ -226,7 +231,7 @@ export default function RegisterPage() {
               opacity: { duration: 0.5 },
               y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-56 lg:w-80 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-[0_0_40px_rgba(var(--accent),0.2)] border border-accent/30 relative overflow-hidden"
+            className="mx-auto w-56 lg:w-80 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-2xl shadow-accent/20 border border-accent/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-bl from-accent/40 to-primary/40 blur-xl" />
             <div className="absolute inset-0 z-20">
@@ -242,11 +247,11 @@ export default function RegisterPage() {
           
           <div className="space-y-3">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl lg:text-4xl font-bold font-heading">
-              Awal Mula <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">Perjalanan Anda</span>
+              {locale === "en" ? "Start Your" : "Awal Mula"} <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">{locale === "en" ? "Journey" : "Perjalanan Anda"}</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-muted-foreground text-sm lg:text-base">
-              Daftar sekarang dan mulailah mengelola tautan Anda dengan sistem cerdas kami.
+              {locale === "en" ? "Register now and start managing your links and notes with our intelligent workspace." : "Daftar sekarang dan mulailah mengelola tautan Anda dengan sistem cerdas kami."}
             </motion.p>
           </div>
         </div>
@@ -273,16 +278,16 @@ export default function RegisterPage() {
                 >
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-foreground mb-2">
-                      Buat Akun Baru
+                      {locale === "en" ? "Create a New Account" : "Buat Akun Baru"}
                     </h2>
-                    <p className="text-sm text-muted-foreground">Isi data di bawah ini untuk menjadi Komandan baru.</p>
+                    <p className="text-sm text-muted-foreground">{locale === "en" ? "Complete the form below to start your personal digital workspace." : "Lengkapi data di bawah ini untuk memulai ruang kerja digital Anda."}</p>
                   </div>
 
                   <button
                     type="button"
                     disabled={googleLoading || loading}
                     onClick={handleGoogleSignIn}
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl shadow-sm text-sm font-medium text-foreground bg-foreground/5 hover:bg-foreground/10 transition-all mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl shadow-xs text-sm font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 active:scale-95 transition-all duration-150 mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                   >
                     {googleLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -294,7 +299,7 @@ export default function RegisterPage() {
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                       </svg>
                     )}
-                    <span>{googleLoading ? "Menghubungkan ke Google..." : "Daftar dengan Google"}</span>
+                    <span>{googleLoading ? (locale === "en" ? "Connecting to Google..." : "Menghubungkan ke Google...") : (locale === "en" ? "Continue with Google" : "Daftar dengan Google")}</span>
                   </button>
 
                   <div className="relative mb-6">
@@ -302,7 +307,7 @@ export default function RegisterPage() {
                       <div className="w-full border-t border-border" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-card text-muted-foreground">Atau daftar manual</span>
+                      <span className="px-2 bg-card text-muted-foreground">{locale === "en" ? "Or register manually" : "Atau daftar manual"}</span>
                     </div>
                   </div>
 
@@ -320,11 +325,11 @@ export default function RegisterPage() {
                     {/* Info Dasar */}
                     <div className="space-y-4">
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <User className="h-4 w-4 text-primary" /> Informasi Akun
+                        <User className="h-4 w-4 text-primary" /> {locale === "en" ? "Account Information" : "Informasi Akun"}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">Nama Lengkap</label>
+                          <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">{locale === "en" ? "Full Name" : "Nama Lengkap"}</label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                               <User className="h-4 w-4 text-muted-foreground" />
@@ -335,13 +340,13 @@ export default function RegisterPage() {
                               required
                               autoComplete="off"
                               className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-                              placeholder="Masukkan nama lengkap Anda"
+                              placeholder={locale === "en" ? "Enter your full name" : "Masukkan nama lengkap Anda"}
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">Alamat Email</label>
+                          <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">{locale === "en" ? "Email Address" : "Alamat Email"}</label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                               <Mail className="h-4 w-4 text-muted-foreground" />
@@ -352,14 +357,14 @@ export default function RegisterPage() {
                               required
                               autoComplete="off"
                               className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-                              placeholder="Masukkan alamat email Anda"
+                              placeholder={locale === "en" ? "Enter your email address" : "Masukkan alamat email Anda"}
                             />
                           </div>
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">Kata Sandi</label>
+                        <label className="block text-xs font-medium text-foreground/80 mb-1 ml-1">{locale === "en" ? "Password" : "Kata Sandi"}</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Lock className="h-4 w-4 text-muted-foreground" />
@@ -371,7 +376,7 @@ export default function RegisterPage() {
                             minLength={6}
                             autoComplete="new-password"
                             className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-                            placeholder="Masukkan minimal 6 karakter"
+                            placeholder={locale === "en" ? "At least 6 characters" : "Masukkan minimal 6 karakter"}
                           />
                         </div>
                       </div>
@@ -380,11 +385,11 @@ export default function RegisterPage() {
                     {/* Info Alamat */}
                     <div className="space-y-4 pt-4 border-t border-border">
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-primary" /> Informasi Domisili
+                        <MapPin className="h-4 w-4 text-primary" /> {locale === "en" ? "Location / Address Information" : "Informasi Domisili"}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Provinsi</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "Province" : "Provinsi"}</label>
                           <select
                             className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
                             onChange={(e) => {
@@ -393,13 +398,13 @@ export default function RegisterPage() {
                               setSelRegency(null); setSelDistrict(null); setSelVillage(null);
                             }}
                           >
-                            <option value="">Pilih Provinsi</option>
+                            <option value="">{locale === "en" ? "Select Province" : "Pilih Provinsi"}</option>
                             {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Kabupaten / Kota</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "City / Regency" : "Kabupaten / Kota"}</label>
                           <select
                             disabled={!selProvince}
                             className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
@@ -409,13 +414,13 @@ export default function RegisterPage() {
                               setSelDistrict(null); setSelVillage(null);
                             }}
                           >
-                            <option value="">Pilih Kabupaten/Kota</option>
+                            <option value="">{locale === "en" ? "Select City / Regency" : "Pilih Kabupaten/Kota"}</option>
                             {regencies.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Kecamatan</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "District" : "Kecamatan"}</label>
                           <select
                             disabled={!selRegency}
                             className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
@@ -425,13 +430,13 @@ export default function RegisterPage() {
                               setSelVillage(null);
                             }}
                           >
-                            <option value="">Pilih Kecamatan</option>
+                            <option value="">{locale === "en" ? "Select District" : "Pilih Kecamatan"}</option>
                             {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Desa / Kelurahan</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "Village / Sub-district" : "Desa / Kelurahan"}</label>
                           <select
                             disabled={!selDistrict}
                             className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
@@ -440,18 +445,18 @@ export default function RegisterPage() {
                               setSelVillage(opt.value ? { id: opt.value, name: opt.text } : null);
                             }}
                           >
-                            <option value="">Pilih Desa/Kelurahan</option>
+                            <option value="">{locale === "en" ? "Select Village / Sub-district" : "Pilih Desa/Kelurahan"}</option>
                             {villages.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                           </select>
                         </div>
                         
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">Kode Pos</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "Postal Code" : "Kode Pos"}</label>
                           <input
                             name="postalCode"
                             type="text"
                             className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-                            placeholder="Masukkan kode pos Anda"
+                            placeholder={locale === "en" ? "Enter postal code" : "Masukkan kode pos Anda"}
                           />
                         </div>
                       </div>
@@ -460,24 +465,24 @@ export default function RegisterPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
                     >
                       {loading ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Mengirim Kode Verifikasi...</span>
+                          <span>{locale === "en" ? "Sending Verification Code..." : "Mengirim Kode Verifikasi..."}</span>
                         </>
                       ) : (
-                        "Lanjutkan ke Verifikasi Email"
+                        locale === "en" ? "Proceed to Email Verification" : "Lanjutkan ke Verifikasi Email"
                       )}
                     </button>
                   </form>
                   
                   <div className="mt-8 text-center border-t border-border pt-6">
                     <p className="text-sm text-muted-foreground">
-                      Sudah punya akses?{" "}
+                      {locale === "en" ? "Already have an account?" : "Sudah memiliki akun?"}{" "}
                       <Link href="/login" className="font-bold text-primary hover:text-primary/80 transition-colors">
-                        Masuk di sini
+                        {locale === "en" ? "Sign in here" : "Masuk di sini"}
                       </Link>
                     </p>
                   </div>
@@ -499,9 +504,9 @@ export default function RegisterPage() {
                       setError("")
                       setResendNotice("")
                     }}
-                    className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Kembali ke Form Pendaftaran
+                    <ArrowLeft className="w-4 h-4" /> {locale === "en" ? "Back to Registration Form" : "Kembali ke Form Pendaftaran"}
                   </button>
 
                   <div className="text-center">
@@ -509,10 +514,10 @@ export default function RegisterPage() {
                       <KeyRound className="w-6 h-6" />
                     </div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">
-                      Verifikasi Email Anda
+                      {locale === "en" ? "Verify Your Email" : "Verifikasi Email Anda"}
                     </h2>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                      Kami telah mengirimkan 6 digit kode verifikasi ke alamat email:
+                      {locale === "en" ? "We've sent a 6-digit verification code to:" : "Kami telah mengirimkan 6 digit kode verifikasi ke alamat email:"}
                       <br />
                       <strong className="text-foreground">{registeredEmail}</strong>
                     </p>
@@ -542,7 +547,7 @@ export default function RegisterPage() {
                   <form onSubmit={handleVerifyOtp} className="space-y-6">
                     <div>
                       <label className="block text-xs font-medium text-foreground/80 text-center mb-2">
-                        Masukkan 6 Digit Kode OTP
+                        {locale === "en" ? "Enter 6-Digit OTP Code" : "Masukkan 6 Digit Kode OTP"}
                       </label>
                       <input
                         type="text"
@@ -561,28 +566,28 @@ export default function RegisterPage() {
                     <button
                       type="submit"
                       disabled={otpLoading || otp.length !== 6}
-                      className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-manipulation select-none"
                     >
                       {otpLoading ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Memverifikasi Akun...</span>
+                          <span>{locale === "en" ? "Verifying Account..." : "Memverifikasi Akun..."}</span>
                         </>
                       ) : (
-                        "Verifikasi & Aktifkan Akun"
+                        locale === "en" ? "Verify & Activate Account" : "Verifikasi & Aktifkan Akun"
                       )}
                     </button>
                   </form>
 
                   <div className="text-center pt-4 border-t border-border">
                     <p className="text-xs text-muted-foreground mb-3">
-                      Tidak menerima kode verifikasi?
+                      {locale === "en" ? "Didn't receive the verification code?" : "Tidak menerima kode verifikasi?"}
                     </p>
                     <button
                       type="button"
                       disabled={resendCooldown > 0 || resendLoading}
                       onClick={handleResendOtp}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                     >
                       {resendLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -591,8 +596,8 @@ export default function RegisterPage() {
                       )}
                       <span>
                         {resendCooldown > 0
-                          ? `Kirim ulang kode dalam ${resendCooldown}s`
-                          : "Kirim Ulang Kode Verifikasi"}
+                          ? (locale === "en" ? `Resend code in ${resendCooldown}s` : `Kirim ulang kode dalam ${resendCooldown}s`)
+                          : (locale === "en" ? "Resend Verification Code" : "Kirim Ulang Kode Verifikasi")}
                       </span>
                     </button>
                   </div>

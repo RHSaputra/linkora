@@ -3,38 +3,72 @@
 import { motion } from "framer-motion"
 import { BookOpen, Briefcase, UserCircle2, Check } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const useCases = [
+const getUseCases = (locale: string) => [
   {
-    title: "Untuk Mahasiswa",
-    subtitle: "Riset, Skripsi, & Kompetisi",
+    title: locale === "en" ? "For Students" : "Untuk Mahasiswa",
+    subtitle: locale === "en" ? "Research, Thesis, & Competitions" : "Riset, Skripsi, & Kompetisi",
     icon: BookOpen,
     color: "text-blue-400",
     bg: "bg-blue-500/10 border-blue-500/20",
     gradient: "from-blue-500/10 via-transparent to-transparent",
-    features: ["Catatan Kuliah & Referensi Jurnal", "Link Pendaftaran Magang MSIB/BUMN", "Informasi Beasiswa & Syarat Berkas", "Bank Soal & Referensi Lomba"],
+    features: locale === "en" ? [
+      "Lecture Notes & Journal References",
+      "Internship & Apprenticeship Portals",
+      "Scholarship Requirements & Deadlines",
+      "Competition Repositories & Problem Sets",
+    ] : [
+      "Catatan Kuliah & Referensi Jurnal",
+      "Link Pendaftaran Magang MSIB/BUMN",
+      "Informasi Beasiswa & Syarat Berkas",
+      "Bank Soal & Referensi Lomba",
+    ],
   },
   {
-    title: "Untuk Job Seeker",
-    subtitle: "Karir & Portfolio Tracker",
+    title: locale === "en" ? "For Job Seekers" : "Untuk Job Seeker",
+    subtitle: locale === "en" ? "Career & Portfolio Tracking" : "Karir & Portfolio Tracker",
     icon: UserCircle2,
     color: "text-purple-400",
     bg: "bg-purple-500/10 border-purple-500/20",
     gradient: "from-purple-500/10 via-transparent to-transparent",
-    features: ["Lacak Status Lowongan Pekerjaan", "Koleksi Inspirasi & Link Portfolio", "Materi Persiapan Interview Kerja", "Jejaring Kontak & Profil Rekruter"],
+    features: locale === "en" ? [
+      "Job Application Status Tracker",
+      "Portfolio Inspiration & Project Links",
+      "Interview Preparation Resources",
+      "Recruiter Contacts & Professional Profiles",
+    ] : [
+      "Lacak Status Lowongan Pekerjaan",
+      "Koleksi Inspirasi & Link Portfolio",
+      "Materi Persiapan Interview Kerja",
+      "Jejaring Kontak & Profil Rekruter",
+    ],
   },
   {
-    title: "Untuk Profesional",
-    subtitle: "Knowledge Management & Proyek",
+    title: locale === "en" ? "For Professionals" : "Untuk Profesional",
+    subtitle: locale === "en" ? "Knowledge Management & Projects" : "Knowledge Management & Proyek",
     icon: Briefcase,
     color: "text-amber-400",
     bg: "bg-amber-500/10 border-amber-500/20",
     gradient: "from-amber-500/10 via-transparent to-transparent",
-    features: ["Arsip Link Riset Pasar & Industri", "Dokumentasi Proyek & Meeting Notes", "Resource Tools & Desain Terbaru", "Artikel Pengembangan Skill"],
+    features: locale === "en" ? [
+      "Market & Industry Research Archive",
+      "Project Documentation & Meeting Memos",
+      "Design & Tooling Resource Repositories",
+      "Skill Development & Deep-Dive Articles",
+    ] : [
+      "Arsip Link Riset Pasar & Industri",
+      "Dokumentasi Proyek & Meeting Notes",
+      "Resource Tools & Desain Terbaru",
+      "Artikel Pengembangan Skill",
+    ],
   },
 ]
 
 export function UseCases() {
+  const { t, locale } = useTranslation()
+  const useCases = getUseCases(locale)
+
   return (
     <section id="use-cases" className="py-14 md:py-18 relative overflow-hidden bg-background">
       {/* Background glow */}
@@ -48,7 +82,7 @@ export function UseCases() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold tracking-tight leading-tight md:leading-snug mb-4 text-foreground"
           >
-            Dibuat Khusus Untuk Siapa <LinkoraText />?
+            {locale === "en" ? "Who is " : "Dibuat Khusus Untuk Siapa "}<LinkoraText />{locale === "en" ? " Built For?" : "?"}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +91,9 @@ export function UseCases() {
             transition={{ delay: 0.1 }}
             className="text-base md:text-lg text-muted-foreground"
           >
-            Fleksibel untuk berbagai alur kerja belajar, mencari peluang, dan mengelola karir.
+            {locale === "en"
+              ? "Flexible across all study workflows, career tracking, and knowledge creation."
+              : "Fleksibel untuk berbagai alur kerja belajar, mencari peluang, dan mengelola karir."}
           </motion.p>
         </div>
 
@@ -106,4 +142,3 @@ export function UseCases() {
     </section>
   )
 }
-

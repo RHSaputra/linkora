@@ -18,6 +18,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { AdvancedImage } from "@/lib/tiptap-image-advanced";
 import { ImageToolbar } from "@/components/notes/image-toolbar";
 import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
+import { useTranslation } from "@/components/providers/i18n-provider";
 import { useEffect, useState, useRef, useReducer, memo, useCallback } from "react";
 import {
   Bold,
@@ -105,6 +106,8 @@ import {
   DEFAULT_DOCUMENT_SETTINGS,
   PAPER_SIZES,
   MARGIN_PRESETS,
+  type MarginValues,
+  type MarginPreset,
   getEffectivePageDimensions,
   mmToPx,
   type Orientation,
@@ -150,10 +153,10 @@ const MenuButton = memo(function MenuButton({
           }}
           aria-label={label}
           className={cn(
-            "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 active:scale-95 active:duration-75 select-none touch-manipulation cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none",
             isActive
-              ? "bg-primary text-primary-foreground shadow-sm font-semibold"
-              : "text-muted-foreground hover:text-foreground hover:bg-foreground/10",
+              ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+              : "text-muted-foreground hover:text-foreground hover:bg-foreground/10 active:bg-foreground/15",
             className
           )}
         >
@@ -181,20 +184,42 @@ function ToolbarDivider() {
 function FontFamilySelector({
   editor,
   defaultFont = "Arial",
+  documentSettings,
+  onDocumentSettingsChange,
 }: {
   editor: Editor;
   defaultFont?: string;
+  documentSettings?: DocumentSettings;
+  onDocumentSettingsChange?: (settings: DocumentSettings) => void;
 }) {
   const [open, setOpen] = useState(false);
 
   const currentFont = editor?.getAttributes("textStyle")?.fontFamily;
-  const effectiveFont = currentFont || defaultFont;
+  const effectiveFont = currentFont || documentSettings?.defaultFont || defaultFont;
   const displayName = effectiveFont
     ? FONT_FAMILIES.find((f) =>
         effectiveFont.toLowerCase().includes(f.name.toLowerCase()) ||
         effectiveFont.toLowerCase().includes(f.value.toLowerCase())
       )?.name || effectiveFont.split(",")[0].replace(/['"]/g, "").trim()
     : "Font";
+
+  const handleSelectFont = (fontValue: string, fontName: string) => {
+    const isSelectionEmpty = editor.state.selection.empty;
+    if (!isSelectionEmpty) {
+      // User selected text: apply font strictly to the selected text range
+      editor.chain().focus().setFontFamily(fontValue).run();
+    } else {
+      // No text selected: change the active document font so all newly typed text uses this font!
+      editor.chain().focus().setFontFamily(fontValue).run();
+      if (documentSettings && onDocumentSettingsChange) {
+        onDocumentSettingsChange({
+          ...documentSettings,
+          defaultFont: fontName,
+        });
+      }
+    }
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -203,6 +228,7 @@ function FontFamilySelector({
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 px-2.5 inline-flex items-center gap-1.5 rounded-lg text-xs transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-w-[95px] max-w-[145px]",
                 open
@@ -228,7 +254,7 @@ function FontFamilySelector({
       >
         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 flex items-center justify-between">
           <span>Jenis Font</span>
-          <span className="text-[9px] text-primary font-mono lowercase">default: {defaultFont}</span>
+          <span className="text-[9px] text-primary font-mono lowercase">aktif: {displayName}</span>
         </div>
         {FONT_FAMILIES.map((font) => {
           const isSelected =
@@ -242,8 +268,7 @@ function FontFamilySelector({
               onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                editor.chain().focus().setFontFamily(font.value).run();
-                setOpen(false);
+                handleSelectFont(font.value, font.name);
               }}
               className={cn(
                 "w-full text-left px-2.5 py-1.5 rounded-lg text-sm transition-colors cursor-pointer flex items-center justify-between",
@@ -270,7 +295,7 @@ function FontFamilySelector({
               className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 cursor-pointer flex items-center gap-1.5"
             >
               <RotateCcw className="h-3 w-3" />
-              <span>Reset ke Default Dokumen ({defaultFont})</span>
+              <span>Reset ke Default ({documentSettings?.defaultFont || defaultFont})</span>
             </button>
           </div>
         )}
@@ -284,25 +309,41 @@ function FontFamilySelector({
 function FontSizeSelector({
   editor,
   defaultFontSize = 12,
+  documentSettings,
+  onDocumentSettingsChange,
 }: {
   editor: Editor;
   defaultFontSize?: number;
+  documentSettings?: DocumentSettings;
+  onDocumentSettingsChange?: (settings: DocumentSettings) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [customSize, setCustomSize] = useState("");
 
   const currentSizeRaw = editor?.getAttributes("textStyle")?.fontSize;
-  // Clean display: e.g. "12pt" -> "12", "16px" -> "12"
   const displaySize = currentSizeRaw
     ? currentSizeRaw.replace(/pt|px/gi, "")
-    : `${defaultFontSize}`;
+    : `${documentSettings?.defaultFontSize || defaultFontSize}`;
 
   const handleSetSize = (size: string) => {
-    // Word mengizinkan 1–1638pt; kita clamp ke rentang wajar 1–200pt
     const parsed = parseFloat(size);
     if (!isFinite(parsed)) return;
     const clamped = Math.min(200, Math.max(1, parsed));
-    editor.chain().focus().setFontSize(`${clamped}pt`).run();
+    const isSelectionEmpty = editor.state.selection.empty;
+
+    if (!isSelectionEmpty) {
+      // Apply font size strictly to the selected text
+      editor.chain().focus().setFontSize(`${clamped}pt`).run();
+    } else {
+      // No text selected: update document active size so newly typed text uses this size!
+      editor.chain().focus().setFontSize(`${clamped}pt`).run();
+      if (documentSettings && onDocumentSettingsChange) {
+        onDocumentSettingsChange({
+          ...documentSettings,
+          defaultFontSize: clamped,
+        });
+      }
+    }
     setOpen(false);
   };
 
@@ -313,6 +354,7 @@ function FontSizeSelector({
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 px-2 inline-flex items-center gap-1 rounded-lg text-xs transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-w-[54px]",
                 open
@@ -418,6 +460,7 @@ function LineSpacingSelector({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 px-2 inline-flex items-center gap-1 rounded-lg text-xs transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-w-[58px]",
                 open
@@ -492,6 +535,7 @@ function LineSpacingSelector({ editor }: { editor: Editor }) {
 // ─── Image Picker Component (Upload & URL) ──────────────────
 
 function ImagePicker({ editor }: { editor: Editor }) {
+  const { t, locale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -512,7 +556,7 @@ function ImagePicker({ editor }: { editor: Editor }) {
 
     // Validate size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.warning("Ukuran gambar melebihi batas maksimal 5MB.", "Format Gambar");
+      toast.warning(t("editor.imageTooLarge"), locale === "en" ? "Image Format" : "Format Gambar");
       return;
     }
 
@@ -537,20 +581,21 @@ function ImagePicker({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 open
                   ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
               )}
-              aria-label="Sisipkan Gambar"
+              aria-label={t("editor.insertImage")}
             >
               <ImageIcon className="h-4 w-4" />
             </button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs py-1 px-2.5 shadow-lg border border-border/60">
-          <span>Sisipkan Gambar</span>
+          <span>{t("editor.insertImage")}</span>
         </TooltipContent>
       </Tooltip>
       <PopoverContent
@@ -561,7 +606,7 @@ function ImagePicker({ editor }: { editor: Editor }) {
       >
         <div className="text-xs font-semibold text-foreground pb-2 mb-3 border-b border-border/60 flex items-center gap-1.5">
           <ImageIcon className="h-3.5 w-3.5 text-primary" />
-          <span>Sisipkan Gambar</span>
+          <span>{t("editor.insertImage")}</span>
         </div>
 
         <div className="space-y-3">
@@ -580,17 +625,17 @@ function ImagePicker({ editor }: { editor: Editor }) {
               className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold rounded-xl border border-primary/30 transition-colors cursor-pointer"
             >
               <Upload className="h-4 w-4" />
-              <span>Pilih Gambar dari Perangkat</span>
+              <span>{locale === "en" ? "Choose Image from Device" : "Pilih Gambar dari Perangkat"}</span>
             </button>
             <p className="text-[10px] text-muted-foreground mt-1 text-center">
-              Mendukung PNG, JPG, WebP, GIF (Maks. 5MB)
+              {locale === "en" ? "Supports PNG, JPG, WebP, GIF (Max. 5MB)" : "Mendukung PNG, JPG, WebP, GIF (Maks. 5MB)"}
             </p>
           </div>
 
           <div className="relative flex items-center justify-center my-2">
             <div className="border-t border-border/60 w-full" />
             <span className="bg-popover px-2 text-[10px] text-muted-foreground uppercase absolute font-medium">
-              Atau Tautan
+              {locale === "en" ? "Or Image URL" : "Atau Tautan"}
             </span>
           </div>
 
@@ -598,7 +643,7 @@ function ImagePicker({ editor }: { editor: Editor }) {
           <form onSubmit={handleInsertUrl} className="space-y-2">
             <input
               type="url"
-              placeholder="https://contoh.com/gambar.jpg"
+              placeholder={locale === "en" ? "https://example.com/image.jpg" : "https://contoh.com/gambar.jpg"}
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary font-mono"
@@ -609,14 +654,14 @@ function ImagePicker({ editor }: { editor: Editor }) {
                 onClick={() => setOpen(false)}
                 className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                Batal
+                {t("common.cancel")}
               </button>
               <button
                 type="submit"
                 disabled={!imageUrl.trim()}
                 className="px-3.5 py-1.5 text-xs bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 disabled:opacity-40 transition-colors cursor-pointer"
               >
-                Sisipkan
+                {locale === "en" ? "Insert" : "Sisipkan"}
               </button>
             </div>
           </form>
@@ -714,6 +759,7 @@ function ColorPicker({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 !!currentColor || open
@@ -881,6 +927,7 @@ const HIGHLIGHT_COLORS = [
 ];
 
 function HighlightPicker({ editor }: { editor: Editor }) {
+  const { locale } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const currentHighlight = editor?.getAttributes("highlight")?.color;
@@ -902,6 +949,7 @@ function HighlightPicker({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 isHighlightActive || open
@@ -910,8 +958,8 @@ function HighlightPicker({ editor }: { editor: Editor }) {
               )}
               aria-label={
                 isHighlightActive
-                  ? `Sorotan Aktif (${currentHighlight || "Kuning"})`
-                  : "Warna Sorotan (Highlight)"
+                  ? (locale === "en" ? `Active Highlight (${currentHighlight || "Yellow"})` : `Sorotan Aktif (${currentHighlight || "Kuning"})`)
+                  : (locale === "en" ? "Highlight Color" : "Warna Sorotan (Highlight)")
               }
             >
               <div className="relative flex items-center justify-center">
@@ -929,8 +977,8 @@ function HighlightPicker({ editor }: { editor: Editor }) {
         <TooltipContent side="top" className="text-xs py-1 px-2.5 shadow-lg border border-border/60">
           <span>
             {isHighlightActive
-              ? `Sorotan Aktif (${currentHighlight || "Kuning"})`
-              : "Warna Sorotan (Highlight)"}
+              ? (locale === "en" ? `Active Highlight (${currentHighlight || "Yellow"})` : `Sorotan Aktif (${currentHighlight || "Kuning"})`)
+              : (locale === "en" ? "Highlight Color" : "Warna Sorotan (Highlight)")}
           </span>
         </TooltipContent>
       </Tooltip>
@@ -943,7 +991,7 @@ function HighlightPicker({ editor }: { editor: Editor }) {
         <div className="text-xs font-semibold text-foreground pb-2 mb-2.5 border-b border-border/50 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Highlighter className="h-3.5 w-3.5 text-yellow-500" />
-            <span>Warna Sorotan</span>
+            <span>{locale === "en" ? "Highlight Color" : "Warna Sorotan"}</span>
           </span>
         </div>
 
@@ -989,7 +1037,7 @@ function HighlightPicker({ editor }: { editor: Editor }) {
               className="w-full flex items-center justify-center gap-1.5 text-center text-xs text-destructive hover:text-destructive/80 py-1 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer font-medium"
             >
               <Trash2 className="h-3 w-3" />
-              <span>Hapus Sorotan</span>
+              <span>{locale === "en" ? "Remove Highlight" : "Hapus Sorotan"}</span>
             </button>
           </div>
         )}
@@ -999,6 +1047,7 @@ function HighlightPicker({ editor }: { editor: Editor }) {
 }
 
 function TablePicker({ editor }: { editor: Editor }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [hoveredRows, setHoveredRows] = useState(3);
   const [hoveredCols, setHoveredCols] = useState(3);
@@ -1026,20 +1075,21 @@ function TablePicker({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 editor?.isActive("table") || open
                   ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
               )}
-              aria-label="Sisipkan Tabel"
+              aria-label={t("editor.insertTable")}
             >
               <TableIcon className="h-4 w-4" />
             </button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs py-1 px-2.5 shadow-lg border border-border/60">
-          <span>Sisipkan Tabel</span>
+          <span>{t("editor.insertTable")}</span>
         </TooltipContent>
       </Tooltip>
       <PopoverContent
@@ -1051,7 +1101,7 @@ function TablePicker({ editor }: { editor: Editor }) {
         <div className="text-xs font-semibold text-foreground mb-2.5 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <TableIcon className="h-3.5 w-3.5 text-primary" />
-            <span>Sisipkan Tabel</span>
+            <span>{t("editor.insertTable")}</span>
           </span>
           <span className="text-primary font-mono text-[11px] bg-primary/10 px-2 py-0.5 rounded-md font-bold">
             {hoveredRows} × {hoveredCols}
@@ -1131,6 +1181,7 @@ function TablePicker({ editor }: { editor: Editor }) {
 }
 
 function TableContextActions({ editor }: { editor: Editor }) {
+  const { locale } = useTranslation();
   const isInTable = editor?.isActive("table");
   if (!isInTable) return null;
 
@@ -1143,69 +1194,69 @@ function TableContextActions({ editor }: { editor: Editor }) {
           className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer border border-primary/20 shadow-xs"
         >
           <TableProperties className="h-3.5 w-3.5" />
-          <span>Kelola Tabel</span>
+          <span>{locale === "en" ? "Manage Table" : "Kelola Tabel"}</span>
           <ChevronDown className="h-3 w-3 opacity-70" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56 bg-popover border border-border shadow-2xl z-[100]">
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">Opsi Baris</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">{locale === "en" ? "Row Options" : "Opsi Baris"}</DropdownMenuLabel>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().addRowBefore().run()}
           className="cursor-pointer text-xs"
         >
           <Plus className="w-3.5 h-3.5 mr-2 text-primary" />
-          <span>Sisipkan Baris di Atas</span>
+          <span>{locale === "en" ? "Insert Row Above" : "Sisipkan Baris di Atas"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().addRowAfter().run()}
           className="cursor-pointer text-xs"
         >
           <Plus className="w-3.5 h-3.5 mr-2 text-primary" />
-          <span>Sisipkan Baris di Bawah</span>
+          <span>{locale === "en" ? "Insert Row Below" : "Sisipkan Baris di Bawah"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().deleteRow().run()}
           className="cursor-pointer text-xs text-destructive focus:bg-destructive/10 focus:text-destructive"
         >
           <Trash2 className="w-3.5 h-3.5 mr-2" />
-          <span>Hapus Baris</span>
+          <span>{locale === "en" ? "Delete Row" : "Hapus Baris"}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">Opsi Kolom</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">{locale === "en" ? "Column Options" : "Opsi Kolom"}</DropdownMenuLabel>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().addColumnBefore().run()}
           className="cursor-pointer text-xs"
         >
           <Plus className="w-3.5 h-3.5 mr-2 text-primary" />
-          <span>Sisipkan Kolom di Kiri</span>
+          <span>{locale === "en" ? "Insert Column Left" : "Sisipkan Kolom di Kiri"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().addColumnAfter().run()}
           className="cursor-pointer text-xs"
         >
           <Plus className="w-3.5 h-3.5 mr-2 text-primary" />
-          <span>Sisipkan Kolom di Kanan</span>
+          <span>{locale === "en" ? "Insert Column Right" : "Sisipkan Kolom di Kanan"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().deleteColumn().run()}
           className="cursor-pointer text-xs text-destructive focus:bg-destructive/10 focus:text-destructive"
         >
           <Trash2 className="w-3.5 h-3.5 mr-2" />
-          <span>Hapus Kolom</span>
+          <span>{locale === "en" ? "Delete Column" : "Hapus Kolom"}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">Opsi Sel & Header</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">{locale === "en" ? "Cell & Header Options" : "Opsi Sel & Header"}</DropdownMenuLabel>
         <DropdownMenuItem
           disabled={!editor.can().mergeCells()}
           onSelect={() => editor.chain().focus().mergeCells().run()}
           className="cursor-pointer text-xs disabled:opacity-40"
         >
           <Combine className="w-3.5 h-3.5 mr-2" />
-          <span>Gabung Sel (Merge)</span>
+          <span>{locale === "en" ? "Merge Cells" : "Gabung Sel (Merge)"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!editor.can().splitCell()}
@@ -1213,21 +1264,21 @@ function TableContextActions({ editor }: { editor: Editor }) {
           className="cursor-pointer text-xs disabled:opacity-40"
         >
           <Split className="w-3.5 h-3.5 mr-2" />
-          <span>Pisah Sel (Split)</span>
+          <span>{locale === "en" ? "Split Cell" : "Pisah Sel (Split)"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().toggleHeaderRow().run()}
           className="cursor-pointer text-xs"
         >
           <Rows className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
-          <span>Toggle Baris Header</span>
+          <span>{locale === "en" ? "Toggle Header Row" : "Toggle Baris Header"}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => editor.chain().focus().toggleHeaderColumn().run()}
           className="cursor-pointer text-xs"
         >
           <Columns className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
-          <span>Toggle Kolom Header</span>
+          <span>{locale === "en" ? "Toggle Header Column" : "Toggle Kolom Header"}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
@@ -1237,7 +1288,7 @@ function TableContextActions({ editor }: { editor: Editor }) {
           className="cursor-pointer text-xs text-destructive font-semibold focus:bg-destructive/10 focus:text-destructive"
         >
           <Trash2 className="w-3.5 h-3.5 mr-2" />
-          <span>Hapus Seluruh Tabel</span>
+          <span>{locale === "en" ? "Delete Entire Table" : "Hapus Seluruh Tabel"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -1245,6 +1296,7 @@ function TableContextActions({ editor }: { editor: Editor }) {
 }
 
 function LinkButton({ editor }: { editor: Editor }) {
+  const { t, locale } = useTranslation();
   const [open, setOpen] = useState(false);
   const previousUrl = editor?.getAttributes("link")?.href || "";
   const [url, setUrl] = useState(previousUrl);
@@ -1306,20 +1358,21 @@ function LinkButton({ editor }: { editor: Editor }) {
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 editor.isActive("link") || open
                   ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
               )}
-              aria-label="Sisipkan Link"
+              aria-label={t("editor.insertLink")}
             >
               <LinkIcon className="h-4 w-4" />
             </button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs py-1 px-2.5 flex items-center gap-1.5 shadow-lg border border-border/60">
-          <span>Sisipkan Link</span>
+          <span>{t("editor.insertLink")}</span>
           <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold bg-muted/80 text-muted-foreground rounded border border-border/80">
             Ctrl+K
           </kbd>
@@ -1334,14 +1387,14 @@ function LinkButton({ editor }: { editor: Editor }) {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <LinkIcon className="h-3.5 w-3.5 text-primary" />
-            <span>{editor.isActive("link") ? "Edit Tautan Link" : "Sisipkan Tautan Link"}</span>
+            <span>{editor.isActive("link") ? (locale === "en" ? "Edit Link" : "Edit Tautan Link") : (locale === "en" ? "Insert Link" : "Sisipkan Tautan Link")}</span>
           </div>
           <input
             ref={inputRef}
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://contoh.com"
+            placeholder={locale === "en" ? "https://example.com" : "https://contoh.com"}
             className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all text-foreground font-mono"
           />
           <div className="flex items-center gap-2 justify-end pt-1">
@@ -1355,7 +1408,7 @@ function LinkButton({ editor }: { editor: Editor }) {
                 }}
                 className="text-xs text-destructive hover:text-destructive/80 font-medium cursor-pointer px-2 py-1 mr-auto"
               >
-                Hapus Link
+                {locale === "en" ? "Remove Link" : "Hapus Link"}
               </button>
             )}
             <button
@@ -1367,13 +1420,13 @@ function LinkButton({ editor }: { editor: Editor }) {
               }}
               className="text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2.5 py-1.5 rounded-lg font-medium"
             >
-              Batal
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
               className="text-xs bg-primary text-primary-foreground px-3.5 py-1.5 rounded-lg font-medium cursor-pointer hover:bg-primary/90 transition-colors shadow-sm"
             >
-              Simpan
+              {t("common.save")}
             </button>
           </div>
         </form>
@@ -1382,7 +1435,7 @@ function LinkButton({ editor }: { editor: Editor }) {
   );
 }
 
-// ─── Document Settings Panel ────────────────────────────────
+// ─── Document Settings Panel (Pengaturan Berkas) ───────────
 
 function DocumentSettingsPanel({
   settings,
@@ -1392,24 +1445,26 @@ function DocumentSettingsPanel({
   onSettingsChange: (settings: DocumentSettings) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<DocumentSettings>(settings);
 
-  useEffect(() => {
-    setDraft(settings);
-  }, [settings, open]);
-
-  const handleApplyAndSave = () => {
-    onSettingsChange(draft);
-    toast.success(
-      `Format ${draft.pageSize} (${draft.orientation === "landscape" ? "Landscape" : "Portrait"}), Font ${draft.defaultFont} ${draft.defaultFontSize}pt langsung diterapkan ke seluruh dokumen.`,
-      "Pengaturan Dokumen Diterapkan"
-    );
-    setOpen(false);
+  const updateSetting = <K extends keyof DocumentSettings>(
+    key: K,
+    value: DocumentSettings[K]
+  ) => {
+    onSettingsChange({ ...settings, [key]: value });
   };
 
-  const handleCancel = () => {
-    setDraft(settings);
-    setOpen(false);
+  const updateMargin = (key: keyof MarginValues, value: number) => {
+    onSettingsChange({
+      ...settings,
+      margins: { ...settings.margins, [key]: value },
+    });
+  };
+
+  const updateMarginPreset = (preset: MarginPreset) => {
+    onSettingsChange({
+      ...settings,
+      margins: { ...preset.values },
+    });
   };
 
   return (
@@ -1419,6 +1474,7 @@ function DocumentSettingsPanel({
           <PopoverTrigger asChild>
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               className={cn(
                 "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 open
@@ -1447,7 +1503,7 @@ function DocumentSettingsPanel({
             <span>Pengaturan Dokumen</span>
           </span>
           <span className="text-[10px] font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
-            {draft.pageSize} • {draft.orientation === "landscape" ? "Landscape" : "Portrait"}
+            {settings.pageSize} • {settings.orientation === "landscape" ? "Landscape" : "Portrait"}
           </span>
         </div>
 
@@ -1458,10 +1514,8 @@ function DocumentSettingsPanel({
               Ukuran Kertas
             </label>
             <select
-              value={draft.pageSize}
-              onChange={(e) =>
-                setDraft((prev) => ({ ...prev, pageSize: e.target.value }))
-              }
+              value={settings.pageSize}
+              onChange={(e) => updateSetting("pageSize", e.target.value)}
               className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
             >
               {PAPER_SIZES.map((p) => (
@@ -1483,12 +1537,10 @@ function DocumentSettingsPanel({
                   key={o}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() =>
-                    setDraft((prev) => ({ ...prev, orientation: o }))
-                  }
+                  onClick={() => updateSetting("orientation", o)}
                   className={cn(
                     "flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer capitalize",
-                    draft.orientation === o
+                    settings.orientation === o
                       ? "bg-primary text-primary-foreground border-primary shadow-sm font-bold"
                       : "bg-background border-border hover:bg-foreground/5 text-foreground"
                   )}
@@ -1508,10 +1560,10 @@ function DocumentSettingsPanel({
               value={
                 MARGIN_PRESETS.find(
                   (m) =>
-                    m.values.top === draft.margins.top &&
-                    m.values.bottom === draft.margins.bottom &&
-                    m.values.left === draft.margins.left &&
-                    m.values.right === draft.margins.right
+                    m.values.top === settings.margins.top &&
+                    m.values.bottom === settings.margins.bottom &&
+                    m.values.left === settings.margins.left &&
+                    m.values.right === settings.margins.right
                 )?.name || "Custom"
               }
               onChange={(e) => {
@@ -1519,10 +1571,7 @@ function DocumentSettingsPanel({
                   (m) => m.name === e.target.value
                 );
                 if (preset) {
-                  setDraft((prev) => ({
-                    ...prev,
-                    margins: { ...preset.values },
-                  }));
+                  updateMarginPreset(preset);
                 }
               }}
               className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
@@ -1534,10 +1583,10 @@ function DocumentSettingsPanel({
               ))}
               {!MARGIN_PRESETS.find(
                 (m) =>
-                  m.values.top === draft.margins.top &&
-                  m.values.bottom === draft.margins.bottom &&
-                  m.values.left === draft.margins.left &&
-                  m.values.right === draft.margins.right
+                  m.values.top === settings.margins.top &&
+                  m.values.bottom === settings.margins.bottom &&
+                  m.values.left === settings.margins.left &&
+                  m.values.right === settings.margins.right
               ) && <option value="Custom">Custom</option>}
             </select>
 
@@ -1559,13 +1608,10 @@ function DocumentSettingsPanel({
                     type="number"
                     step="1"
                     min="0"
-                    value={Math.round(draft.margins[key] * 10) / 10}
+                    value={Math.round(settings.margins[key] * 10) / 10}
                     onChange={(e) => {
                       const val = parseFloat(e.target.value) || 0;
-                      setDraft((prev) => ({
-                        ...prev,
-                        margins: { ...prev.margins, [key]: val },
-                      }));
+                      updateMargin(key, val);
                     }}
                     className="w-full px-1.5 py-1 text-[11px] font-mono rounded-md bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary text-center"
                   />
@@ -1583,10 +1629,8 @@ function DocumentSettingsPanel({
               Font Default Dokumen
             </label>
             <select
-              value={draft.defaultFont}
-              onChange={(e) =>
-                setDraft((prev) => ({ ...prev, defaultFont: e.target.value }))
-              }
+              value={settings.defaultFont}
+              onChange={(e) => updateSetting("defaultFont", e.target.value)}
               className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
             >
               {FONT_FAMILIES.map((f) => (
@@ -1603,12 +1647,9 @@ function DocumentSettingsPanel({
               Ukuran Font Default
             </label>
             <select
-              value={draft.defaultFontSize}
+              value={settings.defaultFontSize}
               onChange={(e) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  defaultFontSize: parseInt(e.target.value) || 12,
-                }))
+                updateSetting("defaultFontSize", parseInt(e.target.value) || 12)
               }
               className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
             >
@@ -1619,65 +1660,35 @@ function DocumentSettingsPanel({
               ))}
             </select>
           </div>
-
-          {/* Header & Footer Text */}
-          <div>
-            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-              Teks Header
-            </label>
-            <input
-              type="text"
-              value={draft.headerText}
-              onChange={(e) => setDraft((prev) => ({ ...prev, headerText: e.target.value }))}
-              placeholder="Kosong = tanpa header"
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-              Teks Footer
-            </label>
-            <input
-              type="text"
-              value={draft.footerText}
-              onChange={(e) => setDraft((prev) => ({ ...prev, footerText: e.target.value }))}
-              placeholder="Kosong = tanpa footer"
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
         </div>
 
         {/* Page dimensions info */}
         <div className="mt-3 pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
           {(() => {
-            const dims = getEffectivePageDimensions(draft);
+            const dims = getEffectivePageDimensions(settings);
             return (
               <span>
                 Halaman: {Math.round(dims.pageWidthMm)}×
                 {Math.round(dims.pageHeightMm)} mm | Area konten:{" "}
                 {Math.round(dims.contentWidthMm)}×
-                {Math.round(dims.contentHeightMm)} mm
+                {Math.round(dims.bodyHeightMm)} mm
               </span>
             );
           })()}
         </div>
 
-        {/* Action Buttons: Simpan & Batal */}
-        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-end gap-2">
+        {/* Real-time Status Indicator */}
+        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between gap-2">
+          <span className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            <span>Perubahan langsung diterapkan</span>
+          </span>
           <button
             type="button"
-            onClick={handleCancel}
-            className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
+            onClick={() => setOpen(false)}
+            className="px-3 py-1 text-xs font-semibold bg-foreground/10 hover:bg-foreground/15 text-foreground rounded-lg transition-colors cursor-pointer"
           >
-            Batal
-          </button>
-          <button
-            type="button"
-            onClick={handleApplyAndSave}
-            className="px-3.5 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
-          >
-            <Check className="h-3.5 w-3.5" />
-            <span>Simpan Pengaturan</span>
+            Tutup
           </button>
         </div>
       </PopoverContent>
@@ -1696,6 +1707,7 @@ function ExportMenu({
   settings: DocumentSettings;
   noteTitle: string;
 }) {
+  const { t, locale } = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
   const [exportType, setExportType] = useState<"pdf" | "docx" | null>(null);
 
@@ -1706,10 +1718,10 @@ function ExportMenu({
       const { exportToPdf } = await import("@/lib/export-pdf");
       const html = editor.getHTML();
       await exportToPdf(html, noteTitle, settings);
-      toast.success("Dokumen PDF berhasil diunduh ke perangkat Anda.", "Ekspor PDF Berhasil");
+      toast.success(t("editor.exportSuccessPdf"), locale === "en" ? "PDF Export Succeeded" : "Ekspor PDF Berhasil");
     } catch (err) {
       console.error("Export PDF gagal:", err);
-      toast.error("Gagal mengekspor PDF. Pastikan format dokumen valid.", "Ekspor Gagal");
+      toast.error(t("editor.exportErrorPdf"), locale === "en" ? "Export Failed" : "Ekspor Gagal");
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -1723,10 +1735,10 @@ function ExportMenu({
       const { exportToDocx } = await import("@/lib/export-docx");
       const html = editor.getHTML();
       await exportToDocx(html, noteTitle, settings);
-      toast.success("Dokumen Microsoft Word (.docx) berhasil diunduh.", "Ekspor Word Berhasil");
+      toast.success(t("editor.exportSuccessDocx"), locale === "en" ? "Word Export Succeeded" : "Ekspor Word Berhasil");
     } catch (err) {
       console.error("Export DOCX gagal:", err);
-      toast.error("Gagal mengekspor berkas Word. Silakan coba lagi.", "Ekspor Gagal");
+      toast.error(t("editor.exportErrorDocx"), locale === "en" ? "Export Failed" : "Ekspor Gagal");
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -1750,21 +1762,21 @@ function ExportMenu({
               <FileDown className="h-3.5 w-3.5 text-primary" />
               <span className="hidden sm:inline">
                 {isExporting
-                  ? `Mengekspor ${exportType?.toUpperCase()}...`
-                  : "Ekspor"}
+                  ? (locale === "en" ? `Exporting ${exportType?.toUpperCase()}...` : `Mengekspor ${exportType?.toUpperCase()}...`)
+                  : t("editor.exportBtn")}
               </span>
               <ChevronDown className="h-3 w-3 opacity-60" />
             </button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs py-1 px-2.5 shadow-lg border border-border/60">
-          <span>Ekspor Dokumen (PDF & Word)</span>
+          <span>{locale === "en" ? "Export Document (PDF & Word)" : "Ekspor Dokumen (PDF & Word)"}</span>
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" className="w-56 bg-popover border border-border shadow-2xl z-[100]">
         <DropdownMenuLabel className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
           <FileDown className="h-3.5 w-3.5 text-primary" />
-          Ekspor Dokumen Sebagai
+          {locale === "en" ? "Export Document As" : "Ekspor Dokumen Sebagai"}
         </DropdownMenuLabel>
         <DropdownMenuItem
           onSelect={handleExportPdf}
@@ -1788,7 +1800,7 @@ function ExportMenu({
           <div>
             <div className="font-semibold text-foreground">Microsoft Word (.docx)</div>
             <div className="text-[10px] text-muted-foreground">
-              Tabel & format native OpenXML
+              {locale === "en" ? "Tables & native OpenXML formatting" : "Tabel & format native OpenXML"}
             </div>
           </div>
         </DropdownMenuItem>
@@ -1833,68 +1845,224 @@ interface PageSpacer {
   height: number;
 }
 
+type FlowUnit =
+  | { kind: "text"; el: Text; top: number; bottom: number }
+  | { kind: "block"; el: HTMLElement; top: number; bottom: number };
+
+const ATOMIC_BLOCK_SELECTOR =
+  "img, hr, div[data-type='page-break'], .tableWrapper";
+
+/**
+ * Mengumpulkan unit aliran dokumen (node teks + blok atomik) dalam urutan
+ * dokumen. Tinggi spacer lama dikompensasi agar pengukuran bersih.
+ */
+function collectFlowUnits(
+  view: Editor["view"],
+  zoomScale: number
+): { units: FlowUnit[]; pmRectTop: number } | null {
+  const pmEl = view.dom as HTMLElement;
+  const pmRect = pmEl.getBoundingClientRect();
+  const scale = zoomScale || 1;
+  const unscale = (v: number) => v / scale;
+
+  const units: FlowUnit[] = [];
+  let spacerComp = 0;
+
+  const walker = document.createTreeWalker(pmEl, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return (node as Text).data.length > 0
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+      }
+      const el = node as HTMLElement;
+      // Spacer lama: kirim ke loop utama untuk dikompensasi (tanpa anak)
+      if (el.classList?.contains("pagination-spacer")) {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+      // Blok atomik: jadikan unit, JANGAN telusuri isi dalamnya
+      if (el.matches?.(ATOMIC_BLOCK_SELECTOR)) {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+      // Kontainer biasa (p, h1, strong, ...): lewati node-nya, telusuri anak
+      return NodeFilter.FILTER_SKIP;
+    },
+  });
+
+  let current = walker.nextNode();
+  while (current) {
+    if (current.nodeType === Node.TEXT_NODE) {
+      const t = current as Text;
+      const range = document.createRange();
+      range.selectNodeContents(t);
+      const r = range.getBoundingClientRect();
+      if (r.height >= 0 && !Number.isNaN(r.top)) {
+        units.push({
+          kind: "text",
+          el: t,
+          top: spacerComp + unscale(r.top - pmRect.top),
+          bottom: spacerComp + unscale(r.bottom - pmRect.top),
+        });
+      }
+    } else {
+      const el = current as HTMLElement;
+      if (el.classList?.contains("pagination-spacer")) {
+        spacerComp -= el.offsetHeight; // layout px (tidak terpengaruh transform)
+        current = walker.nextNode();
+        continue;
+      }
+      if (el.matches(ATOMIC_BLOCK_SELECTOR)) {
+        const r = el.getBoundingClientRect();
+        units.push({
+          kind: "block",
+          el,
+          top: spacerComp + unscale(r.top - pmRect.top),
+          bottom: spacerComp + unscale(r.bottom - pmRect.top),
+        });
+        current = walker.nextSibling();
+        continue;
+      }
+    }
+    current = walker.nextNode();
+  }
+
+  return { units, pmRectTop: pmRect.top };
+}
+
+/**
+ * Binary search: karakter terakhir (offset) pada text node yang seluruh
+ * prefiksnya masih berada di atas batas `rawLimit` (ruang tak terskala,
+ * relatif PM-top). Return null jika node sepenuhnya muat.
+ */
+function findTextCutOffset(
+  textEl: Text,
+  rawLimit: number,
+  pmRectTop: number,
+  zoomScale: number
+): number | null {
+  const len = textEl.data.length;
+  if (len === 0) return null;
+  const unscale = 1 / (zoomScale || 1);
+
+  const bottomOf = (end: number): number => {
+    const range = document.createRange();
+    range.setStart(textEl, 0);
+    range.setEnd(textEl, Math.min(len, Math.max(0, end)));
+    const r = range.getBoundingClientRect();
+    return (r.bottom - pmRectTop) * unscale;
+  };
+
+  if (bottomOf(len) <= rawLimit) return null; // muat seluruhnya
+
+  let lo = 0;
+  let hi = len;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (bottomOf(mid) <= rawLimit) lo = mid;
+    else hi = mid - 1;
+  }
+
+  // Snap ke batas kata agar tidak memotong kata di tengah
+  if (lo > 0) {
+    const windowStart = Math.max(0, lo - 80);
+    const before = textEl.data.slice(windowStart, lo);
+    const wsIdx = before.search(/\s(?=\S*$)/); // whitespace terakhir sebelum lo
+    if (wsIdx !== -1) lo = windowStart + wsIdx + 1;
+  }
+
+  return lo; // bisa 0 -> artinya potong tepat sebelum node ini
+}
+
+function posBeforeBlock(view: Editor["view"], el: HTMLElement): number {
+  const resolved = view.state.doc.resolve(view.posAtDOM(el, 0));
+  return resolved.before(Math.max(1, resolved.depth));
+}
+
 function computePageSpacers(
   editor: Editor,
   geo: {
     paperHeightPx: number;
     marginTopPx: number;
     marginBottomPx: number;
+    headerHeightPx: number;
+    footerHeightPx: number;
     totalPages: number;
     zoomScale: number;
   }
 ): PageSpacer[] {
   const { view } = editor;
-  const pmEl = view.dom as HTMLElement;
-  const pmRect = pmEl.getBoundingClientRect();
-  const scale = geo.zoomScale || 1;
-  const unscale = (v: number) => v / scale;
-  const { paperHeightPx: H, marginTopPx: MT, marginBottomPx: MB, totalPages } = geo;
+  const {
+    paperHeightPx: H,
+    marginTopPx: MT,
+    marginBottomPx: MB,
+    headerHeightPx: HH,
+    footerHeightPx: FH,
+    totalPages,
+    zoomScale,
+  } = geo;
 
-  if (!pmEl.firstElementChild || totalPages < 2) return [];
+  if (totalPages < 2) return [];
 
-  // Abaikan spacer dari perhitungan sebelumnya agar tidak dihitung ganda
-  const blocks = Array.from(pmEl.children).filter(
-    (el) => !(el as HTMLElement).classList?.contains("pagination-spacer")
-  ) as HTMLElement[];
-  const tops: number[] = [];
-  const bottoms: number[] = [];
-  const positions: number[] = [];
-  try {
-    for (const el of blocks) {
-      const r = el.getBoundingClientRect();
-      tops.push(MT + unscale(r.top - pmRect.top));
-      bottoms.push(MT + unscale(r.bottom - pmRect.top));
-      const resolved = view.state.doc.resolve(view.posAtDOM(el, 0));
-      positions.push(resolved.before(Math.max(1, resolved.depth)));
-    }
-  } catch {
-    return [];
-  }
+  const collected = collectFlowUnits(view, zoomScale);
+  if (!collected || collected.units.length === 0) return [];
+  const { units, pmRectTop } = collected;
 
   const spacers: PageSpacer[] = [];
   let shift = 0;
   let idx = 0;
 
-  for (let page = 0; page < totalPages - 1 && idx < blocks.length; page++) {
-    const limit = page * (H + PAGE_GAP_PX) + (H - MB);
+  try {
+    for (let page = 0; page < totalPages - 1; page++) {
+      // Content body for current page ends at the bottom margin boundary
+      const limit = page * (H + PAGE_GAP_PX) + (H - MB);
+      // Next page content body starts right at the top margin boundary
+      const nextStart = (page + 1) * (H + PAGE_GAP_PX) + MT;
 
-    // Cari blok pertama yang melintasi batas halaman ini
-    let boundary = -1;
-    for (let i = idx; i < blocks.length; i++) {
-      if (bottoms[i] + shift > limit + 1) {
-        boundary = i;
-        break;
+      // Maju melewati semua unit yang masih muat di halaman ini
+      while (
+        idx < units.length &&
+        units[idx].bottom + shift <= limit + 0.5
+      ) {
+        idx++;
       }
-      idx = i + 1;
+      if (idx >= units.length) break;
+
+      const unit = units[idx];
+      let cutPos: number;
+      let cutBottom: number;
+
+      if (unit.kind === "text") {
+        const cut = findTextCutOffset(unit.el, limit - shift, pmRectTop, zoomScale);
+        if (cut !== null && cut > 0) {
+          // Baris terakhir yang muat berakhir di `cut` — sisa teks turun halaman
+          cutPos = view.posAtDOM(unit.el, cut);
+          const range = document.createRange();
+          range.setStart(unit.el, 0);
+          range.setEnd(unit.el, cut);
+          const r = range.getBoundingClientRect();
+          cutBottom = (1 / (zoomScale || 1)) * (r.bottom - pmRectTop) + shift;
+        } else {
+          // Tidak ada karakter yang muat dari node ini: pindahkan mulai node
+          cutPos = view.posAtDOM(unit.el, 0);
+          cutBottom = unit.top + shift;
+        }
+      } else {
+        // Blok atomik (gambar/tabel/hr/page-break) dipindah utuh
+        cutPos = posBeforeBlock(view, unit.el);
+        cutBottom = unit.top + shift;
+      }
+
+      const height = nextStart - cutBottom;
+      if (height > 2) {
+        spacers.push({ pos: cutPos, height });
+        shift += height;
+      }
+      // idx sengaja tidak maju: unit yang sama dievaluasi ulang untuk
+      // halaman berikutnya (bisa menyeberang beberapa halaman sekaligus).
     }
-    if (boundary === -1 || boundary === 0) break; // blok pertama tak dipaksa lompat
-
-    const nextStart = (page + 1) * (H + PAGE_GAP_PX) + MT;
-    const height = nextStart - (tops[boundary] + shift);
-    if (height <= 2) break;
-
-    spacers.push({ pos: positions[boundary], height });
-    shift += height;
+  } catch {
+    // Posisi basi saat dokumen berubah cepat — iterasi berikutnya memperbaiki
+    return spacers;
   }
 
   return spacers;
@@ -1918,6 +2086,7 @@ function EditorToolbar({
   onTogglePageView: () => void;
 }) {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const { t, locale } = useTranslation();
 
   useEffect(() => {
     if (!editor) return;
@@ -1937,22 +2106,32 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
         icon={<Undo className="h-4 w-4" />}
-        label="Undo"
+        label={t("editor.undo")}
         shortcut="Ctrl+Z"
       />
       <MenuButton
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
         icon={<Redo className="h-4 w-4" />}
-        label="Redo"
+        label={t("editor.redo")}
         shortcut="Ctrl+Y"
       />
 
       <ToolbarDivider />
 
       {/* Font Family & Size */}
-      <FontFamilySelector editor={editor} defaultFont={documentSettings.defaultFont} />
-      <FontSizeSelector editor={editor} defaultFontSize={documentSettings.defaultFontSize} />
+      <FontFamilySelector
+        editor={editor}
+        defaultFont={documentSettings.defaultFont}
+        documentSettings={documentSettings}
+        onDocumentSettingsChange={onDocumentSettingsChange}
+      />
+      <FontSizeSelector
+        editor={editor}
+        defaultFontSize={documentSettings.defaultFontSize}
+        documentSettings={documentSettings}
+        onDocumentSettingsChange={onDocumentSettingsChange}
+      />
 
       <ToolbarDivider />
 
@@ -1961,42 +2140,42 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}
         icon={<Bold className="h-4 w-4" />}
-        label="Tebal"
+        label={t("editor.bold")}
         shortcut="Ctrl+B"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={editor.isActive("italic")}
         icon={<Italic className="h-4 w-4" />}
-        label="Miring"
+        label={t("editor.italic")}
         shortcut="Ctrl+I"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         isActive={editor.isActive("underline")}
         icon={<UnderlineIcon className="h-4 w-4" />}
-        label="Garis Bawah"
+        label={t("editor.underline")}
         shortcut="Ctrl+U"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         isActive={editor.isActive("strike")}
         icon={<Strikethrough className="h-4 w-4" />}
-        label="Coret"
+        label={t("editor.strikethrough")}
         shortcut="Ctrl+Shift+X"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
         isActive={editor.isActive("superscript")}
         icon={<SuperscriptIcon className="h-4 w-4" />}
-        label="Superscript (pangkat)"
+        label={t("editor.superscript")}
         shortcut="Ctrl+."
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleSubscript().run()}
         isActive={editor.isActive("subscript")}
         icon={<SubscriptIcon className="h-4 w-4" />}
-        label="Subscript (indeks)"
+        label={t("editor.subscript")}
         shortcut="Ctrl+,"
       />
 
@@ -2011,21 +2190,21 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         isActive={editor.isActive("heading", { level: 1 })}
         icon={<Heading1 className="h-4 w-4" />}
-        label="Judul Utama"
+        label={t("editor.heading1")}
         shortcut="H1"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive("heading", { level: 2 })}
         icon={<Heading2 className="h-4 w-4" />}
-        label="Sub-judul"
+        label={t("editor.heading2")}
         shortcut="H2"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         isActive={editor.isActive("heading", { level: 3 })}
         icon={<Heading3 className="h-4 w-4" />}
-        label="Bagian"
+        label={t("editor.heading3")}
         shortcut="H3"
       />
 
@@ -2036,25 +2215,25 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().setTextAlign("left").run()}
         isActive={editor.isActive({ textAlign: "left" })}
         icon={<AlignLeft className="h-4 w-4" />}
-        label="Rata Kiri"
+        label={t("editor.alignLeft")}
       />
       <MenuButton
         onClick={() => editor.chain().focus().setTextAlign("center").run()}
         isActive={editor.isActive({ textAlign: "center" })}
         icon={<AlignCenter className="h-4 w-4" />}
-        label="Rata Tengah"
+        label={t("editor.alignCenter")}
       />
       <MenuButton
         onClick={() => editor.chain().focus().setTextAlign("right").run()}
         isActive={editor.isActive({ textAlign: "right" })}
         icon={<AlignRight className="h-4 w-4" />}
-        label="Rata Kanan"
+        label={t("editor.alignRight")}
       />
       <MenuButton
         onClick={() => editor.chain().focus().setTextAlign("justify").run()}
         isActive={editor.isActive({ textAlign: "justify" })}
         icon={<AlignJustify className="h-4 w-4" />}
-        label="Rata Kiri-Kanan"
+        label={t("editor.alignJustify")}
       />
 
       {/* Indent / Outdent (paragraf biasa, ala Word) */}
@@ -2062,13 +2241,13 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().indentBlock().run()}
         disabled={!editor.can().indentBlock()}
         icon={<IndentIncrease className="h-4 w-4" />}
-        label="Tambah Indentasi"
+        label={t("editor.indent")}
       />
       <MenuButton
         onClick={() => editor.chain().focus().outdentBlock().run()}
         disabled={!editor.can().outdentBlock()}
         icon={<IndentDecrease className="h-4 w-4" />}
-        label="Kurangi Indentasi"
+        label={t("editor.outdent")}
       />
       <LineSpacingSelector editor={editor} />
 
@@ -2079,21 +2258,21 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive("bulletList")}
         icon={<List className="h-4 w-4" />}
-        label="Daftar Poin"
+        label={t("editor.bulletList")}
         shortcut="Tab / ⇧Tab"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive("orderedList")}
         icon={<ListOrdered className="h-4 w-4" />}
-        label="Daftar Nomor"
+        label={t("editor.numberedList")}
         shortcut="Tab / ⇧Tab"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleTaskList().run()}
         isActive={editor.isActive("taskList")}
         icon={<CheckSquare className="h-4 w-4" />}
-        label="Daftar Tugas (Checklist)"
+        label={t("editor.checklist")}
         shortcut="Tab / ⇧Tab"
       />
 
@@ -2108,14 +2287,14 @@ function EditorToolbar({
         <MenuButton
           onClick={() => editor.chain().focus().unsetLink().run()}
           icon={<Unlink className="h-4 w-4" />}
-          label="Hapus Link"
+          label={t("editor.removeLink")}
         />
       )}
       <MenuButton
         onClick={() => editor.chain().focus().setPageBreak().run()}
         disabled={editor.isActive("table")}
         icon={<SeparatorHorizontal className="h-4 w-4" />}
-        label={editor.isActive("table") ? "Page Break tidak tersedia di dalam tabel" : "Sisipkan Page Break"}
+        label={editor.isActive("table") ? t("editor.pageBreakDisabled") : t("editor.pageBreakTooltip")}
         shortcut="Ctrl+Enter"
       />
 
@@ -2126,33 +2305,33 @@ function EditorToolbar({
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         isActive={editor.isActive("blockquote")}
         icon={<Quote className="h-4 w-4" />}
-        label="Kutipan (Blockquote)"
+        label={t("editor.blockquote")}
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleCode().run()}
         isActive={editor.isActive("code")}
         icon={<Code className="h-4 w-4" />}
-        label="Kode Sebaris"
+        label={t("editor.inlineCode")}
         shortcut="`code`"
       />
       <MenuButton
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         isActive={editor.isActive("codeBlock")}
         icon={<FileCode className="h-4 w-4" />}
-        label="Blok Kode"
+        label={t("editor.codeBlock")}
         shortcut="```"
       />
       <MenuButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         icon={<Minus className="h-4 w-4" />}
-        label="Garis Pembatas (HR)"
+        label={t("editor.horizontalRule")}
         shortcut="---"
       />
 
       <MenuButton
         onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
         icon={<RemoveFormatting className="h-4 w-4" />}
-        label="Hapus Format"
+        label={t("editor.clearFormatting")}
       />
 
       <ToolbarDivider />
@@ -2162,7 +2341,7 @@ function EditorToolbar({
         onClick={onTogglePageView}
         isActive={isPageView}
         icon={isPageView ? <Maximize2 className="h-4 w-4" /> : <Layout className="h-4 w-4" />}
-        label={isPageView ? "Mode Lebar Penuh" : "Mode Halaman Kertas (Word Layout)"}
+        label={isPageView ? t("editor.fullWidthView") : t("editor.pageView")}
       />
 
       {/* Document Settings */}
@@ -2233,6 +2412,60 @@ function EditorStatusBar({ editor }: { editor: Editor }) {
   );
 }
 
+function InlineHeaderFooterInput({
+  initialValue,
+  zone,
+  pageIndex,
+  onSave,
+  onCancel,
+}: {
+  initialValue: string;
+  zone: "header" | "footer";
+  pageIndex: number;
+  onSave: (value: string) => void;
+  onCancel: () => void;
+}) {
+  const [text, setText] = useState(initialValue || "");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onSave(text.trim());
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onCancel();
+    }
+  };
+
+  return (
+    <div
+      className="w-full relative z-30 flex flex-col items-center animate-in fade-in zoom-in-95 duration-150 py-1"
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
+      <input
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => onSave(text.trim())}
+        onKeyDown={handleKeyDown}
+        placeholder={`Teks ${zone === "header" ? "Header" : "Footer"}...`}
+        className="w-full text-center text-[10pt] font-sans font-medium px-3 py-1.5 rounded-lg border-2 border-dashed border-primary bg-primary/10 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background shadow-lg transition-all placeholder:text-muted-foreground/60"
+      />
+      <div className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold bg-popover text-foreground px-2.5 py-0.5 rounded-full border border-border shadow-xs pointer-events-none select-none">
+        <span className="text-primary">{zone === "header" ? "Header" : "Footer"} Halaman {pageIndex + 1}</span>
+      </div>
+    </div>
+  );
+}
+
 export function NoteEditor({
   initialContent,
   onUpdate,
@@ -2247,9 +2480,8 @@ export function NoteEditor({
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const [zoomPercent, setZoomPercent] = useState<number>(100);
 
-  // Header/Footer editing ala Word: dbl-click zona → panel kecil muncul
-  const [hfEditing, setHfEditing] = useState<"header" | "footer" | null>(null);
-  const [hfDraft, setHfDraft] = useState("");
+  // Header/Footer direct inline editing zone on double-click
+  const [hfEditingZone, setHfEditingZone] = useState<{ zone: "header" | "footer"; pageIndex: number } | null>(null);
 
   const onUpdateRef = useRef(onUpdate);
   const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -2491,12 +2723,14 @@ export function NoteEditor({
   const marginBottomPx = Math.round(mmToPx(localSettings.margins.bottom));
   const marginLeftPx = Math.round(mmToPx(localSettings.margins.left));
   const marginRightPx = Math.round(mmToPx(localSettings.margins.right));
-  const printableHeightPx = Math.max(100, paperHeightPx - marginTopPx - marginBottomPx);
+  const headerHeightPx = Math.round(pageDims.headerHeightPx);
+  const footerHeightPx = Math.round(pageDims.footerHeightPx);
+  const printableBodyHeightPx = Math.max(100, Math.round(pageDims.bodyHeightPx));
 
-  // Compute total pages automatically based on printable height per page
-  const totalPages = Math.max(1, Math.ceil((measuredHeight || 1) / printableHeightPx));
+  // Compute total pages automatically based on printable body height per page
+  const totalPages = Math.max(1, Math.ceil((measuredHeight || 1) / printableBodyHeightPx));
 
-  // Terapkan spacer antar-halaman (lompatan ala Word)
+  // Terapkan spacer antar-halaman (lompatan ala Word yang melewati header dan footer)
   const applyPagination = useCallback(() => {
     if (!editor || !editor.view || editor.isDestroyed) return;
 
@@ -2519,6 +2753,8 @@ export function NoteEditor({
       paperHeightPx,
       marginTopPx,
       marginBottomPx,
+      headerHeightPx,
+      footerHeightPx,
       totalPages,
       zoomScale: zoomPercent / 100,
     });
@@ -2537,7 +2773,10 @@ export function NoteEditor({
             () => {
               const el = document.createElement("div");
               el.className = "pagination-spacer";
+              el.style.display = "inline-block";
+              el.style.width = "100%";
               el.style.height = `${s.height}px`;
+              el.style.verticalAlign = "bottom";
               el.setAttribute("contenteditable", "false");
               return el;
             },
@@ -2549,23 +2788,12 @@ export function NoteEditor({
     } catch {
       /* posisi bisa basi saat dokumen berubah cepat; iterasi berikutnya memperbaiki */
     }
-  }, [editor, isPageView, paperHeightPx, marginTopPx, marginBottomPx, totalPages, zoomPercent]);
+  }, [editor, isPageView, paperHeightPx, marginTopPx, marginBottomPx, headerHeightPx, footerHeightPx, totalPages, zoomPercent]);
 
   useEffect(() => {
     const raf = requestAnimationFrame(applyPagination);
     return () => cancelAnimationFrame(raf);
   }, [applyPagination]);
-
-  const openHeaderFooterEditor = useCallback((zone: "header" | "footer") => {
-    setHfDraft(zone === "header" ? localSettings.headerText : localSettings.footerText);
-    setHfEditing(zone);
-  }, [localSettings.headerText, localSettings.footerText]);
-
-  const commitHeaderFooter = useCallback(() => {
-    if (!hfEditing) return;
-    handleSettingsChange({ ...localSettings, [hfEditing]: hfDraft.trim() });
-    setHfEditing(null);
-  }, [hfEditing, hfDraft, localSettings, handleSettingsChange]);
 
   const handleFitWidth = () => {
     if (!deskContainerRef.current) return;
@@ -2620,10 +2848,9 @@ export function NoteEditor({
           </span>
         </div>
 
-        {/* Page View Specific Controls */}
+        {/* Page View Specific Quick Add */}
         {isPageView && (
           <div className="flex items-center gap-1.5 ml-auto">
-            {/* Quick Add Page Break */}
             <button
               type="button"
               onMouseDown={(e) => {
@@ -2637,297 +2864,362 @@ export function NoteEditor({
               <Plus className="w-3.5 h-3.5 text-primary" />
               <span className="hidden sm:inline">Tambah Lembar Baru</span>
             </button>
-
-            <div className="w-px h-4 bg-border/60 mx-1" />
-
-            {/* Zoom Controls */}
-            <button
-              type="button"
-              onClick={() => setZoomPercent((prev) => Math.max(40, prev - 10))}
-              className="w-7 h-7 rounded-lg hover:bg-foreground/10 text-foreground flex items-center justify-center transition-colors cursor-pointer"
-              title="Perkecil Zoom"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setZoomPercent(100)}
-              className="px-2 py-0.5 text-xs font-mono font-bold rounded hover:bg-foreground/10 text-foreground cursor-pointer min-w-[46px] text-center"
-              title="Reset Zoom ke 100%"
-            >
-              {zoomPercent}%
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setZoomPercent((prev) => Math.min(150, prev + 10))}
-              className="w-7 h-7 rounded-lg hover:bg-foreground/10 text-foreground flex items-center justify-center transition-colors cursor-pointer"
-              title="Perbesar Zoom"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleFitWidth}
-              className="px-2 py-1 text-[10px] font-medium rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground cursor-pointer border border-border/40"
-              title="Sesuaikan dengan Lebar Layar"
-            >
-              Pas Layar
-            </button>
           </div>
         )}
       </div>
 
-      {/* Editor Canvas Desk Area */}
+      {/* Desk Canvas Area */}
       <div
         ref={deskContainerRef}
         className={cn(
-          "transition-all duration-200 w-full overflow-x-auto",
-          isPageView
-            ? "py-8 px-2 sm:px-6 bg-neutral-200/60 dark:bg-neutral-950/80 rounded-3xl border border-border/60 flex justify-center shadow-inner min-h-[700px]"
-            : "py-2"
+          "w-full rounded-2xl transition-colors min-h-[620px] relative overflow-hidden",
+          isPageView ? "bg-neutral-100/90 dark:bg-neutral-900/90 py-10 px-4 flex justify-center shadow-inner" : ""
         )}
       >
         {isPageView ? (
-          <div
-            style={{
-              transform: `scale(${zoomPercent / 100})`,
-              transformOrigin: "top center",
-              marginBottom: `${Math.max(0, (zoomPercent / 100 - 1) * paperHeightPx * totalPages)}px`,
-            }}
-            className="transition-transform duration-150 flex flex-col items-center gap-8 select-text"
-          >
-            {/* Word Document Paper Sheet Simulation */}
+          <div className="w-full flex flex-col items-center">
+            {/* Top Desk Floating Control */}
+            <div className="w-full max-w-4xl flex items-center justify-between pb-4 text-xs select-none">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-200/80 dark:bg-neutral-800/80 px-2.5 py-1 rounded-full border border-neutral-300 dark:border-neutral-700/60 shadow-xs">
+                  {totalPages} Lembar Halaman ({localSettings.pageSize} • {localSettings.orientation})
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-neutral-200/80 dark:bg-neutral-800/80 px-2 py-1 rounded-full border border-neutral-300 dark:border-neutral-700/60 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setZoomPercent((prev) => Math.max(40, prev - 10))}
+                  className="p-1 rounded-full hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                  title="Perkecil (-10%)"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[11px] font-mono font-semibold px-1 text-neutral-800 dark:text-neutral-100 min-w-[42px] text-center">
+                  {zoomPercent}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setZoomPercent((prev) => Math.min(160, prev + 10))}
+                  className="p-1 rounded-full hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                  title="Perbesar (+10%)"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+                <div className="h-3 w-px bg-neutral-400 dark:bg-neutral-600 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={handleFitWidth}
+                  className="px-2 py-0.5 rounded-full hover:bg-neutral-300 dark:hover:bg-neutral-700 text-[10px] font-medium text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                  title="Sesuaikan Lebar Layar"
+                >
+                  Pas Lebar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoomPercent(100)}
+                  className="px-2 py-0.5 rounded-full hover:bg-neutral-300 dark:hover:bg-neutral-700 text-[10px] font-medium text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                  title="Reset ke 100%"
+                >
+                  100%
+                </button>
+              </div>
+            </div>
+
+            {/* Scale Container */}
             <div
-              className="paper-surface relative bg-white text-[#111827] shadow-[0_12px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-neutral-300 dark:border-neutral-700/80 rounded-xs cursor-text"
               style={{
-                width: `${paperWidthPx}px`,
-                minHeight: `${paperHeightPx * totalPages + (totalPages - 1) * 36}px`,
+                transform: `scale(${zoomPercent / 100})`,
+                transformOrigin: "top center",
+                marginBottom: `${Math.max(0, (zoomPercent / 100 - 1) * paperHeightPx * totalPages)}px`,
               }}
-              onClick={(e) => {
-                // Focus editor when clicking margin areas
-                if (e.target === e.currentTarget || !(e.target as HTMLElement).closest('.ProseMirror')) {
-                  editor?.commands.focus();
-                }
-              }}
+              className="transition-transform duration-150 flex flex-col items-center gap-8 select-text"
             >
-              {/* ═══ Per-Page Boundary Overlays ═══ */}
-              {Array.from({ length: totalPages }).map((_, pageIdx) => {
-                const dividerOffset = pageIdx * 36; // accumulated gap from dividers before this page
-                const pageTop = pageIdx * paperHeightPx + dividerOffset;
-                const pageBottom = pageTop + paperHeightPx;
-
-                // Header boundary: line at top margin position
-                const headerBoundaryY = pageTop + marginTopPx;
-                // Footer boundary: line at bottom margin position
-                const footerBoundaryY = pageBottom - marginBottomPx;
-
-                // Word uses approx 1/3 of top/bottom margin as header/footer distance
-                const cornerLen = 12;
-
-                return (
-                  <div key={`page-boundaries-${pageIdx}`} className="pointer-events-none select-none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-
-                    {/* ── 4 Page Corner Marks (at page edges) ── */}
-                    {/* Top-Left */}
-                    <div className="absolute z-20" style={{ top: `${pageTop}px`, left: '0px' }}>
-                      <div className="absolute" style={{ top: 0, left: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)' }} />
-                      <div className="absolute" style={{ top: 0, left: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
-                    </div>
-                    {/* Top-Right */}
-                    <div className="absolute z-20" style={{ top: `${pageTop}px`, right: '0px' }}>
-                      <div className="absolute" style={{ top: 0, right: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)' }} />
-                      <div className="absolute" style={{ top: 0, right: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
-                    </div>
-                    {/* Bottom-Left */}
-                    <div className="absolute z-20" style={{ top: `${pageBottom}px`, left: '0px' }}>
-                      <div className="absolute" style={{ bottom: 0, left: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)', transform: 'translateY(-1.5px)' }} />
-                      <div className="absolute" style={{ top: `-${cornerLen}px`, left: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
-                    </div>
-                    {/* Bottom-Right */}
-                    <div className="absolute z-20" style={{ top: `${pageBottom}px`, right: '0px' }}>
-                      <div className="absolute" style={{ bottom: 0, right: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)', transform: 'translateY(-1.5px)' }} />
-                      <div className="absolute" style={{ top: `-${cornerLen}px`, right: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
-                    </div>
-
-                    {/* ── Content Area Corner Marks (at margin intersections) ── */}
-                    {/* Top-Left margin corner */}
-                    <div className="absolute z-20" style={{ top: `${headerBoundaryY}px`, left: `${marginLeftPx}px` }}>
-                      <div className="absolute" style={{ top: '-1px', left: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)' }} />
-                      <div className="absolute" style={{ top: '-8px', left: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
-                    </div>
-                    {/* Top-Right margin corner */}
-                    <div className="absolute z-20" style={{ top: `${headerBoundaryY}px`, right: `${marginRightPx}px` }}>
-                      <div className="absolute" style={{ top: '-1px', right: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)' }} />
-                      <div className="absolute" style={{ top: '-8px', right: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
-                    </div>
-                    {/* Bottom-Left margin corner */}
-                    <div className="absolute z-20" style={{ top: `${footerBoundaryY}px`, left: `${marginLeftPx}px` }}>
-                      <div className="absolute" style={{ bottom: '-1px', left: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)', transform: 'translateY(1px)' }} />
-                      <div className="absolute" style={{ top: '0px', left: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
-                    </div>
-                    {/* Bottom-Right margin corner */}
-                    <div className="absolute z-20" style={{ top: `${footerBoundaryY}px`, right: `${marginRightPx}px` }}>
-                      <div className="absolute" style={{ bottom: '-1px', right: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)', transform: 'translateY(1px)' }} />
-                      <div className="absolute" style={{ top: '0px', right: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
-                    </div>
-
-                    {/* ── Header Boundary Line (dashed) ── */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        top: `${headerBoundaryY}px`,
-                        left: `${marginLeftPx}px`,
-                        right: `${marginRightPx}px`,
-                        height: '0px',
-                        borderTop: '1px dashed rgba(156,163,175,0.30)',
-                      }}
-                    />
-
-                    {/* ── Footer Boundary Line (dashed) ── */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        top: `${footerBoundaryY}px`,
-                        left: `${marginLeftPx}px`,
-                        right: `${marginRightPx}px`,
-                        height: '0px',
-                        borderTop: '1px dashed rgba(156,163,175,0.30)',
-                      }}
-                    />
-
-                    {/* ── Left Content Boundary (subtle vertical line) ── */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        top: `${headerBoundaryY}px`,
-                        left: `${marginLeftPx}px`,
-                        width: '0px',
-                        height: `${footerBoundaryY - headerBoundaryY}px`,
-                        borderLeft: '1px dashed rgba(156,163,175,0.18)',
-                      }}
-                    />
-
-                    {/* ── Right Content Boundary (subtle vertical line) ── */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        top: `${headerBoundaryY}px`,
-                        right: `${marginRightPx}px`,
-                        width: '0px',
-                        height: `${footerBoundaryY - headerBoundaryY}px`,
-                        borderLeft: '1px dashed rgba(156,163,175,0.18)',
-                      }}
-                    />
-
-                    {/* ── Header Zone (ala Word: hanya bisa diedit via double-click) ── */}
-                    <div
-                      className="group absolute z-20 flex items-end justify-center pointer-events-auto cursor-text select-none transition-colors hover:bg-slate-500/5"
-                      style={{
-                        top: `${pageTop}px`,
-                        left: '0px',
-                        right: '0px',
-                        height: `${headerBoundaryY - pageTop}px`,
-                        paddingLeft: `${marginLeftPx}px`,
-                        paddingRight: `${marginRightPx}px`,
-                        paddingBottom: '4px',
-                      }}
-                      title={editable ? "Klik dua kali untuk mengedit Header" : undefined}
-                      onDoubleClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (editable) openHeaderFooterEditor("header");
-                      }}
-                    >
-                      {localSettings.headerText ? (
-                        <span
-                          className="w-full text-center truncate text-slate-500"
-                          style={{ fontSize: "9pt", lineHeight: 1.2 }}
-                        >
-                          {localSettings.headerText}
-                        </span>
-                      ) : (
-                        <span className="text-[8px] uppercase tracking-[0.2em] text-slate-400 opacity-0 group-hover:opacity-70 transition-opacity">
-                          Header — klik dua kali untuk edit
-                        </span>
-                      )}
-                    </div>
-
-                    {/* ── Footer Zone (ala Word: hanya bisa diedit via double-click) ── */}
-                    <div
-                      className="group absolute z-20 flex items-start justify-center pointer-events-auto cursor-text select-none transition-colors hover:bg-slate-500/5"
-                      style={{
-                        top: `${footerBoundaryY}px`,
-                        left: '0px',
-                        right: '0px',
-                        height: `${Math.max(12, pageBottom - footerBoundaryY)}px`,
-                        paddingLeft: `${marginLeftPx}px`,
-                        paddingRight: `${marginRightPx}px`,
-                        paddingTop: '4px',
-                      }}
-                      title={editable ? "Klik dua kali untuk mengedit Footer" : undefined}
-                      onDoubleClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (editable) openHeaderFooterEditor("footer");
-                      }}
-                    >
-                      {localSettings.footerText ? (
-                        <span
-                          className="w-full text-center truncate text-slate-500"
-                          style={{ fontSize: "9pt", lineHeight: 1.2 }}
-                        >
-                          {localSettings.footerText}
-                        </span>
-                      ) : (
-                        <span className="text-[8px] uppercase tracking-[0.2em] text-slate-400 opacity-0 group-hover:opacity-70 transition-opacity">
-                          Footer — klik dua kali untuk edit
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* ═══ Multi-Page Visual Dividers between sheets ═══ */}
-              {Array.from({ length: totalPages - 1 }).map((_, index) => {
-                const pageNumber = index + 2;
-                const topOffset = (index + 1) * paperHeightPx + index * 36;
-                return (
-                  <div
-                    key={`page-divider-${pageNumber}`}
-                    className="absolute left-0 right-0 h-9 bg-neutral-200 dark:bg-neutral-800 border-y border-neutral-300 dark:border-neutral-700 shadow-inner flex items-center justify-between px-5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 select-none pointer-events-none z-20"
-                    style={{ top: `${topOffset}px` }}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-primary" />
-                      <span>Lembar Halaman {pageNumber} dari {totalPages}</span>
-                    </span>
-                    <span className="tracking-widest uppercase text-[9px] opacity-70">
-                      Batas Kertas ({localSettings.pageSize} • {localSettings.orientation})
-                    </span>
-                    <span className="text-[10px] opacity-80">Margin: {localSettings.margins.top}mm</span>
-                  </div>
-                );
-              })}
-
-              {/* ═══ Editor Content Box with Exact Physical Margins ═══ */}
+              {/* Word Document Paper Sheet Simulation */}
               <div
-                ref={contentWrapperRef}
+                className="paper-surface relative bg-white text-[#111827] shadow-[0_12px_40px_rgba(0,0,0,0.16)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)] border border-neutral-300 dark:border-neutral-700/80 rounded-xs cursor-text"
                 style={{
-                  paddingTop: `${marginTopPx}px`,
-                  paddingBottom: `${marginBottomPx}px`,
-                  paddingLeft: `${marginLeftPx}px`,
-                  paddingRight: `${marginRightPx}px`,
-                  minHeight: `${paperHeightPx}px`,
-                  fontFamily: `${localSettings.defaultFont}, sans-serif`,
-                  fontSize: `${localSettings.defaultFontSize}pt`,
+                  width: `${paperWidthPx}px`,
+                  minHeight: `${paperHeightPx * totalPages + (totalPages - 1) * 36}px`,
                 }}
-                className="w-full relative"
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('[data-header-footer-zone]')) {
+                    return;
+                  }
+                  if (e.target === e.currentTarget || !(e.target as HTMLElement).closest('.ProseMirror')) {
+                    editor?.commands.focus();
+                  }
+                }}
               >
-                <EditorContent editor={editor} />
+                {/* ═══ Per-Page Boundary Overlays & Dedicated Header/Footer Zones ═══ */}
+                {Array.from({ length: totalPages }).map((_, pageIdx) => {
+                  const dividerOffset = pageIdx * 36;
+                  const pageTop = pageIdx * paperHeightPx + dividerOffset;
+                  const pageBottom = pageTop + paperHeightPx;
+
+                  // Margin boundaries (defines body content bounds)
+                  const marginBoundaryTop = pageTop + marginTopPx;
+                  const marginBoundaryBottom = pageBottom - marginBottomPx;
+
+                  // Outer Header Zone: lives inside the TOP MARGIN area (pageTop to marginBoundaryTop)
+                  const headerZoneTop = pageTop;
+                  const headerZoneHeight = marginTopPx;
+
+                  // Outer Footer Zone: lives inside the BOTTOM MARGIN area (marginBoundaryBottom to pageBottom)
+                  const footerZoneTop = marginBoundaryBottom;
+                  const footerZoneHeight = marginBottomPx;
+
+                  const cornerLen = 12;
+                  const isEditingHeader = hfEditingZone?.zone === "header" && hfEditingZone.pageIndex === pageIdx;
+                  const isEditingFooter = hfEditingZone?.zone === "footer" && hfEditingZone.pageIndex === pageIdx;
+
+                  return (
+                    <div key={`page-boundaries-${pageIdx}`} className="pointer-events-none select-none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 }}>
+
+                      {/* ── 4 Outer Page Corner Marks ── */}
+                      <div className="absolute z-20" style={{ top: `${pageTop}px`, left: '0px' }}>
+                        <div className="absolute" style={{ top: 0, left: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)' }} />
+                        <div className="absolute" style={{ top: 0, left: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${pageTop}px`, right: '0px' }}>
+                        <div className="absolute" style={{ top: 0, right: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)' }} />
+                        <div className="absolute" style={{ top: 0, right: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${pageBottom}px`, left: '0px' }}>
+                        <div className="absolute" style={{ bottom: 0, left: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)', transform: 'translateY(-1.5px)' }} />
+                        <div className="absolute" style={{ top: `-${cornerLen}px`, left: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${pageBottom}px`, right: '0px' }}>
+                        <div className="absolute" style={{ bottom: 0, right: 0, width: `${cornerLen}px`, height: '1.5px', background: 'rgba(156,163,175,0.55)', transform: 'translateY(-1.5px)' }} />
+                        <div className="absolute" style={{ top: `-${cornerLen}px`, right: 0, width: '1.5px', height: `${cornerLen}px`, background: 'rgba(156,163,175,0.55)' }} />
+                      </div>
+
+                      {/* ── Content Area Corner Marks (at margin intersections) ── */}
+                      <div className="absolute z-20" style={{ top: `${marginBoundaryTop}px`, left: `${marginLeftPx}px` }}>
+                        <div className="absolute" style={{ top: '-1px', left: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)' }} />
+                        <div className="absolute" style={{ top: '-8px', left: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${marginBoundaryTop}px`, right: `${marginRightPx}px` }}>
+                        <div className="absolute" style={{ top: '-1px', right: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)' }} />
+                        <div className="absolute" style={{ top: '-8px', right: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${marginBoundaryBottom}px`, left: `${marginLeftPx}px` }}>
+                        <div className="absolute" style={{ bottom: '-1px', left: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)', transform: 'translateY(1px)' }} />
+                        <div className="absolute" style={{ top: '0px', left: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
+                      </div>
+                      <div className="absolute z-20" style={{ top: `${marginBoundaryBottom}px`, right: `${marginRightPx}px` }}>
+                        <div className="absolute" style={{ bottom: '-1px', right: '-8px', width: '8px', height: '1px', background: 'rgba(156,163,175,0.35)', transform: 'translateY(1px)' }} />
+                        <div className="absolute" style={{ top: '0px', right: '-1px', width: '1px', height: '8px', background: 'rgba(156,163,175,0.35)' }} />
+                      </div>
+
+                      {/* ── Top Margin Boundary Line (dashed separator between Outer Header and Body Content) ── */}
+                      <div
+                        className="absolute z-10"
+                        style={{
+                          top: `${marginBoundaryTop}px`,
+                          left: `${marginLeftPx}px`,
+                          right: `${marginRightPx}px`,
+                          height: '0px',
+                          borderTop: '1px dashed rgba(156,163,175,0.30)',
+                        }}
+                      />
+
+                      {/* ── Bottom Margin Boundary Line (dashed separator between Body Content and Outer Footer) ── */}
+                      <div
+                        className="absolute z-10"
+                        style={{
+                          top: `${marginBoundaryBottom}px`,
+                          left: `${marginLeftPx}px`,
+                          right: `${marginRightPx}px`,
+                          height: '0px',
+                          borderTop: '1px dashed rgba(156,163,175,0.30)',
+                        }}
+                      />
+
+                      {/* ── Left Content Boundary ── */}
+                      <div
+                        className="absolute z-10"
+                        style={{
+                          top: `${marginBoundaryTop}px`,
+                          left: `${marginLeftPx}px`,
+                          width: '0px',
+                          height: `${marginBoundaryBottom - marginBoundaryTop}px`,
+                          borderLeft: '1px dashed rgba(156,163,175,0.20)',
+                        }}
+                      />
+
+                      {/* ── Right Content Boundary ── */}
+                      <div
+                        className="absolute z-10"
+                        style={{
+                          top: `${marginBoundaryTop}px`,
+                          right: `${marginRightPx}px`,
+                          width: '0px',
+                          height: `${marginBoundaryBottom - marginBoundaryTop}px`,
+                          borderLeft: '1px dashed rgba(156,163,175,0.20)',
+                        }}
+                      />
+
+                      {/* ── Outer Header Zone (in Top Margin: Double-click / Click to Edit) ── */}
+                      <div
+                        data-header-footer-zone="true"
+                        className={cn(
+                          "absolute z-30 flex items-center justify-center pointer-events-auto cursor-pointer select-none transition-all rounded-lg px-2",
+                          isEditingHeader
+                            ? "p-1 z-40 bg-background/95 ring-2 ring-primary shadow-lg"
+                            : "hover:bg-primary/5 hover:ring-1 hover:ring-primary/30 group"
+                        )}
+                        style={{
+                          top: `${headerZoneTop}px`,
+                          left: `${marginLeftPx}px`,
+                          right: `${marginRightPx}px`,
+                          height: `${headerZoneHeight}px`,
+                        }}
+                        title={editable ? "Header Dokumen" : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (editable && !isEditingHeader) {
+                            setHfEditingZone({ zone: "header", pageIndex: pageIdx });
+                          }
+                        }}
+                        onDoubleClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (editable) {
+                            setHfEditingZone({ zone: "header", pageIndex: pageIdx });
+                          }
+                        }}
+                      >
+                        {isEditingHeader ? (
+                          <InlineHeaderFooterInput
+                            initialValue={localSettings.headerText || ""}
+                            zone="header"
+                            pageIndex={pageIdx}
+                            onSave={(val) => {
+                              handleSettingsChange({ ...localSettings, headerText: val });
+                              setHfEditingZone(null);
+                            }}
+                            onCancel={() => setHfEditingZone(null)}
+                          />
+                        ) : (
+                          <>
+                            {localSettings.headerText ? (
+                              <span
+                                className="w-full text-center truncate text-slate-700 dark:text-slate-300 group-hover:text-primary font-medium transition-colors cursor-pointer"
+                                style={{ fontSize: "9pt", lineHeight: 1.2 }}
+                              >
+                                {localSettings.headerText}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-primary/70 bg-primary/10 group-hover:bg-primary/20 px-3 py-0.5 rounded-full border border-primary/20 transition-all opacity-70 group-hover:opacity-100 shadow-xs cursor-pointer">
+                                Header Dokumen
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* ── Outer Footer Zone (in Bottom Margin: Double-click / Click to Edit) ── */}
+                      <div
+                        data-header-footer-zone="true"
+                        className={cn(
+                          "absolute z-30 flex items-center justify-center pointer-events-auto cursor-pointer select-none transition-all rounded-lg px-2",
+                          isEditingFooter
+                            ? "p-1 z-40 bg-background/95 ring-2 ring-primary shadow-lg"
+                            : "hover:bg-primary/5 hover:ring-1 hover:ring-primary/30 group"
+                        )}
+                        style={{
+                          top: `${footerZoneTop}px`,
+                          left: `${marginLeftPx}px`,
+                          right: `${marginRightPx}px`,
+                          height: `${footerZoneHeight}px`,
+                        }}
+                        title={editable ? "Footer Dokumen" : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (editable && !isEditingFooter) {
+                            setHfEditingZone({ zone: "footer", pageIndex: pageIdx });
+                          }
+                        }}
+                        onDoubleClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (editable) {
+                            setHfEditingZone({ zone: "footer", pageIndex: pageIdx });
+                          }
+                        }}
+                      >
+                        {isEditingFooter ? (
+                          <InlineHeaderFooterInput
+                            initialValue={localSettings.footerText || ""}
+                            zone="footer"
+                            pageIndex={pageIdx}
+                            onSave={(val) => {
+                              handleSettingsChange({ ...localSettings, footerText: val });
+                              setHfEditingZone(null);
+                            }}
+                            onCancel={() => setHfEditingZone(null)}
+                          />
+                        ) : (
+                          <>
+                            {localSettings.footerText ? (
+                              <span
+                                className="w-full text-center truncate text-slate-700 dark:text-slate-300 group-hover:text-primary font-medium transition-colors cursor-pointer"
+                                style={{ fontSize: "9pt", lineHeight: 1.2 }}
+                              >
+                                {localSettings.footerText}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-primary/70 bg-primary/10 group-hover:bg-primary/20 px-3 py-0.5 rounded-full border border-primary/20 transition-all opacity-70 group-hover:opacity-100 shadow-xs cursor-pointer">
+                                Footer Dokumen
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* ═══ Multi-Page Visual Dividers between sheets ═══ */}
+                {Array.from({ length: totalPages - 1 }).map((_, index) => {
+                  const pageNumber = index + 2;
+                  const topOffset = (index + 1) * paperHeightPx + index * 36;
+                  return (
+                    <div
+                      key={`page-divider-${pageNumber}`}
+                      className="absolute left-0 right-0 h-9 bg-neutral-200 dark:bg-neutral-800 border-y border-neutral-300 dark:border-neutral-700 shadow-inner flex items-center justify-between px-5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 select-none pointer-events-none z-20"
+                      style={{ top: `${topOffset}px` }}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-primary" />
+                        <span>Lembar Halaman {pageNumber} dari {totalPages}</span>
+                      </span>
+                      <span className="tracking-widest uppercase text-[9px] opacity-70">
+                        Batas Kertas ({localSettings.pageSize} • {localSettings.orientation})
+                      </span>
+                      <span className="text-[10px] opacity-80">Margin: {localSettings.margins.top}mm</span>
+                    </div>
+                  );
+                })}
+
+                {/* ═══ Editor Body Content Box (Cleanly bounded by Margins) ═══ */}
+                <div
+                  ref={contentWrapperRef}
+                  style={{
+                    paddingTop: `${marginTopPx}px`,
+                    paddingBottom: `${marginBottomPx}px`,
+                    paddingLeft: `${marginLeftPx}px`,
+                    paddingRight: `${marginRightPx}px`,
+                    minHeight: `${paperHeightPx}px`,
+                    fontFamily: `${localSettings.defaultFont}, sans-serif`,
+                    fontSize: `${localSettings.defaultFontSize}pt`,
+                  }}
+                  className="w-full relative z-10"
+                >
+                  <EditorContent editor={editor} />
+                </div>
               </div>
             </div>
           </div>
@@ -2943,57 +3235,6 @@ export function NoteEditor({
           </div>
         )}
       </div>
-
-      {/* Floating Header/Footer Editor (dibuka via double-click zona) */}
-      {hfEditing && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] w-[440px] max-w-[92%] rounded-2xl border border-border bg-popover shadow-2xl p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Settings2 className="h-3.5 w-3.5 text-primary" />
-              Edit {hfEditing === "header" ? "Header" : "Footer"} Dokumen
-            </span>
-            <button
-              type="button"
-              onClick={() => setHfEditing(null)}
-              className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-medium"
-            >
-              Tutup
-            </button>
-          </div>
-          <textarea
-            autoFocus
-            rows={2}
-            value={hfDraft}
-            onChange={(e) => setHfDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") setHfEditing(null);
-              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                commitHeaderFooter();
-              }
-            }}
-            placeholder={
-              hfEditing === "header"
-                ? "Teks header tampil di atas setiap halaman..."
-                : "Teks footer tampil di bawah setiap halaman..."
-            }
-            className="w-full px-3 py-2 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
-          />
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-[10px] text-muted-foreground">
-              Tersimpan di seluruh halaman • Ctrl+Enter simpan
-            </span>
-            <button
-              type="button"
-              onClick={commitHeaderFooter}
-              className="px-3.5 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
-            >
-              <Check className="h-3.5 w-3.5" />
-              Simpan
-            </button>
-          </div>
-        </div>
-      )}
 
       {editable && <EditorStatusBar editor={editor} />}
     </div>

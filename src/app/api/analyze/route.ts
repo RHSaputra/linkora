@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { GoogleGenAI } from "@google/genai";
+import { getAiCache, setAiCache, withTimeout } from "@/lib/ai-cache";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -54,6 +55,13 @@ export async function POST(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
+
+    // Return cached analysis immediately if we already processed this URL.
+    const cacheKey = `analyze:${url}`;
+    const cached = getAiCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
     }
 
     if (!process.env.GEMINI_API_KEY) {
@@ -126,15 +134,18 @@ export async function POST(request: NextRequest) {
 
     for (const modelName of MODELS) {
       try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: [
-            { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }] }
-          ],
-          config: {
-            responseMimeType: "application/json",
-          }
-        });
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: modelName,
+            contents: [
+              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }] }
+            ],
+            config: {
+              responseMimeType: "application/json",
+            }
+          }),
+          30000
+        );
 
         if (response.text) {
           responseText = response.text;
@@ -158,6 +169,8 @@ export async function POST(request: NextRequest) {
       const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
       parsedResponse = JSON.parse(cleanedText);
     }
+
+    setAiCache(cacheKey, parsedResponse);
 
     return NextResponse.json(parsedResponse);
   } catch (error: any) {

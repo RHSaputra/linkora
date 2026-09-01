@@ -44,14 +44,16 @@ export function OnboardingWelcomeScreen() {
 
         <div className="px-8 pb-8 flex flex-col gap-2.5">
           <button
+            type="button"
             onClick={startTour}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm"
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover active:scale-95 transition-all duration-150 cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
             Mulai Panduan
           </button>
           <button
+            type="button"
             onClick={dismissWelcome}
-            className="w-full py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+            className="w-full py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
             Nanti saja
           </button>
