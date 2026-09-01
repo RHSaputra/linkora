@@ -22,6 +22,7 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AddLinksToCollectionDialog } from "@/components/links/add-links-to-collection-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { cn } from "@/lib/utils";
 
 interface CollectionsPageProps {
   refreshKey: number;
@@ -111,16 +112,42 @@ export function CollectionsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("collections.title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{t("collections.subtitle")}</p>
         </motion.div>
-        <Button onClick={handleOpenCreate} className="gap-1.5 rounded-xl text-xs font-semibold cursor-pointer">
+        <Button onClick={handleOpenCreate} className="self-start sm:self-auto gap-1.5 rounded-xl text-xs font-semibold cursor-pointer">
           <Plus className="h-4 w-4" />
           <span>{t("collections.createBtn")}</span>
         </Button>
       </div>
+
+      {/* ── MOBILE COLLECTIONS CHIP SELECTOR (Horizontal Pill Track) ── */}
+      {collections.length > 0 && (
+        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none max-w-full">
+          {collections.map((col) => {
+            const isSelected = selectedId === col.id;
+            return (
+              <button
+                key={col.id}
+                type="button"
+                onClick={() => setSelectedId(col.id)}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-semibold shrink-0 transition-all active:scale-95 cursor-pointer touch-manipulation",
+                  isSelected
+                    ? "border-primary bg-primary/10 text-primary shadow-xs font-bold"
+                    : "border-border/70 bg-card text-foreground hover:bg-muted/40"
+                )}
+              >
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: col.color }} />
+                <span>{col.name}</span>
+                <span className="text-[10px] opacity-70">({col.linkCount})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── CLEAN & PROFESSIONAL EMPTY STATE ── */}
       {collections.length === 0 && !loading && (
@@ -141,7 +168,8 @@ export function CollectionsPage({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="space-y-2.5">
+        {/* Desktop Sidebar List (hidden on mobile, replaced by horizontal chips) */}
+        <div className="hidden lg:block space-y-2.5">
           {loading ? (
             [...Array(3)].map((_, i) => (
               <div key={i} className="h-14 bg-muted/60 rounded-xl animate-pulse" />
@@ -179,7 +207,7 @@ export function CollectionsPage({
         <div className="lg:col-span-2">
           {selected ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/80">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-card border border-border/80 gap-3">
                 <div className="flex items-center gap-2.5">
                   <div
                     className="w-3.5 h-3.5 rounded-full shrink-0"
@@ -190,11 +218,11 @@ export function CollectionsPage({
                     <p className="text-xs text-muted-foreground">{t("collections.savedLinksCount", { count: collectionLinks.length })}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)} className="rounded-lg text-xs h-8">
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)} className="rounded-xl text-xs h-8 cursor-pointer">
                     {t("collections.manageLinks")}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleDeleteCollection} className="text-destructive hover:bg-destructive/10 rounded-lg h-8 w-8">
+                  <Button variant="ghost" size="icon" onClick={handleDeleteCollection} className="text-destructive hover:bg-destructive/10 rounded-xl h-8 w-8 cursor-pointer">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

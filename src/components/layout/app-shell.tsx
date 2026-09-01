@@ -131,8 +131,8 @@ export function AppShell({ children }: AppShellProps) {
           <Sidebar onAddLink={openAddLink} onEditProfile={openEditProfile} />
           
           {/* Main Content Area - padded left to account for floating dock */}
-          <main className="flex-1 overflow-x-hidden min-h-screen lg:pl-[310px] transition-all duration-300 relative z-10">
-            <div className="w-full max-w-7xl px-4 py-8 lg:px-12 lg:py-12 pt-20 lg:pt-12">
+          <main className="flex-1 min-h-screen lg:pl-[310px] transition-all duration-300 relative z-10 pb-24 lg:pb-0">
+            <div className="w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-8 lg:px-12 lg:py-12 pt-18 lg:pt-12">
               {typeof children === "function" ? children(contextValue) : children}
             </div>
           </main>

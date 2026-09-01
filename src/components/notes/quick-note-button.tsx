@@ -150,7 +150,7 @@ export function QuickNoteButton() {
 
   return (
     <>
-      <div className="fixed bottom-28 right-8 z-40">
+      <div className="fixed bottom-36 right-4 sm:bottom-28 sm:right-8 z-40">
         <Tooltip>
           <TooltipTrigger asChild>
             <motion.div
@@ -159,7 +159,7 @@ export function QuickNoteButton() {
             >
               <Button
                 size="icon"
-                className="h-12 w-12 rounded-full glass-panel bg-card/90 hover:bg-card text-foreground shadow-xl border border-primary/40 transition-all cursor-pointer backdrop-blur-2xl"
+                className="h-11 w-11 sm:h-12 sm:w-12 rounded-full glass-panel bg-card/90 hover:bg-card text-foreground shadow-xl border border-primary/40 transition-all cursor-pointer backdrop-blur-2xl"
                 onClick={() => {
                   if (requireAuth(
                     locale === "en" ? "Create Quick Note" : "Membuat Catatan Cepat",

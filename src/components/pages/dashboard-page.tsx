@@ -163,7 +163,7 @@ export function DashboardPage({
     s?.categoryStats?.find((c) => c.category === "Custom" || c.category === "Uncategorized")?.count || 0;
 
   return (
-    <div className="relative space-y-8 pb-28 overflow-x-hidden">
+    <div className="relative space-y-6 sm:space-y-8 pb-10">
       {/* ========================================================================= */}
       {/* SECTION 1: HERO COCKPIT (Layer Z-10) with Cyber Corners & Fractured Notch */}
       {/* ========================================================================= */}
@@ -173,7 +173,7 @@ export function DashboardPage({
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full"
       >
-        <div className="relative glass-panel rounded-[2.5rem] p-6 sm:p-10 lg:p-12 overflow-hidden border border-border/80 shadow-xl shadow-primary/10 bg-gradient-to-br from-card/90 via-card/75 to-primary/[0.04]">
+        <div className="relative glass-panel rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 lg:p-12 overflow-hidden border border-border/80 shadow-xl shadow-primary/10 bg-gradient-to-br from-card/90 via-card/75 to-primary/[0.04]">
           {/* Cybernetic Angled Corner Accents */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/40 rounded-tl-2xl pointer-events-none" />
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-2xl pointer-events-none" />
@@ -270,14 +270,14 @@ export function DashboardPage({
         transition={{ duration: 0.6, delay: 0.15 }}
         className="relative z-20"
       >
-        <div className="relative glass-panel rounded-3xl p-6 sm:p-8 lg:p-8 border-2 border-primary/30 overflow-hidden bg-card/90 backdrop-blur-2xl shadow-2xl shadow-primary/15">
+        <div className="relative glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-8 border-2 border-primary/30 overflow-hidden bg-card/90 backdrop-blur-2xl shadow-2xl shadow-primary/15">
           {/* Holographic Glowing Gradients & Stepped Shard Accents */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-70 pointer-events-none" />
           <div className="absolute right-0 top-0 w-80 h-80 bg-primary/20 blur-[110px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/15 blur-[90px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
           {/* Overlapping Interior Card with Neon Rings & Dynamic Action */}
-          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
+          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 sm:gap-8">
             {/* Mascot Avatar with High-Tech Laser Rings */}
             <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
               {/* Outer Ambient Glow Pulsing */}
@@ -440,8 +440,8 @@ export function DashboardPage({
             className="relative z-30"
           >
             {/* Dynamic Interactive Filter Pill Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <div className="flex items-center p-1 rounded-xl bg-background/80 border border-border/80 shadow-inner">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+              <div className="flex items-center p-1 rounded-xl bg-background/80 border border-border/80 shadow-inner overflow-x-auto max-w-full scrollbar-none">
                 {(
                   [
                     { id: "added", label: t("dashboard.filterAdded") },
@@ -455,7 +455,7 @@ export function DashboardPage({
                       key={tab.id}
                       type="button"
                       onClick={() => setRecentFilter(tab.id)}
-                      className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation select-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         isActive
                           ? "text-primary-foreground"
                           : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
@@ -477,7 +477,7 @@ export function DashboardPage({
               <Link
                 href="/links"
                 prefetch={true}
-                className="px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold flex items-center gap-1.5 transition-all group"
+                className="self-end sm:self-auto px-3.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold flex items-center gap-1.5 transition-all group"
               >
                 <span>{t("common.viewAll")}</span>
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />

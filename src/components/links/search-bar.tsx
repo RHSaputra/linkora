@@ -106,7 +106,7 @@ export function SearchBar({
 
       <div className="flex flex-wrap items-center gap-2">
         <Select value={category} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-[140px] h-8 text-xs">
+          <SelectTrigger className="flex-1 min-w-[120px] sm:w-[140px] sm:flex-initial h-9 sm:h-8 text-xs rounded-xl">
             <SelectValue placeholder={t("links.categoryLabel")} />
           </SelectTrigger>
           <SelectContent>
@@ -120,7 +120,7 @@ export function SearchBar({
         </Select>
 
         <Select value={tag || "all"} onValueChange={(v) => onTagChange(v === "all" ? "" : v)}>
-          <SelectTrigger className="w-[120px] h-8 text-xs">
+          <SelectTrigger className="flex-1 min-w-[110px] sm:w-[120px] sm:flex-initial h-9 sm:h-8 text-xs rounded-xl">
             <SelectValue placeholder={t("links.tagsLabel")} />
           </SelectTrigger>
           <SelectContent>
@@ -136,7 +136,7 @@ export function SearchBar({
         <Button
           variant={favoriteOnly ? "default" : "outline"}
           size="sm"
-          className="h-8 gap-1.5 text-xs cursor-pointer"
+          className="h-9 sm:h-8 gap-1.5 text-xs rounded-xl cursor-pointer shrink-0"
           onClick={() => onFavoriteChange(!favoriteOnly)}
         >
           <Star className={cn("h-3.5 w-3.5", favoriteOnly && "fill-current")} />
@@ -144,7 +144,7 @@ export function SearchBar({
         </Button>
 
         {hasFilters && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs cursor-pointer" onClick={clearFilters}>
+          <Button variant="ghost" size="sm" className="h-9 sm:h-8 text-xs rounded-xl cursor-pointer shrink-0" onClick={clearFilters}>
             {t("links.resetFilter")}
           </Button>
         )}

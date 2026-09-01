@@ -21,44 +21,44 @@ export function CTA() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="glass-panel p-8 sm:p-12 md:p-16 rounded-[2.5rem] text-center max-w-5xl mx-auto border border-primary/30 shadow-2xl relative overflow-hidden group"
+          className="glass-panel p-6 sm:p-12 md:p-16 rounded-2xl sm:rounded-[2.5rem] text-center max-w-5xl mx-auto border border-primary/30 shadow-2xl relative overflow-hidden group"
         >
           {/* Subtle animated gradient mesh inside */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-purple-500/10 opacity-70 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           
-          <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
+          <div className="relative z-10 space-y-5 sm:space-y-6 max-w-3xl mx-auto">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
               {locale === "en" ? "Stop Losing " : "Berhenti Kehilangan "}<br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">
                 {locale === "en" ? "Opportunities & Key Information." : "Peluang & Informasi Penting."}
               </span>
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {locale === "en"
                 ? "Start building your clean, intelligent, synchronized knowledge and link repository with Linkora today."
                 : "Mulai bangun sistem arsip dan pengetahuan pribadi yang rapi, cerdas, dan tersinkronisasi bersama Linkora hari ini."}
             </p>
             
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="rounded-full h-13 px-8 text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-2xl shadow-primary/30 active:scale-95 transition-all duration-150 hover:scale-105 cursor-pointer font-bold touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" asChild>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
+              <Button size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-8 text-sm sm:text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-2xl shadow-primary/30 active:scale-95 transition-all duration-150 hover:scale-105 cursor-pointer font-bold touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" asChild>
                 <Link href="/dashboard">
-                  {t("landing.openDashboard")} <ArrowRight className="ml-2 w-5 h-5" />
+                  {t("landing.openDashboard")} <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full h-13 px-7 text-base glass-panel hover:bg-foreground/5 active:scale-95 transition-all duration-150 touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" asChild>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base glass-panel hover:bg-foreground/5 active:scale-95 transition-all duration-150 touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" asChild>
                 <Link href="/login">
                   {locale === "en" ? "Already have an account? Sign In" : "Sudah Punya Akun? Masuk"}
                 </Link>
               </Button>
             </div>
 
-            <div className="pt-2 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> {locale === "en" ? "Free to Use" : "Gratis Digunakan"}
               </span>
-              <span className="flex items-center gap-1">•</span>
+              <span className="hidden sm:inline">•</span>
               <span>{locale === "en" ? "No Credit Card Required" : "Tanpa Kartu Kredit"}</span>
-              <span className="flex items-center gap-1">•</span>
+              <span className="hidden sm:inline">•</span>
               <span>{locale === "en" ? "Access All Core Features" : "Akses Semua Fitur"}</span>
             </div>
           </div>

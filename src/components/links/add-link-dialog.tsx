@@ -322,8 +322,7 @@ export function AddLinkDialog({
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> {t("links.readyToAnalyze")}
                 </span>
               )}
-            </div>
-            <div className="flex gap-2">
+            </div>            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Input
                   id="url"
@@ -332,6 +331,7 @@ export function AddLinkDialog({
                   value={url}
                   onChange={(e) => handleUrlPaste(e.target.value)}
                   required
+                  className="h-10 sm:h-9"
                 />
                 {fetchingMeta && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -344,7 +344,7 @@ export function AddLinkDialog({
                   type="button"
                   disabled={!url || isAnalyzing || fetchingMeta}
                   onClick={handleAnalyze}
-                  className={`relative font-semibold transition-all duration-150 flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
+                  className={`w-full sm:w-auto h-10 sm:h-9 relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
                     url && !isAnalyzing
                       ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm hover:shadow-md active:scale-95"
                       : "bg-secondary text-secondary-foreground"
@@ -453,15 +453,15 @@ export function AddLinkDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("links.descPlaceholder")}
-              rows={2}
+              rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label>{t("links.categoryLabel")}</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -481,6 +481,7 @@ export function AddLinkDialog({
                 type="datetime-local"
                 value={reminderAt}
                 onChange={(e) => setReminderAt(e.target.value)}
+                className="w-full"
               />
             </div>
           </div>

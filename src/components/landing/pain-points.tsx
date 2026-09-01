@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useInView, useMotionValueEvent } from 
 import { XCircle, CheckCircle2, MessageCircle, Bookmark, FileText, Send, AlertCircle } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
 import { useTranslation } from "@/components/providers/i18n-provider"
+import { cn } from "@/lib/utils"
 
 // ── Data 5 Card Masalah — Warna Senada & Harmonis dengan Brand Linkora ──
 const getProblems = (locale: string) => [
@@ -270,7 +271,10 @@ export function PainPoints() {
                 zIndex: 30,
                 willChange: "transform, opacity",
               }}
-              className="relative min-h-[240px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-2xl sm:rounded-3xl bg-white dark:bg-card p-5 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden"
+              className={cn(
+                "min-h-[240px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-2xl sm:rounded-3xl bg-white dark:bg-card p-5 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden",
+                isDesktop ? "relative" : "absolute inset-0 z-30 shadow-primary/20 backdrop-blur-xl"
+              )}
             >
               {/* Gradient ambient background */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-sky-500/5 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none" />

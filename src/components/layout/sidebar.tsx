@@ -65,6 +65,161 @@ interface NavContentProps {
   unreadCount: number;
 }
 
+function RemindersPopover({
+  unreadCount,
+  notifications,
+  dismissNotification,
+  snoozeNotification,
+  links,
+  locale,
+  t,
+  side = "right",
+  align = "start",
+  triggerClassName,
+}: {
+  unreadCount: number;
+  notifications: any[];
+  dismissNotification: (id: string) => Promise<void>;
+  snoozeNotification: (id: string, minutes: number) => Promise<void>;
+  links: any[];
+  locale: string;
+  t: any;
+  side?: "right" | "bottom" | "top" | "left";
+  align?: "start" | "center" | "end";
+  triggerClassName?: string;
+}) {
+  const now = new Date();
+  const upcomingReminders = (links || [])
+    .filter((l) => l.reminderAt && new Date(l.reminderAt) > now)
+    .sort((a, b) => new Date(a.reminderAt!).getTime() - new Date(b.reminderAt!).getTime());
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "relative bg-background/80 hover:bg-muted text-foreground border border-border shadow-xs transition-all duration-150 shrink-0",
+            triggerClassName
+          )}
+          title={t("reminders.title")}
+        >
+          <Bell className="h-4 w-4" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
+              {unreadCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        side={side}
+        align={align}
+        sideOffset={10}
+        className="w-[330px] max-w-[calc(100vw-24px)] p-0 glass-panel border-primary/20 bg-card/95 shadow-2xl rounded-2xl z-60 overflow-hidden flex flex-col"
+      >
+        <div className="flex items-center justify-between p-3.5 border-b border-border/50 bg-foreground/[0.02]">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-warning-muted text-warning">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-foreground">{t("reminders.title")}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {unreadCount > 0
+                  ? `${unreadCount} ${locale === "en" ? "ready to review" : "siap ditinjau"}`
+                  : `${upcomingReminders.length} ${locale === "en" ? "active" : "aktif"}`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <ScrollArea className="max-h-[min(460px,70vh)] overflow-y-auto">
+          <div className="p-3 space-y-3">
+            {notifications.length > 0 && (
+              <div className="space-y-2">
+                <div className="px-1 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-ping" />
+                    {t("reminders.dueSection", { count: notifications.length })}
+                  </span>
+                </div>
+                {notifications.map((n) => (
+                  <div key={n.id} className="p-3 text-xs flex flex-col gap-2.5 rounded-xl bg-destructive-muted border border-destructive/25 shadow-xs">
+                    <div>
+                      <p className="font-bold text-foreground leading-snug">{n.title}</p>
+                      <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">{n.description}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {n.type === "link" && n.url && (
+                        <a
+                          href={n.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-95 text-primary-foreground text-[10px] font-bold flex items-center gap-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                        >
+                          {t("common.open")} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => dismissNotification(n.id)}
+                        className="px-2.5 py-1.5 rounded-lg bg-foreground/10 hover:bg-foreground/15 active:scale-95 text-foreground text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                      >
+                        <Check className="h-3 w-3" /> {t("reminders.doneAction")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => snoozeNotification(n.id, 15)}
+                        className="px-2.5 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 active:scale-95 text-muted-foreground text-[10px] font-medium flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                      >
+                        <Clock className="h-3 w-3" /> {t("reminders.snooze15m")}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {upcomingReminders.length > 0 && (
+              <div className="space-y-2">
+                <div className="px-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-warning">
+                    {t("reminders.upcomingSection", { count: upcomingReminders.length })}
+                  </span>
+                </div>
+                {upcomingReminders.map((link) => (
+                  <div key={link.id} className="p-3 rounded-xl bg-card/80 border border-border/70 hover:border-warning/40 flex items-start justify-between gap-2.5 transition-all shadow-xs">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{link.title}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground font-medium">
+                        <Clock className="w-3.5 h-3.5 text-warning shrink-0" />
+                        <span>{new Date(link.reminderAt!).toLocaleString(locale === "en" ? "en-US" : "id-ID", { dateStyle: "medium", timeStyle: "short" })}</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-muted text-muted-foreground shrink-0 border border-border/50">
+                      {link.category}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {notifications.length === 0 && upcomingReminders.length === 0 && (
+              <div className="py-8 px-4 text-center text-xs text-muted-foreground space-y-1.5">
+                <Bell className="w-7 h-7 mx-auto mb-2 text-muted-foreground/40" />
+                <p className="font-semibold text-foreground/90 text-sm">{t("reminders.emptyActive")}</p>
+                <p className="text-[11px] leading-relaxed text-muted-foreground/80">{t("reminders.emptyDesc")}</p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function NavContent({
   onAddLink,
   onEditProfile,
@@ -161,130 +316,17 @@ function NavContent({
           <Plus className="h-4 w-4" />
           <span>{t("links.addLink")}</span>
         </Button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="relative bg-background/80 hover:bg-muted text-foreground border border-border shadow-xs transition-all duration-150 shrink-0"
-              title={t("reminders.title")}
-            >
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent 
-            side="right" 
-            align="start" 
-            sideOffset={12} 
-            className="w-[340px] max-w-[calc(100vw-24px)] p-0 glass-panel border-primary/20 bg-card/95 shadow-2xl rounded-2xl z-60 overflow-hidden flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-3.5 border-b border-border/50 bg-foreground/[0.02]">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-warning-muted text-warning">
-                  <Bell className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-foreground">{t("reminders.title")}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {unreadCount > 0
-                      ? `${unreadCount} ${locale === "en" ? "ready to review" : "siap ditinjau"}`
-                      : `${upcomingReminders.length} ${locale === "en" ? "active" : "aktif"}`}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <ScrollArea className="max-h-[min(460px,70vh)] overflow-y-auto">
-              <div className="p-3 space-y-3">
-                {/* ── BAGIAN 1: NOTIFIKASI JATUH TEMPO ── */}
-                {notifications.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1 flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-ping" />
-                        {t("reminders.dueSection", { count: notifications.length })}
-                      </span>
-                    </div>
-                    {notifications.map((n) => (
-                      <div key={n.id} className="p-3 text-xs flex flex-col gap-2.5 rounded-xl bg-destructive-muted border border-destructive/25 shadow-xs">
-                        <div>
-                          <p className="font-bold text-foreground leading-snug">{n.title}</p>
-                          <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">{n.description}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 pt-0.5">
-                          {n.type === "link" && n.url && (
-                            <a
-                              href={n.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-95 text-primary-foreground text-[10px] font-bold flex items-center gap-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                            >
-                              {t("common.open")} <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => dismissNotification(n.id)}
-                            className="px-2.5 py-1.5 rounded-lg bg-foreground/10 hover:bg-foreground/15 active:scale-95 text-foreground text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                          >
-                            <Check className="h-3 w-3" /> {t("reminders.doneAction")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => snoozeNotification(n.id, 15)}
-                            className="px-2.5 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 active:scale-95 text-muted-foreground text-[10px] font-medium flex items-center gap-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                          >
-                            <Clock className="h-3 w-3" /> {t("reminders.snooze15m")}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ── BAGIAN 2: PENGINGAT TERJADWAL ── */}
-                {upcomingReminders.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="px-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-warning">
-                        {t("reminders.upcomingSection", { count: upcomingReminders.length })}
-                      </span>
-                    </div>
-                    {upcomingReminders.map((link) => (
-                      <div key={link.id} className="p-3 rounded-xl bg-card/80 border border-border/70 hover:border-warning/40 flex items-start justify-between gap-2.5 transition-all shadow-xs">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{link.title}</p>
-                          <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground font-medium">
-                            <Clock className="w-3.5 h-3.5 text-warning shrink-0" />
-                            <span>{new Date(link.reminderAt!).toLocaleString(locale === "en" ? "en-US" : "id-ID", { dateStyle: "medium", timeStyle: "short" })}</span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-muted text-muted-foreground shrink-0 border border-border/50">
-                          {link.category}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ── STATE KOSONG ── */}
-                {notifications.length === 0 && upcomingReminders.length === 0 && (
-                  <div className="py-8 px-4 text-center text-xs text-muted-foreground space-y-1.5">
-                    <Bell className="w-7 h-7 mx-auto mb-2 text-muted-foreground/40" />
-                    <p className="font-semibold text-foreground/90 text-sm">{t("reminders.emptyActive")}</p>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground/80">{t("reminders.emptyDesc")}</p>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </PopoverContent>
-        </Popover>
+        <RemindersPopover
+          unreadCount={unreadCount}
+          notifications={notifications}
+          dismissNotification={dismissNotification}
+          snoozeNotification={snoozeNotification}
+          links={links || []}
+          locale={locale}
+          t={t}
+          side="right"
+          align="start"
+        />
       </div>
 
       <nav className="flex-1 px-3 space-y-2">
@@ -495,20 +537,162 @@ function NavContent({
 
 export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
   const { notifications, dismissNotification, snoozeNotification, unreadCount } = useRealtime();
+  const { links } = useLinks();
+  const { requireAuth } = useRequireAuth();
+  const { t, locale } = useTranslation();
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden text-foreground glass-panel"
-        onClick={() => setMobileOpen(true)}
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
+      {/* ── Mobile Top App Header Bar (Sticky, Safe-area aware, Native feel) ── */}
+      <header className="fixed top-0 inset-x-0 h-14 z-30 lg:hidden glass-panel border-b border-border/80 flex items-center justify-between px-3 safe-top bg-card/90 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl text-foreground hover:bg-foreground/5 active:scale-95 cursor-pointer touch-manipulation"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Buka Menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Link href="/dashboard" className="flex items-center gap-1.5 active:scale-95 transition-transform">
+            <img src="/Logo.png" alt="Linkora" className="h-7 w-auto object-contain" />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <RemindersPopover
+            unreadCount={unreadCount}
+            notifications={notifications}
+            dismissNotification={dismissNotification}
+            snoozeNotification={snoozeNotification}
+            links={links || []}
+            locale={locale}
+            t={t}
+            side="bottom"
+            align="end"
+            triggerClassName="h-9 w-9 rounded-xl border-border/70"
+          />
+
+          {session?.user ? (
+            <button
+              type="button"
+              onClick={onEditProfile}
+              className="h-8 w-8 rounded-full overflow-hidden border border-border/80 hover:border-primary transition-all active:scale-95 cursor-pointer shrink-0"
+              title={session.user.name || "Profil"}
+            >
+              <img
+                src={session.user.image || "https://api.dicebear.com/7.x/adventurer/svg?seed=Maya"}
+                alt={session.user.name || "User"}
+                className="w-full h-full object-cover"
+              />
+            </button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs rounded-xl px-2.5 font-semibold cursor-pointer"
+              onClick={() => router.push("/login")}
+            >
+              <LogIn className="h-3.5 w-3.5 mr-1" /> {t("nav.login")}
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {/* ── Mobile Bottom Navigation Bar (Docked, Safe-area aware, 48px+ targets) ── */}
+      <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden glass-panel border-t border-border/70 safe-bottom bg-card/95 backdrop-blur-2xl">
+        <div className="flex items-center justify-around h-15 px-1 max-w-md mx-auto">
+          {/* Dashboard */}
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors select-none touch-manipulation",
+              pathname === "/dashboard"
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className={cn("p-1 rounded-lg transition-transform", pathname === "/dashboard" && "scale-110 bg-primary/10")}>
+              <LayoutDashboard className="h-4.5 w-4.5" />
+            </div>
+            <span className="mt-0.5 tracking-tight">{t("nav.dashboard")}</span>
+          </Link>
+
+          {/* Links */}
+          <Link
+            href="/links"
+            className={cn(
+              "flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors select-none touch-manipulation",
+              pathname === "/links"
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className={cn("p-1 rounded-lg transition-transform", pathname === "/links" && "scale-110 bg-primary/10")}>
+              <Link2 className="h-4.5 w-4.5" />
+            </div>
+            <span className="mt-0.5 tracking-tight">{t("nav.links")}</span>
+          </Link>
+
+          {/* Center FAB: Add Link */}
+          <button
+            type="button"
+            onClick={() => {
+              if (requireAuth(
+                locale === "en" ? "Add Link" : "Tambah Tautan",
+                locale === "en" ? "Sign in to save and organize links." : "Masuk untuk menyimpan tautan baru."
+              )) {
+                return;
+              }
+              onAddLink();
+            }}
+            className="flex flex-col items-center justify-center flex-1 h-full -mt-4 group cursor-pointer select-none touch-manipulation"
+            aria-label={t("links.addLink")}
+          >
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-accent text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 active:scale-95 group-hover:scale-105 transition-all">
+              <Plus className="h-5 w-5 stroke-[2.5]" />
+            </div>
+            <span className="text-[9px] font-semibold text-foreground/80 mt-0.5">{t("links.addLink")}</span>
+          </button>
+
+          {/* Collections */}
+          <Link
+            href="/collections"
+            className={cn(
+              "flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors select-none touch-manipulation",
+              pathname.startsWith("/collections")
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className={cn("p-1 rounded-lg transition-transform", pathname.startsWith("/collections") && "scale-110 bg-primary/10")}>
+              <FolderOpen className="h-4.5 w-4.5" />
+            </div>
+            <span className="mt-0.5 tracking-tight">{t("nav.collections")}</span>
+          </Link>
+
+          {/* Notes */}
+          <Link
+            href="/notes"
+            className={cn(
+              "flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors select-none touch-manipulation",
+              pathname.startsWith("/notes")
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div className={cn("p-1 rounded-lg transition-transform", pathname.startsWith("/notes") && "scale-110 bg-primary/10")}>
+              <PenBox className="h-4.5 w-4.5" />
+            </div>
+            <span className="mt-0.5 tracking-tight">{t("nav.notes")}</span>
+          </Link>
+        </div>
+      </nav>
 
       {mobileOpen && (
         <div
@@ -517,22 +701,23 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
         />
       )}
 
-      {/* Floating Glass Dock */}
+      {/* Floating Glass Dock (Permanent on Desktop, Slide-out Drawer on Mobile) */}
       <aside
         className={cn(
           "fixed z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 glass-panel border-r lg:border-border",
           "lg:left-6 lg:top-6 lg:bottom-6 lg:rounded-3xl lg:w-[260px]", // Floating permanently expanded on desktop
-          "inset-y-0 left-0 w-64 rounded-r-3xl", // Classic on mobile
+          "inset-y-0 left-0 w-64 rounded-r-3xl", // Classic drawer on mobile
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 lg:hidden text-foreground"
+          className="absolute top-4 right-4 lg:hidden text-foreground h-10 w-10 rounded-xl cursor-pointer touch-manipulation"
           onClick={() => setMobileOpen(false)}
+          aria-label="Tutup Menu"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </Button>
         <NavContent
           onAddLink={onAddLink}

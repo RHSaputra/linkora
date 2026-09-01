@@ -219,38 +219,38 @@ export default function RegisterPage() {
       </div>
 
       {/* Bagian Kiri: Welcome Hero Animasi */}
-      <div className="lg:w-1/3 w-full p-8 lg:p-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm min-h-[30vh] lg:min-h-screen">
+      <div className="lg:w-1/3 w-full p-4 sm:p-8 lg:p-12 py-6 sm:py-8 lg:py-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm lg:min-h-screen">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
         
-        <div className="relative z-10 text-center max-w-sm mx-auto space-y-6">
+        <div className="relative z-10 text-center max-w-sm mx-auto space-y-4 sm:space-y-6">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, y: [0, -15, 0] }}
+            animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
             transition={{ 
               scale: { type: "spring", stiffness: 200, damping: 20 },
               opacity: { duration: 0.5 },
               y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-56 lg:w-80 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-2xl shadow-accent/20 border border-accent/30 relative overflow-hidden"
+            className="mx-auto w-36 sm:w-56 lg:w-80 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-accent/20 border border-accent/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-bl from-accent/40 to-primary/40 blur-xl" />
             <div className="absolute inset-0 z-20">
               <div className="relative w-full h-full">
                 <img 
-                  src="/icon.jpg"
-                  alt="Linkora Logo"
+                  src="/icon.jpg" 
+                  alt="Linkora Logo" 
                   className="absolute inset-0 w-full h-full object-cover z-30 pointer-events-none" 
                 />
               </div>
             </div>
           </motion.div>
           
-          <div className="space-y-3">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl lg:text-4xl font-bold font-heading">
+          <div className="space-y-2 sm:space-y-3">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-2xl sm:text-3xl lg:text-4xl font-bold font-heading">
               {locale === "en" ? "Start Your" : "Awal Mula"} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">{locale === "en" ? "Journey" : "Perjalanan Anda"}</span>
             </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-muted-foreground text-sm lg:text-base">
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-muted-foreground text-xs sm:text-sm lg:text-base max-w-xs sm:max-w-none mx-auto">
               {locale === "en" ? "Register now and start managing your links and notes with our intelligent workspace." : "Daftar sekarang dan mulailah mengelola tautan Anda dengan sistem cerdas kami."}
             </motion.p>
           </div>
@@ -258,14 +258,14 @@ export default function RegisterPage() {
       </div>
 
       {/* Bagian Kanan: Form Register atau Form OTP */}
-      <div className="lg:w-2/3 w-full p-4 sm:p-8 lg:p-12 py-8 lg:py-12 relative z-10 overflow-y-auto max-h-screen flex items-start justify-center">
+      <div className="lg:w-2/3 w-full p-4 sm:p-8 lg:p-12 py-6 sm:py-8 lg:py-12 relative z-10 overflow-y-auto max-h-screen flex items-start justify-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
           className="w-full max-w-2xl mx-auto"
         >
-          <div className="glass-panel rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div className="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10 shadow-2xl">
             
             <AnimatePresence mode="wait">
               {step === "FORM" ? (

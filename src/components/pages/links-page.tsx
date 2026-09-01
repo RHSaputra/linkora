@@ -116,9 +116,9 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
     if (refreshKey > 0) refresh(true);
   }, [refreshKey, refresh]);
 
-  // Determine which results to display
-  const displayLinks = isNL && aiResults !== null ? aiResults : links;
-  const displayTotal = isNL && aiResults !== null ? aiResults.length : total;
+  // Determine which results to display safely with fallback array
+  const displayLinks = (isNL && aiResults !== null ? aiResults : links) || [];
+  const displayTotal = isNL && aiResults !== null ? aiResults.length : (total ?? displayLinks.length);
   const isLoadingResults = isNL ? isAiSearching : loading;
 
   return (

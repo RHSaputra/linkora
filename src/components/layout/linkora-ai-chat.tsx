@@ -262,7 +262,7 @@ export function LinkoraAIChat() {
   return (
     <>
       {/* Floating Button with Mascot */}
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-50">
         <AnimatePresence>
           {!isOpen && (
             <motion.button
@@ -272,7 +272,7 @@ export function LinkoraAIChat() {
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(true)}
-              className="relative w-16 h-16 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-all group outline-none cursor-pointer"
+              className="relative w-13 h-13 sm:w-16 sm:h-16 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-all group outline-none cursor-pointer"
             >
               {/* Rotating outer aura ring */}
               <motion.div
@@ -291,7 +291,7 @@ export function LinkoraAIChat() {
               </div>
 
               {/* Online pulse indicator */}
-              <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-success border-2 border-background z-20 shadow-sm" />
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-success border-2 border-background z-20 shadow-sm" />
             </motion.button>
           )}
         </AnimatePresence>
@@ -305,7 +305,7 @@ export function LinkoraAIChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-8 z-[60] w-80 sm:w-[400px] h-[550px] rounded-2xl flex flex-col shadow-2xl overflow-hidden border border-border/80 bg-card"
+            className="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-8 sm:bottom-24 z-[60] w-auto sm:w-[400px] h-[min(540px,78vh)] rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-border/80 bg-card/95 backdrop-blur-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-accent/10">

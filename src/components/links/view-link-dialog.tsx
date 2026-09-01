@@ -84,14 +84,14 @@ export function ViewLinkDialog({
 
             {/* Catatan & Hasil Analisis AI Section */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-base font-bold text-foreground">{t("links.notesAndAiSection")}</span>
                   <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20">Liko AI</Badge>
                 </div>
 
                 {hasAnalysisContent && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {existingNote ? (
                       <>
                         <Button
@@ -134,18 +134,14 @@ export function ViewLinkDialog({
                 )}
               </div>
 
-              <div className="p-5 rounded-2xl bg-card whitespace-pre-wrap text-sm leading-relaxed text-foreground border border-border/80 shadow-inner relative group">
+              <div className="p-4 sm:p-5 rounded-2xl bg-card whitespace-pre-wrap text-sm leading-relaxed text-foreground border border-border/80 shadow-inner relative group">
                 {link.notes || link.aiSummary || t("links.noNotesOrAi")}
 
                 {hasAnalysisContent && (
-                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5 text-[11px]">
-                      <FileText className="w-3.5 h-3.5 text-amber-500" />
-                      <span>
-                        {existingNote
-                          ? t("links.noteSavedPrompt", { title: existingNote.title })
-                          : t("links.noteEditPrompt")}
-                      </span>
+                      <Clock className="w-3.5 h-3.5 text-primary" />
+                      <span>{t("links.analyzedWithAi")}</span>
                     </span>
                     <button
                       type="button"
@@ -170,15 +166,15 @@ export function ViewLinkDialog({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-border/60">
-              <div className="text-xs text-muted-foreground truncate max-w-[280px]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border/60">
+              <div className="text-xs text-muted-foreground truncate w-full sm:max-w-[280px]">
                 {link.url}
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl text-xs cursor-pointer">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl text-xs cursor-pointer flex-1 sm:flex-initial">
                   {t("common.close")}
                 </Button>
-                <Button onClick={handleOpenLink} className="gap-2 rounded-xl text-xs transition-all active:scale-95 cursor-pointer">
+                <Button onClick={handleOpenLink} className="gap-2 rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex-1 sm:flex-initial">
                   {t("links.openExternal")} <ExternalLink className="w-4 h-4" />
                 </Button>
               </div>

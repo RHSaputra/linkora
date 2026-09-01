@@ -79,12 +79,12 @@ export function Navbar() {
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-xl border-b border-foreground/10 shadow-lg py-4" : "bg-transparent py-6"
+        scrolled ? "bg-background/85 backdrop-blur-xl border-b border-foreground/10 shadow-lg py-3 sm:py-4" : "bg-transparent py-3.5 sm:py-6"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <img src="/Logo.png" alt="Linkora Logo" className="h-12 w-auto object-contain" />
+          <img src="/Logo.png" alt="Linkora Logo" className="h-8 sm:h-12 w-auto object-contain" />
         </Link>
 
         {/* Desktop Nav */}

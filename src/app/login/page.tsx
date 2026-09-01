@@ -77,12 +77,12 @@ function LoginFormContent() {
   }
 
   return (
-    <div className="glass-panel rounded-3xl p-8 lg:p-10 shadow-2xl">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">
+    <div className="glass-panel rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 shadow-2xl">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1.5 sm:mb-2">
           {locale === "en" ? "Sign In to Your Account" : "Masuk ke Akun Anda"}
         </h2>
-        <p className="text-sm text-muted-foreground">{locale === "en" ? "Sign in to access your workspace and digital assets." : "Masuk untuk mengakses seluruh ruang kerja dan aset digital Anda."}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">{locale === "en" ? "Sign in to access your workspace and digital assets." : "Masuk untuk mengakses seluruh ruang kerja dan aset digital Anda."}</p>
       </div>
 
       <button
@@ -133,9 +133,9 @@ function LoginFormContent() {
         </motion.div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-1.5 ml-1">{locale === "en" ? "Email Address" : "Alamat Email"}</label>
+          <label className="block text-xs sm:text-sm font-medium text-foreground/80 mb-1.5 ml-1">{locale === "en" ? "Email Address" : "Alamat Email"}</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Mail className="h-5 w-5 text-muted-foreground" />
@@ -145,8 +145,8 @@ function LoginFormContent() {
               type="email"
               required
               disabled={loading || googleLoading}
-              className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
-              placeholder={locale === "en" ? "Enter your email address" : "Masukkan alamat email Anda"}
+              className="block w-full pl-10 pr-3 py-2.5 sm:py-3 border border-border rounded-xl bg-background/50 text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
+              placeholder={locale === "en" ? "name@email.com" : "nama@email.com"}
             />
           </div>
         </div>
@@ -209,19 +209,19 @@ export default function LoginPage() {
       </div>
 
       {/* Bagian Kiri: Welcome Hero Animasi */}
-      <div className="lg:w-1/2 w-full p-8 lg:p-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm min-h-[40vh] lg:min-h-screen">
+      <div className="lg:w-1/2 w-full p-4 sm:p-8 lg:p-12 py-6 sm:py-8 lg:py-12 flex flex-col justify-center items-center relative z-10 border-b lg:border-b-0 lg:border-r border-border bg-card/30 backdrop-blur-sm lg:min-h-screen">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--primary)_5%,transparent)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
-        <div className="relative z-10 text-center max-w-md mx-auto space-y-8">
+        <div className="relative z-10 text-center max-w-md mx-auto space-y-4 sm:space-y-8">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, y: [0, -20, 0] }}
+            animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
             transition={{
               scale: { type: "spring", stiffness: 200, damping: 20 },
               opacity: { duration: 0.5 },
               y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-64 lg:w-96 aspect-video rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
+            className="mx-auto w-40 sm:w-64 lg:w-96 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent/40 blur-xl" />
             <div className="absolute inset-0 z-20">
@@ -235,12 +235,12 @@ export default function LoginPage() {
             </div>
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-4xl lg:text-5xl font-bold font-heading"
+              className="text-2xl sm:text-4xl lg:text-5xl font-bold font-heading"
             >
               {locale === "en" ? "Welcome to" : "Selamat Datang di"} <br />
               <LinkoraText />
@@ -249,7 +249,7 @@ export default function LoginPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-muted-foreground text-lg"
+              className="text-muted-foreground text-xs sm:text-base lg:text-lg max-w-xs sm:max-w-none mx-auto"
             >
               {locale === "en" ? "An immersive AI-powered workspace to organize and supercharge all your links and notes." : "Ruang kerja digital imersif yang ditenagai oleh AI untuk mengelola semua tautan Anda."}
             </motion.p>

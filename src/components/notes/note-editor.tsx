@@ -153,7 +153,7 @@ const MenuButton = memo(function MenuButton({
           }}
           aria-label={label}
           className={cn(
-            "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 active:scale-95 active:duration-75 select-none touch-manipulation cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none",
+            "h-8 w-8 inline-flex items-center justify-center rounded-lg text-sm transition-all duration-150 active:scale-95 active:duration-75 select-none touch-manipulation cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none shrink-0",
             isActive
               ? "bg-primary text-primary-foreground shadow-xs font-semibold"
               : "text-muted-foreground hover:text-foreground hover:bg-foreground/10 active:bg-foreground/15",
@@ -2100,7 +2100,7 @@ function EditorToolbar({
   if (!editor) return null;
 
   return (
-    <div className="flex items-center flex-wrap gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full sticky top-[76px] z-10 transition-all">
+    <div className="flex items-center sm:flex-wrap overflow-x-auto sm:overflow-x-visible scrollbar-none gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full sticky top-[64px] sm:top-[76px] z-10 transition-all">
       {/* History */}
       <MenuButton
         onClick={() => editor.chain().focus().undo().run()}
@@ -2496,6 +2496,9 @@ export function NoteEditor({
 
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsPageView(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -2873,7 +2876,7 @@ export function NoteEditor({
         ref={deskContainerRef}
         className={cn(
           "w-full rounded-2xl transition-colors min-h-[620px] relative overflow-hidden",
-          isPageView ? "bg-neutral-100/90 dark:bg-neutral-900/90 py-10 px-4 flex justify-center shadow-inner" : ""
+          isPageView ? "bg-neutral-100/90 dark:bg-neutral-900/90 py-6 sm:py-10 px-2 sm:px-4 flex justify-center shadow-inner overflow-x-auto" : ""
         )}
       >
         {isPageView ? (

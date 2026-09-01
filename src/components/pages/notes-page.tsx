@@ -328,20 +328,20 @@ export function NotesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
           {/* Search Input */}
-          <div className="relative w-full sm:w-64">
+          <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t("notes.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-sm h-11"
+              className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-sm h-11 w-full"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -361,49 +361,49 @@ export function NotesPage() {
 
       {/* Stats Cards (Hidden during search) */}
       {!search && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-primary/40 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 shadow-2xs">
-            <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5" strokeWidth={1.8} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="p-3 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-primary/40 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 shadow-2xs">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
+              <p className="text-xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.allNotes")}</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate">{t("notes.allNotes")}</p>
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-amber-500/40 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 shadow-2xs">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
-              <Star className="w-5 h-5 fill-amber-500/15 text-amber-500" strokeWidth={1.8} />
+          <div className="p-3 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-amber-500/40 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 shadow-2xs">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-500/15 text-amber-500" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
+              <p className="text-xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.filter((n) => n.isFavorite).length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.favorites")}</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate">{t("notes.favorites")}</p>
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-blue-500/40 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 shadow-2xs">
-            <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center shrink-0">
-              <Pin className="w-5 h-5 text-blue-500" strokeWidth={1.8} />
+          <div className="p-3 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-blue-500/40 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 shadow-2xs">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center shrink-0">
+              <Pin className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
+              <p className="text-xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {notes.filter((n) => n.isPinned).length}
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">{t("notes.pinned")}</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate">{t("notes.pinned")}</p>
             </div>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-emerald-500/40 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 shadow-2xs">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 text-emerald-500" strokeWidth={1.8} />
+          <div className="p-3 sm:p-5 rounded-2xl glass-panel bg-card/70 hover:bg-card/95 border border-border/60 hover:border-emerald-500/40 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 shadow-2xs">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
+              <p className="text-xl sm:text-3xl font-bold font-sans tracking-tight text-foreground tabular-nums leading-none mb-1">
                 {
                   notes.filter(
                     (n) =>
@@ -411,7 +411,7 @@ export function NotesPage() {
                   ).length
                 }
               </p>
-              <p className="text-xs text-muted-foreground font-medium truncate">Diperbarui Hari Ini</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate">{locale === "en" ? "Updated Today" : "Diperbarui Hari Ini"}</p>
             </div>
           </div>
         </div>
