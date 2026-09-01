@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   try {
     token = await getToken({
       req: request,
-      secret: process.env.AUTH_SECRET,
+      secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "linkora_super_secure_production_secret_key_2026",
     })
   } catch (_e) {
     token = null

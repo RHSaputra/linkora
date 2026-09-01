@@ -5,63 +5,75 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET
+
+const providers: any[] = [
+  CredentialsProvider({
+    name: "Credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" }
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        return null
+      }
+
+      const email = (credentials.email as string).toLowerCase().trim()
+      const password = credentials.password as string
+
+      const user = await prisma.user.findUnique({
+        where: { email }
+      })
+
+      if (!user || !user.password) {
+        return null
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password
+      )
+
+      if (!isPasswordValid) {
+        return null
+      }
+
+      const safeImage = (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300)
+        ? user.image
+        : null
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: safeImage,
+      }
+    }
+  })
+]
+
+if (googleClientId && googleClientSecret) {
+  providers.unshift(
+    Google({
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      allowDangerousEmailAccountLinking: true,
+    })
+  )
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "linkora_super_secure_production_secret_key_2026",
+  trustHost: true,
   pages: {
     signIn: "/login",
     error: "/login",
   },
-  providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        const email = (credentials.email as string).toLowerCase().trim()
-        const password = credentials.password as string
-
-        const user = await prisma.user.findUnique({
-          where: { email }
-        })
-
-        if (!user || !user.password) {
-          return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        const safeImage = (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300)
-          ? user.image
-          : null
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: safeImage,
-        }
-      }
-    })
-  ],
+  providers,
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
@@ -118,6 +130,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     }
   },
-  trustHost: true,
 })
 
