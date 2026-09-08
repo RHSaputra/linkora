@@ -331,7 +331,7 @@ export function AddLinkDialog({
                   value={url}
                   onChange={(e) => handleUrlPaste(e.target.value)}
                   required
-                  className="h-10 sm:h-9"
+                  className="h-10 sm:h-9 text-base sm:text-sm"
                 />
                 {fetchingMeta && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -443,6 +443,7 @@ export function AddLinkDialog({
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("links.titlePlaceholder")}
               required
+              className="text-base sm:text-sm"
             />
           </div>
 
@@ -454,6 +455,7 @@ export function AddLinkDialog({
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("links.descPlaceholder")}
               rows={3}
+              className="text-base sm:text-sm"
             />
           </div>
 
@@ -481,7 +483,7 @@ export function AddLinkDialog({
                 type="datetime-local"
                 value={reminderAt}
                 onChange={(e) => setReminderAt(e.target.value)}
-                className="w-full"
+                className="w-full text-base sm:text-sm"
               />
             </div>
           </div>
@@ -493,6 +495,7 @@ export function AddLinkDialog({
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 placeholder={t("links.tagsPlaceholder")}
+                className="text-base sm:text-sm"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -526,6 +529,7 @@ export function AddLinkDialog({
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("links.notesPlaceholder")}
               rows={8}
+              className="text-base sm:text-sm"
             />
           </div>
 

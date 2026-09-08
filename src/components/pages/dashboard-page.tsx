@@ -195,7 +195,7 @@ export function DashboardPage({
                   ? (locale === "en" ? "Welcome back," : "Selamat Datang,")
                   : (locale === "en" ? "Hello," : "Halo,")}
               </h2>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent font-sans leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent font-sans leading-tight break-words">
                 {userName} {!isAuthenticated && "👋"}
               </h1>
               <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
@@ -247,7 +247,7 @@ export function DashboardPage({
                 </div>
 
                 {/* Minimalist Summary Footer */}
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
                   <span className="font-medium text-muted-foreground">
                     <strong className="text-foreground font-bold">{s.categoryStats.length}</strong> {t("dashboard.activeCategories")}
                   </span>

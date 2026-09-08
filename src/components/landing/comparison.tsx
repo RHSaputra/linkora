@@ -106,34 +106,44 @@ export function Comparison() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="glass-panel rounded-3xl overflow-hidden border border-border/70 shadow-2xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+          <div className="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-border/70 shadow-2xl relative">
+            {/* Mobile Scroll Indicator Cue */}
+            <div className="md:hidden flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-border/50 text-[11px] text-muted-foreground">
+              <span className="font-semibold text-primary">{locale === "en" ? "Feature Matrix" : "Matriks Fitur"}</span>
+              <span className="flex items-center gap-1 font-medium text-primary animate-pulse">
+                {locale === "en" ? "Swipe to compare →" : "Geser untuk bandingkan →"}
+              </span>
+            </div>
+
+            <div className="overflow-x-auto scrollbar-none">
+              <table className="w-full text-left border-collapse min-w-[540px] sm:min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border/60 bg-foreground/[0.02]">
-                    <th className="p-5 sm:p-6 font-bold text-foreground text-sm uppercase tracking-wider w-1/3">
+                    <th className="p-4 sm:p-6 font-bold text-foreground text-xs sm:text-sm uppercase tracking-wider w-2/5 sm:w-1/3 sticky left-0 z-20 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
                       {locale === "en" ? "Key Capabilities" : "Fitur Utama"}
                     </th>
-                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                    <th className="p-4 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
                       {locale === "en" ? "Browser" : "Bookmark"}<br />
-                      <span className="text-[11px] font-normal lowercase">{locale === "en" ? "bookmarks" : "browser"}</span>
+                      <span className="text-[10px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "bookmarks" : "browser"}</span>
                     </th>
-                    <th className="p-5 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                    <th className="p-4 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
                       {locale === "en" ? "Standard" : "Aplikasi"}<br />
-                      <span className="text-[11px] font-normal lowercase">{locale === "en" ? "notes app" : "catatan biasa"}</span>
+                      <span className="text-[10px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "notes app" : "catatan biasa"}</span>
                     </th>
-                    <th className="p-5 sm:p-6 font-bold text-center text-primary text-base w-1/4 bg-primary/10 border-l border-primary/20">
+                    <th className="p-4 sm:p-6 font-bold text-center text-primary text-sm sm:text-base w-1/4 bg-primary/10 border-l border-primary/20">
                       <LinkoraText />
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/40 text-sm">
+                <tbody className="divide-y divide-border/40 text-xs sm:text-sm">
                   {features.map((feature, idx) => (
                     <tr key={idx} className="hover:bg-foreground/[0.02] transition-colors">
-                      <td className="p-4 sm:p-5 font-medium text-foreground/90">{feature.name}</td>
-                      <td className="p-4 sm:p-5 text-center">{renderIcon(feature.bookmark)}</td>
-                      <td className="p-4 sm:p-5 text-center">{renderIcon(feature.notes)}</td>
-                      <td className="p-4 sm:p-5 text-center bg-primary/[0.04] border-l border-primary/20">{renderIcon(feature.linkora, true)}</td>
+                      <td className="p-3.5 sm:p-5 font-medium text-foreground/90 sticky left-0 z-10 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
+                        {feature.name}
+                      </td>
+                      <td className="p-3.5 sm:p-5 text-center">{renderIcon(feature.bookmark)}</td>
+                      <td className="p-3.5 sm:p-5 text-center">{renderIcon(feature.notes)}</td>
+                      <td className="p-3.5 sm:p-5 text-center bg-primary/[0.04] border-l border-primary/20">{renderIcon(feature.linkora, true)}</td>
                     </tr>
                   ))}
                 </tbody>

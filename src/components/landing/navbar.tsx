@@ -13,7 +13,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState("")
   const { data: session } = useSession()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -177,8 +177,10 @@ export function Navbar() {
             ))}
           </div>
           <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">{t("profile.languageSetting")}</span>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm font-medium text-muted-foreground">
+                {locale === "en" ? "Appearance Theme" : "Tema Tampilan"}
+              </span>
               <ThemeToggle />
             </div>
             {session ? (

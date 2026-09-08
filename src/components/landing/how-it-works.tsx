@@ -1,8 +1,8 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
-import { PlusCircle, Layers, Search, ChevronRight } from "lucide-react"
+import { PlusCircle, Layers, Search, ChevronRight, ChevronDown } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
 import { useTranslation } from "@/components/providers/i18n-provider"
 
@@ -58,9 +58,18 @@ const getSteps = (locale: string) => [
 export function HowItWorks() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeStepIndex, setActiveStepIndex] = useState<number>(-1)
+  const [isDesktop, setIsDesktop] = useState(false)
   const { t, locale } = useTranslation()
 
   const steps = getSteps(locale)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)")
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -70,6 +79,7 @@ export function HowItWorks() {
   const prevScrollRef = useRef(0)
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (!isDesktop) return
     const isScrollingUp = latest < prevScrollRef.current
     prevScrollRef.current = latest
 
@@ -101,9 +111,9 @@ export function HowItWorks() {
   })
 
   return (
-    <section id="cara-kerja" ref={containerRef} className="relative h-[320vh] bg-background">
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center py-[4vh]">
-        <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-[92vh] w-full">
+    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[320vh] bg-background py-14 sm:py-20 lg:py-0">
+      <div className="relative lg:sticky lg:top-0 h-auto lg:h-screen w-full lg:overflow-hidden flex flex-col items-center justify-center lg:py-[4vh]">
+        <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
           
           <div className="text-center max-w-3xl mx-auto mb-6 md:mb-10 overflow-hidden py-1">
             <motion.h2 
@@ -129,7 +139,7 @@ export function HowItWorks() {
                 damping: 22,
                 delay: 0.08,
               }}
-              className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-muted-foreground"
+              className="text-xs sm:text-base md:text-lg text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
             >
               {locale === "en"
                 ? "Three simple steps to build your personal knowledge base and link management powerhouse."
@@ -137,14 +147,15 @@ export function HowItWorks() {
             </motion.p>
           </div>
 
-          <div className="relative max-w-6xl mx-auto w-full pt-6">
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 relative z-10 items-stretch">
+          <div className="relative max-w-6xl mx-auto w-full pt-2 sm:pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 relative z-10 items-stretch">
               {steps.map((item, idx) => {
                 const Icon = item.icon
-                const isActive = activeStepIndex === idx
+                const isActive = isDesktop ? activeStepIndex === idx : false
 
                 return (
-                  <div key={item.step} className="relative flex flex-col items-center">
+                  <div key={item.step} className="relative flex flex-col items-center w-full">
+                    {/* Desktop Horizontal Connecting Line with Arrow */}
                     {idx < steps.length - 1 && (
                       <div className="hidden md:flex absolute top-[50%] -right-4 lg:-right-6 translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center pointer-events-none">
                         <div className="w-5 lg:w-8 h-[2px] bg-slate-200 dark:bg-border relative overflow-hidden rounded-full">
@@ -169,8 +180,8 @@ export function HowItWorks() {
                     )}
 
                     <motion.div
-                      initial={item.initialOffset}
-                      whileInView={{ x: 0, y: 0 }}
+                      initial={isDesktop ? item.initialOffset : { opacity: 0, y: 25 }}
+                      whileInView={{ x: 0, y: 0, opacity: 1 }}
                       viewport={{ once: false, amount: 0.1 }}
                       transition={{
                         type: "spring",
@@ -256,6 +267,14 @@ export function HowItWorks() {
                         </div>
                       </motion.div>
                     </motion.div>
+
+                    {/* Mobile Vertical Connector between steps */}
+                    {idx < steps.length - 1 && (
+                      <div className="flex md:hidden flex-col items-center my-3 pointer-events-none">
+                        <div className="w-[2px] h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full opacity-60" />
+                        <ChevronDown className="w-4 h-4 text-indigo-500 -mt-1 opacity-80" />
+                      </div>
+                    )}
                   </div>
                 )
               })}

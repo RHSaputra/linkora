@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
 import { Link2, FileEdit, GraduationCap, Search, BrainCircuit, CalendarClock } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
@@ -90,9 +90,18 @@ const getSolutions = (locale: string) => [
 export function Solution() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeCardIndex, setActiveCardIndex] = useState<number>(-1)
+  const [isDesktop, setIsDesktop] = useState(false)
   const { t, locale } = useTranslation()
 
   const solutions = getSolutions(locale)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)")
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -100,6 +109,7 @@ export function Solution() {
   })
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (!isDesktop) return
     if (latest >= 0.10 && latest < 0.24) {
       setActiveCardIndex(0)
     } else if (latest >= 0.24 && latest < 0.38) {
@@ -121,20 +131,20 @@ export function Solution() {
     <section 
       id="solusi" 
       ref={containerRef}
-      className="relative w-full h-[350vh] bg-slate-50 dark:bg-background"
+      className="relative w-full h-auto lg:h-[350vh] bg-slate-50 dark:bg-background py-14 sm:py-20 lg:py-0"
     >
-      <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center">
+      <div className="relative lg:sticky lg:top-0 w-full h-auto lg:h-screen lg:overflow-hidden flex flex-col justify-center items-center">
         {/* Glow ambient background */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-primary/10 rounded-full blur-[130px] pointer-events-none z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] lg:w-[650px] h-[340px] sm:h-[500px] lg:h-[650px] bg-primary/10 rounded-full blur-[80px] lg:blur-[130px] pointer-events-none z-0" />
 
         <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
           {/* Header Section */}
-          <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6">
+          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 md:mb-3 text-slate-900 dark:text-foreground flex flex-col items-center gap-1">
               <motion.span
-                initial={{ x: -140 }}
-                whileInView={{ x: 0 }}
+                initial={isDesktop ? { x: -140 } : { opacity: 0, y: -20 }}
+                whileInView={isDesktop ? { x: 0 } : { opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",
@@ -147,8 +157,8 @@ export function Solution() {
                 {locale === "en" ? "One Unified Ecosystem for All" : "Satu Ekosistem Untuk Semua"}
               </motion.span>
               <motion.span
-                initial={{ x: 140 }}
-                whileInView={{ x: 0 }}
+                initial={isDesktop ? { x: 140 } : { opacity: 0, y: 20 }}
+                whileInView={isDesktop ? { x: 0 } : { opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",
@@ -163,8 +173,8 @@ export function Solution() {
               </motion.span>
             </h2>
             <motion.p
-              initial={{ y: 20 }}
-              whileInView={{ y: 0 }}
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: false, amount: 0.1 }}
               transition={{
                 type: "spring",
@@ -172,7 +182,7 @@ export function Solution() {
                 damping: 22,
                 delay: 0.12,
               }}
-              className="text-sm md:text-base text-slate-600 dark:text-muted-foreground"
+              className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
             >
               {locale === "en"
                 ? "Tailored for students, job seekers, and professionals who demand a clean, organized digital workspace."
@@ -181,16 +191,16 @@ export function Solution() {
           </div>
 
           {/* Grid 6 Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4 max-w-6xl mx-auto w-full items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 md:gap-4 max-w-6xl mx-auto w-full items-stretch">
             {solutions.map((item, idx) => {
               const Icon = item.icon
-              const isActive = activeCardIndex === idx
+              const isActive = isDesktop ? activeCardIndex === idx : false
 
               return (
                 <motion.div
                   key={item.title}
-                  initial={item.initialOffset}
-                  whileInView={{ x: 0, y: 0 }}
+                  initial={isDesktop ? item.initialOffset : { opacity: 0, y: 25 }}
+                  whileInView={{ x: 0, y: 0, opacity: 1 }}
                   viewport={{ once: false, amount: 0.1 }}
                   transition={{
                     type: "spring",
@@ -199,6 +209,7 @@ export function Solution() {
                     mass: 0.85,
                     delay: 0.04 * idx,
                   }}
+                  whileHover={{ y: -4 }}
                   className="h-full flex flex-col"
                 >
                   <motion.div
@@ -219,12 +230,12 @@ export function Solution() {
                     }}
                     className={`
                       h-full min-h-[170px] sm:min-h-[185px] md:min-h-[195px]
-                      p-4 sm:p-5 rounded-2xl sm:rounded-3xl cursor-default relative overflow-hidden
+                      p-4 sm:p-5 rounded-2xl sm:rounded-3xl cursor-default relative overflow-hidden group
                       flex flex-col justify-start transition-colors duration-250
                       ${
                         isActive
                           ? `${item.activeBorder} shadow-sm`
-                          : "border border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-2xs"
+                          : "border border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-2xs hover:border-primary/40"
                       }
                     `}
                   >
@@ -233,7 +244,7 @@ export function Solution() {
                       className={`
                         absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent ${item.topBar} to-transparent
                         transition-opacity duration-250
-                        ${isActive ? "opacity-100" : "opacity-0"}
+                        ${isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
                       `}
                     />
 

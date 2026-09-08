@@ -293,7 +293,7 @@ export function LikoNoteConverterModal({
                       value={noteTitle}
                       onChange={(e) => setNoteTitle(e.target.value)}
                       placeholder={locale === "en" ? "Enter note title..." : "Masukkan judul catatan..."}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border/80 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-foreground"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border/80 text-base sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-foreground"
                     />
                   </div>
 

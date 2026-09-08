@@ -228,7 +228,7 @@ export function QuickNoteButton() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("quickNote.titlePlaceholder")}
-                className="text-sm font-semibold rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
+                className="text-base sm:text-sm font-semibold rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
               />
             </div>
 
@@ -239,7 +239,7 @@ export function QuickNoteButton() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={t("quickNote.contentPlaceholder")}
                 rows={5}
-                className="text-xs leading-relaxed resize-none rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
+                className="text-base sm:text-xs leading-relaxed resize-none rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
               />
             </div>
 

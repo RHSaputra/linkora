@@ -87,13 +87,13 @@ export function Footer() {
           </div>
 
           {/* Quick links */}
-          <div className="flex items-center gap-6 text-sm font-medium text-muted-foreground flex-wrap justify-center">
-            <Link href="#solusi" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("landing.navSolutions")}</Link>
-            <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("landing.navHowItWorks")}</Link>
-            <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("landing.navUseCases")}</Link>
-            <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("landing.navDemo")}</Link>
-            <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("nav.login")}</Link>
-            <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5">{t("nav.signUp")}</Link>
+          <div className="flex items-center gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground flex-wrap justify-center">
+            <Link href="#solusi" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navSolutions")}</Link>
+            <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navHowItWorks")}</Link>
+            <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navUseCases")}</Link>
+            <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navDemo")}</Link>
+            <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("nav.login")}</Link>
+            <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("nav.signUp")}</Link>
           </div>
         </div>
 
@@ -102,10 +102,10 @@ export function Footer() {
             © {new Date().getFullYear()} <LinkoraText />. {t("landing.footerRights")}
           </p>
           <div className="flex items-center gap-3">
-            <Link href="#" aria-label="Instagram" className="w-9 h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link href="#" aria-label="Instagram" className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Instagram className="w-4 h-4" />
             </Link>
-            <Link href="#" aria-label="Email" className="w-9 h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link href="#" aria-label="Email" className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Mail className="w-4 h-4" />
             </Link>
           </div>

@@ -2100,7 +2100,7 @@ function EditorToolbar({
   if (!editor) return null;
 
   return (
-    <div className="flex items-center sm:flex-wrap overflow-x-auto sm:overflow-x-visible scrollbar-none gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full sticky top-[64px] sm:top-[76px] z-10 transition-all">
+    <div className="flex items-center sm:flex-wrap overflow-x-auto sm:overflow-x-visible scrollbar-none gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full relative lg:sticky lg:top-[76px] z-10 transition-all">
       {/* History */}
       <MenuButton
         onClick={() => editor.chain().focus().undo().run()}

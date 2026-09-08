@@ -145,7 +145,7 @@ function LoginFormContent() {
               type="email"
               required
               disabled={loading || googleLoading}
-              className="block w-full pl-10 pr-3 py-2.5 sm:py-3 border border-border rounded-xl bg-background/50 text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
+              className="block w-full pl-10 pr-3 py-2.5 sm:py-3 border border-border rounded-xl bg-background/50 text-foreground text-base sm:text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
               placeholder={locale === "en" ? "name@email.com" : "nama@email.com"}
             />
           </div>
@@ -170,7 +170,7 @@ function LoginFormContent() {
               type="password"
               required
               disabled={loading || googleLoading}
-              className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
+              className="block w-full pl-10 pr-3 py-2.5 sm:py-3 border border-border rounded-xl bg-background/50 text-foreground text-base sm:text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all disabled:opacity-50"
               placeholder={locale === "en" ? "Enter your password" : "Masukkan kata sandi Anda"}
             />
           </div>
@@ -201,7 +201,7 @@ export default function LoginPage() {
   const { locale } = useTranslation();
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background overflow-hidden relative">
+    <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background overflow-x-hidden lg:overflow-hidden relative">
       {/* Background Decorations */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-primary/10 rounded-full blur-[120px]" />
@@ -221,7 +221,7 @@ export default function LoginPage() {
               opacity: { duration: 0.5 },
               y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-40 sm:w-64 lg:w-96 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
+            className="mx-auto w-32 sm:w-64 lg:w-96 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-primary/25 border border-primary/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent/40 blur-xl" />
             <div className="absolute inset-0 z-20">

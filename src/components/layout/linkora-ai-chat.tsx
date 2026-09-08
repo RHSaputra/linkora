@@ -461,7 +461,7 @@ export function LinkoraAIChat() {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={locale === "en" ? "Ask anything or paste URL to save..." : "Tanya atau paste URL untuk simpan..."}
-                  className="flex-1 bg-background/80 border border-border rounded-full pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground shadow-sm transition-all"
+                  className="flex-1 bg-background/80 border border-border rounded-full pl-4 pr-12 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground shadow-sm transition-all"
                 />
                 <button
                   type="button"

@@ -71,7 +71,7 @@ function TypewriterSubtitle({ subtitle }: { subtitle: string }) {
   return (
     <p 
       ref={ref}
-      className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-normal min-h-[3rem] sm:min-h-[2.5rem]"
+      className="text-xs sm:text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-normal min-h-[2.2rem] sm:min-h-[2.5rem]"
     >
       {displayedText || (isInView ? "" : subtitle)}
       {!isDone && isInView && (
@@ -155,6 +155,11 @@ export function PainPoints() {
     [0.92, 1.0, 1.0, 1.03, 1.03]
   )
 
+  const rightCardPointerEvents = useTransform(
+    rightColumnOpacity,
+    (val) => (isDesktop ? "auto" : val > 0.5 ? "auto" : "none")
+  )
+
   const checkScale = useTransform(
     scrollYProgress,
     [0.66, 0.72, 0.78, 0.84, 0.90, 0.96],
@@ -177,16 +182,16 @@ export function PainPoints() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[500vh] bg-slate-50 dark:bg-background"
+      className="relative w-full h-[320vh] md:h-[500vh] bg-slate-50 dark:bg-background"
     >
-      <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col justify-center items-center">
+      <div className="sticky top-0 w-full h-[100dvh] md:h-screen overflow-hidden flex flex-col justify-center items-center">
         {/* Atmospheric Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/10 rounded-full blur-[140px] pointer-events-none z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] md:w-[700px] h-[340px] sm:h-[500px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px] pointer-events-none z-0" />
 
-        <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-4 sm:py-6">
+        <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-6">
           {/* ── Header: Title + Typewriter Subtitle ── */}
-          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-10">
-            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900 dark:text-foreground">
+          <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-6 md:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3 text-slate-900 dark:text-foreground">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">
                 {locale === "en" ? "Before Using" : "Sebelum Menggunakan"}
               </span>{" "}
@@ -198,7 +203,7 @@ export function PainPoints() {
           </div>
 
           {/* ── Main Grid Container ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
             
             {/* ── Kolom Kiri: 5 Chaos Cards (Layer z-10) ── */}
             <motion.div
@@ -207,7 +212,7 @@ export function PainPoints() {
                 zIndex: 10,
                 willChange: "transform",
               }}
-              className="space-y-2.5 sm:space-y-3 flex flex-col justify-center relative"
+              className="space-y-2 sm:space-y-3 flex flex-col justify-center relative"
             >
               {problems.map((problem, idx) => {
                 const Icon = problem.icon
@@ -225,14 +230,14 @@ export function PainPoints() {
                       stiffness: 380,
                       damping: 26,
                     }}
-                    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4 border transition-all duration-300 overflow-hidden ${
+                    className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-2.5 sm:gap-4 border transition-all duration-300 overflow-hidden ${
                       isActive
                         ? problem.activeClass
                         : "border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-sm opacity-90 hover:opacity-100"
                     }`}
                   >
                     {/* Badge Ikon */}
-                    <div className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20 transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
+                    <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20 transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
                       <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
@@ -268,6 +273,7 @@ export function PainPoints() {
                 x: rightColumnX,
                 opacity: rightColumnOpacity,
                 scale: rightCardScale,
+                pointerEvents: rightCardPointerEvents,
                 zIndex: 30,
                 willChange: "transform, opacity",
               }}

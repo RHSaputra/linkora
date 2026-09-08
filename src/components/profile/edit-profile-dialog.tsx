@@ -379,7 +379,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       if (e.target.value) setSelectedAvatar("");
                     }}
                     placeholder={locale === "en" ? "https://example.com/your-photo.jpg" : "https://example.com/foto-anda.jpg"}
-                    className="rounded-xl text-xs bg-background/80"
+                    className="rounded-xl text-base sm:text-xs bg-background/80"
                   />
                 </div>
               )}
@@ -397,7 +397,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t("profile.namePlaceholder")}
-                className="rounded-xl bg-background/60 border-border/60 focus:border-primary"
+                className="rounded-xl bg-background/60 border-border/60 focus:border-primary text-base sm:text-sm"
                 required
               />
             </div>
@@ -478,7 +478,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder={t("profile.currentPasswordPlaceholder")}
-                    className="rounded-xl text-xs bg-background/80"
+                    className="rounded-xl text-base sm:text-xs bg-background/80"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -489,7 +489,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder={t("profile.newPasswordPlaceholder")}
-                      className="rounded-xl text-xs bg-background/80"
+                      className="rounded-xl text-base sm:text-xs bg-background/80"
                     />
                   </div>
                   <div className="space-y-1">
@@ -499,7 +499,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={t("profile.confirmPasswordPlaceholder")}
-                      className="rounded-xl text-xs bg-background/80"
+                      className="rounded-xl text-base sm:text-xs bg-background/80"
                     />
                   </div>
                 </div>

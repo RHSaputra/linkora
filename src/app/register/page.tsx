@@ -211,7 +211,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background overflow-hidden relative">
+    <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background overflow-x-hidden lg:overflow-hidden relative">
       {/* Dekorasi Background Keseluruhan */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-accent/10 rounded-full blur-[120px]" />
@@ -231,7 +231,7 @@ export default function RegisterPage() {
               opacity: { duration: 0.5 },
               y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="mx-auto w-36 sm:w-56 lg:w-80 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-accent/20 border border-accent/30 relative overflow-hidden"
+            className="mx-auto w-32 sm:w-56 lg:w-80 aspect-video rounded-2xl sm:rounded-[1.5rem] lg:rounded-[2rem] glass-panel flex items-center justify-center shadow-xl sm:shadow-2xl shadow-accent/20 border border-accent/30 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-bl from-accent/40 to-primary/40 blur-xl" />
             <div className="absolute inset-0 z-20">
@@ -258,7 +258,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Bagian Kanan: Form Register atau Form OTP */}
-      <div className="lg:w-2/3 w-full p-4 sm:p-8 lg:p-12 py-6 sm:py-8 lg:py-12 relative z-10 overflow-y-auto max-h-screen flex items-start justify-center">
+      <div className="lg:w-2/3 w-full p-4 sm:p-8 lg:p-12 py-6 sm:py-8 lg:py-12 relative z-10 lg:overflow-y-auto lg:max-h-screen flex items-start justify-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -339,7 +339,7 @@ export default function RegisterPage() {
                               type="text"
                               required
                               autoComplete="off"
-                              className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                              className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm"
                               placeholder={locale === "en" ? "Enter your full name" : "Masukkan nama lengkap Anda"}
                             />
                           </div>
@@ -356,7 +356,7 @@ export default function RegisterPage() {
                               type="email"
                               required
                               autoComplete="off"
-                              className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                              className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm"
                               placeholder={locale === "en" ? "Enter your email address" : "Masukkan alamat email Anda"}
                             />
                           </div>
@@ -375,7 +375,7 @@ export default function RegisterPage() {
                             required
                             minLength={6}
                             autoComplete="new-password"
-                            className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                            className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm"
                             placeholder={locale === "en" ? "At least 6 characters" : "Masukkan minimal 6 karakter"}
                           />
                         </div>
@@ -391,7 +391,7 @@ export default function RegisterPage() {
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "Province" : "Provinsi"}</label>
                           <select
-                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm"
                             onChange={(e) => {
                               const opt = e.target.options[e.target.selectedIndex];
                               setSelProvince(opt.value ? { id: opt.value, name: opt.text } : null);
@@ -407,7 +407,7 @@ export default function RegisterPage() {
                           <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "City / Regency" : "Kabupaten / Kota"}</label>
                           <select
                             disabled={!selProvince}
-                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
+                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm disabled:opacity-50"
                             onChange={(e) => {
                               const opt = e.target.options[e.target.selectedIndex];
                               setSelRegency(opt.value ? { id: opt.value, name: opt.text } : null);
@@ -423,7 +423,7 @@ export default function RegisterPage() {
                           <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "District" : "Kecamatan"}</label>
                           <select
                             disabled={!selRegency}
-                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
+                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm disabled:opacity-50"
                             onChange={(e) => {
                               const opt = e.target.options[e.target.selectedIndex];
                               setSelDistrict(opt.value ? { id: opt.value, name: opt.text } : null);
@@ -439,7 +439,7 @@ export default function RegisterPage() {
                           <label className="block text-xs font-medium text-muted-foreground mb-1 ml-1">{locale === "en" ? "Village / Sub-district" : "Desa / Kelurahan"}</label>
                           <select
                             disabled={!selDistrict}
-                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm disabled:opacity-50"
+                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm disabled:opacity-50"
                             onChange={(e) => {
                               const opt = e.target.options[e.target.selectedIndex];
                               setSelVillage(opt.value ? { id: opt.value, name: opt.text } : null);
@@ -455,7 +455,7 @@ export default function RegisterPage() {
                           <input
                             name="postalCode"
                             type="text"
-                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                            className="block w-full px-3 py-2.5 border border-border rounded-xl bg-background/50 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-base sm:text-sm"
                             placeholder={locale === "en" ? "Enter postal code" : "Masukkan kode pos Anda"}
                           />
                         </div>

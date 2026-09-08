@@ -179,19 +179,25 @@ export function LinkCard3D({ link, index, onUpdate, onEdit }: LinkCard3DProps) {
                   <h3 className="font-semibold text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                     {link.title}
                   </h3>
-                  <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-0.5 shrink-0 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
+                      type="button"
                       onClick={handleFavorite}
-                      className="p-1 rounded-md hover:bg-foreground/5 text-muted-foreground transition-colors"
+                      aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}
+                      className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
                     >
                       <Star
-                        className={`h-3.5 w-3.5 ${link.isFavorite ? "fill-amber-400 text-amber-400" : ""}`}
+                        className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${link.isFavorite ? "fill-amber-400 text-amber-400" : ""}`}
                       />
                     </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <button className="p-1 rounded-md hover:bg-foreground/5 text-muted-foreground transition-colors">
-                          <MoreVertical className="h-3.5 w-3.5" />
+                        <button 
+                          type="button"
+                          aria-label="Menu opsi tautan"
+                          className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
+                        >
+                          <MoreVertical className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>

@@ -95,14 +95,14 @@ export function SmartSearchDemo() {
           onMouseLeave={() => setIsPaused(false)}
         >
           {/* Quick Select Buttons */}
-          <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-4 flex-wrap">
             {searchExamples.map((ex, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer touch-manipulation select-none ${
                   currentIndex === idx
-                    ? "bg-primary text-primary-foreground shadow-md scale-105"
+                    ? "bg-primary text-primary-foreground shadow-md scale-105 font-bold"
                     : "bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground border border-border/50"
                 }`}
               >
@@ -111,11 +111,11 @@ export function SmartSearchDemo() {
             ))}
           </div>
 
-          <div className="glass-panel rounded-3xl p-3 md:p-5 border border-primary/30 shadow-2xl shadow-primary/15 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-primary/30 shadow-2xl shadow-primary/15 relative overflow-hidden">
             {/* Search Input Simulation */}
-            <div className="flex items-center gap-3 bg-foreground/[0.04] rounded-2xl p-4 border border-border/60">
-              <Search className="w-6 h-6 text-primary shrink-0 animate-pulse" />
-              <div className="flex-1 overflow-hidden relative h-8 flex items-center">
+            <div className="flex items-center gap-2.5 sm:gap-3 bg-foreground/[0.04] rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-border/60">
+              <Search className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 animate-pulse" />
+              <div className="flex-1 overflow-hidden relative h-7 sm:h-8 flex items-center">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentIndex}
@@ -123,18 +123,18 @@ export function SmartSearchDemo() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="absolute text-lg md:text-xl font-medium text-foreground flex items-center gap-2"
+                    className="absolute text-base sm:text-lg md:text-xl font-medium text-foreground flex items-center gap-2"
                   >
                     <span>{current.query}</span>
-                    <span className="w-0.5 h-5 bg-primary animate-pulse" />
+                    <span className="w-0.5 h-4 sm:h-5 bg-primary animate-pulse" />
                   </motion.div>
                 </AnimatePresence>
               </div>
             </div>
 
             {/* Results preview */}
-            <div className="mt-4 px-1">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 font-medium">
+            <div className="mt-3 sm:mt-4 px-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2.5 sm:mb-3 font-medium">
                 <span>{locale === "en" ? "Smart Search Results" : "Hasil Pencarian Cerdas"}</span>
                 <span className="text-[11px] text-emerald-400 font-medium">
                   {locale === "en" ? "Instant 0.04s" : "Instan 0.04s"}
@@ -149,24 +149,24 @@ export function SmartSearchDemo() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-all cursor-pointer border border-border/60 group"
+                    className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-all cursor-pointer border border-border/60 group"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className={`p-2.5 rounded-xl border ${current.color} shrink-0`}>
-                        <Icon className="w-5 h-5" />
+                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
+                      <div className={`p-2 sm:p-2.5 rounded-xl border ${current.color} shrink-0`}>
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-foreground text-sm truncate">{current.query}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="font-bold text-foreground text-xs sm:text-sm truncate">{current.query}</span>
+                          <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold shrink-0">
                             {current.tag}
                           </span>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5 truncate">{current.result}</div>
+                        <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">{current.result}</div>
                       </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0 ml-2">
-                      <ArrowRight className="w-4 h-4" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0 ml-2">
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                   </motion.div>
                 </AnimatePresence>

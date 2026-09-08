@@ -80,7 +80,7 @@ export function SearchBar({
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           className={cn(
-            "pl-10 pr-24 h-10 bg-card/50 transition-all",
+            "pl-10 pr-24 h-10 bg-card/50 transition-all text-base sm:text-sm",
             isNL && "ring-1 ring-primary/30 border-primary/40"
           )}
         />

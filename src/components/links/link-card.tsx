@@ -220,14 +220,14 @@ export function LinkCard({ link, onUpdate, onEdit, index = 0, collectionId }: Li
                 <h3 className="font-bold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors">
                   {link.title}
                 </h3>
-                <div className="flex items-center gap-0.5 shrink-0 opacity-75 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={handleFavorite}>
-                    <Star className={cn("h-3.5 w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
+                <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+                    <Star className={cn("h-4 w-4 sm:h-3.5 sm:w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg">
-                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
+                        <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>

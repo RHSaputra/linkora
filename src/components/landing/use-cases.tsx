@@ -72,15 +72,15 @@ export function UseCases() {
   return (
     <section id="use-cases" className="py-14 md:py-18 relative overflow-hidden bg-background">
       {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] md:w-[700px] h-[340px] sm:h-[500px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[150px] pointer-events-none" />
 
       <div className="container px-4 md:px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            className="text-3xl md:text-5xl font-bold tracking-tight leading-tight md:leading-snug mb-4 text-foreground"
+            className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight leading-tight md:leading-snug mb-3 sm:mb-4 text-foreground"
           >
             {locale === "en" ? "Who is " : "Dibuat Khusus Untuk Siapa "}<LinkoraText />{locale === "en" ? " Built For?" : "?"}
           </motion.h2>
@@ -89,7 +89,7 @@ export function UseCases() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
             transition={{ delay: 0.1 }}
-            className="text-base md:text-lg text-muted-foreground"
+            className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed"
           >
             {locale === "en"
               ? "Flexible across all study workflows, career tracking, and knowledge creation."
@@ -97,7 +97,7 @@ export function UseCases() {
           </motion.p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
           {useCases.map((useCase, idx) => {
             const Icon = useCase.icon
             return (
@@ -108,7 +108,7 @@ export function UseCases() {
                 viewport={{ once: false, amount: 0.2 }}
                 transition={{ delay: idx * 0.12, duration: 0.5 }}
                 whileHover={{ y: -8 }}
-                className="glass-panel p-8 rounded-3xl relative group overflow-hidden border border-border/60 hover:border-primary/40 transition-all duration-300 shadow-xl"
+                className="glass-panel p-5 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl relative group overflow-hidden border border-border/60 hover:border-primary/40 transition-all duration-300 shadow-xl"
               >
                 {/* Dynamic Gradient Top Accent */}
                 <div className={`absolute top-0 inset-x-0 h-32 bg-gradient-to-b ${useCase.gradient} opacity-40 group-hover:opacity-100 transition-opacity duration-500`} />

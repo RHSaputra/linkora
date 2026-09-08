@@ -558,7 +558,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
       )}
 
       {/* Top Action Bar */}
-      <div className="flex items-center justify-between gap-2 p-3 sm:p-4 rounded-2xl glass-panel border-border/50 mb-6 sticky top-4 z-20">
+      <div className="flex items-center justify-between gap-2 p-3 sm:p-4 rounded-2xl glass-panel border-border/50 mb-6 sticky top-16 lg:top-4 z-20">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button
             variant="ghost"
@@ -681,14 +681,14 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Editor Main Content Area */}
-      <div className="rounded-3xl glass-panel p-6 sm:p-10 shadow-xl border-border/50 relative">
+      <div className="rounded-2xl sm:rounded-3xl glass-panel p-4 sm:p-8 md:p-10 shadow-xl border-border/50 relative">
         {/* Title Input */}
         <input
           type="text"
           value={title}
           onChange={handleTitleChange}
           placeholder={t("notes.untitledNote")}
-          className="w-full text-3xl sm:text-4xl md:text-5xl font-heading font-bold bg-transparent border-none outline-none mb-4 placeholder:text-muted-foreground/30 focus:ring-0 text-foreground"
+          className="w-full text-2xl sm:text-4xl md:text-5xl font-heading font-bold bg-transparent border-none outline-none mb-4 placeholder:text-muted-foreground/30 focus:ring-0 text-foreground"
         />
 
         {/* Date & Folder Info */}

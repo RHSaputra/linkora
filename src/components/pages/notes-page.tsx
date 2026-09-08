@@ -336,7 +336,7 @@ export function NotesPage() {
               placeholder={t("notes.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-sm h-11 w-full"
+              className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-base sm:text-sm h-11 w-full"
             />
             {search && (
               <button
@@ -485,8 +485,12 @@ export function NotesPage() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-foreground/10 rounded-md transition-opacity cursor-pointer">
-                      <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                    <button 
+                      type="button"
+                      aria-label="Opsi folder"
+                      className="opacity-80 sm:opacity-0 sm:group-hover:opacity-100 p-1.5 sm:p-1 hover:bg-foreground/10 rounded-md transition-opacity cursor-pointer touch-manipulation"
+                    >
+                      <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-36 glass-panel">
@@ -612,15 +616,16 @@ export function NotesPage() {
                             <button
                               type="button"
                               onClick={(e) => togglePin(e, note)}
+                              aria-label={note.isPinned ? "Lepaskan Pin" : "Sematkan"}
                               className={cn(
-                                "p-1 rounded-lg transition-colors cursor-pointer",
+                                "p-1.5 sm:p-1 rounded-lg transition-colors cursor-pointer touch-manipulation",
                                 note.isPinned
                                   ? "text-blue-500 hover:bg-blue-500/10"
-                                  : "text-muted-foreground/40 hover:text-muted-foreground opacity-0 group-hover:opacity-100"
+                                  : "text-muted-foreground/60 hover:text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                               )}
                               title={note.isPinned ? "Lepaskan Pin" : "Sematkan"}
                             >
-                              <Pin className={cn("w-3.5 h-3.5", note.isPinned && "fill-blue-500")} />
+                              <Pin className={cn("w-4 h-4 sm:w-3.5 sm:h-3.5", note.isPinned && "fill-blue-500")} />
                             </button>
                           )}
 
@@ -629,17 +634,18 @@ export function NotesPage() {
                             <button
                               type="button"
                               onClick={(e) => toggleFavorite(e, note)}
+                              aria-label={note.isFavorite ? "Hapus Favorit" : "Favorit"}
                               className={cn(
-                                "p-1 rounded-lg transition-colors cursor-pointer",
+                                "p-1.5 sm:p-1 rounded-lg transition-colors cursor-pointer touch-manipulation",
                                 note.isFavorite
                                   ? "text-yellow-500 hover:bg-yellow-500/10"
-                                  : "text-muted-foreground/40 hover:text-yellow-500 opacity-0 group-hover:opacity-100"
+                                  : "text-muted-foreground/60 hover:text-yellow-500 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                               )}
                               title={note.isFavorite ? (locale === "en" ? "Remove Favorite" : "Hapus Favorit") : (locale === "en" ? "Add to Favorites" : "Favorit")}
                             >
                               <Star
                                 className={cn(
-                                  "w-4 h-4",
+                                  "w-4 h-4 sm:w-3.5 sm:h-3.5",
                                   note.isFavorite && "fill-yellow-500"
                                 )}
                               />
@@ -651,13 +657,14 @@ export function NotesPage() {
                             <DropdownMenuTrigger asChild>
                               <button
                                 type="button"
+                                aria-label="Menu opsi catatan"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                 }}
-                                className="p-1 rounded-lg text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                className="p-1.5 sm:p-1 rounded-lg text-muted-foreground hover:text-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer touch-manipulation"
                               >
-                                <MoreVertical className="w-4 h-4" />
+                                <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
