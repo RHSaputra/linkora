@@ -5,8 +5,11 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
-const googleClientId = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID
-const googleClientSecret = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET
+const clean = (val?: string) => (val ? val.trim().replace(/^["']|["']$/g, "") : undefined)
+
+const googleClientId = clean(process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID)
+const googleClientSecret = clean(process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET)
+const authSecret = clean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET) || "linkora_super_secure_production_secret_key_2026"
 
 const providers: any[] = [
   CredentialsProvider({
@@ -67,7 +70,7 @@ if (googleClientId && googleClientSecret) {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "linkora_super_secure_production_secret_key_2026",
+  secret: authSecret,
   trustHost: true,
   pages: {
     signIn: "/login",
