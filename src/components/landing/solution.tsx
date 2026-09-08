@@ -140,10 +140,10 @@ export function Solution() {
         <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
           {/* Header Section: Meluncur Mulus dari Kiri & Kanan */}
-          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6 overflow-hidden py-1">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 md:mb-3 text-slate-900 dark:text-foreground flex flex-col items-center gap-1">
+          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6 overflow-x-clip px-2 py-3">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-foreground flex flex-col items-center gap-1 sm:gap-1.5 leading-[1.15] sm:leading-[1.18] mb-4 sm:mb-5 md:mb-6">
               <motion.span
-                initial={{ x: -120, opacity: 0 }}
+                initial={{ x: -100, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
@@ -152,12 +152,12 @@ export function Solution() {
                   damping: 20,
                   mass: 0.8,
                 }}
-                className="inline-block"
+                className="inline-block py-0.5"
               >
                 {locale === "en" ? "One Unified Ecosystem for All" : "Satu Ekosistem Untuk Semua"}
               </motion.span>
               <motion.span
-                initial={{ x: 120, opacity: 0 }}
+                initial={{ x: 100, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
@@ -167,7 +167,7 @@ export function Solution() {
                   mass: 0.8,
                   delay: 0.06,
                 }}
-                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400"
+                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400 py-0.5"
               >
                 {locale === "en" ? "Your Productivity Needs" : "Kebutuhan Produktivitas Anda"}
               </motion.span>
