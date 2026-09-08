@@ -139,12 +139,12 @@ export function Solution() {
 
         <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
-          {/* Header Section */}
-          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6">
+          {/* Header Section: Meluncur Mulus dari Kiri & Kanan */}
+          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6 overflow-hidden py-1">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 md:mb-3 text-slate-900 dark:text-foreground flex flex-col items-center gap-1">
               <motion.span
-                initial={isDesktop ? { x: -140 } : { opacity: 0, y: -20 }}
-                whileInView={isDesktop ? { x: 0 } : { opacity: 1, y: 0 }}
+                initial={{ x: -120, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",
@@ -157,8 +157,8 @@ export function Solution() {
                 {locale === "en" ? "One Unified Ecosystem for All" : "Satu Ekosistem Untuk Semua"}
               </motion.span>
               <motion.span
-                initial={isDesktop ? { x: 140 } : { opacity: 0, y: 20 }}
-                whileInView={isDesktop ? { x: 0 } : { opacity: 1, y: 0 }}
+                initial={{ x: 120, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",
@@ -199,7 +199,7 @@ export function Solution() {
               return (
                 <motion.div
                   key={item.title}
-                  initial={isDesktop ? item.initialOffset : { opacity: 0, y: 25 }}
+                  initial={{ ...item.initialOffset, opacity: 0 }}
                   whileInView={{ x: 0, y: 0, opacity: 1 }}
                   viewport={{ once: false, amount: 0.1 }}
                   transition={{
