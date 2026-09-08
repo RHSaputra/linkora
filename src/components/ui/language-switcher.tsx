@@ -20,6 +20,49 @@ interface LanguageSwitcherProps {
   className?: string;
 }
 
+export function FlagIcon({ locale, className }: { locale: string; className?: string }) {
+  if (locale === "id") {
+    return (
+      <span className={cn("inline-flex items-center justify-center shrink-0 w-4.5 h-3 rounded-[2.5px] overflow-hidden border border-black/15 dark:border-white/20 shadow-2xs", className)}>
+        <svg viewBox="0 0 24 16" className="w-full h-full object-cover">
+          <rect width="24" height="8" fill="#e11d48" />
+          <rect y="8" width="24" height="8" fill="#ffffff" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (locale === "en") {
+    return (
+      <span className={cn("inline-flex items-center justify-center shrink-0 w-4.5 h-3 rounded-[2.5px] overflow-hidden border border-black/15 dark:border-white/20 shadow-2xs", className)}>
+        <svg viewBox="0 0 24 16" className="w-full h-full object-cover">
+          <rect width="24" height="16" fill="#b91c1c" />
+          <path d="M0 2.46h24M0 4.92h24M0 7.38h24M0 9.84h24M0 12.3h24M0 14.76h24" stroke="#ffffff" strokeWidth="1.23" />
+          <rect width="10" height="8.6" fill="#1e3a8a" />
+          <g fill="#ffffff">
+            <circle cx="2" cy="1.7" r="0.6" />
+            <circle cx="4" cy="1.7" r="0.6" />
+            <circle cx="6" cy="1.7" r="0.6" />
+            <circle cx="8" cy="1.7" r="0.6" />
+            <circle cx="3" cy="3.4" r="0.6" />
+            <circle cx="5" cy="3.4" r="0.6" />
+            <circle cx="7" cy="3.4" r="0.6" />
+            <circle cx="2" cy="5.1" r="0.6" />
+            <circle cx="4" cy="5.1" r="0.6" />
+            <circle cx="6" cy="5.1" r="0.6" />
+            <circle cx="8" cy="5.1" r="0.6" />
+            <circle cx="3" cy="6.8" r="0.6" />
+            <circle cx="5" cy="6.8" r="0.6" />
+            <circle cx="7" cy="6.8" r="0.6" />
+          </g>
+        </svg>
+      </span>
+    );
+  }
+
+  return <span className="text-sm">🌐</span>;
+}
+
 export function LanguageSwitcher({
   variant = "icon",
   className,
@@ -54,7 +97,7 @@ export function LanguageSwitcher({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{loc.flag}</span>
+                  <FlagIcon locale={loc.code} />
                   <span className="text-xs font-medium">{loc.nativeName}</span>
                 </div>
                 {isSelected && <Check className="h-4 w-4 text-primary" />}
@@ -80,7 +123,7 @@ export function LanguageSwitcher({
             )}
             title="Pilih Bahasa / Change Language"
           >
-            <span className="text-sm leading-none">{currentLocaleInfo?.flag || "🌐"}</span>
+            <FlagIcon locale={locale} />
             <span className="uppercase text-[11px] font-bold tracking-wider text-foreground/80">
               {locale}
             </span>
@@ -125,7 +168,7 @@ export function LanguageSwitcher({
               )}
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm">{loc.flag}</span>
+                <FlagIcon locale={loc.code} />
                 <span>{loc.nativeName}</span>
               </div>
               {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
