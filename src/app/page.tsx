@@ -21,6 +21,11 @@ const Testimonials = dynamic(() => import("@/components/landing/testimonials").t
 const CTA = dynamic(() => import("@/components/landing/footer").then((m) => m.CTA))
 const Footer = dynamic(() => import("@/components/landing/footer").then((m) => m.Footer))
 
+const BackToTop = dynamic(
+  () => import("@/components/ui/back-to-top").then((m) => m.BackToTop),
+  { ssr: false }
+)
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 font-sans">
@@ -39,6 +44,8 @@ export default function LandingPage() {
         <CTA />
         <Footer />
       </main>
+
+      <BackToTop />
     </div>
   )
 }

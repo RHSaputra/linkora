@@ -87,27 +87,69 @@ export function Footer() {
           </div>
 
           {/* Quick links */}
-          <div className="flex items-center gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground flex-wrap justify-center">
-            <Link href="#solusi" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navSolutions")}</Link>
-            <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navHowItWorks")}</Link>
-            <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navUseCases")}</Link>
-            <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("landing.navDemo")}</Link>
-            <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("nav.login")}</Link>
-            <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1.5 sm:px-1.5 sm:py-0.5">{t("nav.signUp")}</Link>
+          <div className="flex flex-col md:items-end gap-4">
+            {/* Interactive Animated Instagram Follow Button */}
+            <motion.a
+              href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              className="group relative inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-pink-500/30 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 text-foreground hover:text-white transition-all duration-300 shadow-md shadow-pink-500/10 hover:shadow-xl hover:shadow-pink-500/25 cursor-pointer select-none mx-auto md:mx-0 overflow-hidden"
+            >
+              {/* Shimmer overlay on hover */}
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs group-hover:rotate-12 transition-transform duration-300">
+                <Instagram className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold tracking-wide">
+                {locale === "en" ? "Follow Us on Instagram" : "Ikuti Kami di Instagram"}
+              </span>
+              <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors">
+                @linkora_new
+              </span>
+            </motion.a>
+
+            <div className="flex items-center gap-x-6 gap-y-2.5 text-sm font-medium text-muted-foreground flex-wrap justify-center md:justify-end">
+              <Link href="#solusi" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navSolutions")}</Link>
+              <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navHowItWorks")}</Link>
+              <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navUseCases")}</Link>
+              <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navDemo")}</Link>
+              <Link href="/privacy" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5 font-semibold text-foreground/80">{locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}</Link>
+              <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.login")}</Link>
+              <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.signUp")}</Link>
+            </div>
           </div>
         </div>
 
         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} <LinkoraText />. {t("landing.footerRights")}
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} <LinkoraText />. {t("landing.footerRights")}
+            </p>
+            <span className="hidden sm:inline text-border">•</span>
+            <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline">
+              {locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
-            <Link href="#" aria-label="Instagram" className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <a
+              href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram @linkora_new"
+              className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:border-transparent active:scale-90 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shadow-xs"
+            >
               <Instagram className="w-4 h-4" />
-            </Link>
-            <Link href="#" aria-label="Email" className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            </a>
+            <a
+              href="mailto:support@linkora.app"
+              aria-label="Email"
+              className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
               <Mail className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>
