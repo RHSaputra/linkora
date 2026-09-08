@@ -560,7 +560,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
             <Menu className="h-5 w-5" />
           </Button>
           <Link href="/dashboard" className="flex items-center gap-1.5 active:scale-95 transition-transform">
-            <img src="/Logo.png" alt="Linkora" className="h-7 w-auto object-contain" />
+            <img src="/logo.png" alt="Linkora" className="h-7 w-auto object-contain" />
           </Link>
         </div>
 

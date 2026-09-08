@@ -77,7 +77,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-10 text-center md:text-left">
           <div className="max-w-md space-y-3">
             <div className="flex items-center justify-center md:justify-start">
-              <img src="/Logo.png" alt="Linkora Logo" className="h-12 w-auto object-contain" />
+              <img src="/logo.png" alt="Linkora Logo" className="h-12 w-auto object-contain" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {locale === "en"

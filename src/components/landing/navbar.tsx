@@ -84,7 +84,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <img src="/Logo.png" alt="Linkora Logo" className="h-8 sm:h-12 w-auto object-contain" />
+          <img src="/logo.png" alt="Linkora Logo" className="h-8 sm:h-12 w-auto object-contain" />
         </Link>
 
         {/* Desktop Nav */}
