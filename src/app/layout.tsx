@@ -22,10 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
-  ],
+  themeColor: "#090d16",
 };
 
 export const metadata: Metadata = {
@@ -39,9 +36,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="id" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased text-foreground bg-background overflow-x-hidden min-h-screen selection:bg-primary/30 selection:text-primary-foreground`}>
-        <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <Providers>
             <BackgroundEffects />
             <div className="relative z-10 min-h-screen flex flex-col">
