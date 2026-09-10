@@ -136,14 +136,6 @@ export function Hero() {
                       />
                     </div>
 
-                    {/* Pure Video Live Badge */}
-                    <div className="mt-2.5 sm:mt-5 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-background/90 border border-primary/40 backdrop-blur-md shadow-xl text-primary text-[10px] sm:text-xs font-bold font-heading select-none">
-                      <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                      </span>
-                      <span>{locale === "en" ? "Interactive 3D Video" : "Video Interaktif 3D"}</span>
-                    </div>
                   </div>
                 </motion.div>
 

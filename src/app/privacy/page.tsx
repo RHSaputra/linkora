@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -182,11 +182,11 @@ export default function PrivacyPage() {
         },
       ];
 
-  const faqs = isEn
+  const faqs: { q: ReactNode; a: ReactNode }[] = isEn
     ? [
         {
-          q: "Does Linkora have access to my Google password?",
-          a: "Never. Linkora uses Google's standard Sign-In service. When you log in with Google, authentication occurs securely on Google's official servers. Google only provides a verified confirmation token containing your name and email.",
+          q: <>Does <LinkoraText /> have access to my Google password?</>,
+          a: <>Never. <LinkoraText /> uses Google&apos;s standard Sign-In service. When you log in with Google, authentication occurs securely on Google&apos;s official servers. Google only provides a verified confirmation token containing your name and email.</>,
         },
         {
           q: "Is my personal content used to train public AI models?",
@@ -197,18 +197,18 @@ export default function PrivacyPage() {
           a: "No. All links, collections, tags, and document notes are strictly private by default and scoped exclusively to your authenticated account.",
         },
         {
-          q: "What happens if I delete my account?",
+          q: <>What happens if I delete my <LinkoraText /> account?</>,
           a: "Account deletion triggers a permanent erase: all your saved links, document notes, reminders, and profile data are completely removed from our production databases.",
         },
         {
-          q: "How does Linkora respect Google's user data policies?",
-          a: "Linkora complies with Google API Services User Data Policy, specifically the Limited Use requirements. We request only the minimal basic profile information needed for identity verification.",
+          q: <>How does <LinkoraText /> respect Google&apos;s user data policies?</>,
+          a: <><LinkoraText /> complies with Google API Services User Data Policy, specifically the Limited Use requirements. We request only the minimal basic profile information needed for identity verification.</>,
         },
       ]
     : [
         {
-          q: "Apakah Linkora memiliki akses ke kata sandi akun Google saya?",
-          a: "Sama sekali tidak pernah. Linkora menggunakan layanan Masuk dengan Google resmi. Saat Anda masuk, verifikasi diproses langsung di server resmi Google. Google hanya mengirimkan token konfirmasi terverifikasi berisi nama dan email Anda.",
+          q: <>Apakah <LinkoraText /> memiliki akses ke kata sandi akun Google saya?</>,
+          a: <>Sama sekali tidak pernah. <LinkoraText /> menggunakan layanan Masuk dengan Google resmi. Saat Anda masuk, verifikasi diproses langsung di server resmi Google. Google hanya mengirimkan token konfirmasi terverifikasi berisi nama dan email Anda.</>,
         },
         {
           q: "Apakah catatan atau data saya dipakai untuk melatih model AI publik?",
@@ -219,12 +219,12 @@ export default function PrivacyPage() {
           a: "Tidak bisa. Seluruh tautan, koleksi folder, tag, dan catatan dokumen Anda bersifat 100% privat dan hanya dapat dibuka melalui akun Anda yang terotentikasi.",
         },
         {
-          q: "Apa yang terjadi jika saya menghapus akun Linkora saya?",
+          q: <>Apa yang terjadi jika saya menghapus akun <LinkoraText /> saya?</>,
           a: "Permintaan hapus akun akan menghapus seluruh data secara permanen: semua tautan, catatan, jadwal pengingat, dan profil Anda akan dibersihkan tuntas dari database.",
         },
         {
-          q: "Bagaimana Linkora mematuhi kebijakan perlindungan data Google?",
-          a: "Linkora mematuhi persyaratan Penggunaan Terbatas (Limited Use) dari Google. Kami hanya meminta izin profil paling mendasar yang diperlukan untuk verifikasi identitas akun Anda.",
+          q: <>Bagaimana <LinkoraText /> mematuhi kebijakan perlindungan data Google?</>,
+          a: <><LinkoraText /> mematuhi persyaratan Penggunaan Terbatas (Limited Use) dari Google. Kami hanya meminta izin profil paling mendasar yang diperlukan untuk verifikasi identitas akun Anda.</>,
         },
       ];
 
@@ -302,13 +302,15 @@ export default function PrivacyPage() {
 
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                   {isEn ? "Privacy Policy " : "Kebijakan Privasi "}
-                  <span className="text-primary">Linkora</span>
+                  <LinkoraText />
                 </h1>
 
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {isEn
-                    ? "Your trust is essential to us. Linkora protects your digital workspace data with transparency, confidentiality, and respect for your personal sovereignty."
-                    : "Kepercayaan Anda adalah amanah utama kami. Linkora melindungi ruang kerja digital Anda dengan transparansi penuh, kerahasiaan, dan penghormatan atas hak pribadi Anda."}
+                  {isEn ? (
+                    <>Your trust is essential to us. <LinkoraText /> protects your digital workspace data with transparency, confidentiality, and respect for your personal sovereignty.</>
+                  ) : (
+                    <>Kepercayaan Anda adalah amanah utama kami. <LinkoraText /> melindungi ruang kerja digital Anda dengan transparansi penuh, kerahasiaan, dan penghormatan atas hak pribadi Anda.</>
+                  )}
                 </p>
 
                 <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-muted-foreground font-medium">
@@ -387,7 +389,7 @@ export default function PrivacyPage() {
                         </div>
                         <div className="pt-2 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{isEn ? "Linkora Standard" : "Standar Linkora"}</span>
+                          <span>{isEn ? <><LinkoraText /> Standard</> : <>Standar <LinkoraText /></>}</span>
                         </div>
                       </div>
                     );
@@ -455,7 +457,11 @@ export default function PrivacyPage() {
                     {isEn ? "Legal Clauses & Governance" : "Klausul Kebijakan Resmi"}
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {isEn ? "Official provisions governing your relationship with Linkora." : "Ketentuan resmi yang mengatur perlindungan data akun Anda."}
+                    {isEn ? (
+                      <>Official provisions governing your relationship with <LinkoraText />.</>
+                    ) : (
+                      <>Ketentuan resmi yang mengatur perlindungan data akun Anda di <LinkoraText />.</>
+                    )}
                   </p>
                 </div>
 
@@ -484,9 +490,11 @@ export default function PrivacyPage() {
                 {isEn ? "Scope & Purpose" : "Lingkup Layanan & Tujuan"}
               </h3>
               <p>
-                {isEn
-                  ? "Welcome to Linkora (\"we\", \"our\", or \"the platform\"). Linkora provides a personal digital workspace empowering users to organize saved links, manage rich document notes, schedule reminders, and synthesize knowledge. This Privacy Policy describes how we handle, protect, and respect your data."
-                  : "Selamat datang di Linkora (\"kami\", \"aplikasi\", atau \"platform\"). Linkora menyediakan ruang kerja digital pribadi untuk menyimpan tautan penting, mengelola catatan dokumen, mengatur pengingat, dan merangkum wawasan. Kebijakan Privasi ini menjelaskan bagaimana informasi Anda dikelola dan dilindungi secara bertanggung jawab."}
+                {isEn ? (
+                  <>Welcome to <LinkoraText /> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the platform&rdquo;). <LinkoraText /> provides a personal digital workspace empowering users to organize saved links, manage rich document notes, schedule reminders, and synthesize knowledge. This Privacy Policy describes how we handle, protect, and respect your data.</>
+                ) : (
+                  <>Selamat datang di <LinkoraText /> (&ldquo;kami&rdquo;, &ldquo;aplikasi&rdquo;, atau &ldquo;platform&rdquo;). <LinkoraText /> menyediakan ruang kerja digital pribadi untuk menyimpan tautan penting, mengelola catatan dokumen, mengatur pengingat, dan merangkum wawasan. Kebijakan Privasi ini menjelaskan bagaimana informasi Anda dikelola dan dilindungi secara bertanggung jawab.</>
+                )}
               </p>
             </section>
 
@@ -543,9 +551,11 @@ export default function PrivacyPage() {
                 {isEn ? "Google API Services User Data Policy Compliance" : "Kepatuhan Akun Google"}
               </h3>
               <p>
-                {isEn
-                  ? "Linkora's use and transfer to any other app of information received from Google APIs will strictly adhere to the "
-                  : "Penggunaan dan transfer informasi yang diterima Linkora dari Google API sepenuhnya tunduk pada ketentuan resmi "}
+                {isEn ? (
+                  <><LinkoraText />&apos;s use and transfer to any other app of information received from Google APIs will strictly adhere to the{" "}</>
+                ) : (
+                  <>Penggunaan dan transfer informasi yang diterima <LinkoraText /> dari Google API sepenuhnya tunduk pada ketentuan resmi{" "}</>
+                )}
                 <a
                   href="https://developers.google.com/terms/api-services-user-data-policy"
                   target="_blank"
@@ -559,9 +569,11 @@ export default function PrivacyPage() {
               </p>
               <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-foreground">
                 <strong>{isEn ? "Limited Use Affirmation:" : "Penegasan Penggunaan Terbatas:"}</strong>{" "}
-                {isEn
-                  ? "We never disclose, share, or sell Google user data to third parties, advertising networks, or data brokers. Google profile data is used exclusively to authenticate and display your identity in Linkora."
-                  : "Kami tidak pernah menyerahkan, membagikan, atau memperjualbelikan data pengguna Google kepada pihak ketiga atau jaringan periklanan. Data profil Google semata-mata dipakai untuk otentikasi akun Anda di Linkora."}
+                {isEn ? (
+                  <>We never disclose, share, or sell Google user data to third parties, advertising networks, or data brokers. Google profile data is used exclusively to authenticate and display your identity in <LinkoraText />.</>
+                ) : (
+                  <>Kami tidak pernah menyerahkan, membagikan, atau memperjualbelikan data pengguna Google kepada pihak ketiga atau jaringan periklanan. Data profil Google semata-mata dipakai untuk otentikasi akun Anda di <LinkoraText />.</>
+                )}
               </div>
             </section>
 

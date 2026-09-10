@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
-import { PlusCircle, Layers, Search, ChevronRight, ChevronDown } from "lucide-react"
+import { PlusCircle, Layers, Search, ArrowRight, ArrowDown } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
 import { useTranslation } from "@/components/providers/i18n-provider"
 
@@ -17,11 +17,11 @@ const getSteps = (locale: string) => [
     icon: PlusCircle,
     color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-500/30",
-    activeBorder: "border-2 border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-950/40 ring-2 ring-blue-500/20",
-    activeBadge: "border-blue-500 bg-blue-600 text-white shadow-sm",
+    activeBorder: "border border-blue-500/80 dark:border-blue-400 bg-blue-50/40 dark:bg-blue-950/20 ring-1 ring-blue-500/20",
+    activeBadge: "border-blue-500 bg-blue-600 text-white shadow-xs",
     activeText: "text-blue-600 dark:text-blue-400",
     topBar: "via-blue-500",
-    initialOffset: { x: -80, y: 0 },
+    initialOffset: { x: -30, y: 0 },
   },
   {
     step: "02",
@@ -32,11 +32,11 @@ const getSteps = (locale: string) => [
     icon: Layers,
     color: "text-indigo-600 dark:text-indigo-400",
     bg: "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-200 dark:border-indigo-500/30",
-    activeBorder: "border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 ring-2 ring-indigo-500/20",
-    activeBadge: "border-indigo-500 bg-indigo-600 text-white shadow-sm",
+    activeBorder: "border border-indigo-500/80 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 ring-1 ring-indigo-500/20",
+    activeBadge: "border-indigo-500 bg-indigo-600 text-white shadow-xs",
     activeText: "text-indigo-600 dark:text-indigo-400",
     topBar: "via-indigo-500",
-    initialOffset: { x: 0, y: 50 },
+    initialOffset: { x: 0, y: 25 },
   },
   {
     step: "03",
@@ -47,11 +47,11 @@ const getSteps = (locale: string) => [
     icon: Search,
     color: "text-cyan-600 dark:text-cyan-400",
     bg: "bg-cyan-50 dark:bg-cyan-500/15 border-cyan-200 dark:border-cyan-500/30",
-    activeBorder: "border-2 border-cyan-500 dark:border-cyan-400 bg-cyan-50/80 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20",
-    activeBadge: "border-cyan-500 bg-cyan-600 text-white shadow-sm",
+    activeBorder: "border border-cyan-500/80 dark:border-cyan-400 bg-cyan-50/40 dark:bg-cyan-950/20 ring-1 ring-cyan-500/20",
+    activeBadge: "border-cyan-500 bg-cyan-600 text-white shadow-xs",
     activeText: "text-cyan-600 dark:text-cyan-400",
     topBar: "via-cyan-500",
-    initialOffset: { x: 80, y: 0 },
+    initialOffset: { x: 30, y: 0 },
   },
 ]
 
@@ -76,42 +76,70 @@ export function HowItWorks() {
     offset: ["start start", "end end"],
   })
 
+  // Direction tracking: "down" when scrolling downwards, "up" when scrolling upwards
+  const currentDirRef = useRef<"down" | "up">("down")
+  const downStartRef = useRef(0.08)
+  const upStartRef = useRef(0.92)
   const prevScrollRef = useRef(0)
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (!isDesktop) return
-    const isScrollingUp = latest < prevScrollRef.current
-    prevScrollRef.current = latest
 
-    if (latest < 0.08 || latest > 0.94) {
+    // Outside the sticky interactive area
+    if (latest < 0.06) {
+      currentDirRef.current = "down"
+      downStartRef.current = 0.08
       setActiveStepIndex(-1)
+      prevScrollRef.current = latest
+      return
+    }
+    if (latest > 0.94) {
+      currentDirRef.current = "up"
+      upStartRef.current = 0.92
+      setActiveStepIndex(-1)
+      prevScrollRef.current = latest
       return
     }
 
-    const normalized = (latest - 0.08) / (0.94 - 0.08)
+    const delta = latest - prevScrollRef.current
+    prevScrollRef.current = latest
 
-    if (isScrollingUp) {
-      const reverseFlow = (1 - normalized) % 1
-      if (reverseFlow < 0.33) {
-        setActiveStepIndex(0)
-      } else if (reverseFlow < 0.66) {
-        setActiveStepIndex(1)
-      } else {
-        setActiveStepIndex(2)
-      }
+    // Smooth direction detection with hysteresis buffer
+    if (delta > 0.003 && currentDirRef.current !== "down") {
+      currentDirRef.current = "down"
+      downStartRef.current = latest
+    } else if (delta < -0.003 && currentDirRef.current !== "up") {
+      currentDirRef.current = "up"
+      upStartRef.current = latest
+    }
+
+    // ALWAYS CALCULATE 1 -> 2 -> 3 FOR BOTH DOWN AND UP SCROLL!
+    // DILARANG 3 -> 2 -> 1
+    let progress = 0
+
+    if (currentDirRef.current === "down") {
+      // Scrolling down: progress advances as latest increases
+      const span = Math.max(0.18, 0.92 - downStartRef.current)
+      progress = (latest - downStartRef.current) / span
     } else {
-      if (normalized < 0.33) {
-        setActiveStepIndex(0)
-      } else if (normalized < 0.66) {
-        setActiveStepIndex(1)
-      } else {
-        setActiveStepIndex(2)
-      }
+      // Scrolling up: progress advances as latest DECREASES (1 -> 2 -> 3)
+      const span = Math.max(0.18, upStartRef.current - 0.08)
+      progress = (upStartRef.current - latest) / span
+    }
+
+    const clampedProgress = Math.max(0, Math.min(0.999, progress))
+
+    if (clampedProgress < 0.33) {
+      setActiveStepIndex(0)
+    } else if (clampedProgress < 0.66) {
+      setActiveStepIndex(1)
+    } else {
+      setActiveStepIndex(2)
     }
   })
 
   return (
-    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[320vh] bg-background py-14 sm:py-20 lg:py-0">
+    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background py-14 sm:py-20 lg:py-0">
       <div className="relative lg:sticky lg:top-0 h-auto lg:h-screen w-full lg:overflow-hidden flex flex-col items-center justify-center lg:py-[4vh]">
         <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
           
@@ -119,7 +147,7 @@ export function HowItWorks() {
             <motion.h2 
               initial={{ y: -20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: false, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{
                 type: "spring",
                 stiffness: 110,
@@ -132,7 +160,7 @@ export function HowItWorks() {
             <motion.p 
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: false, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{
                 type: "spring",
                 stiffness: 120,
@@ -155,34 +183,42 @@ export function HowItWorks() {
 
                 return (
                   <div key={item.step} className="relative flex flex-col items-center w-full">
-                    {/* Desktop Horizontal Connecting Line with Arrow */}
+                    {/* Desktop Horizontal Flow Bridge - Natural, Clean & Clear */}
                     {idx < steps.length - 1 && (
-                      <div className="hidden md:flex absolute top-[50%] -right-4 lg:-right-6 translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center pointer-events-none">
-                        <div className="w-5 lg:w-8 h-[2px] bg-slate-200 dark:bg-border relative overflow-hidden rounded-full">
+                      <div className="hidden md:flex absolute top-1/2 -right-3.5 lg:-right-5 translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center pointer-events-none">
+                        {/* Connecting Line Track */}
+                        <div className="w-8 lg:w-11 h-0.5 bg-slate-200 dark:bg-slate-700/80 rounded-full relative overflow-hidden flex items-center">
                           <motion.div
-                            animate={
-                              activeStepIndex >= idx
-                                ? { width: "100%" }
-                                : { width: "0%" }
-                            }
+                            animate={{
+                              width: activeStepIndex > idx ? "100%" : "0%",
+                            }}
                             transition={{ duration: 0.35, ease: "easeOut" }}
                             className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
                           />
                         </div>
-                        <ChevronRight 
-                          className={`w-4 h-4 -ml-1 transition-colors duration-300 ${
-                            activeStepIndex >= idx
-                              ? "text-indigo-500"
-                              : "text-slate-300 dark:text-border"
-                          }`} 
-                        />
+
+                        {/* Natural Circular Badge with Arrow */}
+                        <div className="absolute flex items-center justify-center">
+                          <div
+                            className={`
+                              w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center border transition-all duration-300 shadow-xs
+                              ${
+                                activeStepIndex > idx
+                                  ? "border-indigo-400 dark:border-indigo-500 bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400"
+                                  : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500"
+                              }
+                            `}
+                          >
+                            <ArrowRight className="w-3.5 h-3.5 stroke-[2]" />
+                          </div>
+                        </div>
                       </div>
                     )}
 
                     <motion.div
-                      initial={isDesktop ? item.initialOffset : { opacity: 0, y: 25 }}
+                      initial={{ ...item.initialOffset, opacity: 0 }}
                       whileInView={{ x: 0, y: 0, opacity: 1 }}
-                      viewport={{ once: false, amount: 0.1 }}
+                      viewport={{ once: true, amount: 0.1 }}
                       transition={{
                         type: "spring",
                         stiffness: 120,
@@ -193,11 +229,12 @@ export function HowItWorks() {
                       className="w-full h-full flex flex-col"
                     >
                       <motion.div
+                        onClick={() => setActiveStepIndex(idx)}
                         animate={
                           isActive
                             ? {
-                                y: -8,
-                                scale: 1.035,
+                                y: -5,
+                                scale: 1.015,
                               }
                             : {
                                 y: 0,
@@ -206,18 +243,18 @@ export function HowItWorks() {
                         }
                         transition={{
                           type: "spring",
-                          stiffness: 320,
-                          damping: 24,
+                          stiffness: 300,
+                          damping: 25,
                           mass: 0.8,
                         }}
                         className={`
                           w-full h-full min-h-[260px] sm:min-h-[280px] md:min-h-[300px]
-                          p-6 md:p-8 rounded-3xl cursor-default relative overflow-hidden
+                          p-6 md:p-8 rounded-3xl cursor-pointer relative overflow-hidden
                           flex flex-col justify-between transition-colors duration-300
                           ${
                             isActive
-                              ? `${item.activeBorder} shadow-lg shadow-blue-500/10 dark:shadow-blue-500/5`
-                              : "border border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-sm"
+                              ? `${item.activeBorder} shadow-md shadow-blue-500/5`
+                              : "border border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
                           }
                         `}
                       >
@@ -231,7 +268,7 @@ export function HowItWorks() {
 
                         <div className="flex items-center justify-between mb-6">
                           <motion.div
-                            animate={isActive ? { scale: 1.15 } : { scale: 1 }}
+                            animate={isActive ? { scale: 1.08 } : { scale: 1 }}
                             transition={{ type: "spring", stiffness: 360, damping: 20 }}
                             className={`w-13 h-13 rounded-2xl ${item.bg} border flex items-center justify-center shadow-xs`}
                           >
@@ -268,11 +305,14 @@ export function HowItWorks() {
                       </motion.div>
                     </motion.div>
 
-                    {/* Mobile Vertical Connector between steps */}
+                    {/* Mobile Vertical Flow Connector - Natural & Clean */}
                     {idx < steps.length - 1 && (
-                      <div className="flex md:hidden flex-col items-center my-3 pointer-events-none">
-                        <div className="w-[2px] h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full opacity-60" />
-                        <ChevronDown className="w-4 h-4 text-indigo-500 -mt-1 opacity-80" />
+                      <div className="flex md:hidden flex-col items-center justify-center my-3 py-0.5 relative z-10 pointer-events-none">
+                        <div className="w-0.5 h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                        <div className="my-1 w-7 h-7 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-xs">
+                          <ArrowDown className="w-3.5 h-3.5 stroke-[2]" />
+                        </div>
+                        <div className="w-0.5 h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full" />
                       </div>
                     )}
                   </div>
@@ -286,3 +326,4 @@ export function HowItWorks() {
     </section>
   )
 }
+

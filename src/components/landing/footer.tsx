@@ -93,20 +93,20 @@ export function Footer() {
               href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              className="group relative inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-pink-500/30 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 text-foreground hover:text-white transition-all duration-300 shadow-md shadow-pink-500/10 hover:shadow-xl hover:shadow-pink-500/25 cursor-pointer select-none mx-auto md:mx-0 overflow-hidden"
+              whileHover={{ scale: 1.03, y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              className="group relative inline-flex items-center gap-1.5 md:gap-2 px-2.5 py-0.5 md:px-3.5 md:py-1.5 rounded-full border border-pink-500/30 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 text-foreground hover:text-white transition-all duration-300 shadow-xs md:shadow-md shadow-pink-500/10 hover:shadow-xl hover:shadow-pink-500/25 cursor-pointer select-none mx-auto md:mx-0 overflow-hidden"
             >
               {/* Shimmer overlay on hover */}
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
 
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs group-hover:rotate-12 transition-transform duration-300">
-                <Instagram className="w-3.5 h-3.5" />
+              <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs shrink-0 group-hover:rotate-12 transition-transform duration-300">
+                <Instagram className="w-2.5 h-2.5 md:w-3 md:h-3" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold tracking-wide">
+              <span className="text-[10px] md:text-xs font-semibold tracking-tight md:tracking-normal whitespace-nowrap">
                 {locale === "en" ? "Follow Us on Instagram" : "Ikuti Kami di Instagram"}
               </span>
-              <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors">
+              <span className="text-[8px] md:text-[9px] uppercase font-bold md:font-extrabold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors leading-none tracking-tight">
                 @linkora_new
               </span>
             </motion.a>
