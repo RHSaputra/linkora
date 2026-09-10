@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max-http-header-size=1048576 next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-http-header-size=1048576 next dev -H 0.0.0.0",
+    "share": "node scripts/mobile.mjs",
+    "tunnel": "npx localtunnel --port 3000",
     "build": "cross-env NODE_OPTIONS=--max-http-header-size=1048576 next build",
     "start": "cross-env NODE_OPTIONS=--max-http-header-size=1048576 next start",
     "lint": "next lint",

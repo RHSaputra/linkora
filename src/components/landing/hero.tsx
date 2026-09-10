@@ -44,9 +44,9 @@ export function Hero() {
 
   // Video 2 (3D Phone Frame) Entrance
   // Desktop: -140% entrance with full 30deg 3D tilt
-  // Mobile: -50% entrance with subtle 10deg tilt for max GPU smoothness
+  // Mobile: -40% entrance with subtle 10deg tilt for max GPU smoothness
   const phoneXDesktop = useTransform(scrollYProgress, [0.05, 0.5, 1], ["-140%", "0%", "0%"])
-  const phoneXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], ["-50%", "0%", "0%"])
+  const phoneXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], ["-40%", "0%", "0%"])
   const phoneX = isDesktop ? phoneXDesktop : phoneXMobile
 
   const phoneY = useTransform(scrollYProgress, [0.05, 0.5, 1], ["20px", "0px", "0px"])
@@ -88,12 +88,12 @@ export function Hero() {
         <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-72 h-48 sm:h-72 bg-purple-500/15 rounded-full blur-[50px] md:blur-[100px] pointer-events-none z-0" />
 
         {/* Content Container */}
-        <div className="container px-4 md:px-6 relative z-10 w-full pt-14 sm:pt-0">
-          <div className="grid lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] gap-3 sm:gap-8 lg:gap-16 items-center max-w-6xl mx-auto">
+        <div className="container mx-auto px-3 sm:px-6 relative z-10 w-full pt-14 sm:pt-0">
+          <div className="grid grid-cols-[115px_1fr] sm:grid-cols-[220px_1fr] md:grid-cols-[280px_1fr] lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] gap-2.5 sm:gap-8 lg:gap-16 items-center max-w-6xl mx-auto">
 
             {/* Visual Media Showcase Area (Left) */}
-            <div className="relative w-full flex justify-center lg:justify-start order-2 lg:order-1 perspective-[1200px]">
-              <div className="relative w-full max-w-[200px] sm:max-w-[320px] lg:max-w-[390px] h-[190px] sm:h-[360px] lg:h-[540px] flex items-center justify-center">
+            <div className="relative w-full flex justify-center lg:justify-start order-1 perspective-[1200px]">
+              <div className="relative w-full max-w-[120px] sm:max-w-[320px] lg:max-w-[390px] h-[230px] sm:h-[420px] lg:h-[540px] flex items-center justify-center">
 
                 {/* ========================================================================= */}
                 {/* STATE 1: PURE VIDEO 1 (Liko AI Mascot) - No Phone Frame, Pure Stage */}
@@ -109,11 +109,11 @@ export function Hero() {
                 >
                   {/* Glowing Ambient Aura for Pure Video */}
                   <div className="relative flex flex-col items-center justify-center">
-                    <div className="absolute -inset-6 rounded-full bg-gradient-to-tr from-cyan-400/35 via-primary/35 to-purple-500/35 blur-3xl pointer-events-none" />
+                    <div className="absolute -inset-4 sm:-inset-6 rounded-full bg-gradient-to-tr from-cyan-400/35 via-primary/35 to-purple-500/35 blur-2xl sm:blur-3xl pointer-events-none" />
 
-                    {/* Pure Video Circular Glass Frame - Large & Crisp */}
+                    {/* Pure Video Circular Glass Frame - Responsive Size */}
                     <div
-                      className="relative w-38 h-38 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-[360px] lg:h-[360px] rounded-full overflow-hidden border-2 border-primary/40 shadow-2xl shadow-primary/30 bg-black/90 flex items-center justify-center pointer-events-none select-none backdrop-blur-2xl ring-1 ring-white/20"
+                      className="relative w-24 h-24 sm:w-52 sm:h-52 md:w-64 md:h-64 lg:w-[360px] lg:h-[360px] rounded-full overflow-hidden border-2 border-primary/40 shadow-2xl shadow-primary/30 bg-black/90 flex items-center justify-center pointer-events-none select-none backdrop-blur-2xl ring-1 ring-white/20"
                       style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)", backfaceVisibility: "hidden" }}
                     >
                       <video
@@ -156,32 +156,32 @@ export function Hero() {
                   }}
                 >
                   <motion.div
-                    className="absolute -inset-10 bg-primary/20 rounded-full blur-3xl pointer-events-none"
+                    className="absolute -inset-6 sm:-inset-10 bg-primary/20 rounded-full blur-2xl sm:blur-3xl pointer-events-none"
                     style={{ opacity: phoneShadowOpacity }}
                   />
 
                   {/* Phone Outer Housing Container */}
-                  <div className="relative mx-auto w-full max-w-[160px] sm:max-w-[240px] lg:max-w-[285px]">
+                  <div className="relative mx-auto w-full max-w-[105px] sm:max-w-[200px] md:max-w-[240px] lg:max-w-[285px]">
                     {/* Atmospheric Glow Underneath Phone Body */}
-                    <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/25 via-primary/30 to-purple-600/25 rounded-[48px] blur-2xl opacity-80" />
+                    <div className="absolute -inset-3 sm:-inset-4 bg-gradient-to-r from-cyan-500/25 via-primary/30 to-purple-600/25 rounded-[30px] sm:rounded-[48px] blur-xl sm:blur-2xl opacity-80" />
 
                     {/* Premium Smartphone Physical Bezel Structure */}
-                    <div className="relative rounded-[30px] sm:rounded-[42px] p-[5px] sm:p-[8px] bg-gradient-to-b from-neutral-700 via-neutral-900 to-black shadow-2xl ring-1 ring-white/20 border border-neutral-700/60 backdrop-blur-xl">
+                    <div className="relative rounded-[20px] sm:rounded-[42px] p-[3.5px] sm:p-[8px] bg-gradient-to-b from-neutral-700 via-neutral-900 to-black shadow-2xl ring-1 ring-white/20 border border-neutral-700/60 backdrop-blur-xl">
 
                       {/* Side Physical Buttons Accent Simulation */}
-                      <div className="absolute -left-[3px] top-16 sm:top-20 w-[3px] h-5 sm:h-7 bg-neutral-600 rounded-l-sm" />
-                      <div className="absolute -left-[3px] top-24 sm:top-30 w-[3px] h-5 sm:h-7 bg-neutral-600 rounded-l-sm" />
-                      <div className="absolute -right-[3px] top-20 sm:top-24 w-[3px] h-8 sm:h-10 bg-neutral-600 rounded-r-sm" />
+                      <div className="hidden sm:block absolute -left-[3px] top-16 sm:top-20 w-[3px] h-5 sm:h-7 bg-neutral-600 rounded-l-sm" />
+                      <div className="hidden sm:block absolute -left-[3px] top-24 sm:top-30 w-[3px] h-5 sm:h-7 bg-neutral-600 rounded-l-sm" />
+                      <div className="hidden sm:block absolute -right-[3px] top-20 sm:top-24 w-[3px] h-8 sm:h-10 bg-neutral-600 rounded-r-sm" />
 
                       {/* Inner OLED Glass Screen */}
-                      <div className="relative rounded-[25px] sm:rounded-[34px] overflow-hidden bg-black aspect-[9/18.2] flex flex-col justify-between border border-neutral-800/80 shadow-inner">
+                      <div className="relative rounded-[16px] sm:rounded-[34px] overflow-hidden bg-black aspect-[9/18.2] flex flex-col justify-between border border-neutral-800/80 shadow-inner">
 
                         {/* Top Dynamic Island / Camera Notch */}
-                        <div className="absolute top-2 inset-x-0 z-30 flex justify-center pointer-events-none">
-                          <div className="h-4 sm:h-5 w-18 sm:w-24 bg-neutral-950 rounded-full flex items-center justify-between px-2 sm:px-2.5 shadow-md border border-neutral-800/60">
+                        <div className="absolute top-1.5 sm:top-2 inset-x-0 z-30 flex justify-center pointer-events-none">
+                          <div className="h-3 sm:h-5 w-12 sm:w-24 bg-neutral-950 rounded-full flex items-center justify-between px-1.5 sm:px-2.5 shadow-md border border-neutral-800/60">
                             {/* Camera Lens Flare */}
-                            <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-neutral-900 ring-1 ring-neutral-700 flex items-center justify-center">
-                              <div className="w-1 h-1 rounded-full bg-blue-950 flex items-center justify-center">
+                            <div className="w-1.5 sm:w-2.5 h-1.5 sm:h-2.5 rounded-full bg-neutral-900 ring-1 ring-neutral-700 flex items-center justify-center">
+                              <div className="w-0.5 sm:w-1 h-0.5 sm:h-1 rounded-full bg-blue-950 flex items-center justify-center">
                                 <div className="w-0.5 h-0.5 rounded-full bg-blue-400/40" />
                               </div>
                             </div>
@@ -214,8 +214,8 @@ export function Hero() {
                         )}
 
                         {/* Bottom Home Indicator Bar */}
-                        <div className="absolute bottom-1.5 sm:bottom-2 inset-x-0 z-30 flex justify-center pointer-events-none">
-                          <div className="w-16 sm:w-20 h-0.5 bg-white/40 rounded-full shadow-sm" />
+                        <div className="absolute bottom-1 sm:bottom-2 inset-x-0 z-30 flex justify-center pointer-events-none">
+                          <div className="w-10 sm:w-20 h-0.5 bg-white/40 rounded-full shadow-sm" />
                         </div>
 
                       </div>
@@ -227,33 +227,33 @@ export function Hero() {
             </div>
 
             {/* Text Content (Right) */}
-            <div className="flex flex-col items-center text-center lg:items-start lg:text-left space-y-2.5 sm:space-y-6 lg:space-y-8 order-1 lg:order-2 drop-shadow-md">
+            <div className="flex flex-col items-start text-left space-y-2 sm:space-y-6 lg:space-y-8 order-2 drop-shadow-md">
               <div>
-                <Badge variant="outline" className="glass-panel text-primary border-primary/30 px-3.5 py-1 rounded-full text-xs sm:text-sm">
+                <Badge variant="outline" className="glass-panel text-primary border-primary/30 px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[10px] sm:text-sm font-medium">
                   <LinkoraText /> {locale === "en" ? "2.0 Is Now Live" : "2.0 Kini Tersedia"}
                 </Badge>
               </div>
 
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-foreground leading-[1.18]">
-                {t("landing.heroTitle")} <br className="hidden sm:inline" />
+              <h1 className="text-sm sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-foreground leading-[1.2] sm:leading-[1.18]">
+                {t("landing.heroTitle")}{" "}
                 <span className="text-primary">
                   {t("landing.heroTitleAccent")}
                 </span>
               </h1>
 
-              <p className="text-xs sm:text-base lg:text-xl text-muted-foreground max-w-xl leading-relaxed">
+              <p className="text-[10px] sm:text-base lg:text-xl text-muted-foreground max-w-xl leading-snug sm:leading-relaxed line-clamp-3 sm:line-clamp-none">
                 {t("landing.heroDesc")}
               </p>
 
-              <div className="flex flex-row gap-2 sm:gap-4 pt-1 w-full justify-center lg:justify-start lg:w-auto">
-                <Button size="lg" className="rounded-full h-11 sm:h-14 px-4 sm:px-8 text-xs sm:text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-xl shadow-primary/30 transition-all hover:scale-105 cursor-pointer font-bold shrink-0" asChild>
+              <div className="flex flex-row flex-wrap sm:flex-nowrap gap-1.5 sm:gap-4 pt-0.5 sm:pt-1 w-full justify-start">
+                <Button size="sm" className="rounded-full h-7 sm:h-12 lg:h-14 px-2.5 sm:px-8 text-[10px] sm:text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 cursor-pointer font-bold shrink-0" asChild>
                   <Link href="/dashboard">
-                    {t("landing.heroCta")} <ArrowRight className="ml-1.5 sm:ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                    {t("landing.heroCta")} <ArrowRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-5 sm:h-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-full h-11 sm:h-14 px-3.5 sm:px-8 text-xs sm:text-base glass-panel hover:bg-white/5 transition-all cursor-pointer font-medium shrink-0" asChild>
+                <Button size="sm" variant="outline" className="rounded-full h-7 sm:h-12 lg:h-14 px-2 sm:px-8 text-[10px] sm:text-base glass-panel hover:bg-white/5 transition-all cursor-pointer font-medium shrink-0" asChild>
                   <Link href="#demo">
-                    <Play className="mr-1.5 sm:mr-2 w-3.5 h-3.5 sm:w-5 sm:h-5" /> {t("landing.heroDemo")}
+                    <Play className="mr-1 sm:mr-2 w-2.5 h-2.5 sm:w-5 sm:h-5" /> {t("landing.heroDemo")}
                   </Link>
                 </Button>
               </div>

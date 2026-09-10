@@ -22,7 +22,7 @@ export function LinkoraText({
         <svg 
           viewBox="0 0 100 100" 
           className="w-[0.82em] h-[0.82em] drop-shadow-sm will-change-transform" 
-          style={spin ? { animation: `spin ${spinDuration} linear infinite`, transformOrigin: 'center center' } : undefined}
+          style={spin ? { animation: `spin ${spinDuration} linear infinite`, transformOrigin: '50% 50%', transformBox: 'fill-box' } : undefined}
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
