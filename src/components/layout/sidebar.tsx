@@ -59,6 +59,7 @@ interface NavContentProps {
   pathname: string;
   setMobileOpen: (open: boolean) => void;
   session: any;
+  profileData?: { name?: string; image?: string | null } | null;
   notifications: any[];
   dismissNotification: (id: string) => Promise<void>;
   snoozeNotification: (id: string, minutes: number) => Promise<void>;
@@ -226,6 +227,7 @@ function NavContent({
   pathname,
   setMobileOpen,
   session,
+  profileData,
   notifications,
   dismissNotification,
   snoozeNotification,
@@ -239,6 +241,9 @@ function NavContent({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const currentName = profileData?.name || session?.user?.name || "Linkorian";
+  const currentImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;
 
   const navItems = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, tourId: "dashboard" },
@@ -384,15 +389,22 @@ function NavContent({
             title={t("profile.title")}
           >
             <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20 shadow-xs flex-shrink-0 overflow-hidden">
-              {session.user.image ? (
-                <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
+              {currentImage ? (
+                <img
+                  src={currentImage}
+                  alt={currentName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentName)}`;
+                  }}
+                />
               ) : (
                 <User className="h-4 w-4 text-primary" />
               )}
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
               <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                {session.user.name || "Linkorian"}
+                {currentName}
               </p>
               <p className="text-[10px] text-primary font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
@@ -545,6 +557,50 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
   const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
 
+  const [profileData, setProfileData] = useState<{ name?: string; image?: string | null } | null>(null);
+
+  useEffect(() => {
+    // 1. Initial sync with active session
+    const user = session?.user;
+    if (user) {
+      setProfileData((prev) => prev || { name: user.name || undefined, image: user.image });
+    }
+
+    // 2. Fetch fresh profile from API to ensure accurate DB state
+    if (session?.user?.id) {
+      fetch("/api/user/profile")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && !data.error) {
+            setProfileData({
+              name: data.name,
+              image: data.image,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 3. Listen for immediate client-side profile updates
+    const handleProfileUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ name?: string; image?: string | null }>;
+      if (customEvent.detail) {
+        setProfileData({
+          name: customEvent.detail.name,
+          image: customEvent.detail.image,
+        });
+      }
+    };
+
+    window.addEventListener("linkora_profile_updated", handleProfileUpdated);
+    return () => {
+      window.removeEventListener("linkora_profile_updated", handleProfileUpdated);
+    };
+  }, [session?.user?.id]);
+
+  const currentMobileName = profileData?.name || session?.user?.name || "User";
+  const currentMobileImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;
+
   return (
     <>
       {/* ── Mobile Top App Header Bar (Sticky, Safe-area aware, Native feel) ── */}
@@ -583,12 +639,15 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
               type="button"
               onClick={onEditProfile}
               className="h-8 w-8 rounded-full overflow-hidden border border-border/80 hover:border-primary transition-all active:scale-95 cursor-pointer shrink-0"
-              title={session.user.name || "Profil"}
+              title={currentMobileName}
             >
               <img
-                src={session.user.image || "https://api.dicebear.com/7.x/adventurer/svg?seed=Maya"}
-                alt={session.user.name || "User"}
+                src={currentMobileImage || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentMobileName)}`}
+                alt={currentMobileName}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentMobileName)}`;
+                }}
               />
             </button>
           ) : (
@@ -725,6 +784,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
           pathname={pathname}
           setMobileOpen={setMobileOpen}
           session={session}
+          profileData={profileData}
           notifications={notifications}
           dismissNotification={dismissNotification}
           snoozeNotification={snoozeNotification}

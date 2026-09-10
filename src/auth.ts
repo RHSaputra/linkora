@@ -43,9 +43,14 @@ const providers: any[] = [
         return null
       }
 
-      const safeImage = (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300)
-        ? user.image
-        : null
+      let safeImage: string | null = null
+      if (typeof user.image === "string" && user.image.length > 0) {
+        if (user.image.startsWith("data:") || user.image.length >= 300) {
+          safeImage = `/api/user/avatar?userId=${user.id}`
+        } else {
+          safeImage = user.image
+        }
+      }
 
       return {
         id: user.id,
@@ -83,8 +88,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id
         token.name = user.name
         delete token.picture
-        if (typeof user.image === "string" && !user.image.startsWith("data:") && user.image.length < 300) {
-          token.image = user.image
+        if (typeof user.image === "string" && user.image.length > 0) {
+          if (user.image.startsWith("data:") || user.image.length >= 300) {
+            token.image = `/api/user/avatar?userId=${user.id}`
+          } else {
+            token.image = user.image
+          }
         } else {
           token.image = null
         }
@@ -93,8 +102,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (session.name !== undefined) token.name = session.name
         delete token.picture
         if (session.image !== undefined) {
-          if (typeof session.image === "string" && !session.image.startsWith("data:") && session.image.length < 300) {
-            token.image = session.image
+          if (typeof session.image === "string" && session.image.length > 0) {
+            if (session.image.startsWith("data:") || session.image.length >= 300) {
+              const uId = (token.id as string) || (token.sub as string) || ""
+              token.image = `/api/user/avatar?userId=${uId}&t=${Date.now()}`
+            } else {
+              token.image = session.image
+            }
           } else {
             token.image = null
           }

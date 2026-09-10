@@ -49,6 +49,51 @@ const AVATARS = [
   { id: "a-12", name: "Nova", url: "https://api.dicebear.com/7.x/bottts/svg?seed=NovaLink" },
 ];
 
+// Downscale image using HTML5 Canvas to keep data size small (~20-40KB) and fast
+function resizeImage(file: File, maxWidth = 400, maxHeight = 400, quality = 0.88): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(readerEvent.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => {
+        resolve(readerEvent.target?.result as string);
+      };
+      img.src = readerEvent.target?.result as string;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 interface EditProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -108,37 +153,41 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
   }, [open, session]);
 
   // Handle local photo file upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error(locale === "en" ? "Select an image file (JPG, PNG, WebP)" : "Pilih berkas berupa gambar (JPG, PNG, WebP)", locale === "en" ? "Invalid Format" : "Format Salah");
+      toast.error(
+        locale === "en" ? "Select an image file (JPG, PNG, WebP)" : "Pilih berkas berupa gambar (JPG, PNG, WebP)",
+        locale === "en" ? "Invalid Format" : "Format Salah"
+      );
       return;
     }
 
-    // Limit to 2MB
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error(locale === "en" ? "Max photo size is 2MB for fast performance" : "Ukuran foto maksimal 2MB agar performa tetap cepat", locale === "en" ? "File Too Large" : "File Terlalu Besar");
+    // Limit original input size to 10MB (canvas will compress to ~30KB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(
+        locale === "en" ? "Max photo size is 10MB" : "Ukuran foto maksimal 10MB",
+        locale === "en" ? "File Too Large" : "File Terlalu Besar"
+      );
       return;
     }
 
     setUploadingImage(true);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setSelectedAvatar(result);
-        setCustomAvatarUrl("");
-        toast.success(locale === "en" ? "Your profile photo is ready to save!" : "Foto profil Anda siap disimpan!", locale === "en" ? "Photo Selected" : "Foto Terpilih");
-      }
-      setUploadingImage(false);
-    };
-    reader.onerror = () => {
+    try {
+      const resized = await resizeImage(file, 400, 400, 0.88);
+      setSelectedAvatar(resized);
+      setCustomAvatarUrl("");
+      toast.success(
+        locale === "en" ? "Your profile photo is ready to save!" : "Foto profil Anda siap disimpan!",
+        locale === "en" ? "Photo Selected" : "Foto Terpilih"
+      );
+    } catch {
       toast.error(locale === "en" ? "Failed to read image file" : "Gagal membaca berkas gambar", "Error");
+    } finally {
       setUploadingImage(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -188,17 +237,31 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
       const data = await res.json();
 
       if (res.ok) {
-        // Update client-side next-auth session (hindari base64 besar di cookie)
-        const safeImageForSession = payload.image && !payload.image.startsWith("data:") && payload.image.length < 500 
-          ? payload.image 
-          : undefined;
+        const uId = session?.user?.id || "";
+        // If data URL, use the tiny avatar endpoint to avoid blowing up cookie size
+        const effectiveAvatarForSession = payload.image
+          ? payload.image.startsWith("data:") || payload.image.length >= 300
+            ? `/api/user/avatar?userId=${uId}&t=${Date.now()}`
+            : payload.image
+          : null;
 
         await update({
           name: payload.name,
-          image: safeImageForSession,
+          image: effectiveAvatarForSession,
         });
 
-        // Profile text is sourced from the session, so no data list needs re-fetch.
+        // Broadcast profile update event across the entire app for instant 0ms sync
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("linkora_profile_updated", {
+              detail: {
+                name: payload.name,
+                image: payload.image,
+              },
+            })
+          );
+        }
+
         invalidateCache("/api/dashboard");
         dispatchRefresh([]);
 
