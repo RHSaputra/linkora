@@ -79,7 +79,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         : 'Untitled Note';
     }
 
-    if (folderId !== undefined) updateData.folderId = folderId;
+    if (folderId !== undefined) {
+      if (folderId === null || folderId === "") {
+        updateData.folderId = null;
+      } else {
+        const folderExists = await prisma.noteFolder.findFirst({
+          where: { id: folderId, userId: session.user.id },
+        });
+        if (!folderExists) {
+          return NextResponse.json({ error: "Folder tidak ditemukan atau tidak memiliki akses" }, { status: 400 });
+        }
+        updateData.folderId = folderId;
+      }
+    }
+
     if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
     if (isPinned !== undefined) updateData.isPinned = isPinned;
     if (status !== undefined) updateData.status = status;

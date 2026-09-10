@@ -43,6 +43,8 @@ Output HARUS murni JSON. JANGAN merender markdown apapun di luar JSON.
 `;
 
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { validateSafeExternalUrl, safeFetchExternal } from "@/lib/ssrf";
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,14 +53,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limiting: 15 analysis requests per minute per user
+    const limitCheck = await rateLimit(`analyze_${session.user.id}`, {
+      limit: 15,
+      windowMs: 60 * 1000,
+    });
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan analisis. Silakan tunggu ${limitCheck.reset} detik.` },
+        { status: 429 }
+      );
+    }
+
     const { url } = await request.json();
 
-    if (!url) {
+    if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
+    let parsedUrl: URL;
+    try {
+      parsedUrl = await validateSafeExternalUrl(url);
+    } catch (validationErr: any) {
+      return NextResponse.json(
+        { error: validationErr?.message || "URL tidak diizinkan atau tidak valid" },
+        { status: 400 }
+      );
+    }
+
     // Return cached analysis immediately if we already processed this URL.
-    const cacheKey = `analyze:${url}`;
+    const cacheKey = `analyze:${parsedUrl.toString()}`;
     const cached = getAiCache(cacheKey);
     if (cached) {
       return NextResponse.json(cached);
@@ -71,29 +95,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Fetch website content
+    // 1. Fetch website content safely with anti-SSRF & size guard
     let html = "";
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      
-      const res = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        },
+      const { text } = await safeFetchExternal(parsedUrl.toString(), {
+        timeoutMs: 10000,
+        maxSizeBytes: 2 * 1024 * 1024,
       });
-      clearTimeout(timeoutId);
-      
-      if (!res.ok) {
-        throw new Error(`Failed to fetch URL: ${res.status} ${res.statusText}`);
-      }
-      html = await res.text();
+      html = text;
     } catch (error) {
       console.warn("Could not fetch URL directly, falling back to basic metadata if possible.", error);
       // We continue, the AI will just analyze the URL itself which might not yield much, but it won't crash.
     }
+
 
     // 2. Extract content with Cheerio
     let extractedText = "";

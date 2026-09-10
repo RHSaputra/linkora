@@ -5,11 +5,26 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+import { rateLimit, clearRateLimit } from "@/lib/rate-limit"
+
 const clean = (val?: string) => (val ? val.trim().replace(/^["']|["']$/g, "") : undefined)
 
 const googleClientId = clean(process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID)
 const googleClientSecret = clean(process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET)
-const authSecret = clean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET) || "linkora_super_secure_production_secret_key_2026"
+
+import crypto from "crypto"
+
+const rawAuthSecret = clean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)
+if (!rawAuthSecret && process.env.NODE_ENV === "production") {
+  console.warn("[Security Warning] AUTH_SECRET is not set in environment. Generating ephemeral session secret.")
+}
+const ephemeralSecret =
+  typeof globalThis !== "undefined" && (globalThis as any).__linkora_ephemeral_secret
+    ? (globalThis as any).__linkora_ephemeral_secret
+    : ((globalThis as any).__linkora_ephemeral_secret = crypto.randomBytes(32).toString("hex"))
+
+const authSecret = rawAuthSecret || ephemeralSecret
+
 
 const providers: any[] = [
   CredentialsProvider({
@@ -25,6 +40,14 @@ const providers: any[] = [
 
       const email = (credentials.email as string).toLowerCase().trim()
       const password = credentials.password as string
+
+      // Rate limiting: max 5 failed attempts per 15 minutes per email
+      const rateLimitKey = `login_fail_${email}`
+      const limitCheck = await rateLimit(rateLimitKey, { limit: 5, windowMs: 15 * 60 * 1000 })
+      if (!limitCheck.success) {
+        console.warn(`[Security Alert] Rate limit exceeded for login attempts on: ${email}`)
+        return null
+      }
 
       const user = await prisma.user.findUnique({
         where: { email }
@@ -42,6 +65,9 @@ const providers: any[] = [
       if (!isPasswordValid) {
         return null
       }
+
+      // Clear failed rate limit on successful authentication
+      clearRateLimit(rateLimitKey)
 
       let safeImage: string | null = null
       if (typeof user.image === "string" && user.image.length > 0) {
@@ -61,6 +87,7 @@ const providers: any[] = [
     }
   })
 ]
+
 
 if (googleClientId && googleClientSecret) {
   providers.unshift(

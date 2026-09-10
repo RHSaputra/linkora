@@ -20,11 +20,13 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Collection not found" }, { status: 404 });
     }
 
-    await prisma.collectionLink.delete({
+    await prisma.collectionLink.deleteMany({
       where: {
-        collectionId_linkId: { collectionId: id, linkId },
+        collectionId: id,
+        linkId: linkId,
       },
     });
+
 
     return NextResponse.json({ success: true });
   } catch (error) {

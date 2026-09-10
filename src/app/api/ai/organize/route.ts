@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { withTimeout } from "@/lib/ai-cache";
 
+import { rateLimit } from "@/lib/rate-limit";
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function GET(_req: NextRequest) {
@@ -42,6 +44,15 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    const limitCheck = await rateLimit(`ai_organize_${user.id}`, { limit: 15, windowMs: 60 * 1000 });
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan kategorisasi AI. Tunggu ${limitCheck.reset} detik.` },
+        { status: 429 }
+      );
+    }
+
 
     let body: any = {};
     try {
@@ -135,14 +146,15 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
     let updatedCount = 0;
     const changes: { title: string; category: string }[] = [];
     for (const item of parsedResponse) {
-      if (item.id && item.category) {
+      if (item.id && item.category && typeof item.category === "string") {
         const link = linksData.find(l => l.id === item.id);
         if (link) {
+          const cleanCategory = item.category.trim().slice(0, 50);
           await prisma.link.update({
             where: { id: item.id },
-            data: { category: item.category }
+            data: { category: cleanCategory }
           });
-          changes.push({ title: link.title, category: item.category });
+          changes.push({ title: link.title, category: cleanCategory });
           updatedCount++;
         }
       }
@@ -158,8 +170,9 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
   } catch (error: any) {
     console.error("Error in AI organize:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to organize links" },
+      { error: "Gagal merapikan kategori tautan" },
       { status: 500 }
     );
   }
 }
+

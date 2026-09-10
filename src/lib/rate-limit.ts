@@ -74,3 +74,9 @@ export async function rateLimit(
     reset: Math.ceil(options.windowMs / 1000),
   };
 }
+
+export function clearRateLimit(identifier: string): void {
+  store.delete(identifier);
+}
+
+

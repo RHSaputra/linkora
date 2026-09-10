@@ -172,6 +172,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid messages array" }, { status: 400 });
     }
 
+    if (messages.length > 50) {
+      return NextResponse.json({ error: "Riwayat percakapan melebihi batas (maksimal 50 pesan)" }, { status: 400 });
+    }
+
     // Build user context from their actual data
     const userName = session?.user?.name || (isEn ? "User" : "Pengguna");
     const userContext = await buildUserContext(userId, userName, isEn);
@@ -219,17 +223,22 @@ ${userContext}`;
       ? `Hi ${userName}! I'm Liko, your Linkora assistant. I'm synced with your workspace and ready to help. Feel free to ask anything about your links, notes, or categories!`
       : `Hai ${userName}! Aku Liko, asisten Linkora-mu. Aku sudah terhubung dengan koleksi tautanmu dan siap membantu. Tanya apa saja seputar tautan, kategori, atau hal lain yang bisa kubantu.`;
 
-    // Map messages format
+    // Map messages format with length bounds
     const contents = [
       { role: "user" as const, parts: [{ text: SYSTEM_PROMPT }] },
       { role: "model" as const, parts: [{ text: initialGreeting }] },
     ];
 
-    for (const msg of messages) {
+    const recentMessages = messages.slice(-20);
+    for (const msg of recentMessages) {
+      if (!msg || typeof msg.content !== "string") continue;
+      const safeContent = msg.content.trim().slice(0, 4000);
+      if (!safeContent) continue;
+
       if (msg.role === "user") {
-        contents.push({ role: "user" as const, parts: [{ text: msg.content }] });
+        contents.push({ role: "user" as const, parts: [{ text: safeContent }] });
       } else if (msg.role === "ai" || msg.role === "model") {
-        contents.push({ role: "model" as const, parts: [{ text: msg.content }] });
+        contents.push({ role: "model" as const, parts: [{ text: safeContent }] });
       }
     }
 
@@ -280,8 +289,9 @@ ${userContext}`;
   } catch (error) {
     console.error("Error in AI chat:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal error" },
+      { error: "Terjadi kesalahan saat memproses percakapan AI. Silakan coba kembali." },
       { status: 500 }
     );
   }
 }
+

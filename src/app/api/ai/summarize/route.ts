@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { withTimeout } from "@/lib/ai-cache";
 
+import { rateLimit } from "@/lib/rate-limit";
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function POST(_req: NextRequest) {
@@ -16,6 +18,14 @@ export async function POST(_req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const limitCheck = await rateLimit(`ai_summarize_${user.id}`, { limit: 15, windowMs: 60 * 1000 });
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan ringkasan AI. Tunggu ${limitCheck.reset} detik.` },
+        { status: 429 }
+      );
     }
 
     // Get up to 5 links that don't have aiSummary
@@ -61,18 +71,21 @@ Output murni JSON, tanpa markdown.
       parsedResponse = JSON.parse(response.text?.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
     } catch (_e) {
       console.error("Failed to parse Gemini response for summarize");
-      return NextResponse.json({ error: "Failed to parse AI output" }, { status: 500 });
+      return NextResponse.json({ error: "Gagal memproses keluaran AI" }, { status: 500 });
     }
 
-    // Update DB
+    // Update DB with ownership verification
     let updatedCount = 0;
     for (const item of parsedResponse) {
       if (item.id && item.aiSummary) {
-        await prisma.link.update({
-          where: { id: item.id },
-          data: { aiSummary: item.aiSummary }
-        });
-        updatedCount++;
+        const targetLink = links.find(l => l.id === item.id);
+        if (targetLink) {
+          await prisma.link.update({
+            where: { id: item.id },
+            data: { aiSummary: item.aiSummary }
+          });
+          updatedCount++;
+        }
       }
     }
 
@@ -80,8 +93,9 @@ Output murni JSON, tanpa markdown.
   } catch (error) {
     console.error("Error in AI summarize:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal error" },
+      { error: "Gagal membuat ringkasan otomatis" },
       { status: 500 }
     );
   }
 }
+

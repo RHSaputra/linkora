@@ -34,7 +34,15 @@ const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   'ol': new Set(['start', 'type']),
 };
 
-const ALLOWED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'data:']);
+const ALLOWED_LINK_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
+const ALLOWED_IMAGE_MIMES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
+
 
 const ALLOWED_STYLE_PROPERTIES = new Set([
   'color',
@@ -124,22 +132,42 @@ export function sanitizeHtml(html: string): string {
       // Check if attribute is allowed
       if (!globalAllowed.has(attrName) && !tagAllowed.has(attrName)) continue;
 
-      // Sanitize href and src
-      if (attrName === 'href' || attrName === 'src') {
+      // Sanitize href
+      if (attrName === 'href') {
         const trimmed = attrValue.trim();
-        // Allow data:image/... base64 for images
-        if (attrName === 'src' && trimmed.startsWith('data:image/')) {
-          allowedAttrs.push(`src="${trimmed}"`);
-          continue;
-        }
-
-        // Check protocol
         try {
           const url = new URL(trimmed, 'https://placeholder.com');
-          if (!ALLOWED_PROTOCOLS.has(url.protocol)) continue;
+          if (ALLOWED_LINK_PROTOCOLS.has(url.protocol)) {
+            allowedAttrs.push(`href="${escapeAttrValue(trimmed)}"`);
+          }
         } catch {
-          if (trimmed.startsWith('javascript:') || trimmed.startsWith('vbscript:')) continue;
+          // Disallow malformed href
         }
+        continue;
+      }
+
+      // Sanitize src (images)
+      if (attrName === 'src') {
+        const trimmed = attrValue.trim();
+        if (tag === 'img') {
+          if (trimmed.startsWith('data:image/')) {
+            const match = trimmed.match(/^data:(image\/[a-zA-Z0-9\-\+\.]+);base64,/i);
+            if (match && ALLOWED_IMAGE_MIMES.has(match[1].toLowerCase())) {
+              allowedAttrs.push(`src="${trimmed}"`);
+            }
+            continue;
+          }
+          try {
+            const url = new URL(trimmed, 'https://placeholder.com');
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              allowedAttrs.push(`src="${escapeAttrValue(trimmed)}"`);
+            }
+          } catch {
+            // Disallow malformed src
+          }
+          continue;
+        }
+        continue;
       }
 
       // Sanitize style
@@ -151,8 +179,22 @@ export function sanitizeHtml(html: string): string {
         continue;
       }
 
+      // Add noopener noreferrer for target="_blank"
+      if (attrName === 'target' && attrValue === '_blank') {
+        allowedAttrs.push(`target="_blank"`);
+        allowedAttrs.push(`rel="noopener noreferrer"`);
+        continue;
+      }
+
+      if (attrName === 'rel' && tag === 'a') {
+        // Handled automatically or preserved safely
+        allowedAttrs.push(`rel="noopener noreferrer"`);
+        continue;
+      }
+
       allowedAttrs.push(`${attrName}="${escapeAttrValue(attrValue)}"`);
     }
+
 
     const isClosing = match.startsWith('</');
     const isSelfClosing = match.endsWith('/>') || tag === 'img' || tag === 'br' || tag === 'hr';

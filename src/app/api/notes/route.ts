@@ -77,12 +77,23 @@ export async function POST(req: Request) {
       ? title.replace(/<[^>]*>/g, "").trim().slice(0, 500) || "Catatan Tanpa Judul"
       : "Catatan Tanpa Judul";
 
+    let validatedFolderId: string | null = null;
+    if (folderId) {
+      const folderExists = await prisma.noteFolder.findFirst({
+        where: { id: folderId, userId: session.user.id },
+      });
+      if (!folderExists) {
+        return NextResponse.json({ error: "Folder tidak ditemukan atau tidak memiliki akses" }, { status: 400 });
+      }
+      validatedFolderId = folderId;
+    }
+
     const note = await prisma.note.create({
       data: {
         userId: session.user.id,
         title: sanitizedTitle,
         content: sanitizedContent,
-        folderId: folderId || null,
+        folderId: validatedFolderId,
         isFavorite: isFavorite || false,
         isPinned: isPinned || false,
       },

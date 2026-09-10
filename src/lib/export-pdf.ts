@@ -18,6 +18,8 @@ import {
   getEffectivePageDimensions,
   mmToPx,
 } from "./document-settings";
+import { sanitizeHtml } from "./sanitize";
+
 
 // ─── Image Pre-loader & CORS-Safe Converter ────────────────
 
@@ -243,13 +245,14 @@ export async function exportToPdf(
   // Calculate container pixel width based on standard 96 DPI
   const targetWidthPx = Math.round(mmToPx(contentWidthMm));
 
-  // Sanitize any stray modern color functions in input html
-  const sanitizedHtml = (html || "<p></p>")
+  // Sanitize any stray modern color functions and strip scripts/malicious tags in input html
+  const sanitizedHtml = sanitizeHtml(html || "<p></p>")
     .replace(/oklch\([^)]+\)/gi, "#111827")
     .replace(/color-mix\([^)]+\)/gi, "#111827");
 
-  // Create an isolated sandbox iframe to completely shield html2canvas from host Tailwind v4 stylesheets
+  // Create an isolated sandbox iframe to completely shield html2canvas from host stylesheets and prevent script execution
   const iframe = document.createElement("iframe");
+  iframe.setAttribute("sandbox", "allow-same-origin");
   iframe.style.position = "fixed";
   iframe.style.top = "0";
   iframe.style.left = "0";
@@ -259,6 +262,7 @@ export async function exportToPdf(
   iframe.style.opacity = "0";
   iframe.style.pointerEvents = "none";
   iframe.style.border = "none";
+
 
   document.body.appendChild(iframe);
 

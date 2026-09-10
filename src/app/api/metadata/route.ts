@@ -28,12 +28,26 @@ function extractTitle(html: string): string | null {
 }
 
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { validateSafeExternalUrl, safeFetchExternal } from "@/lib/ssrf";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting: 30 metadata requests per minute per user
+    const limitCheck = await rateLimit(`metadata_${session.user.id}`, {
+      limit: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan metadata. Tunggu ${limitCheck.reset} detik.` },
+        { status: 429 }
+      );
     }
 
     const { url } = await request.json();
@@ -44,9 +58,12 @@ export async function POST(request: NextRequest) {
 
     let parsedUrl: URL;
     try {
-      parsedUrl = new URL(url);
-    } catch {
-      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
+      parsedUrl = await validateSafeExternalUrl(url);
+    } catch (validationErr: any) {
+      return NextResponse.json(
+        { error: validationErr?.message || "URL tidak diizinkan atau tidak valid" },
+        { status: 400 }
+      );
     }
 
     const favicon = `https://www.google.com/s2/favicons?domain=${parsedUrl.hostname}&sz=64`;
@@ -56,23 +73,12 @@ export async function POST(request: NextRequest) {
     let thumbnail: string | null = null;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (compatible; Linkora/1.0; +https://linkora.app)",
-          Accept: "text/html",
-        },
-        redirect: "follow",
+      const { text: html } = await safeFetchExternal(parsedUrl.toString(), {
+        timeoutMs: 8000,
+        maxSizeBytes: 2 * 1024 * 1024,
       });
 
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        const html = await response.text();
+      if (html) {
         title = extractTitle(html) || title;
         description =
           extractMeta(html, "og:description") ||
@@ -82,7 +88,7 @@ export async function POST(request: NextRequest) {
           extractMeta(html, "twitter:image");
       }
     } catch {
-      // Metadata fetch failed — return partial data with favicon
+      // Safe fallback: return partial data with favicon
     }
 
     return NextResponse.json({
@@ -96,3 +102,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch metadata" }, { status: 500 });
   }
 }
+

@@ -276,8 +276,10 @@ export default function EmailPreviewPage() {
                 <iframe
                   src={`/api/email-preview?type=${selectedType}&format=html`}
                   title="Email Preview"
+                  sandbox="allow-same-origin"
                   className="w-full border-none h-[640px] bg-[#f8fafc]"
                 />
+
               </motion.div>
             ) : (
               <div className="w-full max-w-2xl bg-card rounded-2xl border border-border p-6 shadow-xl relative font-mono text-xs leading-relaxed text-foreground whitespace-pre-wrap max-h-[600px] overflow-y-auto">

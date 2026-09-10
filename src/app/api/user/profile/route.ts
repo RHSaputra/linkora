@@ -50,11 +50,25 @@ export async function GET() {
   }
 }
 
+import { rateLimit } from "@/lib/rate-limit";
+
 export async function PATCH(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting: 10 profile updates per 5 minutes per user
+    const limitCheck = await rateLimit(`profile_update_${session.user.id}`, {
+      limit: 10,
+      windowMs: 5 * 60 * 1000,
+    });
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan pembaruan profil. Tunggu ${limitCheck.reset} detik.` },
+        { status: 429 }
+      );
     }
 
     const body = await req.json();
@@ -75,18 +89,49 @@ export async function PATCH(req: NextRequest) {
     } = {};
 
     if (name !== undefined) {
-      if (!name || name.trim().length === 0) {
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
         return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 });
+      }
+      if (name.trim().length > 100) {
+        return NextResponse.json({ error: "Nama maksimal 100 karakter" }, { status: 400 });
       }
       updateData.name = name.trim();
     }
 
+    // Strict image validation
     if (image !== undefined) {
-      updateData.image = image || null;
+      if (image === null || image === "") {
+        updateData.image = null;
+      } else if (typeof image === "string") {
+        if (image.length > 500 * 1024) {
+          return NextResponse.json({ error: "Ukuran avatar terlalu besar (maksimal 500 KB)" }, { status: 400 });
+        }
+        if (image.startsWith("data:")) {
+          const match = image.match(/^data:([A-Za-z-+\/]+);base64,/);
+          const mime = match ? match[1].toLowerCase() : "";
+          const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+          if (!allowed.includes(mime)) {
+            return NextResponse.json({ error: "Format gambar avatar tidak didukung. Gunakan PNG, JPEG, atau WebP." }, { status: 400 });
+          }
+          updateData.image = image;
+        } else if (image.startsWith("https://")) {
+          updateData.image = image;
+        } else {
+          return NextResponse.json({ error: "Format URL avatar tidak valid" }, { status: 400 });
+        }
+      } else {
+        return NextResponse.json({ error: "Data gambar tidak valid" }, { status: 400 });
+      }
     }
 
-    // Password change
+    // Password change validation
     if (newPassword) {
+      if (typeof newPassword !== "string" || newPassword.length < 6) {
+        return NextResponse.json({ error: "Kata sandi baru minimal 6 karakter" }, { status: 400 });
+      }
+      if (newPassword.length > 128) {
+        return NextResponse.json({ error: "Kata sandi baru maksimal 128 karakter" }, { status: 400 });
+      }
       if (!currentPassword) {
         return NextResponse.json({ error: "Masukkan kata sandi saat ini untuk mengubah kata sandi" }, { status: 400 });
       }
@@ -96,10 +141,6 @@ export async function PATCH(req: NextRequest) {
         if (!isMatch) {
           return NextResponse.json({ error: "Kata sandi saat ini tidak cocok" }, { status: 400 });
         }
-      }
-
-      if (newPassword.length < 6) {
-        return NextResponse.json({ error: "Kata sandi baru minimal 6 karakter" }, { status: 400 });
       }
 
       updateData.password = await bcrypt.hash(newPassword, 10);
@@ -123,6 +164,7 @@ export async function PATCH(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("PATCH /api/user/profile error:", error);
-    return NextResponse.json({ error: error?.message || "Failed to update profile" }, { status: 500 });
+    return NextResponse.json({ error: "Gagal memperbarui profil" }, { status: 500 });
   }
 }
+

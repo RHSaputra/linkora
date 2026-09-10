@@ -22,9 +22,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const updateData: any = {};
-    if (name !== undefined) updateData.name = name;
+    if (name !== undefined) {
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
+        return NextResponse.json({ error: "Folder name is required" }, { status: 400 });
+      }
+      updateData.name = name.trim().slice(0, 100);
+    }
     if (color !== undefined) updateData.color = color;
-    if (parentId !== undefined) updateData.parentId = parentId;
+    if (parentId !== undefined) {
+      if (parentId === null || parentId === "") {
+        updateData.parentId = null;
+      } else {
+        if (parentId === id) {
+          return NextResponse.json({ error: "Folder tidak dapat menjadi induk dirinya sendiri" }, { status: 400 });
+        }
+        const parentFolder = await prisma.noteFolder.findFirst({
+          where: { id: parentId, userId: session.user.id },
+        });
+        if (!parentFolder) {
+          return NextResponse.json({ error: "Folder induk tidak ditemukan atau tidak memiliki akses" }, { status: 400 });
+        }
+        updateData.parentId = parentId;
+      }
+    }
+
 
     const folder = await prisma.noteFolder.update({
       where: { id },

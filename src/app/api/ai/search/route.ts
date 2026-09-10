@@ -250,8 +250,9 @@ Output murni JSON, tanpa markdown.`;
   } catch (error: any) {
     console.error("Error in AI search:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Gagal melakukan pencarian" },
+      { error: "Gagal melakukan pencarian cerdas" },
       { status: 500 }
     );
   }
 }
+
