@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import { motion, AnimatePresence } from "framer-motion"
-import { Mail, Send, CheckCircle2, AlertCircle, Loader2, X, MessageSquare, User, Sparkles } from "lucide-react"
+import { Mail, Send, CheckCircle2, AlertCircle, Loader2, X, MessageSquare, User } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
 import { RecaptchaCheckbox, RecaptchaCheckboxRef } from "@/components/ui/recaptcha-checkbox"
 
@@ -168,7 +168,7 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder={isEn ? "e.g., Alex Johnson" : "Contoh: Rahmad Saputra"}
+                        placeholder={isEn ? "Enter your full name" : "Masukkan nama lengkap Anda"}
                         className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background/60 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                       />
                     </div>
@@ -233,8 +233,8 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                   </div>
 
                   <div className="pt-2 flex items-center justify-between gap-3">
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-primary" /> {isEn ? "Sent to official support team" : "Diteruskan ke tim resmi"}
+                    <p className="text-[11px] text-muted-foreground">
+                      {isEn ? "Sent to official support team" : "Diteruskan ke tim resmi"}
                     </p>
                     <button
                       type="submit"
