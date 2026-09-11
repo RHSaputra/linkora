@@ -83,7 +83,10 @@ export async function POST(req: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Email sudah terdaftar dalam sistem." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email ini sudah terdaftar. Silakan masuk langsung ke akun Anda." },
+        { status: 400 }
+      );
     }
 
     // Create user in database with verified status and welcome timestamp

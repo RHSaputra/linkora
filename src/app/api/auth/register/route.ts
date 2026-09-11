@@ -47,7 +47,10 @@ export async function POST(req: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Email sudah terdaftar dalam sistem" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email ini sudah terdaftar. Silakan masuk langsung ke akun Anda." },
+        { status: 400 }
+      );
     }
 
     // Hash password for pending storage

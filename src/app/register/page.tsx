@@ -327,9 +327,19 @@ export default function RegisterPage() {
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="mb-6 p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium"
+                      className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium space-y-1.5"
                     >
-                      {error}
+                      <div>{error}</div>
+                      {(error.toLowerCase().includes("terdaftar") || error.toLowerCase().includes("registered")) && (
+                        <div className="pt-0.5">
+                          <Link 
+                            href="/login" 
+                            className="inline-flex items-center gap-1 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs"
+                          >
+                            {locale === "en" ? "Sign In to Your Account Now →" : "Masuk ke Akun Anda Sekarang →"}
+                          </Link>
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
