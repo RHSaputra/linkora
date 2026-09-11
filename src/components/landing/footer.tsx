@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, Instagram, Mail, ShieldCheck } from "lucide-react"
+import { ArrowRight, Instagram, Mail, ShieldCheck, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { LinkoraText } from "@/components/ui/linkora-text"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@/components/providers/i18n-provider"
+import { ContactDialog } from "@/components/contact/contact-dialog"
 
 export function CTA() {
   const { t, locale } = useTranslation()
@@ -70,6 +72,7 @@ export function CTA() {
 
 export function Footer() {
   const { t, locale } = useTranslation()
+  const [contactOpen, setContactOpen] = useState(false)
 
   return (
     <footer className="py-10 border-t border-border/60 bg-background relative z-10 mt-auto">
@@ -116,6 +119,14 @@ export function Footer() {
               <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navHowItWorks")}</Link>
               <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navUseCases")}</Link>
               <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navDemo")}</Link>
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
+                className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5 font-semibold text-primary/90 cursor-pointer flex items-center gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>{locale === "en" ? "Contact Us" : "Hubungi Kami"}</span>
+              </button>
               <Link href="/privacy" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5 font-semibold text-foreground/80">{locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}</Link>
               <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.login")}</Link>
               <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.signUp")}</Link>
@@ -143,16 +154,21 @@ export function Footer() {
             >
               <Instagram className="w-4 h-4" />
             </a>
-            <a
-              href="mailto:support@linkora.app"
-              aria-label="Email"
-              className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              aria-label="Hubungi Kami via Email"
+              title="Hubungi Kami (supportlinkorian@gmail.com)"
+              className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-90 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             >
               <Mail className="w-4 h-4" />
-            </a>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Interactive Contact Us Modal Dialog */}
+      <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
     </footer>
   )
 }

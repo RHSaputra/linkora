@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Lock, Mail, User, MapPin, KeyRound, ArrowLeft, RefreshCw, CheckCircle2 } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
+import { RecaptchaCheckbox, RecaptchaCheckboxRef } from "@/components/ui/recaptcha-checkbox"
 
 interface Region {
   id: string;
@@ -19,6 +20,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const recaptchaRef = useRef<RecaptchaCheckboxRef>(null)
 
   // Multi-step Registration State
   const [step, setStep] = useState<"FORM" | "OTP">("FORM")
@@ -113,7 +116,8 @@ export default function RegisterPage() {
           regency: selRegency?.name,
           district: selDistrict?.name,
           village: selVillage?.name,
-          postalCode
+          postalCode,
+          captchaToken,
         }),
       })
 
@@ -121,6 +125,8 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         setError(data.error || (locale === "en" ? "An error occurred" : "Terjadi kesalahan"))
+        recaptchaRef.current?.reset()
+        setCaptchaToken(null)
         setLoading(false)
       } else {
         setRegisteredEmail(email.toLowerCase().trim())
@@ -130,6 +136,8 @@ export default function RegisterPage() {
       }
     } catch (_err) {
       setError(locale === "en" ? "An unexpected error occurred" : "Terjadi kesalahan yang tidak terduga")
+      recaptchaRef.current?.reset()
+      setCaptchaToken(null)
       setLoading(false)
     }
   }
@@ -461,6 +469,14 @@ export default function RegisterPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Google reCAPTCHA v2 Checkbox */}
+                    <RecaptchaCheckbox
+                      ref={recaptchaRef}
+                      onVerify={(token) => setCaptchaToken(token)}
+                      onExpired={() => setCaptchaToken(null)}
+                      theme="dark"
+                    />
 
                     <button
                       type="submit"

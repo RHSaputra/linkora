@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { rateLimit } from "@/lib/rate-limit";
 import { generateSecureOtp, hashOtp } from "@/lib/email-auth-security";
 import { sendVerificationOtpEmail } from "@/lib/email/service";
+import { verifyRecaptcha } from "@/lib/recaptcha";
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +20,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, email, password, province, regency, district, village, postalCode } = body;
+    const { name, email, password, province, regency, district, village, postalCode, captchaToken } = body;
+
+    // Google reCAPTCHA v2 verification (auto-bypassed if RECAPTCHA_SECRET_KEY not set)
+    const captchaCheck = await verifyRecaptcha(captchaToken, ip);
+    if (!captchaCheck.success) {
+      return NextResponse.json(
+        { error: captchaCheck.error || "Verifikasi captcha gagal. Silakan centang kotak reCAPTCHA." },
+        { status: 400 }
+      );
+    }
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Nama, email, dan kata sandi wajib diisi" }, { status: 400 });

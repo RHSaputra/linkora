@@ -44,7 +44,7 @@ export async function sendVerificationOtpEmail(params: {
 }): Promise<SendEmailResult> {
   const normalizedEmail = params.to.toLowerCase().trim();
   const expiryMinutes = params.expiryMinutes || Number(process.env.OTP_EXPIRY_MINUTES) || 10;
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL || "https://linkorian.online";
 
   const { subject, html, text } = renderVerificationOtpEmail({
     userName: params.name,
@@ -81,7 +81,7 @@ export async function sendPasswordResetEmail(params: {
 }): Promise<SendEmailResult> {
   const normalizedEmail = params.to.toLowerCase().trim();
   const expiryMinutes = params.expiryMinutes || Number(process.env.RESET_TOKEN_EXPIRY_MINUTES) || 15;
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL || "https://linkorian.online";
 
   const { subject, html, text } = renderPasswordResetEmail({
     userName: params.name,
@@ -116,7 +116,7 @@ export async function sendWelcomeEmail(params: {
   isGoogleAuth?: boolean;
 }): Promise<SendEmailResult & { skipped?: boolean }> {
   const normalizedEmail = params.to.toLowerCase().trim();
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL || "https://linkorian.online";
 
   // Check Idempotency: Has welcome email already been sent?
   const existingUser = await prisma.user.findUnique({

@@ -660,11 +660,11 @@ export default function PrivacyPage() {
                   <span>Instagram: @linkora_new</span>
                 </a>
                 <a
-                  href="mailto:support@linkora.app"
+                  href="mailto:supportlinkorian@gmail.com"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border/60 bg-foreground/5 hover:bg-foreground/10 text-xs sm:text-sm font-semibold text-foreground transition-all"
                 >
                   <Mail className="w-4 h-4" />
-                  <span>Email: support@linkora.app</span>
+                  <span>Email: supportlinkorian@gmail.com</span>
                 </a>
               </div>
             </section>
