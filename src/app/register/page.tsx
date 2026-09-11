@@ -106,6 +106,10 @@ export default function RegisterPage() {
     const password = formData.get("password") as string
     const postalCode = formData.get("postalCode") as string
 
+    const tokenFromRef = recaptchaRef.current?.getResponse() || ""
+    const tokenFromForm = (formData.get("g-recaptcha-response") as string) || ""
+    const activeCaptchaToken = captchaToken || tokenFromRef || tokenFromForm
+
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -117,7 +121,7 @@ export default function RegisterPage() {
           district: selDistrict?.name,
           village: selVillage?.name,
           postalCode,
-          captchaToken,
+          captchaToken: activeCaptchaToken,
         }),
       })
 

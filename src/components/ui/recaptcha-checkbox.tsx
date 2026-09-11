@@ -26,6 +26,7 @@ declare global {
 
 export interface RecaptchaCheckboxRef {
   reset: () => void
+  getResponse: () => string
 }
 
 interface RecaptchaCheckboxProps {
@@ -40,7 +41,15 @@ export const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxRef, RecaptchaCheck
     const containerRef = useRef<HTMLDivElement>(null)
     const widgetIdRef = useRef<number | null>(null)
     const [isLoaded, setIsLoaded] = useState(false)
+    const unmountedRef = useRef(false)
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY?.trim() || ""
+
+    // Simpan callback terbaru dalam ref agar tidak terkena stale closure
+    const onVerifyRef = useRef(onVerify)
+    onVerifyRef.current = onVerify
+
+    const onExpiredRef = useRef(onExpired)
+    onExpiredRef.current = onExpired
 
     useImperativeHandle(ref, () => ({
       reset: () => {
@@ -52,16 +61,31 @@ export const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxRef, RecaptchaCheck
           }
         }
       },
+      getResponse: () => {
+        if (typeof window !== "undefined" && window.grecaptcha && widgetIdRef.current !== null) {
+          try {
+            return window.grecaptcha.getResponse(widgetIdRef.current) || ""
+          } catch {
+            return ""
+          }
+        }
+        return ""
+      },
     }))
+
+    useEffect(() => {
+      unmountedRef.current = false
+      return () => {
+        unmountedRef.current = true
+      }
+    }, [])
 
     useEffect(() => {
       // Jika site key belum diatur, jangan load script Google
       if (!siteKey) return
 
-      let isMounted = true
-
       const renderWidget = () => {
-        if (!isMounted || !containerRef.current || !window.grecaptcha?.render) return
+        if (unmountedRef.current || !containerRef.current || !window.grecaptcha?.render) return
 
         // Mencegah duplicate render di container yang sama
         if (widgetIdRef.current !== null) return
@@ -71,13 +95,19 @@ export const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxRef, RecaptchaCheck
             sitekey: siteKey,
             theme,
             callback: (token: string) => {
-              if (isMounted) onVerify(token)
+              if (!unmountedRef.current) {
+                onVerifyRef.current?.(token)
+              }
             },
             "expired-callback": () => {
-              if (isMounted && onExpired) onExpired()
+              if (!unmountedRef.current) {
+                onExpiredRef.current?.()
+              }
             },
             "error-callback": () => {
-              if (isMounted && onExpired) onExpired()
+              if (!unmountedRef.current) {
+                onExpiredRef.current?.()
+              }
             },
           })
           widgetIdRef.current = id
@@ -106,7 +136,7 @@ export const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxRef, RecaptchaCheck
         script.defer = true
         document.head.appendChild(script)
       } else {
-        // Script sudah ada, tunggu siap
+        // Script sudah ada di DOM, polling hingga siap
         const checkInterval = setInterval(() => {
           if (window.grecaptcha?.render) {
             clearInterval(checkInterval)
@@ -116,14 +146,9 @@ export const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxRef, RecaptchaCheck
 
         return () => {
           clearInterval(checkInterval)
-          isMounted = false
         }
       }
-
-      return () => {
-        isMounted = false
-      }
-    }, [siteKey, theme, onVerify, onExpired])
+    }, [siteKey, theme])
 
     // Jika Site Key belum diisi di environment, tampilkan indikator ramah developer
     if (!siteKey) {

@@ -31,11 +31,14 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
     setLoading(true)
     setError("")
 
+    const tokenFromRef = recaptchaRef.current?.getResponse() || ""
+    const activeCaptchaToken = captchaToken || tokenFromRef
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, category, message, captchaToken }),
+        body: JSON.stringify({ name, email, category, message, captchaToken: activeCaptchaToken }),
       })
 
       const data = await res.json()
