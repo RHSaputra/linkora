@@ -416,5 +416,8 @@ export const id = {
     ctaButton: "Daftar Gratis Sekarang",
     footerTagline: "Platform Manajemen Tautan & Dokumen Pribadi Berbasis AI.",
     footerRights: "Hak cipta dilindungi undang-undang.",
+    footerCategoryProduct: "Produk",
+    footerCategorySupport: "Bantuan & Legal",
+    footerCategoryAccount: "Akun",
   },
 };

@@ -77,59 +77,116 @@ export function Footer() {
   return (
     <footer className="py-10 border-t border-border/60 bg-background relative z-10 mt-auto">
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-10 text-center md:text-left">
-          <div className="max-w-md space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 mb-12">
+          {/* Brand Column */}
+          <div className="md:col-span-5 space-y-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start">
               <img src="/logo.png" alt="Linkora Logo" className="h-12 w-auto object-contain" />
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto md:mx-0">
               {locale === "en"
                 ? "Intelligent Personal Knowledge Hub to manage all your links, notes, and opportunities in one unified digital workspace."
                 : "Personal Knowledge Hub cerdas untuk mengelola semua tautan, catatan, dan peluang Anda dalam satu ruang kerja digital terpadu."}
             </p>
+
+            {/* Interactive Animated Instagram Follow Button */}
+            <div className="pt-1 flex justify-center md:justify-start">
+              <motion.a
+                href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.03, y: -1 }}
+                whileTap={{ scale: 0.97 }}
+                className="group relative inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 rounded-full border border-pink-500/30 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 text-foreground hover:text-white transition-all duration-300 shadow-xs md:shadow-md shadow-pink-500/10 hover:shadow-xl hover:shadow-pink-500/25 cursor-pointer select-none overflow-hidden"
+              >
+                {/* Shimmer overlay on hover */}
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+
+                <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs shrink-0 group-hover:rotate-12 transition-transform duration-300">
+                  <Instagram className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                </div>
+                <span className="text-[11px] md:text-xs font-semibold whitespace-nowrap">
+                  {locale === "en" ? "Follow Us on Instagram" : "Ikuti Kami di Instagram"}
+                </span>
+                <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors leading-none">
+                  @linkora_new
+                </span>
+              </motion.a>
+            </div>
           </div>
 
-          {/* Quick links */}
-          <div className="flex flex-col md:items-end gap-4">
-            {/* Interactive Animated Instagram Follow Button */}
-            <motion.a
-              href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.03, y: -1 }}
-              whileTap={{ scale: 0.97 }}
-              className="group relative inline-flex items-center gap-1.5 md:gap-2 px-2.5 py-0.5 md:px-3.5 md:py-1.5 rounded-full border border-pink-500/30 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 text-foreground hover:text-white transition-all duration-300 shadow-xs md:shadow-md shadow-pink-500/10 hover:shadow-xl hover:shadow-pink-500/25 cursor-pointer select-none mx-auto md:mx-0 overflow-hidden"
-            >
-              {/* Shimmer overlay on hover */}
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+          {/* Categorized Navigation Columns */}
+          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 text-left">
+            {/* Kategori: Produk */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
+                {t("landing.footerCategoryProduct")}
+              </h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="#solusi" className="hover:text-primary transition-colors block py-0.5">
+                    {t("landing.navSolutions")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#cara-kerja" className="hover:text-primary transition-colors block py-0.5">
+                    {t("landing.navHowItWorks")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#use-cases" className="hover:text-primary transition-colors block py-0.5">
+                    {t("landing.navUseCases")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#demo" className="hover:text-primary transition-colors block py-0.5">
+                    {t("landing.navDemo")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-              <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs shrink-0 group-hover:rotate-12 transition-transform duration-300">
-                <Instagram className="w-2.5 h-2.5 md:w-3 md:h-3" />
-              </div>
-              <span className="text-[10px] md:text-xs font-semibold tracking-tight md:tracking-normal whitespace-nowrap">
-                {locale === "en" ? "Follow Us on Instagram" : "Ikuti Kami di Instagram"}
-              </span>
-              <span className="text-[8px] md:text-[9px] uppercase font-bold md:font-extrabold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors leading-none tracking-tight">
-                @linkora_new
-              </span>
-            </motion.a>
+            {/* Kategori: Bantuan & Legal */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
+                {t("landing.footerCategorySupport")}
+              </h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setContactOpen(true)}
+                    className="hover:text-primary transition-colors text-left flex items-center gap-1.5 py-0.5 cursor-pointer font-medium text-primary"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                    <span>{locale === "en" ? "Contact Us" : "Hubungi Kami"}</span>
+                  </button>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-primary transition-colors block py-0.5">
+                    {locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-            <div className="flex items-center gap-x-6 gap-y-2.5 text-sm font-medium text-muted-foreground flex-wrap justify-center md:justify-end">
-              <Link href="#solusi" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navSolutions")}</Link>
-              <Link href="#cara-kerja" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navHowItWorks")}</Link>
-              <Link href="#use-cases" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navUseCases")}</Link>
-              <Link href="#demo" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("landing.navDemo")}</Link>
-              <button
-                type="button"
-                onClick={() => setContactOpen(true)}
-                className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5 font-semibold text-primary/90 cursor-pointer flex items-center gap-1.5"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{locale === "en" ? "Contact Us" : "Hubungi Kami"}</span>
-              </button>
-              <Link href="/privacy" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5 font-semibold text-foreground/80">{locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}</Link>
-              <Link href="/login" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.login")}</Link>
-              <Link href="/register" className="hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 sm:px-1.5 sm:py-0.5">{t("nav.signUp")}</Link>
+            {/* Kategori: Akun */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
+                {t("landing.footerCategoryAccount")}
+              </h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="/login" className="hover:text-primary transition-colors block py-0.5">
+                    {t("nav.login")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="hover:text-primary transition-colors block py-0.5">
+                    {t("nav.signUp")}
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

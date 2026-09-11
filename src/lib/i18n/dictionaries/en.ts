@@ -416,5 +416,8 @@ export const en = {
     ctaButton: "Sign Up Free Now",
     footerTagline: "AI-Powered Personal Link & Document Management Hub.",
     footerRights: "All rights reserved.",
+    footerCategoryProduct: "Product",
+    footerCategorySupport: "Support & Legal",
+    footerCategoryAccount: "Account",
   },
 };
