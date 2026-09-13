@@ -167,6 +167,11 @@ export function Footer() {
                     {locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}
                   </Link>
                 </li>
+                <li>
+                  <Link href="/terms" className="hover:text-primary transition-colors block py-0.5">
+                    {locale === "en" ? "Terms of Service" : "Ketentuan Layanan"}
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -197,9 +202,15 @@ export function Footer() {
               © {new Date().getFullYear()} <LinkoraText />. {t("landing.footerRights")}
             </p>
             <span className="hidden sm:inline text-border">•</span>
-            <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline">
-              {locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline">
+                {locale === "en" ? "Privacy Policy" : "Kebijakan Privasi"}
+              </Link>
+              <span className="text-border">•</span>
+              <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline">
+                {locale === "en" ? "Terms of Service" : "Ketentuan Layanan"}
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <a
