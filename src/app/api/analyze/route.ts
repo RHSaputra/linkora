@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     let html = "";
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
-        timeoutMs: 10000,
+        timeoutMs: 5000,
         maxSizeBytes: 2 * 1024 * 1024,
       });
       html = text;
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
               responseMimeType: "application/json",
             }
           }),
-          30000
+          8000
         );
 
         if (response.text) {

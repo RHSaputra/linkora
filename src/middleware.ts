@@ -19,8 +19,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Security headers helper
-  const addSecurityHeaders = (res: NextResponse) => {
+  // Security & CDN Cache headers helper
+  const addSecurityHeaders = (res: NextResponse, reqPath?: string) => {
     res.headers.set("X-Frame-Options", "DENY")
     res.headers.set("X-Content-Type-Options", "nosniff")
     res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -29,6 +29,12 @@ export async function middleware(request: NextRequest) {
       res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
     }
     res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+
+    // ── CDN Edge Caching for Public Pages ──
+    if (reqPath && ["/privacy", "/terms", "/"].includes(reqPath)) {
+      res.headers.set("Cache-Control", "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800")
+    }
+
     return res
   }
 
@@ -88,7 +94,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next()
-  return addSecurityHeaders(response)
+  return addSecurityHeaders(response, pathname)
 }
 
 

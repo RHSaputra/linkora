@@ -112,7 +112,7 @@ Output murni JSON, tanpa markdown.`;
             ],
             config: { responseMimeType: "application/json" },
           }),
-          15000
+          6000
         );
         if (response.text) {
           responseText = response.text;
