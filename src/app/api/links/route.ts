@@ -4,6 +4,7 @@ import { serializeLink } from "@/lib/types";
 import { createLinkSchema } from "@/lib/validations";
 import { stringifyTags } from "@/lib/utils";
 import { auth } from "@/auth";
+import { getCache, setCache, invalidateUserCache } from "@/lib/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +32,15 @@ export async function GET(request: NextRequest) {
 
     const page = Math.max(1, parseInt(pageRaw || "1", 10) || 1);
     const pageSize = pageSizeRaw ? Math.max(1, parseInt(pageSizeRaw, 10) || 1) : null;
+
+    // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
+    const cacheKey = `cache:links:${userId}:${q || ""}:${category || ""}:${tag || ""}:${favorite || ""}:${collectionId || ""}:${page}:${pageSize || ""}`;
+    const cachedData = await getCache<any>(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(cachedData, {
+        headers: { "X-Cache": "HIT" },
+      });
+    }
 
     const where = {
       userId,
@@ -79,12 +89,19 @@ export async function GET(request: NextRequest) {
     const total = totalCount ?? items.length;
     const hasMore = pageSize ? page * pageSize < total : false;
 
-    return NextResponse.json({
+    const responsePayload = {
       items,
       total,
       page,
       pageSize,
       hasMore,
+    };
+
+    // ── 2. SAVE TO REDIS CACHE (5 Minutes TTL) ──
+    await setCache(cacheKey, responsePayload, 300);
+
+    return NextResponse.json(responsePayload, {
+      headers: { "X-Cache": "MISS" },
     });
   } catch (error) {
     console.error("GET /api/links error:", error);
@@ -126,6 +143,9 @@ export async function POST(request: NextRequest) {
         userId,
       },
     });
+
+    // ── INVALIDATE USER LINK CACHE ON CREATION ──
+    await invalidateUserCache(userId, "links");
 
     return NextResponse.json(serializeLink(link), { status: 201 });
   } catch (error) {

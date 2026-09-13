@@ -4,6 +4,7 @@ import { serializeLink } from "@/lib/types";
 import { updateLinkSchema } from "@/lib/validations";
 import { stringifyTags } from "@/lib/utils";
 import { auth } from "@/auth";
+import { invalidateUserCache } from "@/lib/cache";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -61,6 +62,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    // ── INVALIDATE USER LINK CACHE ON UPDATE ──
+    await invalidateUserCache(session.user.id, "links");
+
     return NextResponse.json(serializeLink(link));
   } catch (error) {
     console.error("PATCH /api/links/[id] error:", error);
@@ -76,6 +80,10 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     }
     const { id } = await params;
     await prisma.link.delete({ where: { id, userId: session.user.id } });
+
+    // ── INVALIDATE USER LINK CACHE ON DELETE ──
+    await invalidateUserCache(session.user.id, "links");
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/links/[id] error:", error);

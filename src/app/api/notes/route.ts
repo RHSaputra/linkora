@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { getCache, setCache, invalidateUserCache } from "@/lib/cache";
 
 export async function GET(req: Request) {
   try {
@@ -15,6 +16,15 @@ export async function GET(req: Request) {
     const filter = searchParams.get("filter");
     const statusParam = searchParams.get("status");
     const q = searchParams.get("q");
+
+    // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
+    const cacheKey = `cache:notes:${session.user.id}:${folderId || ""}:${filter || ""}:${statusParam || ""}:${q || ""}`;
+    const cachedNotes = await getCache<any>(cacheKey);
+    if (cachedNotes) {
+      return NextResponse.json(cachedNotes, {
+        headers: { "X-Cache": "HIT" },
+      });
+    }
 
     // Determine status
     const status = statusParam || (filter === "trash" ? "TRASH" : "ACTIVE");
@@ -55,7 +65,12 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json(notes);
+    // ── 2. SAVE TO REDIS CACHE (5 Minutes TTL) ──
+    await setCache(cacheKey, notes, 300);
+
+    return NextResponse.json(notes, {
+      headers: { "X-Cache": "MISS" },
+    });
   } catch (error) {
     console.error("GET /api/notes error:", error);
     return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
@@ -98,6 +113,9 @@ export async function POST(req: Request) {
         isPinned: isPinned || false,
       },
     });
+
+    // ── INVALIDATE USER NOTE CACHE ON CREATION ──
+    await invalidateUserCache(session.user.id, "notes");
 
     return NextResponse.json(note);
   } catch (error) {

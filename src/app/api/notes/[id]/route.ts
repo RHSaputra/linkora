@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { invalidateUserCache } from "@/lib/cache";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -130,6 +131,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
     }
 
+    // ── INVALIDATE USER NOTE CACHE ON UPDATE ──
+    await invalidateUserCache(session.user.id, "notes");
+
     return NextResponse.json(note);
   } catch (error) {
     console.error("PATCH /api/notes/[id] error:", error);
@@ -155,6 +159,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     if (!existing) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
+
+    // ── INVALIDATE USER NOTE CACHE ON DELETE ──
+    await invalidateUserCache(session.user.id, "notes");
 
     if (permanent || existing.status === "TRASH") {
       // Hard delete
