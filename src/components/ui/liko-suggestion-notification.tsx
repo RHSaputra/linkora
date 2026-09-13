@@ -235,6 +235,7 @@ export function LikoSuggestionNotification() {
             <button
               onClick={handleDismiss}
               className="text-muted-foreground/60 hover:text-foreground p-1 rounded-md transition-colors cursor-pointer"
+              aria-label="Tutup Notifikasi"
             >
               <X className="h-3.5 w-3.5" />
             </button>
