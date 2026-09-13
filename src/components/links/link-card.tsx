@@ -136,14 +136,14 @@ export function LinkCard({ link, onUpdate, onEdit, index = 0, collectionId }: Li
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.04 }}
-      className="group relative"
+      className="group relative h-full flex flex-col"
     >
       <div
         onClick={handleCardClick}
-        className="glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 hover:border-primary/40 border border-border/80 bg-card/90"
+        className="glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/40 border border-border/80 bg-card/90 h-full flex flex-col justify-between"
       >
         {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
-        <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50">
+        <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
           {/* Background Image / Thumbnail */}
           {link.thumbnail ? (
             <div className="absolute inset-0">
@@ -202,165 +202,175 @@ export function LinkCard({ link, onUpdate, onEdit, index = 0, collectionId }: Li
           </div>
         </div>
 
-        {/* ── CARD BODY (CLEAN & UNCLUTTERED) ── */}
-        <div className="p-4 space-y-3">
-          <div className="flex items-start gap-3">
-            {/* Favicon Icon */}
-            <div className="relative h-9 w-9 shrink-0 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80">
-              {favicon ? (
-                <Image src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" unoptimized />
-              ) : (
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
-
-            {/* Title & Quick Actions */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-1.5">
-                <h3 className="font-bold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-                  {link.title}
-                </h3>
-                <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
-                    <Star className={cn("h-4 w-4 sm:h-3.5 sm:w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
-                        <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenuItem onClick={() => {
-                        if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
-                        onEdit?.(link);
-                      }}>{t("common.edit")}</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {
-                        if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
-                        setIsManageOpen(true);
-                      }}>{t("links.manageCollection")}</DropdownMenuItem>
-                      
-                      {/* ── OPTION: JIKA SUDAH PERNAH DIJADIKAN CATATAN ── */}
-                      {existingNote ? (
-                        <>
-                          <DropdownMenuItem
-                            onClick={() => router.push(`/notes/${existingNote.id}`)}
-                            className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="flex-1">{t("links.openSavedNote")}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
-                              setIsNoteConverterOpen(true);
-                            }}
-                            className="text-muted-foreground text-xs gap-2"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>{t("links.createAnotherNote")}</span>
-                          </DropdownMenuItem>
-                        </>
-                      ) : (link.notes || link.aiSummary) ? (
-                        <DropdownMenuItem
-                          onClick={() => {
-                            if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
-                            setIsNoteConverterOpen(true);
-                          }}
-                          className="text-amber-600 dark:text-amber-400 font-medium gap-2"
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                          <span>{t("links.saveAsPersonalNote")}</span>
-                        </DropdownMenuItem>
-                      ) : null}
-
-                      {collectionId && (
-                        <DropdownMenuItem onClick={handleRemoveFromCollection}>
-                          {t("links.removeFromCollection")}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">{t("common.delete")}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+        {/* ── CARD BODY (UNIFORM EQUAL HEIGHT FLEX LAYOUT) ── */}
+        <div className="p-4 flex-1 flex flex-col justify-between space-y-3 z-20">
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-3">
+              {/* Favicon Icon */}
+              <div className="relative h-9 w-9 shrink-0 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80 mt-0.5">
+                {favicon ? (
+                  <Image src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" unoptimized />
+                ) : (
+                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                )}
               </div>
 
-              {/* Description / AI Summary */}
+              {/* Title & Quick Actions */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-1.5">
+                  <h3 className="font-bold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                    {link.title}
+                  </h3>
+                  <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+                      <Star className={cn("h-4 w-4 sm:h-3.5 sm:w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
+                          <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => {
+                          if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
+                          onEdit?.(link);
+                        }}>{t("common.edit")}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
+                          setIsManageOpen(true);
+                        }}>{t("links.manageCollection")}</DropdownMenuItem>
+                        
+                        {/* ── OPTION: JIKA SUDAH PERNAH DIJADIKAN CATATAN ── */}
+                        {existingNote ? (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => router.push(`/notes/${existingNote.id}`)}
+                              className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                              <span className="flex-1">{t("links.openSavedNote")}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                                setIsNoteConverterOpen(true);
+                              }}
+                              className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>{t("links.createAnotherNote")}</span>
+                            </DropdownMenuItem>
+                          </>
+                        ) : (link.notes || link.aiSummary) ? (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
+                              setIsNoteConverterOpen(true);
+                            }}
+                            className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                            <span>{t("links.saveAsPersonalNote")}</span>
+                          </DropdownMenuItem>
+                        ) : null}
+
+                        {collectionId && (
+                          <DropdownMenuItem onClick={handleRemoveFromCollection}>
+                            {t("links.removeFromCollection")}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleDelete} className="text-destructive">{t("common.delete")}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description / AI Summary Reserved Area */}
+            <div className="min-h-[2.25rem] flex items-center pt-0.5">
               {link.description ? (
-                <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
                   {link.description}
                 </p>
               ) : link.aiSummary ? (
-                <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
                   {link.aiSummary}
                 </p>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Tags */}
-          {link.tags && link.tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              {link.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal rounded-md">
-                  #{tag}
-                </Badge>
-              ))}
-              {link.tags.length > 3 && (
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  +{link.tags.length - 3}
-                </span>
+              ) : (
+                <p className="text-[11px] text-muted-foreground/50 line-clamp-1 italic">
+                  {domain ? `Tautan dari ${domain}` : "Informasi tautan tersimpan"}
+                </p>
               )}
             </div>
-          )}
 
-          {/* ── CARD FOOTER METADATA: DOMAIN, CATATAN STATUS, & RELATIVE TIME ── */}
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 font-medium pt-2 border-t border-border/40 uppercase tracking-wider">
-            <div className="flex items-center gap-2 truncate max-w-[170px]">
-              <span className="truncate font-semibold text-foreground/70">
-                {domain || link.category}
+            {/* Tags */}
+            {link.tags && link.tags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 min-h-[1.5rem]">
+                {link.tags.slice(0, 3).map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal rounded-md">
+                    #{tag}
+                  </Badge>
+                ))}
+                {link.tags.length > 3 && (
+                  <span className="text-[10px] text-muted-foreground font-medium">
+                    +{link.tags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── CARD FOOTER & ACTIONS ANCHORED AT BOTTOM ── */}
+          <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 font-medium uppercase tracking-wider">
+              <div className="flex items-center gap-2 truncate max-w-[170px]">
+                <span className="truncate font-semibold text-foreground/70">
+                  {domain || link.category}
+                </span>
+                {existingNote && (
+                  <span 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/notes/${existingNote.id}`);
+                    }}
+                    className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
+                    title={`Catatan Terkait: "${existingNote.title}"`}
+                  >
+                    <BookOpen className="w-2.5 h-2.5" /> Catatan
+                  </span>
+                )}
+              </div>
+              <span>
+                {formatRelativeTime(link.createdAt || link.lastOpenedAt)}
               </span>
-              {existingNote && (
-                <span 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/notes/${existingNote.id}`);
-                  }}
-                  className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
-                  title={`Catatan Terkait: "${existingNote.title}"`}
-                >
-                  <BookOpen className="w-2.5 h-2.5" /> Catatan
-                </span>
-              )}
             </div>
-            <span>
-              {formatRelativeTime(link.createdAt || link.lastOpenedAt)}
-            </span>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 pt-1">
-            <Button 
-              type="button"
-              variant="secondary" 
-              size="sm" 
-              className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium"
-              onClick={handleCardClick}
-            >
-              {t("links.overviewBtn")}
-            </Button>
-            <Button 
-              type="button"
-              size="sm" 
-              className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleExternalOpen();
-              }}
-            >
-              {t("links.openLinkBtn")} <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 pt-1">
+              <Button 
+                type="button"
+                variant="secondary" 
+                size="sm" 
+                className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
+                onClick={handleCardClick}
+              >
+                {t("links.overviewBtn")}
+              </Button>
+              <Button 
+                type="button"
+                size="sm" 
+                className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExternalOpen();
+                }}
+              >
+                {t("links.openLinkBtn")} <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

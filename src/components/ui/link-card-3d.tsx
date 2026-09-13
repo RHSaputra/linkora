@@ -104,17 +104,18 @@ export function LinkCard3D({ link, index, onUpdate, onEdit }: LinkCard3DProps) {
       initial={{ opacity: 0, y: 20, rotateX: -10 }}
       animate={{ opacity: 1, y: 0, rotateX: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="h-full flex flex-col"
     >
-      <Card3D className="h-full">
+      <Card3D className="h-full flex flex-col">
         <div 
           onClick={() => setIsViewOpen(true)}
-          className="group h-full flex flex-col glass-panel rounded-2xl overflow-hidden cursor-pointer relative border border-border/80 bg-card/90"
+          className="group h-full flex flex-col justify-between glass-panel rounded-2xl overflow-hidden cursor-pointer relative border border-border/80 bg-card/90"
           style={{ transform: "translateZ(30px)" }}
         >
           {/* Holographic Border Top */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
-          <div className="relative aspect-[2/1] w-full overflow-hidden bg-foreground/5 border-b border-foreground/5">
+          <div className="relative h-36 w-full overflow-hidden bg-foreground/5 border-b border-foreground/5 shrink-0">
             {link.thumbnail ? (
               <img
                 src={link.thumbnail}
@@ -164,116 +165,125 @@ export function LinkCard3D({ link, index, onUpdate, onEdit }: LinkCard3DProps) {
             </div>
           </div>
 
-          <div className="p-4 flex-1 flex flex-col z-20" style={{ transform: "translateZ(40px)" }}>
-            <div className="flex items-start gap-3 mb-2">
-              {link.favicon ? (
-                <img src={link.favicon} alt="" className="h-5 w-5 rounded bg-background p-0.5 mt-0.5 shadow-sm border border-border" />
-              ) : (
-                <div className="h-5 w-5 rounded bg-background flex items-center justify-center mt-0.5 shadow-sm border border-border">
-                  <ExternalLink className="h-3 w-3 text-foreground/50" />
-                </div>
-              )}
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
-                    {link.title}
-                  </h3>
-                  <div className="flex items-center gap-0.5 shrink-0 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      onClick={handleFavorite}
-                      aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}
-                      className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
-                    >
-                      <Star
-                        className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${link.isFavorite ? "fill-amber-400 text-amber-400" : ""}`}
-                      />
-                    </button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <button 
-                          type="button"
-                          aria-label="Menu opsi tautan"
-                          className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
-                        >
-                          <MoreVertical className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={handleCopy}>
-                          <Copy className="h-4 w-4 mr-2" /> {t("links.copyUrl")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                          if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
-                          onEdit(link);
-                        }}>
-                          <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
-                        </DropdownMenuItem>
+          <div className="p-4 flex-1 flex flex-col justify-between space-y-3 z-20" style={{ transform: "translateZ(40px)" }}>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3">
+                {link.favicon ? (
+                  <img src={link.favicon} alt="" className="h-5 w-5 rounded bg-background p-0.5 mt-0.5 shadow-sm border border-border shrink-0" />
+                ) : (
+                  <div className="h-5 w-5 rounded bg-background flex items-center justify-center mt-0.5 shadow-sm border border-border shrink-0">
+                    <ExternalLink className="h-3 w-3 text-foreground/50" />
+                  </div>
+                )}
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                      {link.title}
+                    </h3>
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={handleFavorite}
+                        aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}
+                        className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
+                      >
+                        <Star
+                          className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${link.isFavorite ? "fill-amber-400 text-amber-400" : ""}`}
+                        />
+                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            type="button"
+                            aria-label="Menu opsi tautan"
+                            className="p-1.5 sm:p-1 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
+                          >
+                            <MoreVertical className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={handleCopy}>
+                            <Copy className="h-4 w-4 mr-2" /> {t("links.copyUrl")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
+                            onEdit(link);
+                          }}>
+                            <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                          </DropdownMenuItem>
 
-                        {/* ── OPTION: JIKA SUDAH PERNAH DIJADIKAN CATATAN ── */}
-                        {existingNote ? (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => router.push(`/notes/${existingNote.id}`)}
-                              className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mr-2" />
-                              <span className="flex-1">{t("links.openSavedNote")}</span>
-                            </DropdownMenuItem>
+                          {/* ── OPTION: JIKA SUDAH PERNAH DIJADIKAN CATATAN ── */}
+                          {existingNote ? (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => router.push(`/notes/${existingNote.id}`)}
+                                className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mr-2" />
+                                <span className="flex-1">{t("links.openSavedNote")}</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                                  setIsNoteConverterOpen(true);
+                                }}
+                                className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5 mr-2" />
+                                <span>{t("links.createAnotherNote")}</span>
+                              </DropdownMenuItem>
+                            </>
+                          ) : (link.notes || link.aiSummary) ? (
                             <DropdownMenuItem
                               onClick={() => {
-                                if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                                if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
                                 setIsNoteConverterOpen(true);
                               }}
-                              className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                              className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
                             >
-                              <FileText className="w-3.5 h-3.5 mr-2" />
-                              <span>{t("links.createAnotherNote")}</span>
+                              <BookOpen className="w-4 h-4 mr-2" />
+                              <span>{t("links.saveAsPersonalNote")}</span>
                             </DropdownMenuItem>
-                          </>
-                        ) : (link.notes || link.aiSummary) ? (
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
-                              setIsNoteConverterOpen(true);
-                            }}
-                            className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
-                          >
-                            <BookOpen className="w-4 h-4 mr-2" />
-                            <span>{t("links.saveAsPersonalNote")}</span>
-                          </DropdownMenuItem>
-                        ) : null}
+                          ) : null}
 
-                        <DropdownMenuItem onClick={() => {
-                          if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
-                          setIsManageOpen(true);
-                        }}>
-                          {t("links.manageCollection")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                          <Trash className="h-4 w-4 mr-2" /> {t("common.delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem onClick={() => {
+                            if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
+                            setIsManageOpen(true);
+                          }}>
+                            {t("links.manageCollection")}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                            <Trash className="h-4 w-4 mr-2" /> {t("common.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Description / AI Summary Reserved Area */}
+              <div className="min-h-[2.25rem] flex items-center pt-0.5">
+                {link.description ? (
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                    {link.description}
+                  </p>
+                ) : link.aiSummary ? (
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                    {link.aiSummary}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground/50 line-clamp-1 italic">
+                    {new URL(link.url).hostname.replace('www.', '') ? `Tautan dari ${new URL(link.url).hostname.replace('www.', '')}` : "Informasi tautan tersimpan"}
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Summary Section */}
-            {link.aiSummary ? (
-              <p className="mt-2 mb-3 text-xs text-muted-foreground line-clamp-2 pl-8">
-                {link.aiSummary}
-              </p>
-            ) : link.description ? (
-              <p className="mt-1 text-xs text-muted-foreground line-clamp-2 pl-8">
-                {link.description}
-              </p>
-            ) : null}
-
-            <div className="mt-auto pt-4 flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+            {/* Anchored Footer Metadata */}
+            <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground/80 uppercase tracking-wider font-semibold">
               <div className="flex items-center gap-2 truncate max-w-[170px]">
                 <span className="truncate">{new URL(link.url).hostname.replace('www.', '')}</span>
                 {existingNote && (
