@@ -205,54 +205,72 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
 
-      {/* Premium Glassmorphic Toast Overlay */}
-      <div className="fixed bottom-6 left-6 z-[999] flex flex-col gap-4 max-w-sm w-full pointer-events-none">
+      {/* Linkorian Signature Realtime Reminder Overlay */}
+      <div className="fixed bottom-6 left-6 z-[999] flex flex-col gap-3 max-w-sm w-full pointer-events-none select-none">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
               key={toast.toastId}
-              initial={{ opacity: 0, x: -50, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -20, scale: 0.9 }}
-              className="pointer-events-auto w-full glass-panel border border-primary/20 bg-background/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden p-4 flex gap-3 relative"
+              initial={{ opacity: 0, x: -50, scale: 0.9, filter: "blur(4px)" }}
+              animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: -25, scale: 0.92, filter: "blur(4px)", transition: { duration: 0.18 } }}
+              transition={{ type: "spring", stiffness: 380, damping: 26 }}
+              className="pointer-events-auto w-full relative overflow-hidden bg-card/90 dark:bg-card/95 backdrop-blur-2xl border border-primary/35 shadow-[0_16px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] ring-1 ring-white/10 dark:ring-white/15 rounded-2xl p-4 flex gap-3.5"
             >
-              <div className="p-2 bg-primary/20 rounded-xl text-primary h-9 w-9 flex items-center justify-center shrink-0">
-                <Bell className="h-5 w-5 animate-bounce" />
+              {/* Top Beam Light Accent */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-400 via-primary to-cyan-400 opacity-90" />
+
+              {/* Ambient Glow Orb */}
+              <div className="absolute -top-10 -left-10 w-24 h-24 rounded-full bg-amber-500/20 blur-2xl pointer-events-none" />
+
+              {/* Bell Icon Badge */}
+              <div className="p-2.5 bg-primary/10 dark:bg-primary/15 border border-primary/30 rounded-xl text-primary h-10 w-10 flex items-center justify-center shrink-0 shadow-lg shadow-primary/10 z-10">
+                <Bell className="h-5 w-5 animate-bounce drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{toast.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+
+              {/* Content & Actions */}
+              <div className="flex-1 min-w-0 z-10">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-foreground font-heading tracking-tight truncate">{toast.title}</p>
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase tracking-widest bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                    Pengingat
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed font-medium">
                   {toast.description}
                 </p>
-                <div className="flex gap-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3">
                   {toast.type === "link" && toast.url && (
                     <a
                       href={toast.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground text-[10px] font-bold tracking-wide flex items-center gap-1 transition-all"
+                      className="px-3 py-1.5 rounded-xl bg-primary hover:bg-primary-hover active:scale-95 text-primary-foreground text-[11px] font-semibold flex items-center gap-1.5 shadow-sm transition-all"
                     >
                       Buka Tautan <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                   <button
                     onClick={() => dismissNotification(toast.id)}
-                    className="px-3 py-1.5 rounded-lg bg-foreground/10 hover:bg-foreground/15 text-foreground text-[10px] font-bold flex items-center gap-1 transition-all"
+                    className="px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 active:scale-95 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
                   >
                     <Check className="h-3 w-3" /> Selesai
                   </button>
                   <button
                     onClick={() => snoozeNotification(toast.id, 15)}
-                    className="px-3 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground text-[10px] font-medium flex items-center gap-1 transition-all"
+                    className="px-2.5 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
                     title="Tunda 15 Menit"
                   >
                     <Clock className="h-3 w-3" /> Tunda 15m
                   </button>
                 </div>
               </div>
+
+              {/* Close Button */}
               <button
                 onClick={() => removeToast(toast.toastId)}
-                className="absolute top-3 right-3 p-1 hover:bg-foreground/10 text-muted-foreground hover:text-foreground rounded-full transition-colors"
+                aria-label="Tutup Pengingat"
+                className="absolute top-3.5 right-3.5 p-1 rounded-lg text-muted-foreground/70 hover:text-foreground hover:bg-primary/15 hover:border hover:border-primary/20 active:scale-90 transition-all duration-150 cursor-pointer z-20"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
