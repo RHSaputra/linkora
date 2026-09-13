@@ -164,10 +164,6 @@ export function CollectionsPage({
                     : {}
                 }
               >
-                <div
-                  className="w-3 h-3 rounded-full shrink-0 flex items-center justify-center"
-                  style={{ backgroundColor: col.color }}
-                />
                 <span>{col.name}</span>
                 <span className="text-[10px] opacity-75 font-mono">({col.linkCount})</span>
               </button>
@@ -254,12 +250,6 @@ export function CollectionsPage({
                       {t("collections.linkCount", { count: col.linkCount })}
                     </p>
                   </div>
-
-                  {/* Glowing Color Pip Pill */}
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs transition-transform group-hover:scale-125"
-                    style={{ backgroundColor: col.color }}
-                  />
                 </motion.button>
               );
             })
@@ -469,10 +459,6 @@ export function CollectionsPage({
                     {locale === "en" ? "0 Saved Links" : "0 Tautan Tersimpan"}
                   </p>
                 </div>
-                <span
-                  className="w-3 h-3 rounded-full shrink-0 animate-pulse shadow-xs"
-                  style={{ backgroundColor: newColor }}
-                />
               </div>
             </div>
 
