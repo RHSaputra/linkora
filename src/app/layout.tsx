@@ -26,8 +26,20 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Linkora — Ruang Kerja AI",
-  description: "Platform cerdas untuk menyimpan, mengelola, dan memahami tautan Anda.",
+  title: {
+    default: "Linkora — Ruang Kerja AI & Bookmark Hub Cerdas",
+    template: "%s | Linkora",
+  },
+  description: "Platform cerdas untuk menyimpan, mengelola, dan memahami tautan & catatan Anda dengan kecerdasan AI.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
