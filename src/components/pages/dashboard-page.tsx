@@ -31,6 +31,8 @@ import { LinkoraText } from "@/components/ui/linkora-text";
 import { useSession } from "next-auth/react";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { useViewMode } from "@/hooks/use-view-mode";
+import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
 
 interface DashboardPageProps {
   refreshKey: number;
@@ -46,6 +48,7 @@ export function DashboardPage({
   const { data: session } = useSession();
   const { isAuthenticated, requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
+  const [viewMode, setViewMode] = useViewMode();
   const userName = session?.user?.name || "Linkorian";
 
   const { stats, loading, refresh } = useDashboard();
@@ -417,12 +420,13 @@ export function DashboardPage({
             </div>
 
             {/* Grid of 3D Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+            <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
               {s.favoriteLinks.map((link, i) => (
                 <LinkCard3D
                   key={link.id}
                   link={link}
                   index={i}
+                  viewMode={viewMode}
                   onUpdate={triggerRefresh}
                   onEdit={openEditLink}
                 />
@@ -441,37 +445,41 @@ export function DashboardPage({
           >
             {/* Dynamic Interactive Filter Pill Bar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-              <div className="flex items-center p-1 rounded-xl bg-background/80 border border-border/80 shadow-inner overflow-x-auto max-w-full scrollbar-none">
-                {(
-                  [
-                    { id: "added", label: t("dashboard.filterAdded") },
-                    { id: "edited", label: t("dashboard.filterEdited") },
-                    { id: "opened", label: t("dashboard.filterOpened") }
-                  ] as const
-                ).map((tab) => {
-                  const isActive = recentFilter === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setRecentFilter(tab.id)}
-                      className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation select-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                        isActive
-                          ? "text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                      }`}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeFilterPill"
-                          className="absolute inset-0 bg-primary rounded-lg shadow-sm"
-                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        />
-                      )}
-                      <span className="relative z-10">{tab.label}</span>
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
+                <div className="flex items-center p-1 rounded-xl bg-background/80 border border-border/80 shadow-inner overflow-x-auto max-w-full scrollbar-none">
+                  {(
+                    [
+                      { id: "added", label: t("dashboard.filterAdded") },
+                      { id: "edited", label: t("dashboard.filterEdited") },
+                      { id: "opened", label: t("dashboard.filterOpened") }
+                    ] as const
+                  ).map((tab) => {
+                    const isActive = recentFilter === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setRecentFilter(tab.id)}
+                        className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation select-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          isActive
+                            ? "text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeFilterPill"
+                            className="absolute inset-0 bg-primary rounded-lg shadow-sm"
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                          />
+                        )}
+                        <span className="relative z-10">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
               </div>
 
               <Link
@@ -486,18 +494,19 @@ export function DashboardPage({
 
             {/* Links Content Grid */}
             {loadingRecent ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+              <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-56 bg-card/60 animate-pulse rounded-2xl border border-border/40" />
+                  <div key={i} className={viewMode === "compact" ? "h-14 bg-card/60 animate-pulse rounded-xl border border-border/40" : "h-56 bg-card/60 animate-pulse rounded-2xl border border-border/40"} />
                 ))}
               </div>
             ) : filteredRecentLinks.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+              <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
                 {filteredRecentLinks.map((link, i) => (
                   <LinkCard3D
                     key={link.id}
                     link={link}
                     index={i}
+                    viewMode={viewMode}
                     onUpdate={triggerRefresh}
                     onEdit={openEditLink}
                   />

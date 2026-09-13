@@ -33,15 +33,25 @@ import { LikoNoteConverterModal } from "@/components/links/liko-note-converter-m
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
+import { LinkViewMode } from "@/hooks/use-view-mode";
+
 interface LinkCardProps {
   link: SerializedLink;
   onUpdate?: () => void;
   onEdit?: (link: SerializedLink) => void;
   index?: number;
   collectionId?: string;
+  viewMode?: LinkViewMode;
 }
 
-export function LinkCard({ link, onUpdate, onEdit, index = 0, collectionId }: LinkCardProps) {
+export function LinkCard({
+  link,
+  onUpdate,
+  onEdit,
+  index = 0,
+  collectionId,
+  viewMode = "detail",
+}: LinkCardProps) {
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
   const { notes } = useNotes();
@@ -130,6 +140,210 @@ export function LinkCard({ link, onUpdate, onEdit, index = 0, collectionId }: Li
   };
 
   const hasActiveReminder = Boolean(link.reminderAt && new Date(link.reminderAt) > new Date());
+
+  if (viewMode === "compact") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: index * 0.03 }}
+        className="group relative w-full"
+      >
+        <div
+          onClick={handleCardClick}
+          className="glass-panel rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/40 border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
+        >
+          {/* Left: Favicon / Thumbnail + Details */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            {/* Favicon or Icon */}
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-lg bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80">
+              {favicon ? (
+                <Image src={favicon} alt="" width={18} height={18} loading="lazy" decoding="async" unoptimized />
+              ) : (
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </div>
+
+            {/* Title, Category & Meta */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
+                <h3 className="font-bold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                  {link.title}
+                </h3>
+                <span
+                  className="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
+                  style={{ color: categoryColor }}
+                >
+                  {link.category}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-muted-foreground font-medium mt-0.5 truncate">
+                <span className="truncate font-semibold text-foreground/70">
+                  {domain || link.category}
+                </span>
+                <span>•</span>
+                <span className="shrink-0">{formatRelativeTime(link.createdAt || link.lastOpenedAt)}</span>
+                {existingNote && (
+                  <>
+                    <span className="hidden sm:inline">•</span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/notes/${existingNote.id}`);
+                      }}
+                      className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0"
+                    >
+                      <BookOpen className="w-2.5 h-2.5" /> Catatan
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Quick Action Controls */}
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <QuickReminderPopover
+              targetId={link.id}
+              type="link"
+              title={link.title}
+              url={link.url}
+              currentReminderAt={link.reminderAt}
+              onReminderChange={() => onUpdate?.()}
+              showLabel={hasActiveReminder}
+              className={cn(
+                "h-7 px-2 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
+                hasActiveReminder
+                  ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
+                  : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
+              )}
+            />
+
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+              <Star className={cn("h-3.5 w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg text-primary hover:bg-primary/10 touch-manipulation cursor-pointer hidden sm:inline-flex"
+              onClick={handleExternalOpen}
+              title={t("links.openLinkBtn")}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={() => {
+                  if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
+                  onEdit?.(link);
+                }}>{t("common.edit")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
+                  setIsManageOpen(true);
+                }}>{t("links.manageCollection")}</DropdownMenuItem>
+                
+                {existingNote ? (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => router.push(`/notes/${existingNote.id}`)}
+                      className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="flex-1">{t("links.openSavedNote")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                        setIsNoteConverterOpen(true);
+                      }}
+                      className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>{t("links.createAnotherNote")}</span>
+                    </DropdownMenuItem>
+                  </>
+                ) : (link.notes || link.aiSummary) ? (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
+                      setIsNoteConverterOpen(true);
+                    }}
+                    className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{t("links.saveAsPersonalNote")}</span>
+                  </DropdownMenuItem>
+                ) : null}
+
+                {collectionId && (
+                  <DropdownMenuItem onClick={handleRemoveFromCollection}>
+                    {t("links.removeFromCollection")}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive">{t("common.delete")}</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Modals & Dialogs */}
+        {isViewOpen && (
+          <ViewLinkDialog
+            link={link}
+            open={isViewOpen}
+            onOpenChange={setIsViewOpen}
+            onOpenExternal={handleExternalOpen}
+          />
+        )}
+        {isManageOpen && (
+          <ManageCollectionsDialog
+            link={link}
+            open={isManageOpen}
+            onOpenChange={setIsManageOpen}
+            onUpdate={onUpdate || (() => {})}
+          />
+        )}
+        {isDeleteDialogOpen && (
+          <ConfirmDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            title={t("links.deleteConfirmTitle")}
+            description={t("links.deleteConfirmDesc")}
+            onConfirm={executeDelete}
+          />
+        )}
+        
+        {isRemoveFromCollectionOpen && (
+          <ConfirmDialog
+            open={isRemoveFromCollectionOpen}
+            onOpenChange={setIsRemoveFromCollectionOpen}
+            title={t("links.removeFromCollectionTitle")}
+            description={t("links.removeFromCollectionDesc")}
+            onConfirm={executeRemoveFromCollection}
+          />
+        )}
+
+        <LikoNoteConverterModal
+          isOpen={isNoteConverterOpen}
+          link={link}
+          onClose={() => setIsNoteConverterOpen(false)}
+          onSuccess={() => {
+            setIsNoteConverterOpen(false);
+            onUpdate?.();
+          }}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

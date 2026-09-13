@@ -10,6 +10,9 @@ import { SerializedLink } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
+import { useViewMode } from "@/hooks/use-view-mode";
+import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
+
 interface LinksPageProps {
   refreshKey: number;
   triggerRefresh: () => void;
@@ -18,6 +21,7 @@ interface LinksPageProps {
 
 export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPageProps) {
   const { t } = useTranslation();
+  const [viewMode, setViewMode] = useViewMode();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [category, setCategory] = useState("all");
@@ -126,13 +130,18 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
       >
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{t("links.allLinksTitle")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {displayTotal != null
-            ? t("links.countSaved", { count: displayTotal })
-            : `${displayLinks.length} ${t("dashboard.totalLinks")}`}
-        </p>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{t("links.allLinksTitle")}</h1>
+          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+            {displayTotal != null
+              ? t("links.countSaved", { count: displayTotal })
+              : `${displayLinks.length} ${t("dashboard.totalLinks")}`}
+          </p>
+        </div>
+
+        <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
       </motion.div>
 
       <SearchBar
@@ -166,19 +175,20 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
       </AnimatePresence>
 
       {isLoadingResults ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />
+            <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-xl animate-pulse" : "h-40 bg-muted rounded-xl animate-pulse"} />
           ))}
         </div>
       ) : displayLinks.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
             {displayLinks.map((link, i) => (
               <LinkCard
                 key={link.id}
                 link={link}
                 index={i}
+                viewMode={viewMode}
                 onUpdate={triggerRefresh}
                 onEdit={openEditLink}
               />

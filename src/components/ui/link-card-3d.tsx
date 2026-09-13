@@ -24,14 +24,17 @@ import { LikoNoteConverterModal } from "@/components/links/liko-note-converter-m
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
+import { LinkViewMode } from "@/hooks/use-view-mode";
+
 interface LinkCard3DProps {
   link: SerializedLink;
   index: number;
   onUpdate: () => void;
   onEdit: (link: SerializedLink) => void;
+  viewMode?: LinkViewMode;
 }
 
-export function LinkCard3D({ link, index, onUpdate, onEdit }: LinkCard3DProps) {
+export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" }: LinkCard3DProps) {
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
   const { notes } = useNotes();
@@ -98,6 +101,202 @@ export function LinkCard3D({ link, index, onUpdate, onEdit }: LinkCard3DProps) {
   };
 
   const hasActiveReminder = Boolean(link.reminderAt && new Date(link.reminderAt) > new Date());
+
+  if (viewMode === "compact") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: index * 0.03 }}
+        className="group relative w-full"
+      >
+        <div
+          onClick={() => setIsViewOpen(true)}
+          className="glass-panel rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/40 border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
+        >
+          {/* Left: Favicon / Icon + Details */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-lg bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80">
+              {link.favicon ? (
+                <img src={link.favicon} alt="" className="h-4 w-4 rounded object-contain" />
+              ) : (
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
+                <h3 className="font-bold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                  {link.title}
+                </h3>
+                <span
+                  className="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
+                  style={{ color: catColor }}
+                >
+                  {link.category}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-muted-foreground font-medium mt-0.5 truncate">
+                <span className="truncate font-semibold text-foreground/70">
+                  {new URL(link.url).hostname.replace('www.', '') || link.category}
+                </span>
+                <span>•</span>
+                <span className="shrink-0">{formatRelativeTime(link.createdAt || link.lastOpenedAt)}</span>
+                {existingNote && (
+                  <>
+                    <span className="hidden sm:inline">•</span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/notes/${existingNote.id}`);
+                      }}
+                      className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0"
+                    >
+                      <BookOpen className="w-2.5 h-2.5" /> Catatan
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <QuickReminderPopover
+              targetId={link.id}
+              type="link"
+              title={link.title}
+              url={link.url}
+              currentReminderAt={link.reminderAt}
+              onReminderChange={() => onUpdate()}
+              showLabel={hasActiveReminder}
+              className={cn(
+                "h-7 px-2 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
+                hasActiveReminder
+                  ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
+                  : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
+              )}
+            />
+
+            <button
+              type="button"
+              onClick={handleFavorite}
+              aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}
+              className="p-1.5 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
+            >
+              <Star className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${link.isFavorite ? "fill-amber-400 text-amber-400" : ""}`} />
+            </button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button 
+                  type="button"
+                  aria-label="Menu opsi tautan"
+                  className="p-1.5 rounded-lg hover:bg-foreground/10 active:scale-95 text-muted-foreground transition-all cursor-pointer touch-manipulation select-none"
+                >
+                  <MoreVertical className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={handleCopy}>
+                  <Copy className="h-4 w-4 mr-2" /> {t("links.copyUrl")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
+                  onEdit(link);
+                }}>
+                  <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                </DropdownMenuItem>
+
+                {existingNote ? (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => router.push(`/notes/${existingNote.id}`)}
+                      className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mr-2" />
+                      <span className="flex-1">{t("links.openSavedNote")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                        setIsNoteConverterOpen(true);
+                      }}
+                      className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5 mr-2" />
+                      <span>{t("links.createAnotherNote")}</span>
+                    </DropdownMenuItem>
+                  </>
+                ) : (link.notes || link.aiSummary) ? (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
+                      setIsNoteConverterOpen(true);
+                    }}
+                    className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    <span>{t("links.saveAsPersonalNote")}</span>
+                  </DropdownMenuItem>
+                ) : null}
+
+                <DropdownMenuItem onClick={() => {
+                  if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
+                  setIsManageOpen(true);
+                }}>
+                  {t("links.manageCollection")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                  <Trash className="h-4 w-4 mr-2" /> {t("common.delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {isViewOpen && (
+          <ViewLinkDialog
+            link={link}
+            open={isViewOpen}
+            onOpenChange={setIsViewOpen}
+            onOpenExternal={handleExternalOpen}
+          />
+        )}
+        
+        {isManageOpen && (
+          <ManageCollectionsDialog
+            link={link}
+            open={isManageOpen}
+            onOpenChange={setIsManageOpen}
+            onUpdate={onUpdate}
+          />
+        )}
+        
+        {isDeleteDialogOpen && (
+          <ConfirmDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            title={t("links.deleteConfirmTitle")}
+            description={t("links.deleteConfirmDesc")}
+            onConfirm={executeDelete}
+          />
+        )}
+
+        <LikoNoteConverterModal
+          isOpen={isNoteConverterOpen}
+          link={link}
+          onClose={() => setIsNoteConverterOpen(false)}
+          onSuccess={() => {
+            setIsNoteConverterOpen(false);
+            onUpdate();
+          }}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

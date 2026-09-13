@@ -22,6 +22,8 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AddLinksToCollectionDialog } from "@/components/links/add-links-to-collection-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { useViewMode } from "@/hooks/use-view-mode";
+import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
 import { cn } from "@/lib/utils";
 
 interface CollectionsPageProps {
@@ -37,6 +39,7 @@ export function CollectionsPage({
 }: CollectionsPageProps) {
   const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
+  const [viewMode, setViewMode] = useViewMode();
   const { collections, loading, refresh } = useCollections();
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -219,6 +222,7 @@ export function CollectionsPage({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
                   <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)} className="rounded-xl text-xs h-8 cursor-pointer">
                     {t("collections.manageLinks")}
                   </Button>
@@ -229,9 +233,9 @@ export function CollectionsPage({
               </div>
 
               {loadingLinks ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
                   {[...Array(2)].map((_, i) => (
-                    <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+                    <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-xl animate-pulse" : "h-48 bg-muted rounded-xl animate-pulse"} />
                   ))}
                 </div>
               ) : collectionLinks.length === 0 ? (
@@ -250,12 +254,13 @@ export function CollectionsPage({
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
                   {collectionLinks.map((link, i) => (
                     <LinkCard
                       key={link.id}
                       link={link}
                       index={i}
+                      viewMode={viewMode}
                       collectionId={selected.id}
                       onUpdate={() => {
                         triggerRefresh();
