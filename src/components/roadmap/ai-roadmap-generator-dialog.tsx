@@ -11,9 +11,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Bot, Loader2, Lightbulb } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 import { toast } from "@/components/ui/custom-toast";
 
 interface AIRoadmapGeneratorDialogProps {
@@ -22,13 +22,6 @@ interface AIRoadmapGeneratorDialogProps {
   existingRoadmapId?: string;
   onGenerated?: () => void;
 }
-
-const QUICK_SUGGESTIONS = [
-  "Deploy Next.js 15 ke Vercel & Supabase",
-  "Alur Belajar Fullstack Web Developer",
-  "Persiapan Launching Produk / Startup",
-  "Rencana Belajar UI/UX Design System",
-];
 
 export function AIRoadmapGeneratorDialog({
   open,
@@ -78,93 +71,97 @@ export function AIRoadmapGeneratorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-panel border-primary/30 sm:max-w-lg bg-card/95 p-6 space-y-4">
-        <DialogHeader className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-primary to-accent text-primary-foreground shadow-md">
-              <Bot className="w-5 h-5" />
+      <DialogContent className="glass-panel border-primary/30 sm:max-w-2xl bg-card/95 p-6 sm:p-8 space-y-6">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-md bg-background shrink-0">
+              <img
+                src="/maskot.jpeg"
+                alt="Liko AI"
+                className="w-full h-full object-cover object-top"
+              />
             </div>
-            <DialogTitle className="text-xl font-heading font-bold text-foreground">
-              Rancang Alur dengan Liko AI
-            </DialogTitle>
+            <div>
+              <DialogTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground flex items-center gap-2">
+                <span>Rancang Alur Kerja dengan Liko AI</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-0.5">
+                Liko AI akan merancang urutan langkah visual, alur terstruktur, dan strategi pengerjaan untuk Anda.
+              </DialogDescription>
+            </div>
           </div>
-          <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            Ketik topik atau tujuan Anda. Liko AI akan secara cerdas menyusun langkah-langkah visual, petunjuk, dan koneksi alur kerja untuk Anda.
-          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleGenerate} className="space-y-4">
+        <form onSubmit={handleGenerate} className="space-y-5">
+          {/* Main Large Chat Form Input */}
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-foreground">
-              Topik / Tujuan Alur <span className="text-destructive">*</span>
+            <Label className="text-xs sm:text-sm font-semibold text-foreground flex items-center justify-between">
+              <span>Topik & Instruksi Alur <span className="text-destructive">*</span></span>
+              <span className="text-[11px] font-normal text-muted-foreground">Tulis secara detail & jelas</span>
             </Label>
             <div className="relative">
-              <Input
+              <Textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Contoh: Belajar Docker & Kubernetes dari Nol, Deploy Web App..."
+                placeholder="Tuliskan topik atau alur yang ingin Anda buat di sini... Contoh: Belajar Docker & Kubernetes dari dasar hingga deployment production web app..."
                 required
                 disabled={isGenerating}
-                className="bg-background/80 text-sm pr-10"
+                rows={5}
+                className="bg-background/90 text-sm sm:text-base p-4 rounded-xl border-border/80 min-h-[140px] leading-relaxed resize-y focus-visible:ring-primary/40"
               />
-              <Bot className="w-4 h-4 absolute right-3 top-3 text-muted-foreground pointer-events-none" />
             </div>
           </div>
 
-          {/* Quick Suggestions Chips */}
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-              <Lightbulb className="w-3 h-3 text-amber-500" /> Contoh Topik Populer:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_SUGGESTIONS.map((sug, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setTopic(sug)}
-                  disabled={isGenerating}
-                  className="text-[11px] px-2.5 py-1 rounded-lg border border-border/60 hover:border-primary/40 bg-muted/50 hover:bg-muted text-foreground transition-all cursor-pointer truncate max-w-full text-left"
-                >
-                  {sug}
-                </button>
-              ))}
+          {/* Instructional Sentence Guidance Box (Menggantikan Tombol Contoh) */}
+          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>Instruksi Pengisian:</span>
             </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tuliskan tujuan belajar, alur pengerjaan proyek, atau langkah kerja yang ingin Anda susun pada kolom di atas. Liko AI akan secara otomatis menganalisis dan menyusunnya menjadi kanvas roadmap visual yang terstruktur, rapi, dan tidak saling menumpuk.
+            </p>
           </div>
 
           {/* AI Generating Indicator Banner */}
           {isGenerating && (
             <div className="p-4 rounded-xl border border-primary/20 bg-primary/10 flex items-center gap-3 animate-pulse">
-              <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/30 shrink-0">
+                <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
+              </div>
               <div className="text-xs">
                 <p className="font-semibold text-foreground">Liko AI sedang merancang alur Anda...</p>
-                <p className="text-muted-foreground text-[11px]">Menyusun langkah-langkah, alur koneksi, dan layout kanvas.</p>
+                <p className="text-muted-foreground text-[11px]">Menyusun langkah-langkah, alur koneksi, dan tata letak kanvas otomatis.</p>
               </div>
             </div>
           )}
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-3 gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isGenerating}
+              className="h-10 px-4 text-xs font-semibold"
             >
               Batal
             </Button>
             <Button
               type="submit"
               disabled={!topic.trim() || isGenerating}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 cursor-pointer shadow-md"
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold h-10 px-6 gap-2.5 cursor-pointer shadow-md text-xs sm:text-sm"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Merancang...</span>
+                  <span>Merancang Alur...</span>
                 </>
               ) : (
                 <>
-                  <Bot className="w-4 h-4" />
-                  <span>Hasilkan Alur</span>
+                  <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">
+                    <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
+                  </div>
+                  <span>Hasilkan Alur Kerja</span>
                 </>
               )}
             </Button>

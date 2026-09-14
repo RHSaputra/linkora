@@ -311,7 +311,9 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             variant="outline"
             className="border-primary/40 text-primary hover:bg-primary/10 font-semibold gap-1.5 text-xs h-9 cursor-pointer"
           >
-            <Bot className="w-3.5 h-3.5" />
+            <div className="w-4 h-4 rounded-full overflow-hidden border border-primary/30 shrink-0">
+              <img src="/maskot.jpeg" alt="Liko AI" className="w-full h-full object-cover object-top" />
+            </div>
             <span>Saran Langkah AI</span>
           </Button>
 

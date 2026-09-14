@@ -6,7 +6,15 @@ import { rateLimit } from "@/lib/rate-limit";
 import { serializeRoadmap } from "@/lib/types";
 import { calculateAutoLayout } from "@/lib/roadmap-layout";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+function extractJsonString(str: string): string {
+  const clean = str.replace(/```json/gi, "").replace(/```/g, "").trim();
+  const firstOpen = clean.indexOf("{");
+  const lastClose = clean.lastIndexOf("}");
+  if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+    return clean.substring(firstOpen, lastClose + 1);
+  }
+  return clean;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,6 +23,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = session.user.id;
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY environment variable is not configured.");
+      return NextResponse.json({ error: "GEMINI_API_KEY belum dikonfigurasi pada server." }, { status: 500 });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const limitCheck = await rateLimit(`ai_roadmap_${userId}`, { limit: 10, windowMs: 60 * 1000 });
     if (!limitCheck.success) {
@@ -73,19 +88,35 @@ ATURAN PENTING:
 3. Hubungkan langkah-langkah secara logis berurutan (0 -> 1 -> 2 -> 3 dst) atau bercabang jika ada tugas paralel.
 4. Jika ada link bookmark user yang relevan, gunakan type "LINK" dan sertakan linkId yang tepat.`;
 
-    const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: [
-        { role: "user", parts: [{ text: `${systemPrompt}\n\nTopik user: "${topic.trim()}"` }] },
-      ],
-      config: {
-        temperature: 0.3,
-      },
-    });
+    const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
+    let rawText = "";
+    let lastError: any = null;
 
-    const rawText = response.text || "";
-    const cleanJsonText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    for (const modelName of MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
+            { role: "user", parts: [{ text: `${systemPrompt}\n\nTopik user: "${topic.trim()}"` }] },
+          ],
+          config: {
+            temperature: 0.3,
+          },
+        });
+        rawText = response.text || "";
+        if (rawText.trim()) break;
+      } catch (err: any) {
+        console.warn(`Roadmap AI model ${modelName} failed, trying next fallback:`, err?.message || err);
+        lastError = err;
+      }
+    }
+
+    if (!rawText.trim()) {
+      console.error("All Gemini models failed for roadmap generation:", lastError);
+      return NextResponse.json({ error: "Liko AI gagal terhubung dengan server AI. Silakan coba lagi." }, { status: 500 });
+    }
+
+    const cleanJsonText = extractJsonString(rawText);
 
     let aiResult: any;
     try {

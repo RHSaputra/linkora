@@ -181,9 +181,11 @@ export function RoadmapsPage() {
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Button
             onClick={() => setAiDialogOpen(true)}
-            className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 shadow-sm cursor-pointer"
+            className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 shadow-sm cursor-pointer text-xs sm:text-sm"
           >
-            <Bot className="w-4 h-4" />
+            <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">
+              <img src="/maskot.jpeg" alt="Liko AI" className="w-full h-full object-cover object-top" />
+            </div>
             <span>Rancang dengan Liko AI</span>
           </Button>
 
@@ -236,9 +238,11 @@ export function RoadmapsPage() {
           <div className="flex items-center gap-2 pt-2">
             <Button
               onClick={() => setAiDialogOpen(true)}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 cursor-pointer shadow-md"
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 cursor-pointer shadow-md text-xs sm:text-sm"
             >
-              <Bot className="w-4 h-4" />
+              <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">
+                <img src="/maskot.jpeg" alt="Liko AI" className="w-full h-full object-cover object-top" />
+              </div>
               <span>Rancang dengan Liko AI</span>
             </Button>
             <Button
