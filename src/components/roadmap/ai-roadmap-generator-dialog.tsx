@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -143,43 +144,13 @@ export function AIRoadmapGeneratorDialog({
             </p>
           </div>
 
-          {/* AI Generating Indicator Banner with Animated Liko Mascot Video */}
-          {isGenerating && (
-            <div className="p-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card to-card flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left shadow-lg">
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-primary/40 shadow-md bg-background shrink-0 aspect-square">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster="/maskot.jpeg"
-                  src="/vidio-liko.webm"
-                  className="w-full h-full object-cover"
-                >
-                  <source src="/vidio-liko.webm" type="video/webm" />
-                </video>
-              </div>
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <p className="font-bold text-foreground text-sm sm:text-base flex items-center justify-center sm:justify-start gap-2">
-                  <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
-                  <span>Liko AI Sedang Bekerja...</span>
-                </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Liko sedang menganalisis topik, menyusun urutan langkah visual, dan merapikan tata letak kanvas terstruktur untuk Anda.
-                </p>
-              </div>
-            </div>
-          )}
-
           <DialogFooter className="pt-3 gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isGenerating}
-              className="h-10 px-4 text-xs font-semibold"
+              className="h-10 px-4 text-xs font-semibold cursor-pointer"
             >
               Batal
             </Button>
@@ -193,7 +164,7 @@ export function AIRoadmapGeneratorDialog({
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
                     <span>Merancang Alur...</span>
                   </>
                 ) : (
@@ -203,6 +174,68 @@ export function AIRoadmapGeneratorDialog({
             </div>
           </DialogFooter>
         </form>
+
+        {/* AI Generating Mascot Overlay Popup */}
+        <AnimatePresence>
+          {isGenerating && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.85, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.85, opacity: 0, y: 20 }}
+                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                className="relative w-full max-w-sm rounded-3xl p-6 sm:p-8 bg-card/95 border border-primary/30 shadow-2xl shadow-primary/25 flex flex-col items-center text-center overflow-hidden"
+              >
+                {/* Ambient background blur circles */}
+                <div className="absolute -top-12 -right-12 w-40 h-40 bg-primary/25 blur-3xl rounded-full pointer-events-none" />
+                <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-cyan-500/25 blur-3xl rounded-full pointer-events-none" />
+
+                {/* Animated Liko Mascot Video Stage */}
+                <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-2 border-primary/40 shadow-xl bg-background shrink-0 aspect-square mb-5 z-10">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster="/maskot.jpeg"
+                    src="/vidio-liko.webm"
+                    className="w-full h-full object-cover"
+                  >
+                    <source src="/vidio-liko.webm" type="video/webm" />
+                  </video>
+                </div>
+
+                {/* Status and Text */}
+                <div className="space-y-2 relative z-10">
+                  <p className="font-bold text-foreground text-base sm:text-lg flex items-center justify-center gap-2 font-heading">
+                    <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
+                    <span>Liko AI Sedang Bekerja...</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
+                    Liko sedang menganalisis topik, menyusun urutan langkah visual, dan merapikan tata letak kanvas terstruktur untuk Anda.
+                  </p>
+                </div>
+
+                {/* Indeterminate Progress Bar */}
+                <div className="w-full bg-muted/60 rounded-full h-1.5 mt-6 overflow-hidden relative">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-transparent via-primary to-transparent rounded-full transform-gpu"
+                    animate={{ x: ["-100%", "200%"] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ width: "50%" }}
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
