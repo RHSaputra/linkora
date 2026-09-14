@@ -15,7 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { LinkCard } from "@/components/links/link-card";
-import { useCollections, deleteCollection } from "@/hooks/use-data";
+import { useCollections, deleteCollection, invalidateAndRefresh } from "@/hooks/use-data";
 import { SerializedLink } from "@/lib/types";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
@@ -82,7 +82,7 @@ export function CollectionsPage({
       body: JSON.stringify({ name, color, icon }),
     });
     if (res.ok) {
-      refresh();
+      invalidateAndRefresh(["collections", "dashboard", "links"]);
       triggerRefresh();
     }
   };

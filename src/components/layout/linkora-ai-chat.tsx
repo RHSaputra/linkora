@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Database, Link2, Loader2, CheckCircle, FileText, BookOpen } from "lucide-react";
-import { invalidateCache, dispatchRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
@@ -142,11 +142,8 @@ export function LinkoraAIChat() {
           window.dispatchEvent(new CustomEvent("liko-link-added", { detail: { link: savedData } }));
         }
 
-        // Refresh data
-        invalidateCache("/api/links");
-        invalidateCache("/api/dashboard");
-        invalidateCache("/api/collections");
-        dispatchRefresh(["links", "dashboard", "collections"]);
+        // Refresh data across links, dashboard, collections, tags
+        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
       } else {
         setMessages((prev) =>
           prev.map((m) => (m.id === msgId ? { ...m, captureState: "error" as QuickCaptureState } : m))
@@ -176,7 +173,7 @@ export function LinkoraAIChat() {
       }
 
       setSavedNoteMsgIds((prev) => new Set([...prev, msgId]));
-      dispatchRefresh(["notes"]);
+      invalidateAndRefresh(["notes", "noteFolders"]);
       toast.success(locale === "en" ? "Saved to Personal Notes!" : "Tersimpan di Personal Notes!", "Liko AI");
     } catch {
       toast.error(locale === "en" ? "Failed to save note to server." : "Gagal menyimpan catatan ke server.", locale === "en" ? "Failed" : "Gagal");

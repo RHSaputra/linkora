@@ -24,7 +24,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useDashboard, subscribeRefresh } from "@/hooks/use-data";
+import { useDashboard, subscribeRefresh, invalidateAndRefresh } from "@/hooks/use-data";
 import { CATEGORY_COLORS } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
 import { LinkoraText } from "@/components/ui/linkora-text";
@@ -136,7 +136,8 @@ export function DashboardPage({
           processed: data.processed,
           changes: data.changes
         });
-        refresh();
+        recentCacheRef.current = {};
+        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
       } else {
         setOrganizeResult({ message: locale === "en" ? "Failed" : "Gagal", processed: 0, error: data.error });
       }

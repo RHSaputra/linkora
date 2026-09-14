@@ -105,6 +105,27 @@ export function subscribeRefresh(
   return () => window.removeEventListener(REFRESH_EVENT, handler);
 }
 
+export function invalidateAndRefresh(resources: RefreshResource[]) {
+  const resourceToPrefixMap: Record<RefreshResource, string[]> = {
+    dashboard: ["/api/dashboard"],
+    links: ["/api/links"],
+    collections: ["/api/collections"],
+    tags: ["/api/tags"],
+    notes: ["/api/notes"],
+    noteFolders: ["/api/notes/folders"],
+    roadmaps: ["/api/roadmaps"],
+  };
+
+  for (const res of resources) {
+    const prefixes = resourceToPrefixMap[res] || [];
+    for (const prefix of prefixes) {
+      invalidateCache(prefix);
+    }
+  }
+
+  dispatchRefresh(resources);
+}
+
 // Build the cache key / request URL for /api/links, including optional
 // pagination. When pageSize is omitted the API returns the full list
 // (backward compatible for callers that need every link, e.g. pickers).
@@ -392,9 +413,9 @@ export async function openLink(link: SerializedLink) {
 export async function toggleFavorite(link: SerializedLink): Promise<SerializedLink | null> {
   const res = await fetch(`/api/links/${link.id}/favorite`, { method: "POST" });
   if (res.ok) {
-     invalidateCache("/api/links");
-     invalidateCache("/api/dashboard");
-     return res.json();
+     const data = await res.json();
+     invalidateAndRefresh(["links", "dashboard"]);
+     return data;
   }
   const data = await res.json().catch(() => ({}));
   const msg = data.error || "Gagal mengubah status favorit";
@@ -405,14 +426,12 @@ export async function toggleFavorite(link: SerializedLink): Promise<SerializedLi
 }
 
 export async function deleteLink(id: string) {
-  invalidateCache("/api/links");
-  invalidateCache("/api/dashboard");
+  invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
   return fetch(`/api/links/${id}`, { method: "DELETE" });
 }
 
 export async function deleteCollection(id: string) {
-  invalidateCache("/api/collections");
-  invalidateCache("/api/dashboard");
+  invalidateAndRefresh(["collections", "dashboard", "links"]);
   return fetch(`/api/collections/${id}`, { method: "DELETE" });
 }
 
@@ -458,7 +477,7 @@ export function useRoadmaps(searchQuery?: string) {
 }
 
 export async function deleteRoadmap(id: string) {
-  invalidateCache("/api/roadmaps");
+  invalidateAndRefresh(["roadmaps"]);
   return fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
 }
 

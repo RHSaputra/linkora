@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotesList, useNoteFolders, invalidateCache, setCachedData } from "@/hooks/use-data";
+import { useNotesList, useNoteFolders, invalidateAndRefresh, setCachedData } from "@/hooks/use-data";
 import { QuickReminderPopover } from "@/components/reminders/quick-reminder-popover";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
@@ -139,7 +139,7 @@ export function NotesPage() {
       if (data.id) {
         // Pre-cache newly created note to avoid delay on note detail screen
         setCachedData(`/api/notes/${data.id}`, data);
-        invalidateCache("/api/notes");
+        invalidateAndRefresh(["notes", "noteFolders"]);
         router.push(`/notes/${data.id}`);
       }
     } catch (error) {
@@ -163,7 +163,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isFavorite: nextVal }),
       });
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
     } catch (error) {
       console.error(error);
       fetchNotes(true);
@@ -184,7 +184,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPinned: nextVal }),
       });
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
     } catch (error) {
       console.error(error);
       fetchNotes(true);
@@ -198,7 +198,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folderId }),
       });
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
       fetchNotes(true);
       fetchFolders(true);
     } catch (error) {
@@ -215,7 +215,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ACTIVE" }),
       });
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
       fetchNotes(true);
     } catch (error) {
       console.error(error);
@@ -230,7 +230,7 @@ export function NotesPage() {
         method: "DELETE",
       });
       setDeleteNoteTarget(null);
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
       fetchNotes(true);
       fetchFolders(true);
     } catch (error) {
@@ -276,7 +276,7 @@ export function NotesPage() {
         });
       }
       setFolderDialogOpen(false);
-      invalidateCache("/api/notes/folders");
+      invalidateAndRefresh(["notes", "noteFolders"]);
       fetchFolders(true);
     } catch (error) {
       console.error(error);
@@ -295,7 +295,7 @@ export function NotesPage() {
         setActiveFolderId(null);
       }
       setDeleteFolderTarget(null);
-      invalidateCache("/api/notes");
+      invalidateAndRefresh(["notes", "noteFolders"]);
       fetchFolders(true);
       fetchNotes(true);
     } catch (error) {

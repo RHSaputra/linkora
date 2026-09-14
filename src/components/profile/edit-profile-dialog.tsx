@@ -30,7 +30,7 @@ import {
   BookOpen,
   ArrowUpRight,
 } from "lucide-react";
-import { invalidateCache, dispatchRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
@@ -262,8 +262,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           );
         }
 
-        invalidateCache("/api/dashboard");
-        dispatchRefresh([]);
+        invalidateAndRefresh(["dashboard"]);
 
         toast.success(locale === "en" ? "Your profile has been updated successfully!" : "Profil Anda berhasil diperbarui!", locale === "en" ? "Saved Successfully" : "Berhasil Disimpan");
         onOpenChange(false);

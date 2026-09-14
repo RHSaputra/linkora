@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, CheckCircle, Loader2 } from "lucide-react";
 import { SerializedLink } from "@/lib/types";
-import { invalidateCache, dispatchRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh } from "@/hooks/use-data";
 
 export function LikoSuggestionNotification() {
   const [suggestion, setSuggestion] = useState<{
@@ -85,13 +85,15 @@ export function LikoSuggestionNotification() {
         const data = await res.json();
         const assigned = data.changes?.[0]?.category || "Kategori Baru";
 
-        setSuggestion((prev) => (prev ? { ...prev, status: "success", assignedCategory: assigned } : null));
+        setSuggestion((prev) => (prev ? {
+          ...prev,
+          status: "success",
+          assignedCategory: assigned,
+          link: { ...prev.link, category: assigned }
+        } : null));
 
-        // Invalidate and refresh UI
-        invalidateCache("/api/links");
-        invalidateCache("/api/dashboard");
-        invalidateCache("/api/collections");
-        dispatchRefresh(["links", "dashboard", "collections"]);
+        // Invalidate cache and refresh UI across links, dashboard, collections, tags
+        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
 
         // Auto close after 4 seconds
         autoDismissTimerRef.current = setTimeout(() => {

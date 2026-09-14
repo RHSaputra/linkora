@@ -18,7 +18,7 @@ import {
   requestWebNotificationPermission,
   playNotificationSound,
 } from "@/lib/notification-service";
-import { dispatchRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface QuickReminderPopoverProps {
@@ -156,7 +156,7 @@ export function QuickReminderPopover({
       }
 
       onReminderChange?.(isoString);
-      dispatchRefresh(["links", "notes"]);
+      invalidateAndRefresh(["links", "notes", "dashboard"]);
       setOpen(false);
     } catch (err: any) {
       toast.error(err?.message || (locale === "en" ? "System error occurred" : "Terjadi kesalahan sistem"), locale === "en" ? "Failed" : "Gagal");

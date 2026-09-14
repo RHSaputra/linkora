@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/custom-toast";
-import { setCachedData, invalidateCache, useNoteFolders, dispatchRefresh } from "@/hooks/use-data";
+import { setCachedData, invalidateAndRefresh, useNoteFolders } from "@/hooks/use-data";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
@@ -89,8 +89,7 @@ export function QuickNoteButton() {
       if (res.ok && data.id) {
         // Pre-cache and refresh
         setCachedData(`/api/notes/${data.id}`, data);
-        invalidateCache("/api/notes");
-        dispatchRefresh(["notes", "noteFolders"]);
+        invalidateAndRefresh(["notes", "noteFolders"]);
 
         toast.success(
           locale === "en" ? `"${noteTitle}" saved successfully!` : `"${noteTitle}" berhasil disimpan!`,
@@ -133,8 +132,7 @@ export function QuickNoteButton() {
       if (res.ok && data.id) {
         // Pre-cache for 0ms loading in the full editor
         setCachedData(`/api/notes/${data.id}`, data);
-        invalidateCache("/api/notes");
-        dispatchRefresh(["notes", "noteFolders"]);
+        invalidateAndRefresh(["notes", "noteFolders"]);
 
         router.push(`/notes/${data.id}`);
       } else {
