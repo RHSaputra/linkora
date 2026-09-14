@@ -323,17 +323,19 @@ function NavContent({
           <Plus className="h-4 w-4" />
           <span>{t("links.addLink")}</span>
         </Button>
-        <RemindersPopover
-          unreadCount={unreadCount}
-          notifications={notifications}
-          dismissNotification={dismissNotification}
-          snoozeNotification={snoozeNotification}
-          links={links || []}
-          locale={locale}
-          t={t}
-          side="right"
-          align="start"
-        />
+        <div data-tour="reminders" className="shrink-0">
+          <RemindersPopover
+            unreadCount={unreadCount}
+            notifications={notifications}
+            dismissNotification={dismissNotification}
+            snoozeNotification={snoozeNotification}
+            links={links || []}
+            locale={locale}
+            t={t}
+            side="right"
+            align="start"
+          />
+        </div>
       </div>
 
       <nav className="flex-1 px-3 space-y-2">

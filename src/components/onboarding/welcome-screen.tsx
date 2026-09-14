@@ -34,11 +34,11 @@ export function OnboardingWelcomeScreen() {
             <Compass className="h-7 w-7 text-primary" />
           </div>
 
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight font-sans">
             Selamat datang di <LinkoraText />
           </h2>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-            Yuk kenali beberapa fitur utama agar kamu bisa menggunakan Linkora dengan lebih mudah.
+          <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
+            Mari jelajahi fitur-fitur canggih Linkora, termasuk analisis AI otomatis, pembuat catatan cerdas, roadmap visual, pengingat, dan Asisten Liko AI.
           </p>
         </div>
 

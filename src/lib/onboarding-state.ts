@@ -5,7 +5,7 @@
  * It can be shared with Android (via transpilation or manual port).
  */
 
-export const CURRENT_ONBOARDING_VERSION = 1;
+export const CURRENT_ONBOARDING_VERSION = 2;
 
 export type TooltipPlacement = "top" | "bottom" | "left" | "right";
 
@@ -21,49 +21,73 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "dashboard",
     targetId: "dashboard",
-    title: "Beranda Kamu",
+    title: "Beranda Utama",
     description:
-      "Ini beranda utama. Lihat ringkasan aktivitas dan akses cepat ke semua fitur.",
-    placement: "right",
-  },
-  {
-    id: "links",
-    targetId: "links",
-    title: "Kelola Tautan",
-    description:
-      "Simpan, cari, dan kelola semua tautan kamu di sini. Cukup tempel URL dan biarkan AI menganalisisnya.",
-    placement: "right",
-  },
-  {
-    id: "collections",
-    targetId: "collections",
-    title: "Koleksi",
-    description:
-      "Kelompokkan tautan ke dalam koleksi agar lebih rapi dan mudah ditemukan.",
-    placement: "right",
-  },
-  {
-    id: "notes",
-    targetId: "notes",
-    title: "Catatan Pribadi",
-    description:
-      "Buat dan kelola catatan kamu. Tulis ide, memo, atau dokumen penting.",
+      "Pusat aktivitas utama kamu. Dapatkan ringkasan statistik tautan, catatan, dan akses cepat ke seluruh fitur Linkora.",
     placement: "right",
   },
   {
     id: "add-link",
     targetId: "add-link",
-    title: "Tambah Tautan Baru",
+    title: "Tambah & Analisis Tautan AI",
     description:
-      "Klik tombol ini untuk menyimpan tautan baru. AI akan otomatis menganalisis dan mengkategorikan tautan kamu.",
+      "Klik tombol ini untuk menyimpan tautan baru. Cukup tempel URL, dan Liko AI akan otomatis menganalisis judul, deskripsi, kategori, serta tag relevan.",
     placement: "right",
+  },
+  {
+    id: "links",
+    targetId: "links",
+    title: "Kelola Tautan & Filter Cerdas",
+    description:
+      "Lihat, cari, dan kelola semua tautan yang tersimpan. Kamu dapat memfilter berdasarkan kategori, tag, status favorit, atau tanggal pengingat.",
+    placement: "right",
+  },
+  {
+    id: "collections",
+    targetId: "collections",
+    title: "Koleksi Tautan Terstruktur",
+    description:
+      "Kelompokkan tautan favoritmu ke dalam folder koleksi khusus agar lebih terorganisir dan mudah dipelajari kembali kapan saja.",
+    placement: "right",
+  },
+  {
+    id: "notes",
+    targetId: "notes",
+    title: "Catatan Pribadi & Konverter AI",
+    description:
+      "Tulis ide, memo, atau ubah hasil analisis tautan menjadi dokumen catatan pribadi berformat lengkap secara otomatis menggunakan Liko AI.",
+    placement: "right",
+  },
+  {
+    id: "roadmaps",
+    targetId: "roadmaps",
+    title: "Roadmap & Alur Kerja Visual (Fitur Baru!)",
+    description:
+      "Rancang alur kerja, roadmap belajar, dan strategi proyek secara visual pada kanvas interaktif dengan bantuan generator Liko AI.",
+    placement: "right",
+  },
+  {
+    id: "reminders",
+    targetId: "reminders",
+    title: "Pusat Pengingat & Notifikasi",
+    description:
+      "Pantau jadwal pengingat tautan dan catatan penting. Dapatkan notifikasi pengingat tepat waktu agar tidak ada tugas yang terlewat.",
+    placement: "right",
+  },
+  {
+    id: "liko-chat",
+    targetId: "liko-chat",
+    title: "Asisten AI Liko Melayang",
+    description:
+      "Tanya apa saja seputar tautan dan catatanmu! Liko siap menyimpan link langsung dari percakapan chat, menjawab pertanyaan, dan membantumu 24/7.",
+    placement: "top",
   },
   {
     id: "profile",
     targetId: "profile",
-    title: "Profil Kamu",
+    title: "Profil & Pengaturan Akun",
     description:
-      "Kelola akun, ubah foto profil, dan sesuaikan pengaturan kamu dari sini.",
+      "Kelola informasi akun, foto avatar profil, ubah kata sandi, beralih bahasa (ID/EN), atau jalankan kembali panduan interaktif ini kapan saja.",
     placement: "right",
   },
 ];

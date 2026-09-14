@@ -129,10 +129,10 @@ function CompletionScreen({
             </div>
           </div>
           <h2 className="text-xl font-bold text-foreground">
-            Kamu sudah siap!
+            Kamu siap menjelajah! 🎉
           </h2>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            Selamat menggunakan Linkora. Kelola tautan dan catatan kamu dengan mudah.
+            Selamat menggunakan Linkora. Simpan tautan, ubah menjadi catatan pribadi, rancang roadmap visual, dan biarkan Liko AI membantu alur kerjamu.
           </p>
         </div>
         <div className="px-8 pb-8">
