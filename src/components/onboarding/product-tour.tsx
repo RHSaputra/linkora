@@ -35,14 +35,13 @@ function getTooltipPosition(
 ): TooltipPos {
   const tooltipW =
     viewportWidth < 640 ? TOOLTIP_WIDTH_MOBILE : TOOLTIP_WIDTH;
-  const tooltipEstH = 180;
+  const tooltipEstH = 260;
 
   // Try preferred placement first, then fallback
   const placements: Array<"top" | "bottom" | "left" | "right"> = [
     preferredPlacement,
-    "bottom",
-    "right",
-    "top",
+    preferredPlacement === "top" ? "right" : "top",
+    preferredPlacement === "bottom" ? "top" : "bottom",
     "left",
   ];
 
@@ -86,12 +85,13 @@ function getTooltipPosition(
     }
   }
 
-  // Fallback: center below target
+  // Fallback: clamp to viewport boundaries above/below target
+  const fallbackTop = preferredPlacement === "top"
+    ? Math.max(12, rect.top - tooltipEstH - TOOLTIP_GAP)
+    : Math.min(rect.top + rect.height + TOOLTIP_GAP, viewportHeight - tooltipEstH - 12);
+
   return {
-    top: Math.min(
-      rect.top + rect.height + TOOLTIP_GAP,
-      viewportHeight - tooltipEstH - 12
-    ),
+    top: Math.max(12, Math.min(fallbackTop, viewportHeight - tooltipEstH - 12)),
     left: Math.max(
       12,
       Math.min(
@@ -99,7 +99,7 @@ function getTooltipPosition(
         viewportWidth - tooltipW - 12
       )
     ),
-    placement: "bottom",
+    placement: preferredPlacement,
   };
 }
 
@@ -389,9 +389,9 @@ export function ProductTour() {
           aria-label={currentStep.title}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
+          <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden max-h-[calc(100vh-24px)] overflow-y-auto">
             {/* Progress bar */}
-            <div className="h-1 w-full bg-muted">
+            <div className="h-1 w-full bg-muted sticky top-0 z-10">
               <motion.div
                 className="h-full bg-primary"
                 initial={{ width: 0 }}
@@ -455,22 +455,33 @@ export function ProductTour() {
                   Kembali
                 </button>
 
-                <button
-                  type="button"
-                  onClick={requestSkip}
-                  className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                >
-                  Lewati
-                </button>
+                {currentStepPosition < totalAvailableSteps && (
+                  <button
+                    type="button"
+                    onClick={requestSkip}
+                    className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                  >
+                    Lewati
+                  </button>
+                )}
 
                 <button
                   type="button"
                   onClick={nextStep}
                   className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                  aria-label="Langkah berikutnya"
+                  aria-label={currentStepPosition === totalAvailableSteps ? "Selesai" : "Langkah berikutnya"}
                 >
-                  Berikutnya
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  {currentStepPosition === totalAvailableSteps ? (
+                    <>
+                      Selesai
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      Berikutnya
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>

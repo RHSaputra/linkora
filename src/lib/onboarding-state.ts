@@ -61,7 +61,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "roadmaps",
     targetId: "roadmaps",
-    title: "Roadmap & Alur Kerja Visual (Fitur Baru!)",
+    title: "Roadmap & Alur Kerja Visual",
     description:
       "Rancang alur kerja, roadmap belajar, dan strategi proyek secara visual pada kanvas interaktif dengan bantuan generator Liko AI.",
     placement: "right",
@@ -77,7 +77,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "liko-chat",
     targetId: "liko-chat",
-    title: "Asisten AI Liko Melayang",
+    title: "Asisten AI Liko",
     description:
       "Tanya apa saja seputar tautan dan catatanmu! Liko siap menyimpan link langsung dari percakapan chat, menjawab pertanyaan, dan membantumu 24/7.",
     placement: "top",
@@ -88,7 +88,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     title: "Profil & Pengaturan Akun",
     description:
       "Kelola informasi akun, foto avatar profil, ubah kata sandi, beralih bahasa (ID/EN), atau jalankan kembali panduan interaktif ini kapan saja.",
-    placement: "right",
+    placement: "top",
   },
 ];
 
