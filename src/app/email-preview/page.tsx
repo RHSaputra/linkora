@@ -32,6 +32,10 @@ export default function EmailPreviewPage() {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
+  const [testEmailRecipient, setTestEmailRecipient] = useState("supportlinkorian@gmail.com")
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [sendResult, setSendResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null)
+
   useEffect(() => {
     setLoading(true)
     fetch(`/api/email-preview?type=${selectedType}`)
@@ -45,6 +49,48 @@ export default function EmailPreviewPage() {
         setLoading(false)
       })
   }, [selectedType])
+
+  const handleSendTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!testEmailRecipient || !testEmailRecipient.includes("@")) {
+      setSendResult({ success: false, error: "Masukkan alamat email yang valid." })
+      return
+    }
+
+    setSendingEmail(true)
+    setSendResult(null)
+
+    try {
+      const res = await fetch("/api/send-test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toEmail: testEmailRecipient.trim(),
+          type: selectedType,
+        }),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        setSendResult({
+          success: true,
+          message: `Email ${selectedType.toUpperCase()} berhasil dikirim ke ${testEmailRecipient}!`,
+        })
+      } else {
+        setSendResult({
+          success: false,
+          error: data.error || "Gagal mengirim email.",
+        })
+      }
+    } catch (err: any) {
+      setSendResult({
+        success: false,
+        error: err?.message || "Terjadi kesalahan sistem saat mengirim email.",
+      })
+    } finally {
+      setSendingEmail(false)
+    }
+  }
 
   const copyText = () => {
     if (emailData?.text) {
@@ -214,23 +260,84 @@ export default function EmailPreviewPage() {
             })}
           </div>
 
+          {/* Live Test Email Dispatcher Card */}
+          <div className="glass-panel p-5 rounded-2xl border border-border/80 text-xs space-y-3 bg-card/40 shadow-sm">
+            <p className="font-bold text-foreground flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" /> Kirim Email Tes Uji Coba
+            </p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Kirim template <strong>{selectedType.toUpperCase()}</strong> ini secara langsung ke inbox email Anda.
+            </p>
+            <form onSubmit={handleSendTestEmail} className="space-y-2.5">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Email Penerima:
+                </label>
+                <input
+                  type="email"
+                  value={testEmailRecipient}
+                  onChange={(e) => setTestEmailRecipient(e.target.value)}
+                  placeholder="supportlinkorian@gmail.com"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={sendingEmail}
+                className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {sendingEmail ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    Mengirim Email...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3.5 h-3.5" />
+                    Kirim Email Tes Real
+                  </>
+                )}
+              </button>
+            </form>
+
+            {sendResult && (
+              <div
+                className={`p-3 rounded-xl text-[11px] leading-relaxed border ${
+                  sendResult.success
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
+                }`}
+              >
+                {sendResult.success ? (
+                  <div className="flex items-start gap-1.5">
+                    <Check className="w-4 h-4 shrink-0 text-emerald-500 mt-0.5" />
+                    <span>{sendResult.message}</span>
+                  </div>
+                ) : (
+                  <div>
+                    <strong className="block font-bold">Gagal Pengiriman:</strong>
+                    <span>{sendResult.error}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Quick Specifications Card */}
           <div className="glass-panel p-5 rounded-2xl border border-border/80 text-xs space-y-3 bg-card/20">
             <p className="font-bold text-foreground flex items-center gap-2">
-              <Mail className="w-4 h-4 text-primary" /> Info Resend & Deployment
+              <Mail className="w-4 h-4 text-primary" /> Info Resend API & Limit Sandbox
             </p>
             <div className="space-y-1.5 text-muted-foreground text-[11px] leading-relaxed">
               <p>
                 • <strong>Penyedia:</strong> Resend API
               </p>
               <p>
-                • <strong>Dev Mode:</strong> Simulasi aman & testing lokal
+                • <strong>Catatan Testing Mode:</strong> Akun gratis Resend (tanpa domain khusus) secara otomatis hanya mengizinkan pengiriman email ke email terdaftar pemilik akun (misal: <strong>supportlinkorian@gmail.com</strong>).
               </p>
               <p>
                 • <strong>Keamanan:</strong> SHA-256 Hashed OTP & Token
-              </p>
-              <p>
-                • <strong>Domain:</strong> Siap beralih saat verified domain tersedia
               </p>
             </div>
           </div>
