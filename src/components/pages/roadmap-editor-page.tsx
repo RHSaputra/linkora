@@ -17,6 +17,7 @@ import { AddNodeDialog } from "@/components/roadmap/add-node-dialog";
 import { AIRoadmapGeneratorDialog } from "@/components/roadmap/ai-roadmap-generator-dialog";
 import { Bot } from "lucide-react";
 import { toast } from "@/components/ui/custom-toast";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SerializedRoadmap, SerializedRoadmapNode } from "@/lib/types";
 import { useTranslation } from "@/components/providers/i18n-provider";
@@ -30,6 +31,7 @@ interface RoadmapEditorPageProps {
 export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const { requireAuth } = useRequireAuth();
 
   const [roadmap, setRoadmap] = useState<SerializedRoadmap | null>(null);
   const [loading, setLoading] = useState(true);
@@ -307,7 +309,10 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
           </div>
 
           <Button
-            onClick={() => setAiDialogOpen(true)}
+            onClick={() => {
+              if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
+              setAiDialogOpen(true);
+            }}
             variant="outline"
             className="border-primary/40 text-primary hover:bg-primary/10 font-semibold gap-1.5 text-xs h-9 cursor-pointer"
           >

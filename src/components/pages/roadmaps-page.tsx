@@ -36,6 +36,7 @@ import { AIRoadmapGeneratorDialog } from "@/components/roadmap/ai-roadmap-genera
 import { Bot } from "lucide-react";
 import { useRoadmaps, deleteRoadmap } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { toast } from "@/components/ui/custom-toast";
 import { SerializedRoadmap } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
@@ -44,6 +45,7 @@ import { id as localeId, enUS } from "date-fns/locale";
 export function RoadmapsPage() {
   const router = useRouter();
   const { t, locale } = useTranslation();
+  const { requireAuth } = useRequireAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const { roadmaps, loading, refresh } = useRoadmaps(searchQuery);
 
@@ -61,9 +63,15 @@ export function RoadmapsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenCreate = () => {
+    if (requireAuth("Buat Roadmap Baru", "Masuk atau daftar akun untuk membuat alur kerja roadmap Anda sendiri.")) return;
     setTitle("");
     setDescription("");
     setCreateDialogOpen(true);
+  };
+
+  const handleOpenAiDialog = () => {
+    if (requireAuth("Rancang dengan Liko AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur.")) return;
+    setAiDialogOpen(true);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -180,7 +188,7 @@ export function RoadmapsPage() {
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Button
-            onClick={() => setAiDialogOpen(true)}
+            onClick={handleOpenAiDialog}
             className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 shadow-sm cursor-pointer text-xs sm:text-sm"
           >
             <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">
@@ -237,7 +245,7 @@ export function RoadmapsPage() {
           </div>
           <div className="flex items-center gap-2 pt-2">
             <Button
-              onClick={() => setAiDialogOpen(true)}
+              onClick={handleOpenAiDialog}
               className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2 cursor-pointer shadow-md text-xs sm:text-sm"
             >
               <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">

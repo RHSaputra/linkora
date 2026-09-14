@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, Info } from "lucide-react";
 import { toast } from "@/components/ui/custom-toast";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 
 interface AIRoadmapGeneratorDialogProps {
   open: boolean;
@@ -30,12 +31,18 @@ export function AIRoadmapGeneratorDialog({
   onGenerated,
 }: AIRoadmapGeneratorDialogProps) {
   const router = useRouter();
+  const { requireAuth } = useRequireAuth();
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) return;
+
+    if (requireAuth("Rancang Roadmap dengan AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur.")) {
+      onOpenChange(false);
+      return;
+    }
 
     try {
       setIsGenerating(true);
@@ -47,6 +54,12 @@ export function AIRoadmapGeneratorDialog({
           existingRoadmapId,
         }),
       });
+
+      if (res.status === 401) {
+        onOpenChange(false);
+        requireAuth("Rancang Roadmap dengan AI", "Sesi Anda telah berakhir. Silakan masuk kembali untuk menggunakan asisten Liko AI.");
+        return;
+      }
 
       if (res.ok) {
         const roadmapData = await res.json();
