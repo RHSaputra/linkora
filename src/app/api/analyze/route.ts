@@ -71,9 +71,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+      normalizedUrl = "https://" + normalizedUrl;
+    }
+
     let parsedUrl: URL;
     try {
-      parsedUrl = await validateSafeExternalUrl(url);
+      parsedUrl = await validateSafeExternalUrl(normalizedUrl);
     } catch (validationErr: any) {
       return NextResponse.json(
         { error: validationErr?.message || "URL tidak diizinkan atau tidak valid" },
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest) {
     let html = "";
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
-        timeoutMs: 5000,
+        timeoutMs: 6000,
         maxSizeBytes: 2 * 1024 * 1024,
       });
       html = text;
@@ -135,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Call Gemini with fallback models in case of high demand (503)
     const userPrompt = `
-      URL: ${url}
+      URL: ${parsedUrl.toString()}
       Title: ${title}
       Description: ${metaDescription}
       Content:
@@ -158,7 +163,7 @@ export async function POST(request: NextRequest) {
               responseMimeType: "application/json",
             }
           }),
-          8000
+          15000
         );
 
         if (response.text) {

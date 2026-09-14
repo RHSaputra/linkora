@@ -177,12 +177,19 @@ export function AddLinkDialog({
     )) {
       return;
     }
+
+    let targetUrl = url.trim();
+    if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      targetUrl = "https://" + targetUrl;
+      setUrl(targetUrl);
+    }
+
     setIsAnalyzing(true);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: targetUrl }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -216,7 +223,7 @@ export function AddLinkDialog({
         }
       } else {
         const errorData = await res.json().catch(() => ({}));
-        let msg = errorData.error || "Gagal menganalisis link saat ini.";
+        let msg = errorData.error || (locale === "en" ? "Failed to analyze link at this time." : "Gagal menganalisis link saat ini.");
         try {
           if (typeof msg === "string" && (msg.startsWith("{") || msg.includes("error"))) {
             const parsed = JSON.parse(msg);
@@ -225,14 +232,19 @@ export function AddLinkDialog({
         } catch {}
         
         if (typeof msg === "string" && (msg.includes("503") || msg.includes("high demand") || msg.includes("UNAVAILABLE") || msg.includes("not found"))) {
-          msg = "Server AI sedang sibuk karena antrean tinggi. Silakan coba klik Analisis AI kembali beberapa saat lagi.";
+          msg = locale === "en" 
+            ? "AI Server is experiencing high demand. Please try clicking AI Analysis again in a few seconds."
+            : "Server AI sedang sibuk karena antrean tinggi. Silakan coba klik Analisis AI kembali beberapa saat lagi.";
         }
         
-        toast.error(msg, "Gagal Analisis AI");
+        toast.error(msg, locale === "en" ? "AI Analysis Failed" : "Gagal Analisis AI");
       }
     } catch (error: any) {
       console.error("Failed to analyze URL", error);
-      toast.error("Gagal menghubungkan ke server analisis. Pastikan koneksi internet aktif.", "Error Analisis");
+      toast.error(
+        locale === "en" ? "Could not connect to analysis server. Please check internet connection." : "Gagal menghubungkan ke server analisis. Pastikan koneksi internet aktif.",
+        locale === "en" ? "Analysis Error" : "Error Analisis"
+      );
     } finally {
       setIsAnalyzing(false);
     }
