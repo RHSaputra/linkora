@@ -106,7 +106,7 @@ async function runTestSuite() {
         email: testEmail,
         otpHash: regOtpHashed,
         pendingData: JSON.stringify({
-          name: "Test Komandan Linkora",
+          name: "Test User Linkora",
           email: testEmail,
           password: hashedPassword,
         }),
@@ -119,7 +119,7 @@ async function runTestSuite() {
 
     const sendOtpResult = await sendVerificationOtpEmail({
       to: testEmail,
-      name: "Test Komandan Linkora",
+      name: "Test User Linkora",
       otp: registrationOtp,
     });
 
@@ -148,7 +148,7 @@ async function runTestSuite() {
     const createdUser = await prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
         data: {
-          name: "Test Komandan Linkora",
+          name: "Test User Linkora",
           email: testEmail,
           password: hashedPassword,
           emailVerified: new Date(),
@@ -197,7 +197,7 @@ async function runTestSuite() {
 
     const welcome1 = await sendWelcomeEmail({
       to: testEmail,
-      name: "Test Komandan Linkora",
+      name: "Test User Linkora",
       isGoogleAuth: false,
     });
 
@@ -211,7 +211,7 @@ async function runTestSuite() {
     const googleUserEmail = `google.user.${Date.now()}@linkora.id`;
     const googleUser = await prisma.user.create({
       data: {
-        name: "Google Komandan",
+        name: "Google User",
         email: googleUserEmail,
         emailVerified: new Date(),
       },
@@ -219,7 +219,7 @@ async function runTestSuite() {
 
     const googleWelcome = await sendWelcomeEmail({
       to: googleUserEmail,
-      name: "Google Komandan",
+      name: "Google User",
       isGoogleAuth: true,
     });
 
@@ -231,7 +231,7 @@ async function runTestSuite() {
     // Re-trigger for same Google user -> must be skipped
     const googleWelcomeSecond = await sendWelcomeEmail({
       to: googleUserEmail,
-      name: "Google Komandan",
+      name: "Google User",
       isGoogleAuth: true,
     });
 

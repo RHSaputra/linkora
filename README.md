@@ -1,4 +1,4 @@
-# LinkVault
+# Linkora
 
 Modern link manager untuk menyimpan, mengelola, mencari, dan membuka kembali website penting dengan cepat.
 
@@ -50,7 +50,7 @@ Default menggunakan SQLite (`prisma/dev.db`) — langsung jalan tanpa setup ekst
 Untuk MySQL, ubah `provider` di `prisma/schema.prisma` menjadi `mysql` dan set `DATABASE_URL` di `.env`:
 
 ```
-DATABASE_URL="mysql://user:password@localhost:3306/linkvault"
+DATABASE_URL="postgresql://user:password@localhost:5432/linkora"
 ```
 
 ## Struktur

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   switch (type) {
     case "welcome":
       result = renderWelcomeEmail({
-        userName: "Komandan Aditya Pratama",
+        userName: "Pengguna Linkora",
         isGoogleAuth: false,
         appUrl,
       });
@@ -22,8 +22,8 @@ export async function GET(req: Request) {
 
     case "reset":
       result = renderPasswordResetEmail({
-        userName: "Komandan Aditya Pratama",
-        resetUrl: `${appUrl}/reset-password?token=sample_token_64chars_demo_linkora_resend_security&email=komandan%40linkora.id`,
+        userName: "Pengguna Linkora",
+        resetUrl: `${appUrl}/reset-password?token=sample_token_64chars_demo_linkora_resend_security&email=user%40linkora.id`,
         expiryMinutes: 15,
         appUrl,
       });
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     case "otp":
     default:
       result = renderVerificationOtpEmail({
-        userName: "Komandan Aditya Pratama",
+        userName: "Pengguna Linkora",
         otp: "849201",
         expiryMinutes: 10,
         appUrl,

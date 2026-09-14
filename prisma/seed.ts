@@ -7,11 +7,11 @@ async function main() {
   // Create a seed/demo user first
   const hashedPassword = await bcrypt.hash("demo1234", 10);
   const seedUser = await prisma.user.upsert({
-    where: { email: "demo@linkvault.app" },
+    where: { email: "demo@linkora.app" },
     update: {},
     create: {
       name: "Demo User",
-      email: "demo@linkvault.app",
+      email: "demo@linkora.app",
       password: hashedPassword,
     },
   });
@@ -132,7 +132,7 @@ async function main() {
     }
   }
 
-  console.log("✅ Seed completed! Demo user: demo@linkvault.app / demo1234");
+  console.log("✅ Seed completed! Demo user: demo@linkora.app / demo1234");
 }
 
 main()

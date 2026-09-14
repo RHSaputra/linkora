@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">LinkVault</string>
-    <string name="title_activity_main">LinkVault</string>
-    <string name="package_name">id.linkvault.app</string>
-    <string name="custom_url_scheme">id.linkvault.app</string>
+    <string name="app_name">Linkora</string>
+    <string name="title_activity_main">Linkora</string>
+    <string name="package_name">id.linkora.app</string>
+    <string name="custom_url_scheme">id.linkora.app</string>
 </resources>

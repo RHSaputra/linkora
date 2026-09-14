@@ -355,7 +355,7 @@ export default function EmailPreviewPage() {
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Dari: <strong>Linkora &lt;onboarding@resend.dev&gt;</strong></span>
-              <span>Ke: <strong>komandan@linkora.id</strong></span>
+              <span>Ke: <strong>user@linkora.id</strong></span>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-package id.linkvault.app;
+package id.linkora.app;
 
 import com.getcapacitor.BridgeActivity;
 

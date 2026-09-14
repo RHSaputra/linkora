@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'id.linkvault.app',
-  appName: 'LinkVault',
+  appId: 'id.linkora.app',
+  appName: 'Linkora',
   webDir: 'public',
   server: {
     // URL ini diatur untuk testing di Android Emulator
