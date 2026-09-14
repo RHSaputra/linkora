@@ -308,14 +308,14 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             </button>
           </div>
 
-          <div className="relative group p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-xs transition-transform active:scale-95">
-            <div className="absolute inset-[-1000%] bg-[conic-gradient(from_90deg_at_50%_50%,#2563eb_0%,#a855f7_50%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
+          <div className="relative inline-flex items-center justify-center p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-xs transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
+            <div className="absolute inset-[-200%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#38bdf8_75%,#2563eb_100%)] animate-[spin_4s_linear_infinite]" />
             <Button
               onClick={() => {
                 if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
                 setAiDialogOpen(true);
               }}
-              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold px-3 py-1.5 h-9 rounded-[10px] text-xs border-0 transition-colors cursor-pointer"
+              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-9 px-4 rounded-[10px] text-xs border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
             >
               <span>Saran Langkah AI</span>
             </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -34,6 +34,13 @@ export function AIRoadmapGeneratorDialog({
   const { requireAuth } = useRequireAuth();
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isGenerating && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isGenerating]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,20 +146,24 @@ export function AIRoadmapGeneratorDialog({
           {/* AI Generating Indicator Banner with Animated Liko Mascot Video */}
           {isGenerating && (
             <div className="p-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card to-card flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left shadow-lg">
-              <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-primary/40 shadow-md bg-background shrink-0">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-primary/40 shadow-md bg-background shrink-0 aspect-square">
                 <video
+                  ref={videoRef}
                   autoPlay
                   loop
                   muted
                   playsInline
+                  preload="auto"
+                  poster="/maskot.jpeg"
+                  src="/vidio-liko.webm"
                   className="w-full h-full object-cover"
                 >
                   <source src="/vidio-liko.webm" type="video/webm" />
                 </video>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5 flex-1 min-w-0">
                 <p className="font-bold text-foreground text-sm sm:text-base flex items-center justify-center sm:justify-start gap-2">
-                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
                   <span>Liko AI Sedang Bekerja...</span>
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -173,12 +184,12 @@ export function AIRoadmapGeneratorDialog({
               Batal
             </Button>
             
-            <div className="relative group p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-md transition-transform active:scale-95">
-              <div className="absolute inset-[-1000%] bg-[conic-gradient(from_90deg_at_50%_50%,#2563eb_0%,#a855f7_50%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
+            <div className="relative inline-flex items-center justify-center p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
+              <div className="absolute inset-[-200%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#38bdf8_75%,#2563eb_100%)] animate-[spin_4s_linear_infinite]" />
               <Button
                 type="submit"
                 disabled={!topic.trim() || isGenerating}
-                className="relative z-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 px-6 cursor-pointer shadow-xs text-xs sm:text-sm border-0 transition-colors"
+                className="relative z-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 px-6 cursor-pointer shadow-xs text-xs sm:text-sm border-0 transition-colors flex items-center justify-center whitespace-nowrap"
               >
                 {isGenerating ? (
                   <>
