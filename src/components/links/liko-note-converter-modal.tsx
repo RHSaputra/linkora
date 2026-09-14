@@ -425,7 +425,7 @@ export function LikoNoteConverterModal({
 
                   <div>
                     <h4 className="font-bold text-base text-foreground">
-                      {locale === "en" ? "Note Created Successfully! 🎉" : "Catatan Berhasil Dibuat! 🎉"}
+                      {locale === "en" ? "Note Created Successfully!" : "Catatan Berhasil Dibuat!"}
                     </h4>
                     <p className="text-xs text-muted-foreground max-w-sm mt-1">
                       {locale === "en"

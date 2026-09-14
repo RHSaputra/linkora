@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, X, CheckCircle2, PartyPopper } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
 import { OnboardingWelcomeScreen } from "@/components/onboarding/welcome-screen";
 import { OnboardingSkipConfirm } from "@/components/onboarding/skip-confirm";
@@ -122,14 +122,11 @@ function CompletionScreen({
         className="relative z-10 w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
       >
         <div className="p-8 text-center">
-          <div className="relative mx-auto w-16 h-16 mb-4 rounded-2xl bg-gradient-to-tr from-primary/15 via-emerald-500/15 to-cyan-500/15 border border-primary/25 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
+          <div className="mx-auto w-16 h-16 mb-4 rounded-2xl bg-gradient-to-tr from-primary/15 via-emerald-500/15 to-cyan-500/15 border border-primary/25 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
             <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-            <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
-              <PartyPopper className="h-3.5 w-3.5" />
-            </div>
           </div>
           <h2 className="text-xl font-bold text-foreground">
-            Kamu siap menjelajah! 🎉
+            Kamu siap menjelajah!
           </h2>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             Selamat menggunakan Linkora. Simpan tautan, ubah menjadi catatan pribadi, rancang roadmap visual, dan biarkan Liko AI membantu alur kerjamu.
