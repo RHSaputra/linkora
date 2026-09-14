@@ -99,15 +99,15 @@ export function AuthRequiredDialog() {
         {/* Feature Benefits Mini List */}
         <div className="my-3 p-3.5 rounded-2xl bg-foreground/[0.03] border border-border/60 space-y-2 text-left">
           <div className="flex items-center gap-2 text-xs text-foreground/90 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{t("auth.authBenefit1")}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-foreground/90 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{t("auth.authBenefit2")}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-foreground/90 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
             <span>{t("auth.authBenefit3")}</span>
           </div>
         </div>
