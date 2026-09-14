@@ -136,15 +136,28 @@ export function AIRoadmapGeneratorDialog({
             </p>
           </div>
 
-          {/* AI Generating Indicator Banner */}
+          {/* AI Generating Indicator Banner with Animated Liko Mascot Video */}
           {isGenerating && (
-            <div className="p-4 rounded-xl border border-primary/20 bg-primary/10 flex items-center gap-3 animate-pulse">
-              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-primary/30 shrink-0">
-                <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
+            <div className="p-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card to-card flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left shadow-lg">
+              <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-primary/40 shadow-md bg-background shrink-0">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/vidio-liko.webm" type="video/webm" />
+                </video>
               </div>
-              <div className="text-xs">
-                <p className="font-semibold text-foreground">Liko AI sedang merancang alur Anda...</p>
-                <p className="text-muted-foreground text-[11px]">Menyusun langkah-langkah, alur koneksi, dan tata letak kanvas otomatis.</p>
+              <div className="space-y-1">
+                <p className="font-bold text-foreground text-sm sm:text-base flex items-center justify-center sm:justify-start gap-2">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  <span>Liko AI Sedang Bekerja...</span>
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Liko sedang menganalisis topik, menyusun urutan langkah visual, dan merapikan tata letak kanvas terstruktur untuk Anda.
+                </p>
               </div>
             </div>
           )}
@@ -159,25 +172,24 @@ export function AIRoadmapGeneratorDialog({
             >
               Batal
             </Button>
-            <Button
-              type="submit"
-              disabled={!topic.trim() || isGenerating}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold h-10 px-6 gap-2.5 cursor-pointer shadow-md text-xs sm:text-sm"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Merancang Alur...</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-5 h-5 rounded-full overflow-hidden border border-white/40 shrink-0">
-                    <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
-                  </div>
+            
+            <div className="relative group p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-md transition-transform active:scale-95">
+              <div className="absolute inset-[-1000%] bg-[conic-gradient(from_90deg_at_50%_50%,#2563eb_0%,#a855f7_50%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
+              <Button
+                type="submit"
+                disabled={!topic.trim() || isGenerating}
+                className="relative z-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 px-6 cursor-pointer shadow-xs text-xs sm:text-sm border-0 transition-colors"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Merancang Alur...</span>
+                  </>
+                ) : (
                   <span>Hasilkan Alur Kerja</span>
-                </>
-              )}
-            </Button>
+                )}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -308,19 +308,18 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             </button>
           </div>
 
-          <Button
-            onClick={() => {
-              if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
-              setAiDialogOpen(true);
-            }}
-            variant="outline"
-            className="border-primary/40 text-primary hover:bg-primary/10 font-semibold gap-1.5 text-xs h-9 cursor-pointer"
-          >
-            <div className="w-4 h-4 rounded-full overflow-hidden border border-primary/30 shrink-0">
-              <img src="/maskot.jpeg" alt="Liko AI" className="w-full h-full object-cover object-top" />
-            </div>
-            <span>Saran Langkah AI</span>
-          </Button>
+          <div className="relative group p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-xs transition-transform active:scale-95">
+            <div className="absolute inset-[-1000%] bg-[conic-gradient(from_90deg_at_50%_50%,#2563eb_0%,#a855f7_50%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
+            <Button
+              onClick={() => {
+                if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
+                setAiDialogOpen(true);
+              }}
+              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold px-3 py-1.5 h-9 rounded-[10px] text-xs border-0 transition-colors cursor-pointer"
+            >
+              <span>Saran Langkah AI</span>
+            </Button>
+          </div>
 
           <Button
             onClick={() => setAddNodeDialogOpen(true)}
