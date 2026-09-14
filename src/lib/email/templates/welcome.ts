@@ -51,12 +51,22 @@ export function renderWelcomeEmail({
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
-                <strong>Analisis AI Liko:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif Liko.
+                <strong>Analisis AI Liko:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif 24/7.
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
+                <strong>Catatan & Ekspor Dokumen:</strong> Tulis catatan kaya berformat lengkap dan ekspor dokumen PDF/DOCX sekali klik.
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
+                <strong>Roadmap & Alur Kerja Visual:</strong> Rancang peta alur belajar dan strategi proyek secara visual pada kanvas interaktif.
               </td>
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569;">
-                <strong>Catatan & Ekspor Dokumen:</strong> Tulis catatan kaya dan ekspor dokumen PDF berkualitas tinggi kapan saja.
+                <strong>Pusat Pengingat & Notifikasi:</strong> Pasang pengingat jadwal tautan agar tidak ada tugas penting yang terlewat.
               </td>
             </tr>
           </table>
