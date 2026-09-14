@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Info } from "lucide-react";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface AIRoadmapGeneratorDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function AIRoadmapGeneratorDialog({
 }: AIRoadmapGeneratorDialogProps) {
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
+  const { locale } = useTranslation();
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -195,31 +197,74 @@ export function AIRoadmapGeneratorDialog({
                 <div className="absolute -top-12 -right-12 w-40 h-40 bg-primary/25 blur-3xl rounded-full pointer-events-none" />
                 <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-cyan-500/25 blur-3xl rounded-full pointer-events-none" />
 
-                {/* Animated Liko Mascot Video Stage */}
-                <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-2 border-primary/40 shadow-xl bg-background shrink-0 aspect-square mb-5 z-10">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    poster="/maskot.jpeg"
-                    src="/vidio-liko.webm"
-                    className="w-full h-full object-cover"
+                {/* Mascot Avatar with Silky-Smooth AI Glow Stage */}
+                <div className="relative w-28 h-28 flex items-center justify-center mb-6">
+                  {/* Smooth Ambient Glow Halo */}
+                  <motion.div
+                    className="absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-500/30 via-primary/30 to-purple-500/30 blur-lg pointer-events-none transform-gpu"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.5, 0.85, 0.5],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+
+                  {/* Smooth Outer Subtle Dashed Ring */}
+                  <motion.div
+                    className="absolute -inset-1 rounded-full border border-dashed border-primary/30 pointer-events-none transform-gpu"
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                  />
+
+                  {/* Silky-Smooth Spinning Conic Laser Ring */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full transform-gpu"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
                   >
-                    <source src="/vidio-liko.webm" type="video/webm" />
-                  </video>
+                    <div className="relative w-full h-full rounded-full p-[3px] bg-[conic-gradient(from_0deg,transparent_0_140deg,#06b6d4_240deg,#8b5cf6_300deg,#3b82f6_360deg)] shadow-[0_0_24px_rgba(59,130,246,0.6)]">
+                      <div className="w-full h-full rounded-full bg-background" />
+                    </div>
+                  </motion.div>
+
+                  {/* Stable Mascot Video Container with Gentle Floating */}
+                  <motion.div
+                    className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-background shadow-xl bg-background z-10 transform-gpu"
+                    animate={{ y: [0, -2, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="auto"
+                      poster="/maskot.jpeg"
+                      src="/vidio-liko.webm"
+                      className="w-full h-full object-cover"
+                    >
+                      <source src="/vidio-liko.webm" type="video/webm" />
+                    </video>
+                  </motion.div>
                 </div>
 
                 {/* Status and Text */}
                 <div className="space-y-2 relative z-10">
-                  <p className="font-bold text-foreground text-base sm:text-lg flex items-center justify-center gap-2 font-heading">
-                    <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
-                    <span>Liko AI Sedang Bekerja...</span>
-                  </p>
+                  <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold select-none">
+                    {locale === "en" ? "Liko AI Assistant" : "Asisten AI Liko"}
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground font-heading">
+                    {locale === "en" ? "Liko AI Is Generating Roadmap..." : "Liko AI Sedang Merancang Alur..."}
+                  </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
-                    Liko sedang menganalisis topik, menyusun urutan langkah visual, dan merapikan tata letak kanvas terstruktur untuk Anda.
+                    {locale === "en"
+                      ? "Analyzing topic, organizing visual steps, and building your structured roadmap canvas."
+                      : "Liko sedang menganalisis topik, menyusun urutan langkah visual, dan merapikan tata letak kanvas terstruktur untukmu."}
                   </p>
                 </div>
 

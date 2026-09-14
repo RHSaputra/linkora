@@ -598,7 +598,7 @@ export function AddLinkDialog({
                     transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                   />
 
-                  {/* Silky-Smooth Spinning Conic Laser Ring with Orbiting Orb */}
+                  {/* Silky-Smooth Spinning Conic Laser Ring */}
                   <motion.div
                     className="absolute inset-0 rounded-full transform-gpu"
                     animate={{ rotate: 360 }}
@@ -606,8 +606,6 @@ export function AddLinkDialog({
                   >
                     <div className="relative w-full h-full rounded-full p-[3px] bg-[conic-gradient(from_0deg,transparent_0_140deg,#06b6d4_240deg,#8b5cf6_300deg,#3b82f6_360deg)] shadow-[0_0_24px_rgba(59,130,246,0.6)]">
                       <div className="w-full h-full rounded-full bg-background" />
-                      {/* Orbiting Glowing Laser Orb */}
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-[0_0_10px_#38bdf8,0_0_18px_#818cf8]" />
                     </div>
                   </motion.div>
 
@@ -627,15 +625,16 @@ export function AddLinkDialog({
 
                 {/* Status and Text */}
                 <div className="space-y-2 relative z-10">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    AI Insight Engine
+                  <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold select-none">
+                    {locale === "en" ? "Liko AI Assistant" : "Asisten AI Liko"}
                   </div>
                   <h3 className="text-lg font-bold text-foreground font-heading">
-                    Liko Sedang Menganalisis...
+                    {locale === "en" ? "Liko AI Is Analyzing..." : "Liko Sedang Menganalisis..."}
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
-                    Membaca konten link, mengekstrak judul, deskripsi, kategori cerdas, dan tag relevan untukmu.
+                    {locale === "en"
+                      ? "Reading link content, extracting title, summary, smart category, and relevant tags for you."
+                      : "Membaca konten link, mengekstrak judul, deskripsi, kategori cerdas, dan tag relevan untukmu."}
                   </p>
                 </div>
 
