@@ -17,7 +17,7 @@ import {
   HelpCircle,
   ChevronDown,
   ExternalLink,
-  Sparkles,
+  Zap,
 } from "lucide-react";
 import { LinkoraText } from "@/components/ui/linkora-text";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
@@ -221,7 +221,7 @@ export default function TermsPage() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Sparkles className="h-3.5 w-3.5" />
+                <Zap className="h-3.5 w-3.5" />
                 <span>{isEn ? "Quick Summary" : "Ringkasan Poin Utama"}</span>
               </button>
               <button

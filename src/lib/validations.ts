@@ -28,3 +28,44 @@ export const createCollectionSchema = z.object({
 export type CreateLinkInput = z.infer<typeof createLinkSchema>;
 export type UpdateLinkInput = z.infer<typeof updateLinkSchema>;
 export type CreateCollectionInput = z.infer<typeof createCollectionSchema>;
+
+export const createRoadmapSchema = z.object({
+  title: z.string().min(1, "Judul roadmap wajib diisi").max(100, "Judul terlalu panjang (maksimal 100 karakter)"),
+  description: z.string().max(500, "Deskripsi terlalu panjang (maksimal 500 karakter)").optional(),
+});
+
+export const updateRoadmapSchema = createRoadmapSchema.partial();
+
+export const createRoadmapNodeSchema = z.object({
+  type: z.enum(["LINK", "TASK", "NOTE"]),
+  title: z.string().min(1, "Judul node wajib diisi").max(120, "Judul terlalu panjang"),
+  description: z.string().max(1000, "Konten/deskripsi terlalu panjang").optional().nullable(),
+  status: z.enum(["TODO", "IN_PROGRESS", "COMPLETED"]).default("TODO"),
+  positionX: z.number().default(0),
+  positionY: z.number().default(0),
+  linkId: z.string().optional().nullable(),
+});
+
+export const updateRoadmapNodeSchema = createRoadmapNodeSchema.partial();
+
+export const batchUpdateNodePositionsSchema = z.object({
+  positions: z.array(
+    z.object({
+      id: z.string(),
+      positionX: z.number(),
+      positionY: z.number(),
+    })
+  ),
+});
+
+export const createRoadmapEdgeSchema = z.object({
+  sourceNodeId: z.string().min(1, "Source node required"),
+  targetNodeId: z.string().min(1, "Target node required"),
+  label: z.string().max(50).optional().nullable(),
+});
+
+export type CreateRoadmapInput = z.infer<typeof createRoadmapSchema>;
+export type UpdateRoadmapInput = z.infer<typeof updateRoadmapSchema>;
+export type CreateRoadmapNodeInput = z.infer<typeof createRoadmapNodeSchema>;
+export type UpdateRoadmapNodeInput = z.infer<typeof updateRoadmapNodeSchema>;
+export type CreateRoadmapEdgeInput = z.infer<typeof createRoadmapEdgeSchema>;

@@ -51,3 +51,49 @@ export type DashboardStats = {
   recentActivity: ReturnType<typeof serializeActivity>[];
   upcomingReminders: SerializedLink[];
 };
+
+export type RoadmapNodeType = "LINK" | "TASK" | "NOTE";
+export type RoadmapNodeStatus = "TODO" | "IN_PROGRESS" | "COMPLETED";
+
+export function serializeRoadmapNode(node: any) {
+  return {
+    ...node,
+    createdAt: node.createdAt ? new Date(node.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: node.updatedAt ? new Date(node.updatedAt).toISOString() : new Date().toISOString(),
+    link: node.link ? serializeLink(node.link) : null,
+  };
+}
+
+export function serializeRoadmapEdge(edge: any) {
+  return {
+    ...edge,
+    createdAt: edge.createdAt ? new Date(edge.createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+export function serializeRoadmap(roadmap: any) {
+  const nodes = (roadmap.nodes || []).map(serializeRoadmapNode);
+  const edges = (roadmap.edges || []).map(serializeRoadmapEdge);
+
+  const totalNodes = nodes.length;
+  const completedNodes = nodes.filter((n: any) => n.status === "COMPLETED").length;
+  const progressPercent = totalNodes > 0 ? Math.round((completedNodes / totalNodes) * 100) : 0;
+
+  return {
+    id: roadmap.id,
+    userId: roadmap.userId,
+    title: roadmap.title,
+    description: roadmap.description || "",
+    createdAt: roadmap.createdAt ? new Date(roadmap.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: roadmap.updatedAt ? new Date(roadmap.updatedAt).toISOString() : new Date().toISOString(),
+    nodes,
+    edges,
+    totalNodes,
+    completedNodes,
+    progressPercent,
+  };
+}
+
+export type SerializedRoadmapNode = ReturnType<typeof serializeRoadmapNode>;
+export type SerializedRoadmapEdge = ReturnType<typeof serializeRoadmapEdge>;
+export type SerializedRoadmap = ReturnType<typeof serializeRoadmap>;

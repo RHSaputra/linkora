@@ -71,7 +71,8 @@ export type RefreshResource =
   | "collections"
   | "tags"
   | "notes"
-  | "noteFolders";
+  | "noteFolders"
+  | "roadmaps";
 
 const REFRESH_EVENT = "refreshData";
 
@@ -424,3 +425,40 @@ export async function fetchMetadata(url: string) {
   if (res.ok) return res.json();
   return null;
 }
+
+export function useRoadmaps(searchQuery?: string) {
+  const [roadmaps, setRoadmaps] = useState<import("@/lib/types").SerializedRoadmap[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const url = searchQuery
+    ? `/api/roadmaps?q=${encodeURIComponent(searchQuery)}`
+    : "/api/roadmaps";
+
+  const refresh = useCallback(
+    async (force = false) => {
+      setLoading(true);
+      const data = await fetchWithCache<{ items: import("@/lib/types").SerializedRoadmap[] }>(url, force);
+      if (data?.items) {
+        setRoadmaps(data.items);
+      }
+      setLoading(false);
+    },
+    [url]
+  );
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    return subscribeRefresh(() => refresh(true), "roadmaps");
+  }, [refresh]);
+
+  return { roadmaps, loading, refresh, setRoadmaps };
+}
+
+export async function deleteRoadmap(id: string) {
+  invalidateCache("/api/roadmaps");
+  return fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
+}
+

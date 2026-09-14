@@ -24,6 +24,7 @@ import {
   VolumeX,
   LogIn,
   ArrowRight,
+  GitFork,
 } from "lucide-react";
 import { playNotificationSound, requestWebNotificationPermission } from "@/lib/notification-service";
 import { LinkoraText } from "@/components/ui/linkora-text";
@@ -250,6 +251,7 @@ function NavContent({
     { href: "/links", label: t("nav.links"), icon: Link2, tourId: "links" },
     { href: "/collections", label: t("nav.collections"), icon: FolderOpen, tourId: "collections" },
     { href: "/notes", label: t("nav.notes"), icon: PenBox, tourId: "notes" },
+    { href: "/roadmaps", label: t("nav.roadmaps") || "Roadmaps", icon: GitFork, tourId: "roadmaps" },
   ];
 
   const now = new Date();

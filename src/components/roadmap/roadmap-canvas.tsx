@@ -1,0 +1,520 @@
+"use client";
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { SerializedRoadmapNode, SerializedRoadmapEdge } from "@/lib/types";
+import { calculateAutoLayout } from "@/lib/roadmap-layout";
+import {
+  Link2,
+  CheckSquare,
+  StickyNote,
+  ExternalLink,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  Circle,
+  Plus,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Unlink,
+  Link as ConnectIcon,
+  Globe,
+  MoreVertical,
+  LayoutGrid,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+interface RoadmapCanvasProps {
+  roadmapId: string;
+  nodes: SerializedRoadmapNode[];
+  edges: SerializedRoadmapEdge[];
+  onNodePositionChange: (positions: { id: string; positionX: number; positionY: number }[]) => void;
+  onStatusChange: (nodeId: string, status: "TODO" | "IN_PROGRESS" | "COMPLETED") => void;
+  onDeleteNode: (nodeId: string) => void;
+  onAddEdge: (sourceNodeId: string, targetNodeId: string) => void;
+  onDeleteEdge: (edgeId: string) => void;
+  onOpenAddNode: () => void;
+}
+
+const NODE_WIDTH = 260;
+const NODE_HEIGHT = 140;
+
+export function RoadmapCanvas({
+  roadmapId,
+  nodes,
+  edges,
+  onNodePositionChange,
+  onStatusChange,
+  onDeleteNode,
+  onAddEdge,
+  onDeleteEdge,
+  onOpenAddNode,
+}: RoadmapCanvasProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Canvas viewport state
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 40, y: 40 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+
+  // Node Dragging State
+  const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+  const dragStartPosRef = useRef({ pointerX: 0, pointerY: 0, nodeX: 0, nodeY: 0 });
+  const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Connecting mode state
+  const [connectingSourceId, setConnectingSourceId] = useState<string | null>(null);
+
+  // Sync positions when props change (unless dragging)
+  useEffect(() => {
+    const map: Record<string, { x: number; y: number }> = {};
+    nodes.forEach((n) => {
+      map[n.id] = { x: n.positionX || 0, y: n.positionY || 0 };
+    });
+    setLocalPositions(map);
+  }, [nodes]);
+
+  // Debounced position autosave
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const queuePositionSave = useCallback(
+    (nodeId: string, newX: number, newY: number) => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        onNodePositionChange([{ id: nodeId, positionX: newX, positionY: newY }]);
+      }, 500);
+    },
+    [onNodePositionChange]
+  );
+
+  // Handle Zoom & Pan
+  const handleZoomIn = () => setScale((s) => Math.min(s + 0.15, 2.0));
+  const handleZoomOut = () => setScale((s) => Math.max(s - 0.15, 0.4));
+  const handleResetView = () => {
+    setScale(1);
+    setPan({ x: 40, y: 40 });
+  };
+
+  // Handle Auto Layout
+  const handleAutoLayout = () => {
+    const layouted = calculateAutoLayout(nodes, edges);
+    const map: Record<string, { x: number; y: number }> = {};
+    const updates: { id: string; positionX: number; positionY: number }[] = [];
+
+    layouted.forEach((n) => {
+      map[n.id] = { x: n.positionX, y: n.positionY };
+      updates.push({ id: n.id, positionX: n.positionX, positionY: n.positionY });
+    });
+
+    setLocalPositions(map);
+    onNodePositionChange(updates);
+  };
+
+  // Wheel zoom / pan
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.05 : 0.95;
+      setScale((s) => Math.min(Math.max(s * zoomFactor, 0.4), 2.0));
+    } else {
+      setPan((prev) => ({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
+    }
+  };
+
+  // Pan Canvas Mouse Handlers
+  const handleCanvasPointerDown = (e: React.PointerEvent) => {
+    if (e.target === containerRef.current || (e.target as HTMLElement).tagName === "svg" || (e.target as HTMLElement).id === "canvas-bg") {
+      setIsPanning(true);
+      panStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    }
+  };
+
+  const handleCanvasPointerMove = (e: React.PointerEvent) => {
+    if (isPanning) {
+      setPan({
+        x: e.clientX - panStartRef.current.x,
+        y: e.clientY - panStartRef.current.y,
+      });
+      return;
+    }
+
+    if (draggingNodeId) {
+      const dx = (e.clientX - dragStartPosRef.current.pointerX) / scale;
+      const dy = (e.clientY - dragStartPosRef.current.pointerY) / scale;
+
+      const newX = Math.round(dragStartPosRef.current.nodeX + dx);
+      const newY = Math.round(dragStartPosRef.current.nodeY + dy);
+
+      setLocalPositions((prev) => ({
+        ...prev,
+        [draggingNodeId]: { x: newX, y: newY },
+      }));
+
+      queuePositionSave(draggingNodeId, newX, newY);
+    }
+  };
+
+  const handleCanvasPointerUp = (e: React.PointerEvent) => {
+    if (isPanning) {
+      setIsPanning(false);
+    }
+    if (draggingNodeId) {
+      setDraggingNodeId(null);
+    }
+  };
+
+  // Node Drag Handler
+  const handleNodePointerDown = (nodeId: string, e: React.PointerEvent) => {
+    e.stopPropagation();
+    setDraggingNodeId(nodeId);
+    const current = localPositions[nodeId] || { x: 0, y: 0 };
+    dragStartPosRef.current = {
+      pointerX: e.clientX,
+      pointerY: e.clientY,
+      nodeX: current.x,
+      nodeY: current.y,
+    };
+  };
+
+  // Connect click handler
+  const handleNodeConnectClick = (nodeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!connectingSourceId) {
+      setConnectingSourceId(nodeId);
+    } else if (connectingSourceId === nodeId) {
+      setConnectingSourceId(null);
+    } else {
+      onAddEdge(connectingSourceId, nodeId);
+      setConnectingSourceId(null);
+    }
+  };
+
+  // Status Cycle Handler
+  const cycleStatus = (node: SerializedRoadmapNode, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextMap: Record<string, "TODO" | "IN_PROGRESS" | "COMPLETED"> = {
+      TODO: "IN_PROGRESS",
+      IN_PROGRESS: "COMPLETED",
+      COMPLETED: "TODO",
+    };
+    onStatusChange(node.id, nextMap[node.status] || "TODO");
+  };
+
+  // Compute Bezier Curved Edge Path
+  const computeBezierPath = (sourcePos: { x: number; y: number }, targetPos: { x: number; y: number }) => {
+    const x1 = sourcePos.x + NODE_WIDTH;
+    const y1 = sourcePos.y + NODE_HEIGHT / 2;
+    const x2 = targetPos.x;
+    const y2 = targetPos.y + NODE_HEIGHT / 2;
+
+    const dx = Math.abs(x2 - x1) * 0.5;
+    const controlX1 = x1 + Math.max(dx, 40);
+    const controlX2 = x2 - Math.max(dx, 40);
+
+    return {
+      path: `M ${x1} ${y1} C ${controlX1} ${y1}, ${controlX2} ${y2}, ${x2} ${y2}`,
+      midX: (x1 + x2) / 2,
+      midY: (y1 + y2) / 2,
+    };
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      id="canvas-bg"
+      onWheel={handleWheel}
+      onPointerDown={handleCanvasPointerDown}
+      onPointerMove={handleCanvasPointerMove}
+      onPointerUp={handleCanvasPointerUp}
+      className={cn(
+        "relative w-full h-[calc(100vh-140px)] min-h-[500px] overflow-hidden select-none bg-background border border-border/60 rounded-2xl shadow-inner",
+        isPanning ? "cursor-grabbing" : "cursor-grab"
+      )}
+    >
+      {/* Background Dot Grid */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30"
+        style={{
+          backgroundImage: `radial-gradient(var(--foreground) 1.5px, transparent 1.5px)`,
+          backgroundSize: `${24 * scale}px ${24 * scale}px`,
+          backgroundPosition: `${pan.x}px ${pan.y}px`,
+        }}
+      />
+
+      {/* Connection Notice Header */}
+      {connectingSourceId && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground px-4 py-2 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2 animate-bounce">
+          <ConnectIcon className="w-4 h-4" />
+          <span>Klik langkah tujuan untuk menghubungkan</span>
+          <button
+            onClick={() => setConnectingSourceId(null)}
+            className="ml-2 underline hover:opacity-80"
+          >
+            Batal
+          </button>
+        </div>
+      )}
+
+      {/* Floating Canvas Controls Toolbar */}
+      <div className="absolute bottom-6 right-6 z-30 flex items-center gap-1.5 p-1.5 rounded-xl glass-panel border-border/60 bg-card/90 shadow-lg">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleAutoLayout}
+          title="Rapikan Tata Letak Canvas"
+          className="h-8 gap-1.5 px-2.5 text-xs text-foreground font-medium hover:bg-muted"
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-primary" />
+          <span>Rapikan Canvas</span>
+        </Button>
+
+        <div className="w-[1px] h-4 bg-border/60 mx-1" />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleZoomIn}
+          title="Perbesar"
+          className="h-8 w-8 text-foreground"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </Button>
+        <span className="text-[11px] font-mono text-muted-foreground px-1">
+          {Math.round(scale * 100)}%
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleZoomOut}
+          title="Perkecil"
+          className="h-8 w-8 text-foreground"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </Button>
+        <div className="w-[1px] h-4 bg-border/60 mx-1" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleResetView}
+          title="Reset Tampilan"
+          className="h-8 w-8 text-foreground"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Canvas Transform Wrapper */}
+      <div
+        className="absolute inset-0 origin-top-left transition-transform duration-75"
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+        }}
+      >
+        {/* SVG Edges Layer */}
+        <svg className="absolute inset-0 w-[5000px] h-[5000px] pointer-events-none overflow-visible">
+          <defs>
+            <marker
+              id="arrowhead"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0, 8 3, 0 6" className="fill-primary" />
+            </marker>
+          </defs>
+
+          {edges.map((edge) => {
+            const sourcePos = localPositions[edge.sourceNodeId];
+            const targetPos = localPositions[edge.targetNodeId];
+            if (!sourcePos || !targetPos) return null;
+
+            const { path, midX, midY } = computeBezierPath(sourcePos, targetPos);
+
+            return (
+              <g key={edge.id} className="group pointer-events-auto">
+                <path
+                  d={path}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  markerEnd="url(#arrowhead)"
+                  className="text-primary/70 group-hover:text-primary transition-colors stroke-dasharray-none"
+                />
+                {/* Edge Delete Hover Trigger */}
+                <g
+                  transform={`translate(${midX - 10}, ${midY - 10})`}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={() => onDeleteEdge(edge.id)}
+                >
+                  <circle cx="10" cy="10" r="10" className="fill-destructive text-white" />
+                  <text
+                    x="10"
+                    y="14"
+                    textAnchor="middle"
+                    fill="white"
+                    fontSize="10"
+                    fontWeight="bold"
+                  >
+                    ×
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Nodes Layer */}
+        {nodes.map((node) => {
+          const pos = localPositions[node.id] || { x: node.positionX || 0, y: node.positionY || 0 };
+          const isConnectingSource = connectingSourceId === node.id;
+          const isCompleted = node.status === "COMPLETED";
+          const isInProgress = node.status === "IN_PROGRESS";
+
+          return (
+            <div
+              key={node.id}
+              style={{
+                transform: `translate(${pos.x}px, ${pos.y}px)`,
+                width: NODE_WIDTH,
+              }}
+              onPointerDown={(e) => handleNodePointerDown(node.id, e)}
+              className={cn(
+                "absolute rounded-xl border p-4 shadow-md transition-shadow cursor-grab active:cursor-grabbing backdrop-blur-md glass-panel flex flex-col justify-between gap-3 bg-card/95",
+                isCompleted
+                  ? "border-emerald-500/60 shadow-emerald-500/10 bg-emerald-500/5"
+                  : isInProgress
+                  ? "border-amber-500/60 shadow-amber-500/10 bg-amber-500/5 ring-1 ring-amber-500/30"
+                  : "border-border/80 hover:border-primary/40",
+                isConnectingSource && "ring-2 ring-primary animate-pulse"
+              )}
+            >
+              {/* Card Header: Type Badge & Status Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  {node.type === "LINK" && (
+                    <Badge variant="outline" className="text-[10px] gap-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
+                      <Link2 className="w-3 h-3" /> Link
+                    </Badge>
+                  )}
+                  {node.type === "TASK" && (
+                    <Badge variant="outline" className="text-[10px] gap-1 bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30">
+                      <CheckSquare className="w-3 h-3" /> Task
+                    </Badge>
+                  )}
+                  {node.type === "NOTE" && (
+                    <Badge variant="outline" className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
+                      <StickyNote className="w-3 h-3" /> Note
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Status Toggle Badge */}
+                <button
+                  type="button"
+                  onClick={(e) => cycleStatus(node, e)}
+                  className={cn(
+                    "flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer border",
+                    isCompleted
+                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30"
+                      : isInProgress
+                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/30"
+                      : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                  )}
+                >
+                  {isCompleted ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Selesai
+                    </>
+                  ) : isInProgress ? (
+                    <>
+                      <Clock className="w-3 h-3 text-amber-500 animate-spin" /> Proses
+                    </>
+                  ) : (
+                    <>
+                      <Circle className="w-3 h-3 text-muted-foreground" /> To Do
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Title & Description */}
+              <div className="space-y-1">
+                <h4
+                  className={cn(
+                    "text-sm font-semibold text-foreground line-clamp-2 leading-tight",
+                    isCompleted && "line-through text-muted-foreground"
+                  )}
+                >
+                  {node.title}
+                </h4>
+                {node.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                    {node.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Attached Link metadata chip if type LINK */}
+              {node.type === "LINK" && node.link && (
+                <a
+                  href={node.link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center justify-between p-1.5 rounded-lg border border-primary/20 bg-background/80 hover:bg-muted text-xs transition-colors group/link mt-1"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {node.link.favicon ? (
+                      <img src={node.link.favicon} alt="" className="w-3.5 h-3.5 rounded object-contain shrink-0" />
+                    ) : (
+                      <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    )}
+                    <span className="truncate text-[11px] font-medium text-foreground group-hover/link:text-primary">
+                      {node.link.title}
+                    </span>
+                  </div>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground group-hover/link:text-primary shrink-0" />
+                </a>
+              )}
+
+              {/* Node Card Bottom Actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+                <button
+                  type="button"
+                  onClick={(e) => handleNodeConnectClick(node.id, e)}
+                  className={cn(
+                    "flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-1.5 py-0.5 rounded",
+                    isConnectingSource
+                      ? "bg-primary text-primary-foreground font-bold"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  )}
+                  title="Hubungkan ke node lain"
+                >
+                  <ConnectIcon className="w-3.5 h-3.5" />
+                  <span>{isConnectingSource ? "Menghubungkan..." : "Hubungkan"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteNode(node.id);
+                  }}
+                  className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors"
+                  title="Hapus Node"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

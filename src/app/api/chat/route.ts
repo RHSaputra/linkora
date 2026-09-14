@@ -20,6 +20,7 @@ async function buildUserContext(userId: string, userName: string, isEn: boolean)
     recentLinks,
     upcomingReminders,
     collectionCount,
+    userRoadmaps,
   ] = await Promise.all([
     prisma.link.count({ where: { userId } }),
     prisma.link.count({ where: { userId, isFavorite: true } }),
@@ -53,6 +54,14 @@ async function buildUserContext(userId: string, userName: string, isEn: boolean)
       select: { title: true, reminderAt: true },
     }),
     prisma.collection.count({ where: { userId } }),
+    prisma.roadmap.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      include: {
+        nodes: { select: { title: true, status: true, type: true } },
+      },
+    }),
   ]);
 
   // If user has no links, return minimal context
@@ -120,10 +129,29 @@ Pengguna belum menyimpan tautan apapun.
       ? "No upcoming reminders."
       : "Tidak ada reminder yang mendekat.";
 
+  const roadmapLines =
+    userRoadmaps.length > 0
+      ? userRoadmaps
+          .map((r) => {
+            const total = r.nodes.length;
+            const completed = r.nodes.filter((n) => n.status === "COMPLETED").length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const pendingNodes = r.nodes
+              .filter((n) => n.status !== "COMPLETED")
+              .map((n) => n.title)
+              .slice(0, 3)
+              .join(", ");
+            return `- "${r.title}": ${completed}/${total} selesai (${percent}%)${pendingNodes ? ` [Pending: ${pendingNodes}]` : ""}`;
+          })
+          .join("\n")
+      : isEn
+      ? "No roadmaps created yet."
+      : "Belum ada roadmap.";
+
   return isEn
     ? `=== USER DATA CONTEXT ===
 Name: ${userName}
-Total links: ${totalLinks} | Favorites: ${favoriteCount} | Collections: ${collectionCount}
+Total links: ${totalLinks} | Favorites: ${favoriteCount} | Collections: ${collectionCount} | Roadmaps: ${userRoadmaps.length}
 Categories: ${categoryLines}
 Top tags: ${topTags || "-"}
 
@@ -132,10 +160,13 @@ ${recentSummary}
 
 Upcoming reminders:
 ${reminderLines}
+
+User Roadmaps:
+${roadmapLines}
 === END OF CONTEXT ===`
     : `=== KONTEKS DATA PENGGUNA ===
 Nama: ${userName}
-Total tautan: ${totalLinks} | Favorit: ${favoriteCount} | Koleksi: ${collectionCount}
+Total tautan: ${totalLinks} | Favorit: ${favoriteCount} | Koleksi: ${collectionCount} | Roadmap: ${userRoadmaps.length}
 Kategori: ${categoryLines}
 Tag populer: ${topTags || "-"}
 
@@ -144,6 +175,9 @@ ${recentSummary}
 
 Reminder mendekat:
 ${reminderLines}
+
+Roadmap Pengguna:
+${roadmapLines}
 === AKHIR KONTEKS ===`;
 }
 
