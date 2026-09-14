@@ -8,7 +8,7 @@ export function renderPasswordResetEmail({
   appUrl,
   currentYear,
 }: PasswordResetTemplateProps): { subject: string; html: string; text: string } {
-  const subject = "Atur Ulang Password Akun Linkorian";
+  const subject = "Atur Ulang Password Akun Linkora";
   const greeting = userName ? `Halo, ${escapeHtml(userName)}` : "Halo";
 
   const content = `
@@ -21,23 +21,29 @@ export function renderPasswordResetEmail({
     </p>
 
     <p style="margin: 0 0 20px; font-size: 15px; line-height: 24px; color: #334155;">
-      Kami menerima permintaan untuk mengatur ulang kata sandi akun <strong>Linkorian</strong> Anda. Jika Anda yang meminta perubahan ini, silakan klik tombol di bawah untuk membuat kata sandi baru yang aman:
+      Kami menerima permintaan untuk mengatur ulang kata sandi akun <strong>Linkora</strong> Anda. Jika Anda yang meminta perubahan ini, silakan klik tombol di bawah untuk membuat kata sandi baru yang aman:
     </p>
 
-    <!-- CTA Button -->
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
+    <!-- CTA Button (PAS TENGAH) -->
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
       <tr>
-        <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
-          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.3px;">
-            ATUR ULANG KATA SANDI &rarr;
-          </a>
+        <td align="center">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.3px; text-align: center;">
+                  ATUR ULANG KATA SANDI
+                </a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
 
-    <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; border-radius: 8px; padding: 14px 18px; margin: 24px 0;">
-      <p style="margin: 0; font-size: 13px; line-height: 20px; color: #475569;">
-        ⏱️ Tautan ini hanya berlaku selama <strong>${expiryMinutes} menit</strong> dan hanya dapat digunakan satu kali.
+    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin: 24px 0; text-align: center;">
+      <p style="margin: 0; font-size: 13px; line-height: 20px; color: #475569; text-align: center;">
+        Tautan ini hanya berlaku selama <strong>${expiryMinutes} menit</strong> dan hanya dapat digunakan satu kali.
       </p>
     </div>
 
@@ -55,7 +61,7 @@ export function renderPasswordResetEmail({
       Salam hangat,
     </p>
     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a;">
-      Tim Linkorian
+      Tim Linkora
     </p>
 
     <!-- Fallback URL -->

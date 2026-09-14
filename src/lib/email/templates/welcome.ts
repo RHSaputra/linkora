@@ -8,7 +8,7 @@ export function renderWelcomeEmail({
   appUrl = process.env.APP_URL || "https://linkorian.online",
   currentYear,
 }: WelcomeTemplateProps): { subject: string; html: string; text: string } {
-  const subject = "Selamat datang di Linkorian!";
+  const subject = "Selamat datang di Linkora!";
   const actionUrl = loginUrl || `${appUrl.replace(/\/$/, "")}/dashboard`;
 
   // Format greeting safely: avoid undefined, null, Guest, User123
@@ -18,8 +18,8 @@ export function renderWelcomeEmail({
   }
 
   const welcomeHeadline = displayName
-    ? `Selamat datang di Linkorian, ${escapeHtml(displayName)}.`
-    : "Selamat datang di Linkorian.";
+    ? `Selamat datang di Linkora, ${escapeHtml(displayName)}.`
+    : "Selamat datang di Linkora.";
 
   const content = `
     <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 30px;">
@@ -46,17 +46,17 @@ export function renderWelcomeEmail({
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
-                🔹 <strong>Manajemen Tautan Cerdas:</strong> Simpan, kategorikan, dan sematkan link favorit dengan pratinjau instan.
+                <strong>Manajemen Tautan Cerdas:</strong> Simpan, kategorikan, dan sematkan link favorit dengan pratinjau instan.
               </td>
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
-                🔹 <strong>Analisis AI Gemini:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif Liko.
+                <strong>Analisis AI Gemini:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif Liko.
               </td>
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569;">
-                🔹 <strong>Catatan & Ekspor Dokumen:</strong> Tulis catatan kaya dan ekspor dokumen PDF berkualitas tinggi kapan saja.
+                <strong>Catatan & Ekspor Dokumen:</strong> Tulis catatan kaya dan ekspor dokumen PDF berkualitas tinggi kapan saja.
               </td>
             </tr>
           </table>
@@ -64,13 +64,19 @@ export function renderWelcomeEmail({
       </tr>
     </table>
 
-    <!-- CTA Button -->
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 28px 0 20px;">
+    <!-- CTA Button (PAS TENGAH) -->
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin: 28px 0 20px;">
       <tr>
-        <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
-          <a href="${actionUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.3px;">
-            BUKA RUANG KERJA LINKORIAN &rarr;
-          </a>
+        <td align="center">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                <a href="${actionUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.3px; text-align: center;">
+                  BUKA RUANG KERJA LINKORA
+                </a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
@@ -81,7 +87,7 @@ export function renderWelcomeEmail({
       Salam hangat,
     </p>
     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a;">
-      Tim Linkorian
+      Tim Linkora
     </p>
   `;
 

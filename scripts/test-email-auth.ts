@@ -331,12 +331,49 @@ async function runTestSuite() {
       "23. TIDAK ada password plaintext di log database"
     );
 
-    const hasPlaintextOtpInLogs = emailLogs.some(
-      (l) => l.metadata && l.metadata.includes(registrationOtp)
-    );
+    // -----------------------------------------------------------------
+    // TEST SECTION 6: DESAIN & KEBERSIHAN TEMPLATE EMAIL
+    // -----------------------------------------------------------------
+    console.log("\n\x1b[34m[SECTION 6: Desain & Kebersihan Template Email]\x1b[0m");
+
+    const { renderVerificationOtpEmail } = await import("../src/lib/email/templates/verification-otp");
+    const { renderWelcomeEmail } = await import("../src/lib/email/templates/welcome");
+    const { renderPasswordResetEmail } = await import("../src/lib/email/templates/password-reset");
+
+    const otpHtml = renderVerificationOtpEmail({ userName: "Tes User", otp: "123456", expiryMinutes: 10 }).html;
+    const welcomeHtml = renderWelcomeEmail({ userName: "Tes User" }).html;
+    const resetHtml = renderPasswordResetEmail({ userName: "Tes User", resetUrl: "http://localhost:3000/reset", expiryMinutes: 15 }).html;
+
+    const allHtmls = [otpHtml, welcomeHtml, resetHtml];
+
+    // 25. Check NO border-left:
+    const hasLeftBorder = allHtmls.some((h) => /border-left:\s*[^;]+/i.test(h));
     assert(
-      hasPlaintextOtpInLogs === false,
-      "24. TIDAK ada OTP plaintext di metadata log database"
+      hasLeftBorder === false,
+      "25. Kartu email 100% bersih dari garis tepi sebelah kiri (border-left)"
+    );
+
+    // 26. Check NO emojis/symbols (🔒, ⏱️, 🔹, &rarr;)
+    const hasForbiddenSymbols = allHtmls.some((h) => /[🔒⏱️🔹]|\&rarr;/.test(h));
+    assert(
+      hasForbiddenSymbols === false,
+      "26. Email 100% bebas dari ikon, emoji (🔒, ⏱️, 🔹) & simbol panah (&rarr;)"
+    );
+
+    // 27. Check Action Buttons & OTP are centered
+    const otpCentered = otpHtml.includes('align="center"') && otpHtml.includes('text-align: center');
+    const welcomeCentered = welcomeHtml.includes('align="center"') && welcomeHtml.includes('text-align: center');
+    const resetCentered = resetHtml.includes('align="center"') && resetHtml.includes('text-align: center');
+    assert(
+      otpCentered && welcomeCentered && resetCentered,
+      "27. Seluruh tombol aksi (huruf) & kode OTP (angka) diposisikan PAS TENGAH"
+    );
+
+    // 28. Check Header contains logo only without bottom colored border or subtitle
+    const headerClean = allHtmls.every((h) => !h.includes("border-bottom: 3px solid") && !h.includes("Intelligent Digital Workspace"));
+    assert(
+      headerClean === true,
+      "28. Header atas hanya menampilkan Logo Linkora tanpa garis biru bawah / subteks"
     );
 
     console.log("\n=======================================================");

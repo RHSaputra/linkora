@@ -4,10 +4,6 @@ import { renderWelcomeEmail } from "@/lib/email/templates/welcome";
 import { renderPasswordResetEmail } from "@/lib/email/templates/password-reset";
 
 export async function GET(req: Request) {
-  if (process.env.NODE_ENV === "production") {
-    return new NextResponse(null, { status: 404 });
-  }
-
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") || "otp";
   const appUrl = process.env.APP_URL || "http://localhost:3000";

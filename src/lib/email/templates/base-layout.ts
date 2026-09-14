@@ -71,23 +71,10 @@ export function renderBaseLayout({
                 
                 <!-- Sleek Branded Header Banner -->
                 <tr>
-                  <td align="center" style="background-color: #090d16; padding: 26px 20px; border-bottom: 3px solid #6366f1;">
+                  <td align="center" style="background-color: #090d16; padding: 28px 20px;">
                     <a href="${cleanAppUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
-                      <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                          <td align="center">
-                            <!-- Official Linkora/Linkorian 3D Logo Banner -->
-                            <img class="header-logo" src="${logoBannerUrl}" alt="Linkorian" width="165" style="display: block; width: 165px; max-width: 100%; height: auto; margin: 0 auto;" />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td align="center" style="padding-top: 6px;">
-                            <span style="display: inline-block; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-                              Intelligent Digital Workspace
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
+                      <!-- Official Linkora Logo Banner -->
+                      <img class="header-logo" src="${logoBannerUrl}" alt="Linkora" width="165" style="display: block; width: 165px; max-width: 100%; height: auto; margin: 0 auto;" />
                     </a>
                   </td>
                 </tr>
@@ -104,7 +91,7 @@ export function renderBaseLayout({
                   <td style="padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9;">
                     <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td align="left" style="font-size: 12px; color: #64748b;">
+                        <td align="center" style="font-size: 12px; color: #64748b; text-align: center;">
                           Butuh bantuan langsung? Hubungi kami di <a href="mailto:supportlinkorian@gmail.com" style="color: #4f46e5; text-decoration: none; font-weight: 600;">supportlinkorian@gmail.com</a>
                         </td>
                       </tr>
@@ -122,13 +109,13 @@ export function renderBaseLayout({
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="font-size: 11px; line-height: 18px; color: #94a3b8; text-align: center;">
-                    <p style="margin: 0 0 6px;">Email resmi ini dikirim otomatis oleh sistem keamanan <strong>Linkorian</strong>.</p>
+                    <p style="margin: 0 0 6px;">Email resmi ini dikirim otomatis oleh sistem keamanan <strong>Linkora</strong>.</p>
                     <p style="margin: 0 0 6px;">
-                      <a href="${cleanAppUrl}" style="color: #6366f1; text-decoration: none; font-weight: 600;">linkorian.online</a> &bull;
-                      <a href="${cleanAppUrl}/privacy" style="color: #64748b; text-decoration: none;">Kebijakan Privasi</a> &bull;
+                      <a href="${cleanAppUrl}" style="color: #6366f1; text-decoration: none; font-weight: 600;">linkorian.online</a> |
+                      <a href="${cleanAppUrl}/privacy" style="color: #64748b; text-decoration: none;">Kebijakan Privasi</a> |
                       <a href="mailto:supportlinkorian@gmail.com" style="color: #64748b; text-decoration: none;">Bantuan</a>
                     </p>
-                    <p style="margin: 0; color: #cbd5e1;">&copy; ${currentYear} Linkorian. All rights reserved.</p>
+                    <p style="margin: 0; color: #cbd5e1;">&copy; ${currentYear} Linkora. All rights reserved.</p>
                   </td>
                 </tr>
               </table>
