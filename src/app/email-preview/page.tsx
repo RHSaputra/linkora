@@ -381,9 +381,8 @@ export default function EmailPreviewPage() {
                 }`}
               >
                 <iframe
-                  src={`/api/email-preview?type=${selectedType}&format=html`}
+                  srcDoc={emailData?.html || "<div style='display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;color:#64748b;padding:40px;text-align:center;'>Memuat pratinjau template email...</div>"}
                   title="Email Preview"
-                  sandbox="allow-same-origin"
                   className="w-full border-none h-[640px] bg-[#f8fafc]"
                 />
 
