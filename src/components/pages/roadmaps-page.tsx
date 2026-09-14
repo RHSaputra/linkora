@@ -187,11 +187,11 @@ export function RoadmapsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <div className="relative inline-flex items-center justify-center p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
-            <div className="absolute inset-[-200%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#38bdf8_75%,#2563eb_100%)] animate-[spin_4s_linear_infinite]" />
+          <div className="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
+            <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
             <Button
               onClick={handleOpenAiDialog}
-              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-[10px] shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
+              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
             >
               <span>Rancang dengan Liko AI</span>
             </Button>
@@ -244,11 +244,11 @@ export function RoadmapsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 pt-2">
-            <div className="relative inline-flex items-center justify-center p-[2px] rounded-xl overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
-              <div className="absolute inset-[-200%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#38bdf8_75%,#2563eb_100%)] animate-[spin_4s_linear_infinite]" />
+            <div className="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
+              <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
               <Button
                 onClick={handleOpenAiDialog}
-                className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-[10px] shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
+                className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
               >
                 <span>Rancang dengan Liko AI</span>
               </Button>
