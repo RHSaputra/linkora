@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { useDashboard, subscribeRefresh, invalidateAndRefresh } from "@/hooks/use-data";
 import { CATEGORY_COLORS } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
-import { LinkoraText } from "@/components/ui/linkora-text";
+import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 import { useSession } from "next-auth/react";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
@@ -194,13 +194,11 @@ export function DashboardPage({
             {/* Left Block: Status Pill, Welcome Header */}
             <div className="space-y-1.5 text-left">
 
-              <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans">
-                {isAuthenticated
-                  ? (locale === "en" ? "Welcome back," : "Selamat Datang,")
-                  : (locale === "en" ? "Hello," : "Halo,")}
+              <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans flex items-center gap-1.5">
+                {locale === "en" ? "Hello," : "Halo,"} <LinkorianText /> 👋
               </h2>
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent font-sans leading-tight break-words">
-                {userName} {!isAuthenticated && "👋"}
+                {userName || "Linkorian"}
               </h1>
               <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
                 <span>{locale === "en" ? "Your workspace on" : "Ruang Anda"}</span> <LinkoraText />

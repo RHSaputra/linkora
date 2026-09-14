@@ -9,7 +9,7 @@ export function renderVerificationOtpEmail({
   currentYear,
 }: VerificationOtpTemplateProps): { subject: string; html: string; text: string } {
   const subject = "Kode verifikasi akun Linkora";
-  const greeting = userName ? `Halo, ${escapeHtml(userName)}` : "Halo";
+  const greeting = userName ? `Halo Linkorian (${escapeHtml(userName)})` : "Halo Linkorian";
 
   const content = `
     <h1 style="margin: 0 0 14px; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 30px;">
@@ -65,7 +65,7 @@ export function renderVerificationOtpEmail({
     currentYear,
   });
 
-  const text = `Halo${userName ? ` ${userName}` : ""},
+  const text = `Halo Linkorian${userName ? ` (${userName})` : ""},
 
 Verifikasi Email Akun Linkorian Anda
 

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { User, ArrowRight } from "lucide-react";
-import { LinkoraText } from "@/components/ui/linkora-text";
+import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 
 interface LikoWelcomeDialogProps {
   onOpenEditProfile: () => void;
@@ -124,8 +124,8 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
             <div className="w-0 h-0 border-x-8 border-x-transparent border-b-8 border-b-foreground/[0.04] mx-auto -mb-[1px] relative z-10" />
 
             <div className="relative p-5 sm:p-6 rounded-2xl bg-foreground/[0.03] border border-primary/25 backdrop-blur-sm shadow-sm text-center">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug">
-                Hai, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-400">{userName}</span>!
+              <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug flex items-center justify-center gap-1.5 flex-wrap">
+                Halo <LinkorianText /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-400">({userName})</span>!
               </h2>
 
               <p className="text-muted-foreground text-xs sm:text-sm mt-2.5 leading-relaxed">

@@ -50,8 +50,8 @@ export const id = {
     soundOff: "Suara Notifikasi: Senyap",
   },
   dashboard: {
-    welcome: "Selamat Datang,",
-    hello: "Halo,",
+    welcome: "Selamat Datang, Linkorian!",
+    hello: "Halo, Linkorian!",
     secureWorkspace: "Semua catatan, tautan, dan dokumen terenkripsi dengan aman.",
     dataCluster: "Kluster Data",
     viewDetails: "Lihat Rincian",

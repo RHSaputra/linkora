@@ -50,8 +50,8 @@ export const en = {
     soundOff: "Notification Sound: Muted",
   },
   dashboard: {
-    welcome: "Welcome back,",
-    hello: "Hello,",
+    welcome: "Welcome back, Linkorian!",
+    hello: "Hello, Linkorian!",
     secureWorkspace: "All your notes, links, and documents are securely encrypted.",
     dataCluster: "Data Clusters",
     viewDetails: "View Details",

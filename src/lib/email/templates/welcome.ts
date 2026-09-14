@@ -18,8 +18,8 @@ export function renderWelcomeEmail({
   }
 
   const welcomeHeadline = displayName
-    ? `Selamat datang di Linkora, ${escapeHtml(displayName)}.`
-    : "Selamat datang di Linkora.";
+    ? `Halo Linkorian (${escapeHtml(displayName)})! Selamat datang di Linkora.`
+    : "Halo Linkorian! Selamat datang di Linkora.";
 
   const content = `
     <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 30px;">

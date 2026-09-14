@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
-import { LinkoraText } from "@/components/ui/linkora-text";
+import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 
 export function OnboardingWelcomeScreen() {
   const { phase, startTour, dismissWelcome } = useOnboarding();
@@ -24,7 +24,7 @@ export function OnboardingWelcomeScreen() {
       {/* Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="relative z-10 w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
@@ -35,7 +35,7 @@ export function OnboardingWelcomeScreen() {
           </div>
 
           <h2 className="text-2xl font-bold text-foreground tracking-tight font-sans">
-            Selamat datang di <LinkoraText />
+            Halo <LinkorianText />, Selamat datang di <LinkoraText />
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
             Mari jelajahi fitur-fitur canggih Linkora, termasuk analisis AI otomatis, pembuat catatan cerdas, roadmap visual, pengingat, dan Asisten Liko AI.

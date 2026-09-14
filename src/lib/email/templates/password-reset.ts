@@ -9,7 +9,7 @@ export function renderPasswordResetEmail({
   currentYear,
 }: PasswordResetTemplateProps): { subject: string; html: string; text: string } {
   const subject = "Atur Ulang Password Akun Linkora";
-  const greeting = userName ? `Halo, ${escapeHtml(userName)}` : "Halo";
+  const greeting = userName ? `Halo Linkorian (${escapeHtml(userName)})` : "Halo Linkorian";
 
   const content = `
     <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 30px;">
@@ -83,7 +83,7 @@ export function renderPasswordResetEmail({
     currentYear,
   });
 
-  const text = `Halo${userName ? ` ${userName}` : ""},
+  const text = `Halo Linkorian${userName ? ` (${userName})` : ""},
 
 Kami menerima permintaan untuk mengatur ulang kata sandi akun Linkorian Anda.
 
