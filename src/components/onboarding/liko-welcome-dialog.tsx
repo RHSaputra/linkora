@@ -67,18 +67,18 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
       if (!val) handleDismiss();
       else setOpen(true);
     }}>
-      <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-[2.5rem] glass-panel border-primary/30 bg-card/95 shadow-2xl shadow-primary/25">
+      <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-[2.5rem] bg-card border border-primary/25 shadow-2xl shadow-primary/15 dark:shadow-primary/30">
         {/* Main Stage with Large Dominant Liko Mascot */}
-        <div className="relative w-full pt-10 pb-6 px-6 sm:px-8 text-center bg-gradient-to-b from-primary/20 via-primary/5 to-transparent overflow-hidden">
+        <div className="relative w-full pt-10 pb-6 px-6 sm:px-8 text-center bg-gradient-to-b from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/5 dark:to-transparent overflow-hidden">
           {/* Ambient Glow Bubbles */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-cyan-400/25 blur-3xl pointer-events-none" />
-          <div className="absolute top-12 right-6 w-36 h-36 bg-purple-500/25 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-cyan-500/15 dark:bg-cyan-400/25 blur-3xl pointer-events-none" />
+          <div className="absolute top-12 right-6 w-36 h-36 bg-purple-500/15 dark:bg-purple-500/25 blur-3xl pointer-events-none" />
 
-          {/* Liko Mascot - Large Dominant Hero Character Stage (Optimized for 60fps Smooth Playback) */}
+          {/* Liko Mascot - Large Dominant Hero Character Stage */}
           <div className="relative mx-auto flex flex-col items-center justify-center my-2">
             <div className="relative flex items-center justify-center">
               {/* Lightweight Hardware-Accelerated Static Neon Glow Ring */}
-              <div className="absolute -inset-2 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-400 via-primary to-purple-500 shadow-lg shadow-primary/30 pointer-events-none" />
+              <div className="absolute -inset-2 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-400 via-primary to-purple-500 shadow-lg shadow-primary/25 pointer-events-none" />
 
               {/* Dominant Video Container with Isolated Hardware Layer */}
               <div 
@@ -108,7 +108,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
               </div>
 
               {/* Active Assistant Live Badge */}
-              <div className="absolute -bottom-3 z-20 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-background/95 border border-primary/40 backdrop-blur-md shadow-lg text-primary text-xs font-bold font-heading select-none">
+              <div className="absolute -bottom-3 z-20 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-card/95 border border-primary/30 backdrop-blur-md shadow-lg text-primary text-xs font-bold font-heading select-none">
                 <span className="flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -121,11 +121,11 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
           {/* Liko Speaking Speech / Dialogue Bubble */}
           <div className="relative mt-7 max-w-md mx-auto">
             {/* Speech Bubble Arrow Pointer */}
-            <div className="w-0 h-0 border-x-8 border-x-transparent border-b-8 border-b-foreground/[0.04] mx-auto -mb-[1px] relative z-10" />
+            <div className="w-0 h-0 border-x-8 border-x-transparent border-b-8 border-b-card/90 dark:border-b-foreground/[0.04] mx-auto -mb-[1px] relative z-10" />
 
-            <div className="relative p-5 sm:p-6 rounded-2xl bg-foreground/[0.03] border border-primary/25 backdrop-blur-sm shadow-sm text-center">
+            <div className="relative p-5 sm:p-6 rounded-2xl bg-card/90 dark:bg-foreground/[0.03] border border-border/80 dark:border-primary/25 backdrop-blur-md shadow-xl text-center">
               <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug flex items-center justify-center gap-1.5 flex-wrap">
-                Halo <LinkorianText /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-400">({userName})</span>!
+                Halo <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span>
               </h2>
 
               <p className="text-muted-foreground text-xs sm:text-sm mt-2.5 leading-relaxed">
@@ -136,11 +136,11 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
         </div>
 
         {/* Action Buttons */}
-        <div className="p-6 sm:p-8 pt-4 border-t border-border/50 flex flex-col sm:flex-row gap-3 bg-card">
+        <div className="p-5 sm:p-6 border-t border-border/60 flex flex-col sm:flex-row gap-3 bg-muted/20 dark:bg-card">
           <Button
             onClick={handleStartProfile}
             variant="outline"
-            className="flex-1 rounded-xl text-xs font-semibold py-3 flex items-center justify-center gap-2 border-border/60 hover:border-primary/40 active:scale-95"
+            className="flex-1 rounded-xl text-xs font-semibold py-3 flex items-center justify-center gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary text-foreground active:scale-95 transition-all cursor-pointer"
           >
             <User className="h-4 w-4 text-primary" />
             Atur Profil Saya
@@ -148,7 +148,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
 
           <Button
             onClick={handleDismiss}
-            className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-3 shadow-md flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="flex-1 rounded-xl bg-gradient-to-r from-primary via-primary-hover to-purple-600 text-primary-foreground font-bold text-xs py-3 shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             Mulai Jelajahi <ArrowRight className="h-4 w-4" />
           </Button>

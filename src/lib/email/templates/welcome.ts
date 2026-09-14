@@ -18,7 +18,7 @@ export function renderWelcomeEmail({
   }
 
   const welcomeHeadline = displayName
-    ? `Halo Linkorian (${escapeHtml(displayName)})! Selamat datang di Linkora.`
+    ? `Halo Linkorian, ${escapeHtml(displayName)}! Selamat datang di Linkora.`
     : "Halo Linkorian! Selamat datang di Linkora.";
 
   const content = `
