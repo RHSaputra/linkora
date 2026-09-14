@@ -315,7 +315,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
                 if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
                 setAiDialogOpen(true);
               }}
-              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-9 px-4 rounded-full text-xs border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
+              className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-9 px-4 rounded-full text-xs border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
             >
               <span>Saran Langkah AI</span>
             </Button>

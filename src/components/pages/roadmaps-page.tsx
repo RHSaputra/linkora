@@ -191,7 +191,7 @@ export function RoadmapsPage() {
             <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
             <Button
               onClick={handleOpenAiDialog}
-              className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
+              className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
             >
               <span>Rancang dengan Liko AI</span>
             </Button>
@@ -248,7 +248,7 @@ export function RoadmapsPage() {
               <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
               <Button
                 onClick={handleOpenAiDialog}
-                className="relative z-10 bg-card hover:bg-card/90 text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap"
+                className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-10 px-5 rounded-full shadow-xs text-xs sm:text-sm border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
               >
                 <span>Rancang dengan Liko AI</span>
               </Button>
