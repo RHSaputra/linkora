@@ -51,7 +51,7 @@ export function renderWelcomeEmail({
             </tr>
             <tr>
               <td style="font-size: 13px; line-height: 22px; color: #475569; padding-bottom: 8px;">
-                <strong>Analisis AI Gemini:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif Liko.
+                <strong>Analisis AI Liko:</strong> Ekstraksi ringkasan otomatis, saran tag cerdas, dan asisten interaktif Liko.
               </td>
             </tr>
             <tr>

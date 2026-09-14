@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     if (!process.env.GEMINI_API_KEY) {
       console.error("GEMINI_API_KEY environment variable is not configured.");
-      return NextResponse.json({ error: "GEMINI_API_KEY belum dikonfigurasi pada server." }, { status: 500 });
+      return NextResponse.json({ error: "Layanan Liko AI belum dikonfigurasi pada server." }, { status: 500 });
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
