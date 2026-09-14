@@ -258,9 +258,9 @@ export function LikoNoteConverterModal({
                           <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
                             {locale === "en" ? "This link has already been saved to Personal Notes!" : "Tautan ini sudah pernah disimpan sebagai Catatan Pribadi!"}
                           </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed break-words">
                             {locale === "en" ? "Found previous note: " : "Ditemukan catatan sebelumnya: "}
-                            <strong className="text-foreground font-semibold">"{existingNote.title}"</strong>. 
+                            <strong className="text-foreground font-semibold break-words">"{existingNote.title}"</strong>. 
                             {locale === "en" ? " Would you like to open the existing note or create a new copy?" : " Apakah Anda ingin membuka catatan yang sudah ada atau tetap membuat salinan catatan baru?"}
                           </p>
                         </div>
@@ -305,7 +305,7 @@ export function LikoNoteConverterModal({
                         <BookOpen className="w-3 h-3" /> {locale === "en" ? "Ready to Format" : "Siap Diformat"}
                       </span>
                     </label>
-                    <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 max-h-[140px] overflow-y-auto text-xs text-muted-foreground leading-relaxed">
+                    <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 max-h-[140px] overflow-y-auto text-xs text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere]">
                       {rawAnalysis}
                     </div>
                   </div>

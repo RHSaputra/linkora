@@ -201,20 +201,20 @@ export function AddNodeDialog({ open, onOpenChange, onSubmit }: AddNodeDialogPro
                         key={link.id}
                         onClick={() => handleSelectLink(link)}
                         className={cn(
-                          "p-2.5 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between gap-2",
+                          "p-2.5 rounded-lg border text-xs cursor-pointer transition-all flex items-start justify-between gap-2",
                           isSelected
                             ? "border-primary bg-primary/15 font-semibold text-primary"
                             : "border-border/50 hover:bg-muted/60 text-foreground"
                         )}
                       >
-                        <div className="truncate flex-1">
-                          <p className="truncate font-medium">{link.title}</p>
-                          <p className="truncate text-[11px] text-muted-foreground">{link.url}</p>
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <p className="font-medium text-xs leading-snug break-words">{link.title}</p>
+                          <p className="text-[11px] text-muted-foreground break-all leading-normal">{link.url}</p>
                         </div>
                         {link.favicon ? (
-                          <img src={link.favicon} alt="" className="w-4 h-4 rounded shrink-0 object-contain" />
+                          <img src={link.favicon} alt="" className="w-4 h-4 rounded shrink-0 object-contain mt-0.5" />
                         ) : (
-                          <Globe className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          <Globe className="w-4 h-4 shrink-0 text-muted-foreground mt-0.5" />
                         )}
                       </div>
                     );

@@ -35,8 +35,8 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-2xl sm:rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg font-bold font-heading">{title}</DialogTitle>
-          <DialogDescription className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <DialogTitle className="text-base sm:text-lg font-bold font-heading leading-snug break-words">{title}</DialogTitle>
+          <DialogDescription className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed break-words">
             {description}
           </DialogDescription>
         </DialogHeader>
@@ -45,7 +45,7 @@ export function ConfirmDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs cursor-pointer"
           >
             {cancelText}
           </Button>
@@ -56,7 +56,7 @@ export function ConfirmDialog({
               onConfirm();
               onOpenChange(false);
             }}
-            className="w-full sm:w-auto font-semibold shadow-md"
+            className="w-full sm:w-auto text-xs font-semibold shadow-md cursor-pointer"
           >
             {confirmText}
           </Button>

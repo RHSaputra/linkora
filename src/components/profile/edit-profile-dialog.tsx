@@ -297,7 +297,8 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSave} className="space-y-6 pt-4">
+        <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+          <div className="space-y-6 flex-1 overflow-y-auto pr-1 py-4">
           {/* Avatar Preview & Selection */}
           <div className="space-y-3">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -568,8 +569,9 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               </div>
             )}
           </div>
+        </div>
 
-          <DialogFooter className="pt-4 border-t border-border/50 flex flex-col sm:flex-row sm:justify-between items-center gap-2">
+        <DialogFooter className="pt-4 border-t border-border/50 shrink-0 flex flex-col sm:flex-row sm:justify-between items-center gap-2">
             <Button
               type="button"
               variant="outline"

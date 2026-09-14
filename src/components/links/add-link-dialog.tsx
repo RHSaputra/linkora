@@ -305,7 +305,7 @@ export function AddLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>{editLink ? t("links.modalEditTitle") : t("links.modalAddTitle")}</DialogTitle>
           <DialogDescription>
@@ -313,240 +313,243 @@ export function AddLinkDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="url">{t("links.urlLabel")}</Label>
-              {url && !isAnalyzing && (
-                <span className="text-xs text-primary font-medium flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> {t("links.readyToAnalyze")}
-                </span>
-              )}
-            </div>            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="url"
-                  type="url"
-                  placeholder={t("links.urlPlaceholder")}
-                  value={url}
-                  onChange={(e) => handleUrlPaste(e.target.value)}
-                  required
-                  className="h-10 sm:h-9 text-base sm:text-sm"
-                />
-                {fetchingMeta && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  </div>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="url">{t("links.urlLabel")}</Label>
+                {url && !isAnalyzing && (
+                  <span className="text-xs text-primary font-medium flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> {t("links.readyToAnalyze")}
+                  </span>
                 )}
               </div>
-              <div className="relative shrink-0">
-                <Button
-                  type="button"
-                  disabled={!url || isAnalyzing || fetchingMeta}
-                  onClick={handleAnalyze}
-                  className={`w-full sm:w-auto h-10 sm:h-9 relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
-                    url && !isAnalyzing
-                      ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm hover:shadow-md active:scale-95"
-                      : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {isAnalyzing && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  <span>{t("links.analyzeBtn")}</span>
-                </Button>
-              </div>
-            </div>
-            
-            {/* Duplicate warning banner */}
-            <AnimatePresence>
-              {duplicateWarning && duplicateWarning.type !== "none" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className={`flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 mt-1.5 border ${
-                    duplicateWarning.type === "exact"
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
-                      : "bg-orange-500/8 border-orange-500/20 text-orange-700 dark:text-orange-400"
-                  }`}>
-                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold">{duplicateWarning.message}</p>
-                      {duplicateWarning.duplicates.length > 0 && (
-                        <div className="mt-1 space-y-0.5">
-                          {duplicateWarning.duplicates.slice(0, 2).map((dup) => (
-                            <p key={dup.id} className="text-[11px] opacity-80 truncate">
-                              {dup.title || dup.url}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setDuplicateWarning(null)}
-                        className="text-[11px] underline opacity-60 hover:opacity-100 mt-1 cursor-pointer"
-                      >
-                        Tutup peringatan
-                      </button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="url"
+                    type="url"
+                    placeholder={t("links.urlPlaceholder")}
+                    value={url}
+                    onChange={(e) => handleUrlPaste(e.target.value)}
+                    required
+                    className="h-10 sm:h-9 text-base sm:text-sm font-mono"
+                  />
+                  {fetchingMeta && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     </div>
-                  </div>
+                  )}
+                </div>
+                <div className="relative shrink-0">
+                  <Button
+                    type="button"
+                    disabled={!url || isAnalyzing || fetchingMeta}
+                    onClick={handleAnalyze}
+                    className={`w-full sm:w-auto h-10 sm:h-9 relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
+                      url && !isAnalyzing
+                        ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm hover:shadow-md active:scale-95"
+                        : "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    {isAnalyzing && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    <span>{t("links.analyzeBtn")}</span>
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Duplicate warning banner */}
+              <AnimatePresence>
+                {duplicateWarning && duplicateWarning.type !== "none" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className={`flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 mt-1.5 border ${
+                      duplicateWarning.type === "exact"
+                        ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                        : "bg-orange-500/8 border-orange-500/20 text-orange-700 dark:text-orange-400"
+                    }`}>
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold leading-snug break-words">{duplicateWarning.message}</p>
+                        {duplicateWarning.duplicates.length > 0 && (
+                          <div className="mt-1 space-y-1">
+                            {duplicateWarning.duplicates.slice(0, 2).map((dup) => (
+                              <p key={dup.id} className="text-[11px] opacity-90 break-all leading-snug font-mono">
+                                {dup.title || dup.url}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setDuplicateWarning(null)}
+                          className="text-[11px] underline opacity-60 hover:opacity-100 mt-1 cursor-pointer"
+                        >
+                          Tutup peringatan
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Guide hint when URL is pasted */}
+              {url && !isAnalyzing && !duplicateWarning && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-primary/10 via-accent/10 to-transparent border border-primary/20 rounded-xl px-3 py-2 mt-1.5"
+                >
+                  <p className="text-xs text-foreground/90 leading-tight">
+                    Tautan siap dianalisis. Fitur <span className="font-bold text-primary">Analisis AI</span> akan mengisi kategori, deskripsi, dan tag secara otomatis.
+                  </p>
                 </motion.div>
               )}
-            </AnimatePresence>
 
-            {/* Guide hint when URL is pasted */}
-            {url && !isAnalyzing && !duplicateWarning && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 bg-gradient-to-r from-primary/10 via-accent/10 to-transparent border border-primary/20 rounded-xl px-3 py-2 mt-1.5"
-              >
-                <p className="text-xs text-foreground/90 leading-tight">
-                  Tautan siap dianalisis. Fitur <span className="font-bold text-primary">Analisis AI</span> akan mengisi kategori, deskripsi, dan tag secara otomatis.
+              {(fetchingMeta || isAnalyzing) && (
+                <p className="text-xs text-muted-foreground">
+                  {isAnalyzing ? "Menganalisis link dengan AI..." : "Mengambil favicon, judul, dan preview..."}
                 </p>
-              </motion.div>
-            )}
-
-            {(fetchingMeta || isAnalyzing) && (
-              <p className="text-xs text-muted-foreground">
-                {isAnalyzing ? "Menganalisis link dengan AI..." : "Mengambil favicon, judul, dan preview..."}
-              </p>
-            )}
-          </div>
-
-          {(favicon || thumbnail) && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              {favicon && (
-                <Image src={favicon} alt="" width={32} height={32} className="rounded" unoptimized />
-              )}
-              {thumbnail && (
-                <Image
-                  src={thumbnail}
-                  alt="Preview"
-                  width={80}
-                  height={45}
-                  className="rounded object-cover"
-                  unoptimized
-                />
               )}
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="title">{t("links.titleLabel")}</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("links.titlePlaceholder")}
-              required
-              className="text-base sm:text-sm"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">{t("links.descLabel")}</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("links.descPlaceholder")}
-              rows={3}
-              className="text-base sm:text-sm"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-2">
-              <Label>{t("links.categoryLabel")}</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DEFAULT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="reminder">{t("links.reminderLabel")}</Label>
-              <Input
-                id="reminder"
-                type="datetime-local"
-                value={reminderAt}
-                onChange={(e) => setReminderAt(e.target.value)}
-                className="w-full text-base sm:text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("links.tagsLabel")}</Label>
-            <div className="flex gap-2">
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                placeholder={t("links.tagsPlaceholder")}
-                className="text-base sm:text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag();
-                  }
-                }}
-              />
-              <Button type="button" variant="outline" size="icon" onClick={addTag}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1 pr-1">
-                    {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
+            {(favicon || thumbnail) && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                {favicon && (
+                  <Image src={favicon} alt="" width={32} height={32} className="rounded shrink-0" unoptimized />
+                )}
+                {thumbnail && (
+                  <Image
+                    src={thumbnail}
+                    alt="Preview"
+                    width={80}
+                    height={45}
+                    className="rounded object-cover shrink-0"
+                    unoptimized
+                  />
+                )}
               </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">{t("links.notesLabel")}</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("links.notesPlaceholder")}
-              rows={8}
-              className="text-base sm:text-sm"
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-border p-3">
-            <div>
-              <Label htmlFor="favorite" className="cursor-pointer">{t("links.favoriteLabel")}</Label>
-              <p className="text-xs text-muted-foreground">{t("links.favoriteDesc")}</p>
+            <div className="space-y-2">
+              <Label htmlFor="title">{t("links.titleLabel")}</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("links.titlePlaceholder")}
+                required
+                className="text-base sm:text-sm"
+              />
             </div>
-            <Switch id="favorite" checked={isFavorite} onCheckedChange={setIsFavorite} />
+
+            <div className="space-y-2">
+              <Label htmlFor="description">{t("links.descLabel")}</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t("links.descPlaceholder")}
+                rows={3}
+                className="text-base sm:text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label>{t("links.categoryLabel")}</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEFAULT_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminder">{t("links.reminderLabel")}</Label>
+                <Input
+                  id="reminder"
+                  type="datetime-local"
+                  value={reminderAt}
+                  onChange={(e) => setReminderAt(e.target.value)}
+                  className="w-full text-base sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t("links.tagsLabel")}</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  placeholder={t("links.tagsPlaceholder")}
+                  className="text-base sm:text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="icon" onClick={addTag}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1 pr-1 break-words">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive cursor-pointer">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">{t("links.notesLabel")}</Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t("links.notesPlaceholder")}
+                rows={5}
+                className="text-base sm:text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-3">
+              <div>
+                <Label htmlFor="favorite" className="cursor-pointer">{t("links.favoriteLabel")}</Label>
+                <p className="text-xs text-muted-foreground">{t("links.favoriteDesc")}</p>
+              </div>
+              <Switch id="favorite" checked={isFavorite} onCheckedChange={setIsFavorite} />
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60 shrink-0">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl text-xs cursor-pointer">
               {t("common.cancel")}
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={saving} className="rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
+              {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
               {editLink ? t("common.save") : t("links.modalAddTitle")}
             </Button>
           </div>

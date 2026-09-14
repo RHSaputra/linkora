@@ -49,13 +49,13 @@ export function ViewLinkDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle className="text-xl leading-tight pr-8">{link.title}</DialogTitle>
+            <DialogTitle className="text-xl leading-snug">{link.title}</DialogTitle>
             {link.description && <DialogDescription className="mt-2">{link.description}</DialogDescription>}
           </DialogHeader>
 
-          <div className="space-y-6 mt-2">
+          <div className="space-y-6 mt-2 flex-1 min-h-0 overflow-y-auto pr-1">
             <div className="flex flex-wrap gap-2 items-center">
               <Badge variant="outline" style={{ borderColor: `${CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom}40`, color: CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom }}>
                 <Folder className="w-3 h-3 mr-1" /> {link.category}
@@ -134,7 +134,7 @@ export function ViewLinkDialog({
                 )}
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-card whitespace-pre-wrap text-sm leading-relaxed text-foreground border border-border/80 shadow-inner relative group">
+              <div className="p-4 sm:p-5 rounded-2xl bg-card whitespace-pre-wrap text-sm leading-relaxed text-foreground border border-border/80 shadow-inner relative group break-words">
                 {link.notes || link.aiSummary || t("links.noNotesOrAi")}
 
                 {hasAnalysisContent && (
@@ -167,10 +167,10 @@ export function ViewLinkDialog({
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border/60">
-              <div className="text-xs text-muted-foreground truncate w-full sm:max-w-[280px]">
+              <div className="text-xs text-muted-foreground break-all font-mono leading-relaxed select-all">
                 {link.url}
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
                 <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl text-xs cursor-pointer flex-1 sm:flex-initial">
                   {t("common.close")}
                 </Button>

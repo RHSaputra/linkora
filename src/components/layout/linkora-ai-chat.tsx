@@ -350,7 +350,7 @@ export function LinkoraAIChat() {
                   )}
                   <div className="max-w-[80%] space-y-1.5">
                     <div 
-                      className={`p-3 text-sm shadow-sm leading-relaxed whitespace-pre-wrap break-words ${
+                      className={`p-3 text-sm shadow-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
                         msg.role === "user" 
                           ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium" 
                           : "bg-muted/80 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-sm border border-border/50"
@@ -387,9 +387,9 @@ export function LinkoraAIChat() {
 
                     {/* Saved state */}
                     {msg.captureState === "saved" && msg.captureResult && (
-                      <div className="flex items-center gap-1.5 text-xs text-success font-medium">
-                        <CheckCircle className="h-3 w-3" />
-                        {locale === "en" ? "Saved" : "Tersimpan"} — {msg.captureResult.category}
+                      <div className="flex items-center gap-1.5 text-xs text-success font-medium break-words">
+                        <CheckCircle className="h-3 w-3 shrink-0" />
+                        <span>{locale === "en" ? "Saved" : "Tersimpan"} — {msg.captureResult.category}</span>
                       </div>
                     )}
 

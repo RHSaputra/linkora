@@ -124,18 +124,19 @@ export function ManageCollectionsDialog({
                       onCheckedChange={(checked) =>
                         toggleCollection(col.id, checked as boolean)
                       }
+                      className="mt-0.5"
                     />
                     <Label
                       htmlFor={`col-${col.id}`}
-                      className="flex-1 cursor-pointer font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-3"
+                      className="flex-1 cursor-pointer font-medium leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-3 min-w-0"
                     >
                       <div
-                        className="p-1.5 rounded-md"
+                        className="p-1.5 rounded-md shrink-0"
                         style={{ backgroundColor: `${col.color}20`, color: col.color }}
                       >
                         <FolderOpen className="h-4 w-4" />
                       </div>
-                      <span className="truncate">{col.name}</span>
+                      <span className="break-words font-medium text-xs sm:text-sm">{col.name}</span>
                     </Label>
                   </div>
                 );

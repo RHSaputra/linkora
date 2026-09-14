@@ -226,9 +226,9 @@ export function QuickReminderPopover({
               <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
                 <Bell className="w-4 h-4" />
               </div>
-              <div>
-                <p className="text-xs font-bold text-foreground">{t("reminders.quickPopoverTitle")}</p>
-                <p className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-foreground leading-tight">{t("reminders.quickPopoverTitle")}</p>
+                <p className="text-[10px] text-muted-foreground break-words leading-snug mt-0.5">
                   {title}
                 </p>
               </div>

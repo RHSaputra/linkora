@@ -135,21 +135,22 @@ export function AddLinksToCollectionDialog({
                         onCheckedChange={(checked) => 
                           toggleLink(link.id, checked as boolean)
                         }
+                        className="mt-1"
                       />
                       <Label
                         htmlFor={`link-${link.id}`}
-                        className="flex-1 cursor-pointer font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-3"
+                        className="flex-1 cursor-pointer font-medium leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-start gap-3 min-w-0"
                       >
-                        <div className="relative h-8 w-8 shrink-0 rounded-md bg-muted flex items-center justify-center overflow-hidden ring-1 ring-border">
+                        <div className="relative h-8 w-8 shrink-0 rounded-md bg-muted flex items-center justify-center overflow-hidden ring-1 ring-border mt-0.5">
                           {favicon ? (
                             <Image src={favicon} alt="" width={16} height={16} unoptimized />
                           ) : (
                             <Link2 className="h-4 w-4 text-muted-foreground" />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate">{link.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <p className="text-xs sm:text-sm font-medium text-foreground leading-snug break-words">{link.title}</p>
+                          <p className="text-xs text-muted-foreground break-all leading-normal">
                             {(() => {
                               try {
                                 return new URL(link.url).hostname;
