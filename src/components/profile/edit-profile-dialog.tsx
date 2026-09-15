@@ -306,7 +306,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             </Label>
 
             {/* Active Preview Banner */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border/50">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl bg-card border border-primary/20 shadow-xs">
               {/* Active Avatar View */}
               <div className="relative w-18 h-18 rounded-2xl bg-background border-2 border-primary/40 shadow-md flex items-center justify-center overflow-hidden shrink-0 mx-auto sm:mx-0">
                 {activeAvatar ? (
@@ -403,14 +403,14 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                           setSelectedAvatar(preset.url);
                           setCustomAvatarUrl("");
                         }}
-                        className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-background/80 hover:bg-background cursor-pointer ${
+                        className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-card hover:bg-primary/5 cursor-pointer ${
                           isSelected
-                            ? "border-primary scale-105 shadow-md ring-2 ring-primary/20"
-                            : "border-border/60 hover:border-primary/50 opacity-85 hover:opacity-100"
+                            ? "border-primary scale-105 shadow-md ring-2 ring-primary/25"
+                            : "border-border/60 hover:border-primary/50"
                         }`}
                         title={preset.name}
                       >
-                        <div className="w-11 h-11 rounded-xl overflow-hidden bg-muted/40 relative">
+                        <div className="w-11 h-11 rounded-xl overflow-hidden bg-primary/5 relative">
                           <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
                           {isSelected && (
                             <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
@@ -418,7 +418,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                             </div>
                           )}
                         </div>
-                        <span className="text-[10px] font-medium text-foreground/80 truncate w-full text-center">
+                        <span className="text-[10px] font-semibold text-foreground truncate w-full text-center">
                           {preset.name}
                         </span>
                       </button>
@@ -429,7 +429,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
               {/* Custom URL Input */}
               {avatarTab === "custom" && (
-                <div className="p-3 rounded-2xl bg-foreground/[0.02] border border-border/50 space-y-2">
+                <div className="p-3 rounded-2xl bg-card border border-primary/20 space-y-2">
                   <Label htmlFor="custom-avatar" className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <ImageIcon className="h-3.5 w-3.5 text-primary" /> {locale === "en" ? "Paste External Image URL" : "Tempel URL Gambar Eksternal"}
                   </Label>
@@ -442,7 +442,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       if (e.target.value) setSelectedAvatar("");
                     }}
                     placeholder={locale === "en" ? "https://example.com/your-photo.jpg" : "https://example.com/foto-anda.jpg"}
-                    className="rounded-xl text-base sm:text-xs bg-background/80"
+                    className="rounded-xl text-base sm:text-xs bg-background"
                   />
                 </div>
               )}
@@ -460,7 +460,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t("profile.namePlaceholder")}
-                className="rounded-xl bg-background/60 border-border/60 focus:border-primary text-base sm:text-sm"
+                className="rounded-xl bg-background border-border/80 focus:border-primary text-base sm:text-sm"
                 required
               />
             </div>
@@ -483,7 +483,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
           {/* Account Quick Stats */}
           {profileStats && (
-            <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-foreground/[0.02] border border-border/40 text-center">
+            <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-primary/5 border border-primary/20 text-center">
               <div className="p-2">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground font-medium">
                   <Layers className="h-3 w-3 text-primary" /> {t("profile.statsLinks")}
@@ -533,7 +533,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             </button>
 
             {showPasswordSection && (
-              <div className="mt-3 space-y-3 p-4 rounded-2xl bg-foreground/[0.02] border border-border/50">
+              <div className="mt-3 space-y-3 p-4 rounded-2xl bg-card border border-primary/20 shadow-xs">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">{t("profile.currentPasswordLabel")}</Label>
                   <Input
@@ -541,7 +541,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder={t("profile.currentPasswordPlaceholder")}
-                    className="rounded-xl text-base sm:text-xs bg-background/80"
+                    className="rounded-xl text-base sm:text-xs bg-background"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -552,7 +552,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder={t("profile.newPasswordPlaceholder")}
-                      className="rounded-xl text-base sm:text-xs bg-background/80"
+                      className="rounded-xl text-base sm:text-xs bg-background"
                     />
                   </div>
                   <div className="space-y-1">
@@ -562,7 +562,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={t("profile.confirmPasswordPlaceholder")}
-                      className="rounded-xl text-base sm:text-xs bg-background/80"
+                      className="rounded-xl text-base sm:text-xs bg-background"
                     />
                   </div>
                 </div>
@@ -580,7 +580,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 onOpenChange(false);
                 window.dispatchEvent(new Event("restart-onboarding-tour"));
               }}
-              className="text-xs font-semibold text-foreground hover:text-primary hover:border-primary/40 mr-auto flex items-center gap-2 rounded-xl border-border/80 px-3 py-2 bg-foreground/[0.02] hover:bg-primary/5 active:scale-95 transition-all duration-150 group cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="text-xs font-semibold text-foreground hover:text-primary hover:border-primary/40 mr-auto flex items-center gap-2 rounded-xl border-primary/20 px-3 py-2 bg-card hover:bg-primary/5 active:scale-95 transition-all duration-150 group cursor-pointer shadow-2xs"
               title={t("profile.tourGuideBtn")}
             >
               <Compass className="h-4 w-4 text-primary group-hover:rotate-45 transition-transform shrink-0" />

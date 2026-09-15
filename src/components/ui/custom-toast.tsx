@@ -130,33 +130,48 @@ function ToastCard({
 
   const iconConfig = {
     success: {
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />,
-      accentBorder: "border-emerald-500/25 dark:border-emerald-500/30",
-      barGradient: "bg-emerald-500",
-      defaultTitle: isEn ? "Success" : "Berhasil Disimpan",
+      icon: (
+        <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 shrink-0 shadow-xs">
+          <CheckCircle2 className="w-4 h-4" />
+        </div>
+      ),
+      accentBorder: "border-emerald-500/40 shadow-emerald-500/10",
+      defaultTitle: isEn ? "Success" : "Berhasil",
     },
     error: {
-      icon: <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />,
-      accentBorder: "border-rose-500/25 dark:border-rose-500/30",
-      barGradient: "bg-rose-500",
+      icon: (
+        <div className="p-2 rounded-xl bg-rose-500/15 text-rose-500 border border-rose-500/30 shrink-0 shadow-xs">
+          <AlertCircle className="w-4 h-4" />
+        </div>
+      ),
+      accentBorder: "border-rose-500/40 shadow-rose-500/10",
       defaultTitle: isEn ? "Error" : "Terjadi Kesalahan",
     },
     warning: {
-      icon: <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />,
-      accentBorder: "border-amber-500/25 dark:border-amber-500/30",
-      barGradient: "bg-amber-500",
+      icon: (
+        <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shrink-0 shadow-xs">
+          <AlertTriangle className="w-4 h-4" />
+        </div>
+      ),
+      accentBorder: "border-amber-500/40 shadow-amber-500/10",
       defaultTitle: isEn ? "Warning" : "Peringatan",
     },
     info: {
-      icon: <Info className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />,
-      accentBorder: "border-sky-500/25 dark:border-sky-500/30",
-      barGradient: "bg-sky-500",
+      icon: (
+        <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-500 border border-indigo-500/30 shrink-0 shadow-xs">
+          <Info className="w-4 h-4" />
+        </div>
+      ),
+      accentBorder: "border-indigo-500/40 shadow-indigo-500/10",
       defaultTitle: isEn ? "Information" : "Informasi",
     },
     loading: {
-      icon: <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0 mt-0.5" />,
-      accentBorder: "border-primary/30 dark:border-primary/40",
-      barGradient: "bg-primary",
+      icon: (
+        <div className="p-2 rounded-xl bg-primary/15 text-primary border border-primary/30 shrink-0 shadow-xs">
+          <Loader2 className="w-4 h-4 animate-spin" />
+        </div>
+      ),
+      accentBorder: "border-primary/40 shadow-primary/10",
       defaultTitle: isEn ? "Processing..." : "Memproses...",
     },
   }[item.type];
@@ -164,25 +179,25 @@ function ToastCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -20, scale: 0.96 }}
+      initial={{ opacity: 0, y: -28, scale: 0.92 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -12, scale: 0.96, transition: { duration: 0.15 } }}
-      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+      exit={{ opacity: 0, y: -18, scale: 0.94, transition: { duration: 0.15 } }}
+      transition={{ type: "spring", stiffness: 420, damping: 26, mass: 0.8 }}
       className={cn(
-        "pointer-events-auto w-full relative overflow-hidden rounded-xl p-3.5 sm:p-4 flex gap-3 items-start",
-        "bg-card text-card-foreground border shadow-md transition-all duration-150",
+        "pointer-events-auto w-full relative overflow-hidden rounded-2xl p-3.5 sm:p-4 flex gap-3.5 items-center",
+        "bg-card/95 backdrop-blur-2xl text-card-foreground border-2 shadow-xl transition-all duration-200",
         iconConfig.accentBorder
       )}
     >
-      {/* Icon */}
+      {/* Animated Icon Badge */}
       {iconConfig.icon}
 
-      {/* Message Content - Grows naturally */}
+      {/* Message Content */}
       <div className="flex-1 min-w-0 pr-6">
-        <h4 className="text-xs sm:text-sm font-semibold text-foreground leading-snug tracking-tight font-sans">
+        <h4 className="text-xs sm:text-sm font-bold text-foreground leading-snug tracking-tight font-sans">
           {item.title || iconConfig.defaultTitle}
         </h4>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed break-words font-normal">
+        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed break-words font-medium">
           {item.message}
         </p>
       </div>
@@ -194,20 +209,10 @@ function ToastCard({
         size="icon-xs"
         onClick={onDismiss}
         aria-label="Tutup Notifikasi"
-        className="absolute top-2.5 right-2.5 text-muted-foreground/60 hover:text-foreground z-20"
+        className="absolute top-3 right-3 text-muted-foreground/60 hover:text-foreground hover:bg-foreground/10 z-20"
       >
         <X className="w-3.5 h-3.5" />
       </Button>
-
-      {/* Subtle bottom progress bar */}
-      {item.type !== "loading" && duration > 0 && (
-        <motion.div
-          initial={{ width: "100%" }}
-          animate={{ width: "0%" }}
-          transition={{ duration: duration / 1000, ease: "linear" }}
-          className={cn("absolute bottom-0 left-0 h-[2px] opacity-70", iconConfig.barGradient)}
-        />
-      )}
     </motion.div>
   );
 }
