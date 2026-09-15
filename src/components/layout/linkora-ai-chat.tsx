@@ -216,10 +216,22 @@ export function LinkoraAIChat() {
       });
 
       if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        let errorMessage = errData?.error;
+        if (response.status === 401) {
+          errorMessage = locale === "en"
+            ? "Please sign in to use Liko AI assistant."
+            : "Silakan masuk (login) terlebih dahulu untuk menggunakan asisten AI Liko.";
+        } else if (!errorMessage) {
+          errorMessage = locale === "en"
+            ? "Sorry, an error occurred while connecting to AI. Please try again."
+            : "Maaf, terjadi kesalahan saat menghubungi server AI. Silakan coba lagi beberapa saat lagi.";
+        }
+
         setMessages(prev => [...prev, { 
           id: (Date.now() + 1).toString(),
           role: "ai", 
-          content: locale === "en" ? "Sorry, an error occurred while connecting to AI. Please try again." : "Maaf, terjadi kesalahan saat menghubungi server AI. Silakan coba lagi beberapa saat lagi." 
+          content: errorMessage
         }]);
         setIsTyping(false);
         return;
