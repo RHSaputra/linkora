@@ -106,8 +106,6 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<string>("");
-  const [customAvatarUrl, setCustomAvatarUrl] = useState("");
-  const [avatarTab, setAvatarTab] = useState<"avatars" | "custom">("avatars");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -178,7 +176,6 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     try {
       const resized = await resizeImage(file, 400, 400, 0.88);
       setSelectedAvatar(resized);
-      setCustomAvatarUrl("");
       toast.success(
         locale === "en" ? "Your profile photo is ready to save!" : "Foto profil Anda siap disimpan!",
         locale === "en" ? "Photo Selected" : "Foto Terpilih"
@@ -216,7 +213,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     setLoading(true);
 
     try {
-      const avatarToSave = customAvatarUrl.trim() || selectedAvatar;
+      const avatarToSave = selectedAvatar;
 
       const payload: any = {
         name: name.trim(),
@@ -276,7 +273,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     }
   };
 
-  const activeAvatar = customAvatarUrl.trim() || selectedAvatar || session?.user?.image;
+  const activeAvatar = selectedAvatar || session?.user?.image;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -349,7 +346,6 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       size="sm"
                       onClick={() => {
                         setSelectedAvatar("");
-                        setCustomAvatarUrl("");
                       }}
                       className="rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground gap-1"
                     >
@@ -363,89 +359,43 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               </div>
             </div>
 
-            {/* Avatar Category Tabs */}
-            <div className="space-y-2.5 pt-1">
-              <div className="flex items-center gap-1.5 border-b border-border/50 pb-2">
-                <button
-                  type="button"
-                  onClick={() => setAvatarTab("avatars")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    avatarTab === "avatars"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                  }`}
-                >
-                  {t("profile.avatarTabPreset")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAvatarTab("custom")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 active:scale-95 touch-manipulation cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    avatarTab === "custom"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                  }`}
-                >
-                  {t("profile.avatarTabCustom")}
-                </button>
+            {/* Avatar Presets Grid */}
+            <div className="space-y-2 pt-1">
+              <Label className="text-xs font-semibold text-muted-foreground">
+                {t("profile.avatarTabPreset")}
+              </Label>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 pt-1">
+                {AVATARS.map((preset) => {
+                  const isSelected = selectedAvatar === preset.url;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAvatar(preset.url);
+                      }}
+                      className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-card hover:bg-primary/5 cursor-pointer ${
+                        isSelected
+                          ? "border-primary scale-105 shadow-md ring-2 ring-primary/25"
+                          : "border-border/60 hover:border-primary/50"
+                      }`}
+                      title={preset.name}
+                    >
+                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-primary/5 relative">
+                        <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <Check className="h-4 w-4 text-primary stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-foreground truncate w-full text-center">
+                        {preset.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-
-              {/* Avatar Presets */}
-              {avatarTab === "avatars" && (
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 pt-1">
-                  {AVATARS.map((preset) => {
-                    const isSelected = selectedAvatar === preset.url && !customAvatarUrl;
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAvatar(preset.url);
-                          setCustomAvatarUrl("");
-                        }}
-                        className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-card hover:bg-primary/5 cursor-pointer ${
-                          isSelected
-                            ? "border-primary scale-105 shadow-md ring-2 ring-primary/25"
-                            : "border-border/60 hover:border-primary/50"
-                        }`}
-                        title={preset.name}
-                      >
-                        <div className="w-11 h-11 rounded-xl overflow-hidden bg-primary/5 relative">
-                          <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
-                          {isSelected && (
-                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                              <Check className="h-4 w-4 text-primary stroke-[3]" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-[10px] font-semibold text-foreground truncate w-full text-center">
-                          {preset.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Custom URL Input */}
-              {avatarTab === "custom" && (
-                <div className="p-3 rounded-2xl bg-card border border-primary/20 space-y-2">
-                  <Label htmlFor="custom-avatar" className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <ImageIcon className="h-3.5 w-3.5 text-primary" /> {locale === "en" ? "Paste External Image URL" : "Tempel URL Gambar Eksternal"}
-                  </Label>
-                  <Input
-                    id="custom-avatar"
-                    type="url"
-                    value={customAvatarUrl}
-                    onChange={(e) => {
-                      setCustomAvatarUrl(e.target.value);
-                      if (e.target.value) setSelectedAvatar("");
-                    }}
-                    placeholder={locale === "en" ? "https://example.com/your-photo.jpg" : "https://example.com/foto-anda.jpg"}
-                    className="rounded-xl text-base sm:text-xs bg-background"
-                  />
-                </div>
-              )}
             </div>
           </div>
 
