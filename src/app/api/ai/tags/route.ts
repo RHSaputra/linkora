@@ -52,20 +52,39 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    const response = await withTimeout(
-      ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-          { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-        ],
-        config: { responseMimeType: "application/json" }
-      }),
-      30000
-    );
+    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+    let responseText: string | null = null;
+    let lastError: any = null;
+
+    for (const modelName of MODELS) {
+      try {
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: modelName,
+            contents: [
+              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
+            ],
+            config: { responseMimeType: "application/json" }
+          }),
+          20000
+        );
+        if (response.text) {
+          responseText = response.text;
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`Tags model ${modelName} failed, trying fallback:`, err?.message || err);
+        lastError = err;
+      }
+    }
+
+    if (!responseText) {
+      throw lastError || new Error("Tidak ada respon dari server AI.");
+    }
 
     let parsedResponse: { id: string, tags: string[] }[] = [];
     try {
-      parsedResponse = JSON.parse(response.text?.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
+      parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
     } catch (_e) {
       console.error("Failed to parse Gemini response for tags");
       return NextResponse.json({ error: "Gagal memproses keluaran AI" }, { status: 500 });

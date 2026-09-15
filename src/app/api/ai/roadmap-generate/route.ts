@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { serializeRoadmap } from "@/lib/types";
 import { calculateAutoLayout } from "@/lib/roadmap-layout";
+import { withTimeout } from "@/lib/ai-cache";
 
 function extractJsonString(str: string): string {
   const clean = str.replace(/```json/gi, "").replace(/```/g, "").trim();
@@ -94,15 +95,18 @@ ATURAN PENTING:
 
     for (const modelName of MODELS) {
       try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: [
-            { role: "user", parts: [{ text: `${systemPrompt}\n\nTopik user: "${topic.trim()}"` }] },
-          ],
-          config: {
-            temperature: 0.3,
-          },
-        });
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: modelName,
+            contents: [
+              { role: "user", parts: [{ text: `${systemPrompt}\n\nTopik user: "${topic.trim()}"` }] },
+            ],
+            config: {
+              temperature: 0.3,
+            },
+          }),
+          25000
+        );
         rawText = response.text || "";
         if (rawText.trim()) break;
       } catch (err: any) {
