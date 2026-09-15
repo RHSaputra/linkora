@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type ToastType = "success" | "error" | "warning" | "info" | "loading";
 
@@ -178,7 +179,7 @@ function ToastCard({
 
       {/* Message Content - Grows naturally */}
       <div className="flex-1 min-w-0 pr-6">
-        <h4 className="text-xs font-bold text-foreground leading-snug tracking-tight font-sans">
+        <h4 className="text-xs sm:text-sm font-semibold text-foreground leading-snug tracking-tight font-sans">
           {item.title || iconConfig.defaultTitle}
         </h4>
         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed break-words font-normal">
@@ -187,14 +188,16 @@ function ToastCard({
       </div>
 
       {/* Close Button */}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon-xs"
         onClick={onDismiss}
         aria-label="Tutup Notifikasi"
-        className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer touch-manipulation z-20"
+        className="absolute top-2.5 right-2.5 text-muted-foreground/60 hover:text-foreground z-20"
       >
         <X className="w-3.5 h-3.5" />
-      </button>
+      </Button>
 
       {/* Subtle bottom progress bar */}
       {item.type !== "loading" && duration > 0 && (

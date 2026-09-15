@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import {
@@ -44,8 +44,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotesList, useNoteFolders, invalidateAndRefresh, setCachedData } from "@/hooks/use-data";
-import { QuickReminderPopover } from "@/components/reminders/quick-reminder-popover";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { toast } from "@/components/ui/custom-toast";
 
 const COLOR_OPTIONS = [
   "#6366f1", // Indigo
@@ -86,9 +86,11 @@ export function NotesPage() {
   const [folderColor, setFolderColor] = useState(COLOR_OPTIONS[0]);
   const [savingFolder, setSavingFolder] = useState(false);
 
-  // Delete confirmations
+  // Delete & Bulk Selection states
   const [deleteNoteTarget, setDeleteNoteTarget] = useState<any | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<any | null>(null);
+  const [selectedNoteIds, setSelectedNoteIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -118,7 +120,7 @@ export function NotesPage() {
   }), [debouncedSearch, activeFilter, activeFolderId]);
 
   const { notes, loading, refresh: fetchNotes, setNotes } = useNotesList(queryParams);
-  const { folders, refresh: fetchFolders, setFolders } = useNoteFolders();
+  const { folders, refresh: fetchFolders } = useNoteFolders();
 
   const createNote = async (initialFolderId?: string | null) => {
     if (requireAuth(t("notes.newNoteBtn"), t("auth.authRequiredDesc"))) {
@@ -222,19 +224,104 @@ export function NotesPage() {
     }
   };
 
+  const toggleSelectNote = (e: React.MouseEvent, noteId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedNoteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(noteId)) {
+        next.delete(noteId);
+      } else {
+        next.add(noteId);
+      }
+      return next;
+    });
+  };
+
+  const selectAllNotes = () => {
+    if (selectedNoteIds.size === notes.length) {
+      setSelectedNoteIds(new Set());
+    } else {
+      setSelectedNoteIds(new Set(notes.map((n) => n.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedNoteIds(new Set());
+  };
+
   const confirmDeleteNote = async () => {
     if (!deleteNoteTarget) return;
+    const target = deleteNoteTarget;
+    const isPermanent = target.status === "TRASH" || activeFilter === "trash";
+
+    // Close modal & optimistically filter out item
+    setDeleteNoteTarget(null);
+    setNotes((prev) => prev.filter((n) => n.id !== target.id));
+    setSelectedNoteIds((prev) => {
+      const next = new Set(prev);
+      next.delete(target.id);
+      return next;
+    });
+    toast.success(
+      isPermanent
+        ? (locale === "en" ? "Note deleted permanently" : "Catatan dihapus permanen")
+        : (locale === "en" ? "Note deleted successfully" : "Catatan berhasil dihapus"),
+      locale === "en" ? "Deleted" : "Dihapus"
+    );
+
     try {
-      const isPermanent = deleteNoteTarget.status === "TRASH" || activeFilter === "trash";
-      await fetch(`/api/notes/${deleteNoteTarget.id}${isPermanent ? "?permanent=true" : ""}`, {
+      const res = await fetch(`/api/notes/${target.id}${isPermanent ? "?permanent=true" : ""}`, {
         method: "DELETE",
       });
-      setDeleteNoteTarget(null);
-      invalidateAndRefresh(["notes", "noteFolders"]);
-      fetchNotes(true);
-      fetchFolders(true);
+      if (res.ok) {
+        invalidateAndRefresh(["notes", "noteFolders"]);
+      } else {
+        toast.error(locale === "en" ? "Failed to delete note" : "Gagal menghapus catatan", "Error");
+        fetchNotes(true);
+      }
     } catch (error) {
       console.error(error);
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", "Error");
+      fetchNotes(true);
+    }
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedNoteIds.size === 0) return;
+    const idsToDelete = Array.from(selectedNoteIds);
+    const isPermanent = activeFilter === "trash";
+
+    // Close modal & clear selection
+    setBulkDeleteDialogOpen(false);
+    setSelectedNoteIds(new Set());
+
+    // Optimistically remove from state
+    setNotes((prev) => prev.filter((n) => !idsToDelete.includes(n.id)));
+    toast.success(
+      isPermanent
+        ? (locale === "en" ? `${idsToDelete.length} notes deleted permanently` : `${idsToDelete.length} catatan dihapus permanen`)
+        : (locale === "en" ? `${idsToDelete.length} notes deleted successfully` : `${idsToDelete.length} catatan berhasil dihapus`),
+      locale === "en" ? "Deleted" : "Dihapus"
+    );
+
+    try {
+      const res = await fetch("/api/notes/bulk", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: idsToDelete, permanent: isPermanent }),
+      });
+
+      if (res.ok) {
+        invalidateAndRefresh(["notes", "noteFolders"]);
+      } else {
+        toast.error(locale === "en" ? "Failed to bulk delete notes" : "Gagal menghapus beberapa catatan", "Error");
+        fetchNotes(true);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", "Error");
+      fetchNotes(true);
     }
   };
 
@@ -317,7 +404,7 @@ export function NotesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-heading font-bold tracking-tight text-foreground flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold tracking-tight text-foreground flex items-center gap-3">
             <span className="p-2 rounded-2xl bg-primary/10 text-primary border border-primary/20">
               <FileText className="w-7 h-7" />
             </span>
@@ -449,79 +536,19 @@ export function NotesPage() {
             );
           })}
 
-          <div className="h-6 w-px bg-border/60 mx-1 shrink-0" />
-
-          {/* Folder Chips */}
-          {folders.map((folder) => {
-            const isFolderActive = activeFolderId === folder.id;
-            return (
-              <div
-                key={folder.id}
-                className={cn(
-                  "flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl text-sm font-medium transition-all shrink-0 group border",
-                  isFolderActive
-                    ? "bg-foreground/10 text-foreground border-foreground/30 shadow-sm"
-                    : "glass-panel text-muted-foreground hover:text-foreground hover:bg-foreground/5 border-border/40"
-                )}
+          {activeFolderId && (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium bg-primary/10 border border-primary/20 text-primary shrink-0">
+              <span>Folder Catatan Aktif</span>
+              <button
+                type="button"
+                onClick={() => setActiveFolderId(null)}
+                className="hover:bg-primary/20 rounded-md p-0.5 cursor-pointer"
+                title="Hapus filter folder"
               >
-                <button
-                  onClick={() => {
-                    setActiveFolderId(folder.id);
-                    setActiveFilter("all");
-                  }}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: folder.color }}
-                  />
-                  <span>{folder.name}</span>
-                  {folder._count?.notes !== undefined && (
-                    <span className="text-xs opacity-60 bg-foreground/10 px-1.5 py-0.2 rounded-full">
-                      {folder._count.notes}
-                    </span>
-                  )}
-                </button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button 
-                      type="button"
-                      aria-label="Opsi folder"
-                      className="opacity-80 sm:opacity-0 sm:group-hover:opacity-100 p-1.5 sm:p-1 hover:bg-foreground/10 rounded-md transition-opacity cursor-pointer touch-manipulation"
-                    >
-                      <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-36 glass-panel">
-                    <DropdownMenuItem
-                      onClick={() => handleOpenFolderDialog(folder)}
-                      className="cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit Folder
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setDeleteFolderTarget(folder)}
-                      className="text-destructive cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 mr-2" /> Hapus Folder
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            );
-          })}
-
-          {/* Add Folder Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleOpenFolderDialog()}
-            className="rounded-xl border-dashed border-border/70 hover:border-primary text-xs gap-1.5 shrink-0 h-10 px-3.5"
-          >
-            <FolderPlus className="w-3.5 h-3.5 text-primary" />
-            <span>Folder Baru</span>
-          </Button>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -531,7 +558,9 @@ export function NotesPage() {
           <div className="flex items-center gap-2.5 text-sm font-medium">
             <Trash2 className="w-5 h-5 shrink-0" />
             <span>
-              Catatan di Sampah akan disimpan hingga dihapus permanen atau dipulihkan.
+              {locale === "en"
+                ? "Notes in Trash will be automatically and permanently deleted after 24 hours."
+                : "Catatan di Sampah akan terhapus secara otomatis secara permanen dalam waktu 24 jam."}
             </span>
           </div>
         </div>
@@ -600,12 +629,31 @@ export function NotesPage() {
                   <Link href={`/notes/${note.id}`} prefetch={true} className="block h-full">
                     <div
                       className={cn(
-                        "group p-5 rounded-2xl glass-panel border border-border/40 hover:border-primary/40 transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col h-48 relative overflow-hidden",
-                        note.isPinned && "border-blue-500/30 bg-blue-500/[0.03]"
+                        "group p-5 rounded-2xl glass-panel border transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col h-48 relative overflow-hidden",
+                        selectedNoteIds.has(note.id)
+                          ? "border-primary bg-primary/[0.04] ring-2 ring-primary/40 shadow-md"
+                          : note.isPinned
+                          ? "border-blue-500/30 bg-blue-500/[0.03] hover:border-primary/40"
+                          : "border-border/40 hover:border-primary/40"
                       )}
                     >
                       {/* Top Header */}
                       <div className="flex items-start justify-between gap-2 mb-2">
+                        {/* Checkbox for Bulk Selection */}
+                        <button
+                          type="button"
+                          onClick={(e) => toggleSelectNote(e, note.id)}
+                          className={cn(
+                            "w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer touch-manipulation shrink-0 mr-1 mt-0.5",
+                            selectedNoteIds.has(note.id)
+                              ? "bg-primary border-primary text-primary-foreground shadow-xs scale-105 opacity-100"
+                              : "border-border/80 bg-background/80 hover:border-primary/80 text-transparent opacity-90 sm:opacity-0 sm:group-hover:opacity-100"
+                          )}
+                          title={selectedNoteIds.has(note.id) ? "Batal pilih" : "Pilih catatan"}
+                        >
+                          <Check className={cn("w-3.5 h-3.5 stroke-[3]", selectedNoteIds.has(note.id) ? "opacity-100" : "opacity-0")} />
+                        </button>
+
                         <h3 className="font-bold text-foreground font-heading line-clamp-1 flex-1 text-base group-hover:text-primary transition-colors">
                           {note.title || "Catatan Tanpa Judul"}
                         </h3>
@@ -621,7 +669,7 @@ export function NotesPage() {
                                 "p-1.5 sm:p-1 rounded-lg transition-colors cursor-pointer touch-manipulation",
                                 note.isPinned
                                   ? "text-blue-500 hover:bg-blue-500/10"
-                                  : "text-muted-foreground/60 hover:text-muted-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                                  : "text-muted-foreground/80 hover:text-foreground opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                               )}
                               title={note.isPinned ? "Lepaskan Pin" : "Sematkan"}
                             >
@@ -639,7 +687,7 @@ export function NotesPage() {
                                 "p-1.5 sm:p-1 rounded-lg transition-colors cursor-pointer touch-manipulation",
                                 note.isFavorite
                                   ? "text-yellow-500 hover:bg-yellow-500/10"
-                                  : "text-muted-foreground/60 hover:text-yellow-500 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                                  : "text-muted-foreground/80 hover:text-yellow-500 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                               )}
                               title={note.isFavorite ? (locale === "en" ? "Remove Favorite" : "Hapus Favorit") : (locale === "en" ? "Add to Favorites" : "Favorit")}
                             >
@@ -669,12 +717,12 @@ export function NotesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="w-48 glass-panel"
+                              className="w-48 glass-panel border border-border/80 shadow-md"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {!isTrashView && (
                                 <>
-                                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
                                     Pindah ke Folder
                                   </DropdownMenuLabel>
                                   <DropdownMenuItem
@@ -704,23 +752,23 @@ export function NotesPage() {
                                 <>
                                   <DropdownMenuItem
                                     onClick={(e) => restoreNote(e, note.id)}
-                                    className="cursor-pointer text-primary"
+                                    className="cursor-pointer text-primary font-medium"
                                   >
                                     <RotateCcw className="w-3.5 h-3.5 mr-2" /> Pulihkan Catatan
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => setDeleteNoteTarget(note)}
-                                    className="cursor-pointer text-destructive focus:bg-destructive/10"
+                                    className="cursor-pointer text-destructive font-medium focus:bg-destructive/10"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5 mr-2" /> Hapus Permanen
+                                    <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" /> Hapus Permanen
                                   </DropdownMenuItem>
                                 </>
                               ) : (
                                 <DropdownMenuItem
                                   onClick={() => setDeleteNoteTarget(note)}
-                                  className="cursor-pointer text-destructive focus:bg-destructive/10"
+                                  className="cursor-pointer text-destructive font-semibold focus:bg-destructive/10"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5 mr-2" /> Pindahkan ke Sampah
+                                  <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" /> Hapus
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -772,7 +820,7 @@ export function NotesPage() {
         title={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
             ? (locale === "en" ? "Permanently Delete Note" : "Hapus Catatan Permanen")
-            : (locale === "en" ? "Move to Trash" : "Pindahkan ke Sampah")
+            : (locale === "en" ? "Delete Note" : "Hapus Catatan")
         }
         description={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
@@ -782,11 +830,83 @@ export function NotesPage() {
         confirmText={
           deleteNoteTarget?.status === "TRASH" || activeFilter === "trash"
             ? (locale === "en" ? "Delete Permanently" : "Hapus Permanen")
-            : (locale === "en" ? "Move to Trash" : "Pindahkan ke Sampah")
+            : (locale === "en" ? "Delete" : "Hapus")
         }
         cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={confirmDeleteNote}
+      />
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedNoteIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl glass-panel bg-card/95 border border-primary/30 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="flex items-center gap-2 pr-2 border-r border-border/60">
+              <span className="w-6 h-6 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center">
+                {selectedNoteIds.size}
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {locale === "en" ? "Selected" : "Dipilih"}
+              </span>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={selectAllNotes}
+            >
+              {selectedNoteIds.size === notes.length
+                ? (locale === "en" ? "Deselect All" : "Batal Semua")
+                : (locale === "en" ? "Select All" : "Pilih Semua")}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {locale === "en" ? "Cancel" : "Batal"}
+            </Button>
+
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => setBulkDeleteDialogOpen(true)}
+            >
+              <Trash2 />
+              <span>
+                {locale === "en" ? `Delete (${selectedNoteIds.size})` : `Hapus (${selectedNoteIds.size})`}
+              </span>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        title={
+          activeFilter === "trash"
+            ? (locale === "en" ? `Delete ${selectedNoteIds.size} Notes Permanently` : `Hapus Permanen ${selectedNoteIds.size} Catatan`)
+            : (locale === "en" ? `Delete ${selectedNoteIds.size} Notes` : `Hapus ${selectedNoteIds.size} Catatan`)
+        }
+        description={
+          activeFilter === "trash"
+            ? (locale === "en" ? "Selected notes will be permanently deleted and cannot be recovered." : "Catatan yang dipilih akan dihapus selamanya dan tidak dapat dipulihkan.")
+            : (locale === "en" ? "Selected notes will be moved to Trash. You can still restore them anytime." : "Catatan yang dipilih akan dipindahkan ke folder Sampah. Anda dapat memulihkannya kapan saja.")
+        }
+        confirmText={locale === "en" ? `Delete (${selectedNoteIds.size})` : `Hapus (${selectedNoteIds.size})`}
+        cancelText={t("common.cancel")}
+        destructive={true}
+        onConfirm={handleConfirmBulkDelete}
       />
 
       {/* Delete Folder Confirmation Dialog */}

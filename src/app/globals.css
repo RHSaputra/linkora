@@ -41,6 +41,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-inter);
   --font-heading: var(--font-space-grotesk);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 :root {
@@ -242,7 +243,123 @@
     pointer-events: none;
   }
 
+  /* Standardized Semantic Typography System */
+  .typo-display {
+    font-family: var(--font-heading), var(--font-sans), sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
 
+  .typo-page-title {
+    font-family: var(--font-heading), var(--font-sans), sans-serif;
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .typo-section {
+    font-family: var(--font-heading), var(--font-sans), sans-serif;
+    font-size: clamp(1.125rem, 1.75vw, 1.35rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+  }
+
+  .typo-subsection {
+    font-family: var(--font-heading), var(--font-sans), sans-serif;
+    font-size: clamp(1rem, 1.25vw, 1.125rem);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+  }
+
+  .typo-card-title {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    color: var(--foreground);
+  }
+
+  .typo-body-lg {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--foreground);
+  }
+
+  .typo-body {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--foreground);
+  }
+
+  .typo-body-sm {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.75rem; /* 12px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+
+  .typo-label {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--foreground);
+  }
+
+  .typo-button {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+  }
+
+  .typo-metadata {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.6875rem; /* 11px */
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+  }
+
+  .typo-badge {
+    font-family: var(--font-sans), sans-serif;
+    font-size: 0.625rem; /* 10px */
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .typo-code {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .typo-url {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
 }
 
 @keyframes laser-flow {

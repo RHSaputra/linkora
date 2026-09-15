@@ -4,14 +4,16 @@ import { cn } from "@/lib/utils";
 const Badge = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    variant?: "default" | "secondary" | "outline" | "destructive" | "success" | "warning" | "info";
+    variant?: "default" | "secondary" | "outline" | "destructive" | "destructive-outline" | "success" | "warning" | "info" | "accent";
   }
 >(({ className, variant = "default", ...props }, ref) => {
   const variants = {
     default: "border-transparent bg-primary/15 text-primary",
+    accent: "border-transparent bg-accent/15 text-accent",
     secondary: "border-transparent bg-secondary text-secondary-foreground",
     outline: "text-foreground border-border/80 bg-background/50",
     destructive: "border-transparent bg-destructive/15 text-destructive",
+    "destructive-outline": "border-destructive/30 bg-destructive/10 text-destructive",
     success: "border-transparent bg-success/15 text-success",
     warning: "border-transparent bg-warning/15 text-warning",
     info: "border-transparent bg-info/15 text-info",

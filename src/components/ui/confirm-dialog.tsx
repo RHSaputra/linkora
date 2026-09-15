@@ -44,19 +44,21 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto text-xs cursor-pointer"
+            className="w-full sm:w-auto"
           >
             {cancelText}
           </Button>
           <Button
             type="button"
             variant={destructive ? "destructive" : "default"}
+            size="sm"
             onClick={() => {
               onConfirm();
               onOpenChange(false);
             }}
-            className="w-full sm:w-auto text-xs font-semibold shadow-md cursor-pointer"
+            className="w-full sm:w-auto shadow-sm"
           >
             {confirmText}
           </Button>

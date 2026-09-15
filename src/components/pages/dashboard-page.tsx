@@ -11,10 +11,12 @@ import {
   Loader2,
   Shield,
   ChevronRight,
-  PieChart
+  PieChart,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { LinkCard3D } from "@/components/ui/link-card-3d";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -197,7 +199,7 @@ export function DashboardPage({
               <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans flex items-center gap-1.5">
                 {locale === "en" ? "Hello," : "Halo,"} <LinkorianText /> 👋
               </h2>
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent font-sans leading-tight break-words">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground font-heading leading-tight break-words">
                 {userName || "Linkorian"}
               </h1>
               <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
@@ -366,25 +368,26 @@ export function DashboardPage({
 
             {/* AI Action CTA Button */}
             <div className="flex-shrink-0 w-full lg:w-auto">
-              <motion.button
-                whileHover={{ scale: s.totalLinks === 0 ? 1 : 1.05 }}
-                whileTap={{ scale: s.totalLinks === 0 ? 1 : 0.95 }}
+              <Button
+                size="lg"
                 onClick={handleOrganize}
                 disabled={isOrganizing || s.totalLinks === 0}
-                className="relative w-full lg:w-auto px-7 py-3.5 sm:px-8 sm:py-3.5 rounded-2xl bg-gradient-to-r from-primary via-indigo-500 to-accent hover:from-primary/90 hover:to-accent text-white font-bold text-sm tracking-wide shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed overflow-hidden group"
+                className="w-full lg:w-auto h-11 px-6 rounded-xl font-semibold gap-2 shadow-md bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer"
               >
-                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                 {isOrganizing ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                     <span>{t("dashboard.organizingBtn")}</span>
                   </>
                 ) : s.totalLinks === 0 ? (
                   <span>{t("dashboard.noLinksBtn")}</span>
                 ) : (
-                  <span>{t("dashboard.aiOrganizeBtn")}</span>
+                  <>
+                    <Zap className="h-4 w-4 shrink-0" />
+                    <span>{t("dashboard.aiOrganizeBtn")}</span>
+                  </>
                 )}
-              </motion.button>
+              </Button>
             </div>
           </div>
         </div>
@@ -408,7 +411,7 @@ export function DashboardPage({
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                   <Star className="h-5 w-5 fill-amber-500" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black font-heading text-foreground tracking-tight">
+                <h2 className="text-lg sm:text-xl font-bold font-heading text-foreground tracking-tight">
                   {t("dashboard.priorityLinks")}
                 </h2>
               </div>

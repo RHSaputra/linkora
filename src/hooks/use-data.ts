@@ -348,7 +348,7 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
 
   const refresh = useCallback(async (force = false) => {
     const url = getUrl();
-    if (force && !globalCache.has(url)) setLoading(true);
+    if (force && !globalCache.has(url) && notes.length === 0) setLoading(true);
     try {
       const data = await fetchWithCache(url, force);
       if (Array.isArray(data)) {
@@ -359,7 +359,7 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
     } finally {
       setLoading(false);
     }
-  }, [getUrl]);
+  }, [getUrl, notes.length]);
 
   useEffect(() => {
     const url = getUrl();
@@ -435,6 +435,11 @@ export async function deleteCollection(id: string) {
   return fetch(`/api/collections/${id}`, { method: "DELETE" });
 }
 
+export async function deleteNoteFolder(id: string) {
+  invalidateAndRefresh(["noteFolders", "notes"]);
+  return fetch(`/api/notes/folders/${id}`, { method: "DELETE" });
+}
+
 export async function fetchMetadata(url: string) {
   const res = await fetch("/api/metadata", {
     method: "POST",
@@ -446,28 +451,45 @@ export async function fetchMetadata(url: string) {
 }
 
 export function useRoadmaps(searchQuery?: string) {
-  const [roadmaps, setRoadmaps] = useState<import("@/lib/types").SerializedRoadmap[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const url = searchQuery
     ? `/api/roadmaps?q=${encodeURIComponent(searchQuery)}`
     : "/api/roadmaps";
 
+  const [roadmaps, setRoadmaps] = useState<import("@/lib/types").SerializedRoadmap[]>(() => {
+    const cached = globalCache.get(url) as { items?: import("@/lib/types").SerializedRoadmap[] } | undefined;
+    return cached?.items || [];
+  });
+  const [loading, setLoading] = useState(() => !globalCache.has(url));
+
   const refresh = useCallback(
     async (force = false) => {
-      setLoading(true);
-      const data = await fetchWithCache<{ items: import("@/lib/types").SerializedRoadmap[] }>(url, force);
-      if (data?.items) {
-        setRoadmaps(data.items);
+      if (force && !globalCache.has(url)) {
+        setLoading(true);
       }
-      setLoading(false);
+      try {
+        const data = await fetchWithCache<{ items: import("@/lib/types").SerializedRoadmap[] }>(url, force);
+        if (data?.items) {
+          setRoadmaps(data.items);
+        }
+      } catch (error) {
+        console.error("Failed to fetch roadmaps:", error);
+      } finally {
+        setLoading(false);
+      }
     },
     [url]
   );
 
   useEffect(() => {
+    if (globalCache.has(url)) {
+      const cached = globalCache.get(url) as { items?: import("@/lib/types").SerializedRoadmap[] } | undefined;
+      if (cached?.items) setRoadmaps(cached.items);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     refresh();
-  }, [refresh]);
+  }, [refresh, url]);
 
   useEffect(() => {
     return subscribeRefresh(() => refresh(true), "roadmaps");
@@ -477,7 +499,11 @@ export function useRoadmaps(searchQuery?: string) {
 }
 
 export async function deleteRoadmap(id: string) {
-  invalidateAndRefresh(["roadmaps"]);
-  return fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
+  const res = await fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
+  if (res.ok) {
+    invalidateAndRefresh(["roadmaps"]);
+  }
+  return res;
 }
+
 

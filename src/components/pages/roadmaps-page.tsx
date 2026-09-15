@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   GitFork,
@@ -33,7 +32,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AIRoadmapGeneratorDialog } from "@/components/roadmap/ai-roadmap-generator-dialog";
-import { Bot } from "lucide-react";
 import { useRoadmaps, deleteRoadmap } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -47,7 +45,7 @@ export function RoadmapsPage() {
   const { t, locale } = useTranslation();
   const { requireAuth } = useRequireAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const { roadmaps, loading, refresh } = useRoadmaps(searchQuery);
+  const { roadmaps, loading, refresh, setRoadmaps } = useRoadmaps(searchQuery);
 
   // Dialog States
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -149,18 +147,23 @@ export function RoadmapsPage() {
 
   const handleDeleteConfirm = async () => {
     if (!selectedRoadmap) return;
+    const targetId = selectedRoadmap.id;
+
+    // Immediately close modal, optimistically remove card, and show toast
+    setDeleteDialogOpen(false);
+    setRoadmaps((prev) => prev.filter((item) => item.id !== targetId));
+    toast.success("Roadmap berhasil dihapus", "Dihapus");
+
     try {
       setIsSubmitting(true);
-      const res = await deleteRoadmap(selectedRoadmap.id);
-      if (res.ok) {
-        toast.success("Roadmap berhasil dihapus", "Dihapus");
-        setDeleteDialogOpen(false);
-        refresh(true);
-      } else {
+      const res = await deleteRoadmap(targetId);
+      if (!res.ok) {
         toast.error("Gagal menghapus roadmap", "Error");
+        refresh(true);
       }
     } catch (_err) {
       toast.error("Terjadi kesalahan jaringan", "Error");
+      refresh(true);
     } finally {
       setIsSubmitting(false);
     }

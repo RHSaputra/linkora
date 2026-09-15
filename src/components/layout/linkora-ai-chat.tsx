@@ -351,10 +351,10 @@ export function LinkoraAIChat() {
                   )}
                   <div className="max-w-[80%] space-y-1.5">
                     <div 
-                      className={`p-3 text-sm shadow-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
+                      className={`p-3.5 text-sm shadow-sm leading-relaxed font-normal whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
                         msg.role === "user" 
-                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm font-medium" 
-                          : "bg-muted/80 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-sm border border-border/50"
+                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm" 
+                          : "bg-card/90 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-sm border border-border/60"
                       }`}
                     >
                       {msg.content}

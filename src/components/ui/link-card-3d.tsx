@@ -126,19 +126,19 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
-                <h3 className="font-bold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                <h3 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
                   {link.title}
                 </h3>
                 <span
-                  className="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
+                  className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
                   style={{ color: catColor }}
                 >
                   {link.category}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-muted-foreground font-medium mt-0.5 truncate">
-                <span className="truncate font-semibold text-foreground/70">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground font-medium mt-0.5 truncate">
+                <span className="truncate font-mono font-medium text-foreground/70">
                   {new URL(link.url).hostname.replace('www.', '') || link.category}
                 </span>
                 <span>•</span>
@@ -377,7 +377,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
                       {link.title}
                     </h3>
                     <div className="flex items-center gap-0.5 shrink-0 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -466,11 +466,11 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
               {/* Description / AI Summary Reserved Area */}
               <div className="min-h-[2.25rem] flex items-center pt-0.5">
                 {link.description ? (
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                     {link.description}
                   </p>
                 ) : link.aiSummary ? (
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                     {link.aiSummary}
                   </p>
                 ) : (
@@ -482,9 +482,9 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
             </div>
 
             {/* Anchored Footer Metadata */}
-            <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground/80 uppercase tracking-wider font-semibold">
+            <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground/80 tracking-normal font-medium">
               <div className="flex items-center gap-2 truncate max-w-[170px]">
-                <span className="truncate">{new URL(link.url).hostname.replace('www.', '')}</span>
+                <span className="truncate font-mono">{new URL(link.url).hostname.replace('www.', '')}</span>
                 {existingNote && (
                   <span 
                     onClick={(e) => {

@@ -146,10 +146,10 @@ export function LikoSuggestionNotification() {
 
               {suggestion.status === "idle" && (
                 <>
-                  <p className="text-xs text-foreground leading-relaxed font-medium break-words">
-                    Tautan <span className="font-bold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span> belum memiliki kategori spesifik.
+                  <p className="text-xs sm:text-sm text-foreground leading-relaxed font-normal break-words">
+                    Tautan <span className="font-semibold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span> belum memiliki kategori spesifik.
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Bantu tentukan kategorinya sekarang?
                   </p>
 
@@ -164,7 +164,7 @@ export function LikoSuggestionNotification() {
                     <button
                       type="button"
                       onClick={handleDismiss}
-                      className="px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium hover:bg-muted active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                      className="px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs font-semibold hover:bg-muted active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                     >
                       Nanti Saja
                     </button>
@@ -174,15 +174,15 @@ export function LikoSuggestionNotification() {
 
               {suggestion.status === "already_categorized" && (
                 <div className="py-0.5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                     <span>Tautan Berhasil Disimpan</span>
                   </div>
-                  <p className="text-xs text-foreground/90 mt-1 break-words">
-                    <span className="font-bold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span>
+                  <p className="text-xs text-foreground/90 mt-1 break-words font-normal">
+                    <span className="font-semibold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Kategori: <span className="font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-md">{suggestion.assignedCategory}</span>
+                  <p className="text-xs text-muted-foreground mt-1 font-normal">
+                    Kategori: <span className="font-semibold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-md">{suggestion.assignedCategory}</span>
                   </p>
                 </div>
               )}

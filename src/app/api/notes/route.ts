@@ -17,6 +17,22 @@ export async function GET(req: Request) {
     const statusParam = searchParams.get("status");
     const q = searchParams.get("q");
 
+    // ── 0. AUTO-CLEANUP TRASH NOTES OLDER THAN 24 HOURS ──
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const expiredTrash = await prisma.note.deleteMany({
+      where: {
+        userId: session.user.id,
+        status: "TRASH",
+        updatedAt: {
+          lt: twentyFourHoursAgo,
+        },
+      },
+    });
+
+    if (expiredTrash.count > 0) {
+      await invalidateUserCache(session.user.id, "notes");
+    }
+
     // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
     const cacheKey = `cache:notes:${session.user.id}:${folderId || ""}:${filter || ""}:${statusParam || ""}:${q || ""}`;
     const cachedNotes = await getCache<any>(cacheKey);

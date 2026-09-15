@@ -358,10 +358,10 @@ function NavContent({
             >
               <div
                 className={cn(
-                  "relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 overflow-hidden group",
+                  "relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-300 overflow-hidden group",
                   isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
                 {isActive && (
@@ -519,30 +519,21 @@ function NavContent({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               disabled={isLoggingOut}
               onClick={() => setLogoutDialogOpen(false)}
-              className="rounded-xl text-xs font-semibold"
             >
               {t("common.cancel")}
             </Button>
             <Button
               type="button"
               variant="destructive"
-              disabled={isLoggingOut}
+              size="sm"
+              isLoading={isLoggingOut}
               onClick={handleLogout}
-              className="rounded-xl text-xs font-bold gap-1.5 shadow-sm cursor-pointer active:scale-95 transition-transform"
             >
-              {isLoggingOut ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  {t("common.deleting")}
-                </>
-              ) : (
-                <>
-                  <LogOut className="h-3.5 w-3.5" />
-                  {t("auth.logoutBtn")}
-                </>
-              )}
+              <LogOut />
+              {t("auth.logoutBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>

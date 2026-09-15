@@ -168,19 +168,19 @@ export function LinkCard({
             {/* Title, Category & Meta */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
-                <h3 className="font-bold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                <h3 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
                   {link.title}
                 </h3>
                 <span
-                  className="px-2 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
+                  className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
                   style={{ color: categoryColor }}
                 >
                   {link.category}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-muted-foreground font-medium mt-0.5 truncate">
-                <span className="truncate font-semibold text-foreground/70">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground font-medium mt-0.5 truncate">
+                <span className="truncate font-mono font-medium text-foreground/70">
                   {domain || link.category}
                 </span>
                 <span>•</span>
@@ -221,14 +221,14 @@ export function LinkCard({
               )}
             />
 
-            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+            <Button variant="ghost" size="icon-xs" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
               <Star className={cn("h-3.5 w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
             </Button>
 
             <Button
               variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-lg text-primary hover:bg-primary/10 touch-manipulation cursor-pointer hidden sm:inline-flex"
+              size="icon-xs"
+              className="text-primary hover:text-primary hidden sm:inline-flex"
               onClick={handleExternalOpen}
               title={t("links.openLinkBtn")}
             >
@@ -237,7 +237,7 @@ export function LinkCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
+                <Button variant="ghost" size="icon-xs" aria-label="Menu opsi tautan">
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -433,16 +433,16 @@ export function LinkCard({
               {/* Title & Quick Actions */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-1.5">
-                  <h3 className="font-bold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
                     {link.title}
                   </h3>
                   <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+                    <Button variant="ghost" size="icon-sm" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
                       <Star className={cn("h-4 w-4 sm:h-3.5 sm:w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg touch-manipulation cursor-pointer" aria-label="Menu opsi tautan">
+                        <Button variant="ghost" size="icon-sm" aria-label="Menu opsi tautan">
                           <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -507,11 +507,11 @@ export function LinkCard({
             {/* Description / AI Summary Reserved Area */}
             <div className="min-h-[2.25rem] flex items-center pt-0.5">
               {link.description ? (
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                   {link.description}
                 </p>
               ) : link.aiSummary ? (
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                   {link.aiSummary}
                 </p>
               ) : (
@@ -540,9 +540,9 @@ export function LinkCard({
 
           {/* ── CARD FOOTER & ACTIONS ANCHORED AT BOTTOM ── */}
           <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 font-medium uppercase tracking-wider">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium tracking-normal">
               <div className="flex items-center gap-2 truncate max-w-[170px]">
-                <span className="truncate font-semibold text-foreground/70">
+                <span className="truncate font-mono font-medium text-foreground/70">
                   {domain || link.category}
                 </span>
                 {existingNote && (
