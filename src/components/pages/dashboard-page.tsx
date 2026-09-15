@@ -551,7 +551,7 @@ export function DashboardPage({
       {/* DIALOG 1: AI ORGANIZE RESULT REPORT                                      */}
       {/* ========================================================================= */}
       <Dialog open={!!organizeResult} onOpenChange={(open) => !open && setOrganizeResult(null)}>
-        <DialogContent className="glass-panel border-primary/30 sm:max-w-md bg-card/95 backdrop-blur-2xl rounded-3xl">
+        <DialogContent className="border-primary/30 sm:max-w-md bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-black font-heading text-primary">
               {organizeResult?.error ? t("common.error") : (locale === "en" ? "Liko AI Insights Report" : "Laporan Wawasan AI Liko")}
@@ -613,7 +613,7 @@ export function DashboardPage({
       {/* DIALOG 2: DETAIL KLUSTER DATA MODAL                                       */}
       {/* ========================================================================= */}
       <Dialog open={clusterDialogOpen} onOpenChange={setClusterDialogOpen}>
-        <DialogContent className="glass-panel border-primary/30 sm:max-w-lg bg-card/95 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl max-h-[85vh] flex flex-col">
+        <DialogContent className="border-primary/30 sm:max-w-lg bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl p-6 sm:p-8 rounded-3xl max-h-[85vh] flex flex-col">
           <DialogHeader className="pb-2">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-sm">

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Database, Link2, Loader2, CheckCircle, FileText, BookOpen } from "lucide-react";
+import { X, Send, Link2, Loader2, CheckCircle, FileText, BookOpen } from "lucide-react";
 import { invalidateAndRefresh } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -331,8 +331,7 @@ export function LinkoraAIChat() {
                   <h3 className="font-semibold text-foreground">
                     {locale === "en" ? "Liko (AI Assistant)" : "Liko (Asisten AI)"}
                   </h3>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Database className="w-2.5 h-2.5 text-primary" />
+                  <span className="text-xs text-muted-foreground block">
                     {locale === "en" ? "Connected to your workspace" : "Terhubung dengan koleksimu"}
                   </span>
                 </div>

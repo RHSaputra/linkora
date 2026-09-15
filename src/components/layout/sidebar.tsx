@@ -294,7 +294,7 @@ function NavContent({
               className="w-full h-auto max-w-[180px] object-contain drop-shadow-md hover:scale-105 transition-transform duration-300 cursor-pointer"
             />
           </DialogTrigger>
-          <DialogContent className="glass-panel border-primary/20 sm:max-w-lg bg-card/95 flex flex-col items-center justify-center p-12">
+          <DialogContent className="border-primary/20 sm:max-w-lg bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl flex flex-col items-center justify-center p-12 rounded-3xl">
             <img 
               src="/logo.png" 
               alt="Linkora Logo" 
@@ -494,7 +494,7 @@ function NavContent({
 
       {/* Logout Confirmation Dialog */}
       <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
-        <DialogContent className="sm:max-w-[420px] p-6 rounded-3xl glass-panel border-destructive/30 bg-card/95 shadow-2xl backdrop-blur-2xl">
+        <DialogContent className="sm:max-w-[420px] p-6 rounded-3xl border-destructive/30 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl">
           <DialogHeader className="pb-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shrink-0">

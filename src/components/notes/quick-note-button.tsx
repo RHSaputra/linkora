@@ -180,7 +180,7 @@ export function QuickNoteButton() {
 
       {/* Instant Quick Note Floating Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[480px] p-5 sm:p-6 rounded-3xl glass-panel border-primary/30 bg-card/95 shadow-2xl backdrop-blur-2xl">
+        <DialogContent className="sm:max-w-[480px] p-5 sm:p-6 rounded-3xl border-primary/30 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl">
           <DialogHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">

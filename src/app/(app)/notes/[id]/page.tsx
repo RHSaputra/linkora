@@ -753,7 +753,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
 
       {/* Create Folder Dialog */}
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
-        <DialogContent className="sm:max-w-md glass-panel">
+        <DialogContent className="sm:max-w-md border-primary/25 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle>{t("notes.folderModalTitle")}</DialogTitle>
           </DialogHeader>

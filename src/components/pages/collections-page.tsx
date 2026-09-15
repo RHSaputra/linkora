@@ -886,7 +886,7 @@ export function CollectionsPage({
 
       {/* ── DIALOG: BUAT/EDIT KOLEKSI TAUTAN ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 glass-panel border border-primary/20">
+        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 border border-primary/20 shadow-2xl backdrop-blur-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-heading text-foreground">{t("collections.modalCreateTitle")}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">{t("collections.modalCreateDesc")}</DialogDescription>
@@ -995,7 +995,7 @@ export function CollectionsPage({
 
       {/* ── DIALOG: BUAT/EDIT KOLEKSI CATATAN ── */}
       <Dialog open={noteFolderDialogOpen} onOpenChange={setNoteFolderDialogOpen}>
-        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 glass-panel border border-cyan-500/20">
+        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 border border-cyan-500/20 shadow-2xl backdrop-blur-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-heading text-foreground">
               {editingNoteFolder ? t("collections.modalEditNoteFolderTitle") : t("collections.modalCreateNoteFolderTitle")}

@@ -378,7 +378,7 @@ export function RoadmapsPage() {
 
       {/* Create Roadmap Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="glass-panel border-primary/20 sm:max-w-md bg-card/95 p-6">
+        <DialogContent className="border-primary/25 sm:max-w-md bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
               {t("roadmaps.createTitle")}
@@ -438,7 +438,7 @@ export function RoadmapsPage() {
 
       {/* Edit Roadmap Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="glass-panel border-primary/20 sm:max-w-md bg-card/95 p-6">
+        <DialogContent className="border-primary/25 sm:max-w-md bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-heading font-bold text-foreground">
               Edit Roadmap
