@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
       ${extractedText}
     `;
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+    const MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash"];
     let responseText: string | null = null;
     let lastError: any = null;
 
