@@ -8,7 +8,7 @@ import { useTranslation } from "@/components/providers/i18n-provider"
 // ── Data 6 Card Solusi — Warna Senada & Harmonis dengan Brand Linkora ──
 const getSolutions = (locale: string) => [
   {
-    title: "Smart Link Vault",
+    title: locale === "en" ? "Smart Link Hub" : "Pusat Tautan Cerdas",
     description: locale === "en" 
       ? "Save every essential link with automatic metadata fetching without worrying about losing them." 
       : "Simpan semua tautan penting dengan metadata otomatis tanpa takut terselip atau rusak.",
