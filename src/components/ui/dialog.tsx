@@ -34,12 +34,11 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 flex flex-col w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-primary/25 dark:border-primary/35 bg-card/95 backdrop-blur-2xl p-5 sm:p-6 shadow-2xl duration-250 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl sm:rounded-3xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto break-words min-h-0 relative overflow-hidden",
+        "fixed left-[50%] top-[50%] z-50 flex flex-col w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border/80 bg-card text-card-foreground p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl sm:rounded-3xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto break-words min-h-0",
         className
       )}
       {...props}
     >
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary/30 via-accent/50 to-primary/30 pointer-events-none" />
       {children}
       <DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-xl p-2 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none cursor-pointer z-50 touch-manipulation min-w-[36px] min-h-[36px] flex items-center justify-center">
         <X className="h-4 w-4" />
