@@ -34,7 +34,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-3xl border border-border/80 bg-card/95 backdrop-blur-2xl p-6 shadow-2xl">
+      <DialogContent className="sm:max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card p-6 shadow-2xl">
         <DialogHeader className="space-y-3">
           {destructive && (
             <div className="w-10 h-10 rounded-2xl bg-destructive/15 text-destructive border border-destructive/30 flex items-center justify-center shadow-xs shadow-destructive/10">

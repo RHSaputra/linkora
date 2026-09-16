@@ -63,20 +63,8 @@ export function NodeDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl p-6 rounded-3xl border-border/80 bg-card/95 backdrop-blur-2xl shadow-2xl space-y-5 overflow-hidden">
-          {/* Top Status Accent Line */}
-          <div
-            className={cn(
-              "absolute top-0 left-0 right-0 h-1.5",
-              isCompleted
-                ? "bg-emerald-500"
-                : isInProgress
-                ? "bg-amber-500"
-                : "bg-primary"
-            )}
-          />
-
-          <DialogHeader className="space-y-3 pt-2 text-left">
+        <DialogContent className="sm:max-w-xl p-6 rounded-3xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card shadow-2xl space-y-5 overflow-hidden">
+          <DialogHeader className="space-y-3 text-left">
             {/* Badges & Status Selector Row */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2">
@@ -117,7 +105,7 @@ export function NodeDetailDialog({
                         ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25"
                         : isInProgress
                         ? "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25"
-                        : "border-border/80 bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span
@@ -143,7 +131,7 @@ export function NodeDetailDialog({
 
                 <DropdownMenuContent
                   align="end"
-                  className="w-48 p-1.5 rounded-2xl border-border/80 bg-card/95 backdrop-blur-2xl shadow-xl space-y-1 z-50"
+                  className="w-48 p-1.5 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card shadow-xl space-y-1 z-50"
                 >
                   <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-2.5 py-1 font-mono">
                     Ubah Status
@@ -227,12 +215,12 @@ export function NodeDetailDialog({
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
                   Deskripsi Lengkap
                 </span>
-                <div className="p-4 rounded-2xl bg-muted/40 border border-border/50 text-sm text-foreground leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 text-sm text-foreground leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
                   {node.description}
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-muted/20 border border-dashed border-border/50 text-xs text-muted-foreground italic">
+              <div className="p-4 rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-dashed border-slate-200/80 dark:border-slate-700/50 text-xs text-muted-foreground italic">
                 Tidak ada deskripsi tambahan untuk langkah ini.
               </div>
             )}
@@ -243,7 +231,7 @@ export function NodeDetailDialog({
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
                   Tautan Terkait
                 </span>
-                <div className="p-3.5 rounded-2xl border border-primary/20 bg-primary/5 flex items-center justify-between gap-3">
+                <div className="p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 overflow-hidden">
                     {node.link.favicon ? (
                       <img
@@ -298,7 +286,7 @@ export function NodeDetailDialog({
           </div>
 
           {/* Footer Actions */}
-          <DialogFooter className="flex items-center justify-between gap-2 pt-4 border-t border-border/40 sm:justify-between">
+          <DialogFooter className="flex items-center justify-between gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 sm:justify-between">
             <Button
               type="button"
               variant="ghost"
@@ -313,7 +301,7 @@ export function NodeDetailDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl h-9 px-4 text-xs font-semibold cursor-pointer"
+              className="rounded-xl h-9 px-4 text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Tutup
             </Button>
