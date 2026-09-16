@@ -31,11 +31,15 @@ function getTooltipPosition(
   rect: TargetRect,
   preferredPlacement: "top" | "bottom" | "left" | "right",
   viewportWidth: number,
-  viewportHeight: number
+  viewportHeight: number,
+  targetId?: string
 ): TooltipPos {
   const tooltipW =
     viewportWidth < 640 ? TOOLTIP_WIDTH_MOBILE : TOOLTIP_WIDTH;
-  const tooltipEstH = 260;
+  const tooltipEstH = 300;
+
+  // Extra top offset for bottom-anchored targets like liko-chat so card is raised high above logo
+  const extraTopOffset = targetId === "liko-chat" ? 56 : 0;
 
   // Try preferred placement first, then fallback
   const placements: Array<"top" | "bottom" | "left" | "right"> = [
@@ -56,49 +60,34 @@ function getTooltipPosition(
         break;
       case "left":
         top = rect.top + rect.height / 2 - tooltipEstH / 2;
-        left =
-          rect.left - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipW;
+        left = rect.left - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipW;
         break;
       case "bottom":
         top = rect.top + rect.height + SPOTLIGHT_PADDING + TOOLTIP_GAP;
         left = rect.left + rect.width / 2 - tooltipW / 2;
         break;
       case "top":
-        top =
-          rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH;
+        top = rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH - extraTopOffset;
         left = rect.left + rect.width / 2 - tooltipW / 2;
         break;
     }
 
-    // Clamp to viewport
+    // Clamp left to viewport
     left = Math.max(12, Math.min(left, viewportWidth - tooltipW - 12));
-    top = Math.max(12, Math.min(top, viewportHeight - tooltipEstH - 12));
 
-    // Check if tooltip fits
-    if (
-      top >= 8 &&
-      left >= 8 &&
-      top + tooltipEstH <= viewportHeight - 8 &&
-      left + tooltipW <= viewportWidth - 8
-    ) {
-      return { top, left, placement: p };
+    // Clamp top to viewport (for liko-chat, enforce top stays above target with clearance)
+    if (p === "top" && targetId === "liko-chat") {
+      top = Math.max(12, rect.top - tooltipEstH - SPOTLIGHT_PADDING - TOOLTIP_GAP - extraTopOffset);
+    } else {
+      top = Math.max(12, Math.min(top, viewportHeight - tooltipEstH - 12));
     }
+
+    return { top, left, placement: p };
   }
 
-  // Fallback: clamp to viewport boundaries above/below target
-  const fallbackTop = preferredPlacement === "top"
-    ? Math.max(12, rect.top - tooltipEstH - TOOLTIP_GAP)
-    : Math.min(rect.top + rect.height + TOOLTIP_GAP, viewportHeight - tooltipEstH - 12);
-
   return {
-    top: Math.max(12, Math.min(fallbackTop, viewportHeight - tooltipEstH - 12)),
-    left: Math.max(
-      12,
-      Math.min(
-        rect.left + rect.width / 2 - tooltipW / 2,
-        viewportWidth - tooltipW - 12
-      )
-    ),
+    top: Math.max(12, rect.top - tooltipEstH - 12),
+    left: Math.max(12, Math.min(rect.left + rect.width / 2 - tooltipW / 2, viewportWidth - tooltipW - 12)),
     placement: preferredPlacement,
   };
 }
@@ -212,7 +201,8 @@ export function ProductTour() {
       newRect,
       currentStep.placement,
       vw,
-      vh
+      vh,
+      currentStep.targetId
     );
     setTooltipPos(pos);
 
