@@ -181,18 +181,18 @@ export function QuickNoteButton() {
 
       {/* Instant Quick Note Floating Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[480px] p-5 sm:p-6 rounded-3xl border-primary/30 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl">
-          <DialogHeader className="pb-3 border-b border-border/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                  <PenBox className="h-4 w-4" />
+        <DialogContent className="sm:max-w-xl md:max-w-2xl p-6 sm:p-8 rounded-3xl border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                  <PenBox className="h-5 w-5" />
                 </div>
                 <div>
-                  <DialogTitle className="text-base font-bold font-heading text-foreground">
+                  <DialogTitle className="text-lg font-bold font-heading text-foreground">
                     {t("quickNote.title")}
                   </DialogTitle>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {t("quickNote.subtitle")}
                   </p>
                 </div>
@@ -204,14 +204,14 @@ export function QuickNoteButton() {
                 size="sm"
                 onClick={handleOpenFullEditor}
                 disabled={navigating}
-                className="text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 rounded-xl h-8 px-2.5"
+                className="text-xs font-semibold text-primary hover:bg-primary/10 gap-1.5 rounded-xl h-9 px-3 shrink-0"
                 title={t("quickNote.openFullEditorTooltip")}
               >
                 {navigating ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Maximize2 className="h-3.5 w-3.5" />
+                    <Maximize2 className="h-4 w-4" />
                     <span>{t("quickNote.fullEditorBtn")}</span>
                   </>
                 )}
@@ -219,7 +219,7 @@ export function QuickNoteButton() {
             </div>
           </DialogHeader>
 
-          <form onSubmit={handleQuickSave} className="space-y-3.5 pt-3">
+          <form onSubmit={handleQuickSave} className="space-y-4 pt-2">
             {/* Title Input */}
             <div className="space-y-1">
               <Input
@@ -227,7 +227,7 @@ export function QuickNoteButton() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("quickNote.titlePlaceholder")}
-                className="text-base sm:text-sm font-semibold rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
+                className="h-11 sm:h-12 px-4 text-base sm:text-sm font-bold rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-700/60 focus:border-primary placeholder:text-muted-foreground/60 shadow-2xs"
               />
             </div>
 
@@ -237,24 +237,24 @@ export function QuickNoteButton() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={t("quickNote.contentPlaceholder")}
-                rows={5}
-                className="text-base sm:text-xs leading-relaxed resize-none rounded-xl bg-background/60 border-border/60 focus:border-primary placeholder:text-muted-foreground/60"
+                rows={7}
+                className="p-4 text-sm leading-relaxed resize-none rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-700/60 focus:border-primary placeholder:text-muted-foreground/60 shadow-2xs"
               />
             </div>
 
             {/* Folder Selection (if available) */}
             {folders && folders.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0 flex items-center gap-1 mr-1">
-                  <FolderOpen className="h-3 w-3 text-primary" /> {t("quickNote.folderLabel")}
+              <div className="flex items-center gap-2 overflow-x-auto py-1">
+                <span className="text-[11px] uppercase font-bold text-muted-foreground shrink-0 flex items-center gap-1.5 mr-1 font-mono">
+                  <FolderOpen className="h-3.5 w-3.5 text-primary" /> {t("quickNote.folderLabel")}
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedFolderId(null)}
-                  className={`px-2 py-0.5 rounded-lg text-[11px] font-medium transition-colors shrink-0 cursor-pointer ${
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition-colors shrink-0 cursor-pointer ${
                     selectedFolderId === null
-                      ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
-                      : "bg-foreground/[0.04] text-muted-foreground hover:text-foreground"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
                   }`}
                 >
                   {t("quickNote.folderGeneral")}
@@ -264,14 +264,14 @@ export function QuickNoteButton() {
                     key={f.id}
                     type="button"
                     onClick={() => setSelectedFolderId(f.id)}
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-medium transition-colors shrink-0 flex items-center gap-1 cursor-pointer ${
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer ${
                       selectedFolderId === f.id
-                        ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
-                        : "bg-foreground/[0.04] text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
                   >
                     <Folder
-                      className="w-3 h-3 shrink-0"
+                      className="w-3.5 h-3.5 shrink-0"
                       style={{ color: selectedFolderId === f.id ? "currentColor" : (f.color || "#6366f1") }}
                     />
                     <span>{f.name}</span>
@@ -281,30 +281,28 @@ export function QuickNoteButton() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end pt-2 border-t border-border/40 gap-2">
+            <div className="flex items-center justify-end pt-3 border-t border-slate-100 dark:border-slate-800 gap-2.5">
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
                 onClick={() => setOpen(false)}
-                className="rounded-xl text-xs font-semibold"
+                className="rounded-xl h-10 px-4 text-xs font-semibold border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={saving || navigating}
-                size="sm"
-                className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                className="rounded-xl h-10 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 shadow-xs active:scale-95 cursor-pointer"
               >
                 {saving ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     {t("common.saving")}
                   </>
                 ) : (
                   <>
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-4 w-4" />
                     {t("quickNote.saveNoteBtn")}
                   </>
                 )}
