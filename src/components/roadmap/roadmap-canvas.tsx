@@ -449,82 +449,26 @@ export function RoadmapCanvas({
                   )}
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer outline-none shadow-2xs group active:scale-95",
-                        isCompleted
-                          ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25"
-                          : isInProgress
-                          ? "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25"
-                          : "border-border/80 bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full animate-pulse",
-                          isCompleted ? "bg-emerald-500" : isInProgress ? "bg-amber-500" : "bg-slate-400"
-                        )}
-                      />
-                      <span>
-                        {isCompleted ? "Selesai" : isInProgress ? "Proses" : "To Do"}
-                      </span>
-                      <ChevronDown className="w-3 h-3 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                    </button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-2xl border-border/80 bg-card/95 backdrop-blur-2xl shadow-xl space-y-1 z-50">
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-2.5 py-1 font-mono">
-                      Status Node
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="my-1 bg-border/40" />
-
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(node.id, "TODO")}
-                      className={cn(
-                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                        node.status === "TODO" ? "bg-muted font-semibold text-foreground" : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Circle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>To Do</span>
-                      </div>
-                      {node.status === "TODO" && <Check className="w-3.5 h-3.5 text-primary stroke-[2.5]" />}
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(node.id, "IN_PROGRESS")}
-                      className={cn(
-                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                        node.status === "IN_PROGRESS" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold" : "hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        <span>Dalam Proses</span>
-                      </div>
-                      {node.status === "IN_PROGRESS" && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[2.5]" />}
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(node.id, "COMPLETED")}
-                      className={cn(
-                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                        node.status === "COMPLETED" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold" : "hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                        <span>Selesai</span>
-                      </div>
-                      {node.status === "COMPLETED" && <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border shadow-2xs select-none",
+                    isCompleted
+                      ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                      : isInProgress
+                      ? "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                      : "border-border/80 bg-background/80 text-muted-foreground"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full animate-pulse",
+                      isCompleted ? "bg-emerald-500" : isInProgress ? "bg-amber-500" : "bg-slate-400"
+                    )}
+                  />
+                  <span>
+                    {isCompleted ? "Selesai" : isInProgress ? "Proses" : "To Do"}
+                  </span>
+                </span>
               </div>
 
               {/* Title & Description */}
