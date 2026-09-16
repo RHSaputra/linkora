@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SerializedRoadmapNode } from "@/lib/types";
 import {
   Dialog,
@@ -54,11 +52,25 @@ export function NodeDetailDialog({
   targetNodes = [],
 }: NodeDetailDialogProps) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<"TODO" | "IN_PROGRESS" | "COMPLETED">(
+    node?.status || "TODO"
+  );
+
+  useEffect(() => {
+    if (node) {
+      setCurrentStatus(node.status);
+    }
+  }, [node?.id, node?.status]);
 
   if (!node) return null;
 
-  const isCompleted = node.status === "COMPLETED";
-  const isInProgress = node.status === "IN_PROGRESS";
+  const handleStatusSelect = (newStatus: "TODO" | "IN_PROGRESS" | "COMPLETED") => {
+    setCurrentStatus(newStatus);
+    onStatusChange(node.id, newStatus);
+  };
+
+  const isCompleted = currentStatus === "COMPLETED";
+  const isInProgress = currentStatus === "IN_PROGRESS";
 
   return (
     <>
@@ -139,10 +151,10 @@ export function NodeDetailDialog({
                   <DropdownMenuSeparator className="my-1 bg-border/40" />
 
                   <DropdownMenuItem
-                    onClick={() => onStatusChange(node.id, "TODO")}
+                    onClick={() => handleStatusSelect("TODO")}
                     className={cn(
                       "flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                      node.status === "TODO"
+                      currentStatus === "TODO"
                         ? "bg-muted font-semibold text-foreground"
                         : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
                     )}
@@ -153,16 +165,16 @@ export function NodeDetailDialog({
                       </div>
                       <span>To Do</span>
                     </div>
-                    {node.status === "TODO" && (
+                    {currentStatus === "TODO" && (
                       <Check className="w-4 h-4 text-primary stroke-[2.5]" />
                     )}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => onStatusChange(node.id, "IN_PROGRESS")}
+                    onClick={() => handleStatusSelect("IN_PROGRESS")}
                     className={cn(
                       "flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                      node.status === "IN_PROGRESS"
+                      currentStatus === "IN_PROGRESS"
                         ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold"
                         : "hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
                     )}
@@ -173,16 +185,16 @@ export function NodeDetailDialog({
                       </div>
                       <span>Dalam Proses</span>
                     </div>
-                    {node.status === "IN_PROGRESS" && (
+                    {currentStatus === "IN_PROGRESS" && (
                       <Check className="w-4 h-4 text-amber-500 stroke-[2.5]" />
                     )}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => onStatusChange(node.id, "COMPLETED")}
+                    onClick={() => handleStatusSelect("COMPLETED")}
                     className={cn(
                       "flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors",
-                      node.status === "COMPLETED"
+                      currentStatus === "COMPLETED"
                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
                         : "hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
                     )}
@@ -193,7 +205,7 @@ export function NodeDetailDialog({
                       </div>
                       <span>Selesai</span>
                     </div>
-                    {node.status === "COMPLETED" && (
+                    {currentStatus === "COMPLETED" && (
                       <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
                     )}
                   </DropdownMenuItem>

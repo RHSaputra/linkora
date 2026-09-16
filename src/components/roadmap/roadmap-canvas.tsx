@@ -593,7 +593,10 @@ export function RoadmapCanvas({
         node={selectedNodeForDetail}
         open={!!selectedNodeForDetail}
         onOpenChange={(open) => !open && setSelectedNodeForDetail(null)}
-        onStatusChange={onStatusChange}
+        onStatusChange={(nodeId, status) => {
+          onStatusChange(nodeId, status);
+          setSelectedNodeForDetail((prev: SerializedRoadmapNode | null) => (prev && prev.id === nodeId ? { ...prev, status } : prev));
+        }}
         onDeleteNode={onDeleteNode}
         targetNodes={
           selectedNodeForDetail
