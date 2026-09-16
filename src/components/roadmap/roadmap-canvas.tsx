@@ -23,11 +23,13 @@ import {
   LayoutGrid,
   ChevronDown,
   Check,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { NodeDetailDialog } from "./node-detail-dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -74,7 +76,11 @@ export function RoadmapCanvas({
   // Node Dragging State
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const dragStartPosRef = useRef({ pointerX: 0, pointerY: 0, nodeX: 0, nodeY: 0 });
+  const hasDraggedRef = useRef(false);
   const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Node Detail Dialog State
+  const [selectedNodeForDetail, setSelectedNodeForDetail] = useState<SerializedRoadmapNode | null>(null);
 
   // Connecting mode state
   const [connectingSourceId, setConnectingSourceId] = useState<string | null>(null);
@@ -170,6 +176,10 @@ export function RoadmapCanvas({
         const dx = (clientX - dragStartPosRef.current.pointerX) / scale;
         const dy = (clientY - dragStartPosRef.current.pointerY) / scale;
 
+        if (Math.hypot(dx, dy) > 4) {
+          hasDraggedRef.current = true;
+        }
+
         const newX = Math.round(dragStartPosRef.current.nodeX + dx);
         const newY = Math.round(dragStartPosRef.current.nodeY + dy);
 
@@ -196,6 +206,7 @@ export function RoadmapCanvas({
   const handleNodePointerDown = (nodeId: string, e: React.PointerEvent) => {
     e.stopPropagation();
     setDraggingNodeId(nodeId);
+    hasDraggedRef.current = false;
     const current = localPositions[nodeId] || { x: 0, y: 0 };
     dragStartPosRef.current = {
       pointerX: e.clientX,
@@ -408,8 +419,12 @@ export function RoadmapCanvas({
               style={{
                 transform: `translate(${pos.x}px, ${pos.y}px)`,
                 width: `${NODE_WIDTH}px`,
+              }}              onPointerDown={(e) => handleNodePointerDown(node.id, e)}
+              onClick={(e) => {
+                if (!hasDraggedRef.current) {
+                  setSelectedNodeForDetail(node);
+                }
               }}
-              onPointerDown={(e) => handleNodePointerDown(node.id, e)}
               className={cn(
                 "absolute top-0 left-0 p-4 rounded-2xl border-2 transition-all glass-panel bg-card/95 shadow-md flex flex-col justify-between select-none cursor-grab active:cursor-grabbing group",
                 isDragging && "shadow-2xl ring-2 ring-primary border-primary z-30 scale-[1.02]",
@@ -518,8 +533,14 @@ export function RoadmapCanvas({
               </div>
 
               {/* Title & Description */}
-              <div className="my-2 space-y-1">
-                <h4 className={cn("text-sm font-semibold text-foreground line-clamp-1", isCompleted && "line-through text-muted-foreground")}>
+              <div
+                className="my-2 space-y-1 cursor-pointer group/title"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedNodeForDetail(node);
+                }}
+              >
+                <h4 className={cn("text-sm font-semibold text-foreground line-clamp-1 group-hover/title:text-primary transition-colors", isCompleted && "line-through text-muted-foreground")}>
                   {node.title}
                 </h4>
                 {node.description && (
@@ -548,22 +569,36 @@ export function RoadmapCanvas({
                 </a>
               )}
 
-              {/* Footer / Connect & Delete toolbar */}
+              {/* Footer / Connect, Detail & Delete toolbar */}
               <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-1">
-                <button
-                  type="button"
-                  onClick={(e) => handleNodeConnectClick(node.id, e)}
-                  className={cn(
-                    "flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-1.5 py-0.5 rounded",
-                    isConnectingSource
-                      ? "bg-primary text-primary-foreground font-bold"
-                      : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  )}
-                  title="Hubungkan ke node lain"
-                >
-                  <ConnectIcon className="w-3.5 h-3.5" />
-                  <span>{isConnectingSource ? "Menghubungkan..." : "Hubungkan"}</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={(e) => handleNodeConnectClick(node.id, e)}
+                    className={cn(
+                      "flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-1.5 py-0.5 rounded",
+                      isConnectingSource
+                        ? "bg-primary text-primary-foreground font-bold"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    )}
+                    title="Hubungkan ke node lain"
+                  >
+                    <ConnectIcon className="w-3.5 h-3.5" />
+                    <span>{isConnectingSource ? "Menghubungkan..." : "Hubungkan"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedNodeForDetail(node);
+                    }}
+                    className="text-muted-foreground hover:text-primary p-1 rounded hover:bg-primary/10 transition-colors cursor-pointer"
+                    title="Lihat Detail Lengkap"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
                 <button
                   type="button"
@@ -618,6 +653,25 @@ export function RoadmapCanvas({
             setEdgeToDeleteId(null);
           }
         }}
+      />
+
+      {/* Node Detail Popup Modal */}
+      <NodeDetailDialog
+        node={selectedNodeForDetail}
+        open={!!selectedNodeForDetail}
+        onOpenChange={(open) => !open && setSelectedNodeForDetail(null)}
+        onStatusChange={onStatusChange}
+        onDeleteNode={onDeleteNode}
+        targetNodes={
+          selectedNodeForDetail
+            ? nodes.filter((n) =>
+                edges
+                  .filter((e) => e.sourceNodeId === selectedNodeForDetail.id)
+                  .map((e) => e.targetNodeId)
+                  .includes(n.id)
+              )
+            : []
+        }
       />
     </div>
   );

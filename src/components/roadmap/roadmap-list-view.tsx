@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { NodeDetailDialog } from "./node-detail-dialog";
 
 interface RoadmapListViewProps {
   nodes: SerializedRoadmapNode[];
@@ -51,6 +53,7 @@ export function RoadmapListView({
   onOpenAddNode,
 }: RoadmapListViewProps) {
   const [nodeToDelete, setNodeToDelete] = useState<SerializedRoadmapNode | null>(null);
+  const [selectedNodeForDetail, setSelectedNodeForDetail] = useState<SerializedRoadmapNode | null>(null);
 
   if (nodes.length === 0) {
     return (
@@ -226,10 +229,14 @@ export function RoadmapListView({
                   </div>
 
                   {/* Title & Description */}
-                  <div>
+                  {/* Title & Description */}
+                  <div
+                    className="cursor-pointer group/title"
+                    onClick={() => setSelectedNodeForDetail(node)}
+                  >
                     <h4
                       className={cn(
-                        "text-base font-semibold text-foreground tracking-tight",
+                        "text-base font-semibold text-foreground tracking-tight group-hover/title:text-primary transition-colors",
                         isCompleted && "line-through text-muted-foreground"
                       )}
                     >
@@ -277,8 +284,18 @@ export function RoadmapListView({
                   )}
                 </div>
 
-                {/* Footer Toolbar: Delete Button */}
-                <div className="pt-2 border-t border-border/40 flex items-center justify-end">
+                {/* Footer Toolbar: Detail & Delete Button */}
+                <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedNodeForDetail(node)}
+                    className="text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1.5 rounded-lg h-8 px-2.5 cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Lihat Detail</span>
+                  </Button>
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -325,6 +342,25 @@ export function RoadmapListView({
             setNodeToDelete(null);
           }
         }}
+      />
+
+      {/* Node Detail Popup Modal */}
+      <NodeDetailDialog
+        node={selectedNodeForDetail}
+        open={!!selectedNodeForDetail}
+        onOpenChange={(open: boolean) => !open && setSelectedNodeForDetail(null)}
+        onStatusChange={onStatusChange}
+        onDeleteNode={onDeleteNode}
+        targetNodes={
+          selectedNodeForDetail
+            ? nodes.filter((n) =>
+                edges
+                  .filter((e) => e.sourceNodeId === selectedNodeForDetail.id)
+                  .map((e) => e.targetNodeId)
+                  .includes(n.id)
+              )
+            : []
+        }
       />
     </div>
   );
