@@ -6,6 +6,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Mail, Send, CheckCircle2, AlertCircle, Loader2, X, MessageSquare, User } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
 import { RecaptchaCheckbox, RecaptchaCheckboxRef } from "@/components/ui/recaptcha-checkbox"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
 
 interface ContactDialogProps {
   open: boolean
@@ -195,16 +202,17 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                     <label className="block text-xs font-semibold text-foreground/80 mb-1 ml-1">
                       {isEn ? "Category" : "Kategori Pesan"}
                     </label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl border border-border bg-background/60 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    >
-                      <option value="Pertanyaan Umum">{isEn ? "General Inquiry" : "Pertanyaan Umum"}</option>
-                      <option value="Bantuan Akun & Login">{isEn ? "Account & Login Assistance" : "Bantuan Akun & Login"}</option>
-                      <option value="Kendala Teknis / Bug">{isEn ? "Technical Issue / Bug Report" : "Kendala Teknis / Bug"}</option>
-                      <option value="Saran & Masukan">{isEn ? "Feedback & Suggestions" : "Saran & Masukan"}</option>
-                    </select>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger className="w-full h-10 px-3 rounded-xl border border-border bg-background/60 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Pertanyaan Umum">{isEn ? "General Inquiry" : "Pertanyaan Umum"}</SelectItem>
+                        <SelectItem value="Bantuan Akun & Login">{isEn ? "Account & Login Assistance" : "Bantuan Akun & Login"}</SelectItem>
+                        <SelectItem value="Kendala Teknis / Bug">{isEn ? "Technical Issue / Bug Report" : "Kendala Teknis / Bug"}</SelectItem>
+                        <SelectItem value="Saran & Masukan">{isEn ? "Feedback & Suggestions" : "Saran & Masukan"}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>

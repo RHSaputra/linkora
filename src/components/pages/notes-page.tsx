@@ -717,34 +717,37 @@ export function NotesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="w-48 glass-panel border border-border/80 shadow-md"
+                              className="w-52 border border-primary/20 bg-white dark:bg-slate-900 shadow-xl backdrop-blur-2xl rounded-2xl p-1.5"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {!isTrashView && (
                                 <>
-                                  <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
+                                  <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">
                                     Pindah ke Folder
                                   </DropdownMenuLabel>
-                                  <DropdownMenuItem
-                                    onClick={() => moveNoteToFolder(note.id, null)}
-                                    className="cursor-pointer"
-                                  >
-                                    <FolderIcon className="w-3.5 h-3.5 mr-2" /> Tanpa Folder
-                                  </DropdownMenuItem>
-                                  {folders.map((f) => (
+                                  <div className="max-h-44 overflow-y-auto space-y-0.5 pr-1">
                                     <DropdownMenuItem
-                                      key={f.id}
-                                      onClick={() => moveNoteToFolder(note.id, f.id)}
-                                      className="cursor-pointer"
+                                      onClick={() => moveNoteToFolder(note.id, null)}
+                                      className="cursor-pointer rounded-xl text-xs font-medium"
                                     >
-                                      <div
-                                        className="w-2 h-2 rounded-full mr-2"
-                                        style={{ backgroundColor: f.color }}
-                                      />
-                                      <span className="truncate">{f.name}</span>
+                                      <FolderIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                                      <span className="truncate">Tanpa Folder</span>
                                     </DropdownMenuItem>
-                                  ))}
-                                  <DropdownMenuSeparator />
+                                    {folders.map((f) => (
+                                      <DropdownMenuItem
+                                        key={f.id}
+                                        onClick={() => moveNoteToFolder(note.id, f.id)}
+                                        className="cursor-pointer rounded-xl text-xs font-medium"
+                                      >
+                                        <FolderIcon
+                                          className="w-4 h-4 mr-2 shrink-0"
+                                          style={{ color: f.color || "#6366f1" }}
+                                        />
+                                        <span className="truncate">{f.name}</span>
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </div>
+                                  <DropdownMenuSeparator className="my-1" />
                                 </>
                               )}
 

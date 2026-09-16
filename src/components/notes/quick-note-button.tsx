@@ -9,6 +9,7 @@ import {
   Maximize2,
   Check,
   FolderOpen,
+  Folder,
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -269,9 +270,9 @@ export function QuickNoteButton() {
                         : "bg-foreground/[0.04] text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ backgroundColor: f.color || "#6366f1" }}
+                    <Folder
+                      className="w-3 h-3 shrink-0"
+                      style={{ color: selectedFolderId === f.id ? "currentColor" : (f.color || "#6366f1") }}
                     />
                     <span>{f.name}</span>
                   </button>

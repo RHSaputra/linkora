@@ -6,6 +6,7 @@ import {
   DashboardStats,
 } from "@/lib/types";
 import { auth } from "@/auth";
+import { getCache, setCache } from "@/lib/cache";
 
 export async function GET() {
   try {
@@ -23,6 +24,14 @@ export async function GET() {
       return NextResponse.json(emptyStats);
     }
     const userId = session.user.id;
+
+    const cacheKey = `cache:dashboard:${userId}`;
+    const cachedStats = await getCache<DashboardStats>(cacheKey);
+    if (cachedStats) {
+      return NextResponse.json(cachedStats, {
+        headers: { "X-Cache": "HIT" },
+      });
+    }
 
     const [
       totalLinks,
@@ -79,6 +88,8 @@ export async function GET() {
       recentActivity: recentActivity.map(serializeActivity),
       upcomingReminders: upcomingReminders.map(serializeLink),
     };
+
+    await setCache(cacheKey, stats, 180);
 
     return NextResponse.json(stats);
   } catch (error) {

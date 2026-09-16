@@ -1,6 +1,4 @@
-"use client";
-
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { SerializedLink, DashboardStats, SerializedCollection } from "@/lib/types";
 
 // Simple in-memory cache and request deduplicator
@@ -62,9 +60,6 @@ export function setCachedData(url: string, data: unknown) {
 }
 
 // ─── Granular refresh events ───────────────────────────────────────────────
-// Instead of broadcasting a global "refreshData" that re-fetches every data
-// hook, we carry a list of affected resources so each hook only refreshes
-// what actually changed.
 export type RefreshResource =
   | "dashboard"
   | "links"
@@ -83,9 +78,6 @@ export function dispatchRefresh(resources: RefreshResource[] = []) {
   );
 }
 
-// Subscribe to refresh events. When `resource` is provided, the callback only
-// fires if that resource is in the event's resource list. A legacy event with
-// no detail (old `new Event("refreshData")`) is treated as a full broadcast.
 export function subscribeRefresh(
   cb: () => void,
   resource?: RefreshResource
@@ -126,9 +118,6 @@ export function invalidateAndRefresh(resources: RefreshResource[]) {
   dispatchRefresh(resources);
 }
 
-// Build the cache key / request URL for /api/links, including optional
-// pagination. When pageSize is omitted the API returns the full list
-// (backward compatible for callers that need every link, e.g. pickers).
 export function buildLinksUrl(
   filters?: {
     q?: string;
@@ -199,7 +188,17 @@ export function useLinks(
   options?: { pageSize?: number }
 ) {
   const pageSize = options?.pageSize;
-  const firstUrl = buildLinksUrl(filters, 1, pageSize);
+
+  const filterQ = filters?.q || "";
+  const filterCategory = filters?.category || "";
+  const filterTag = filters?.tag || "";
+  const filterFavorite = Boolean(filters?.favorite);
+  const filterCollectionId = filters?.collectionId || "";
+
+  const firstUrl = useMemo(
+    () => buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId }, 1, pageSize),
+    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, pageSize]
+  );
 
   const [links, setLinks] = useState<SerializedLink[]>(
     () => (globalCache.get(firstUrl) as LinksPage | undefined)?.items || []
@@ -211,14 +210,13 @@ export function useLinks(
 
   const fetchPage = useCallback(
     async (p: number, force = false): Promise<LinksPage | null> => {
-      const url = buildLinksUrl(filters, p, pageSize);
+      const url = buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId }, p, pageSize);
       const data = await fetchWithCache<LinksPage>(url, force);
       return (data as LinksPage) || null;
     },
-    [filters?.q, filters?.category, filters?.tag, filters?.favorite, filters?.collectionId, pageSize]
+    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, pageSize]
   );
 
-  // Replace the list with page 1 (used on mount, filter change, and forced refresh).
   const refresh = useCallback(
     async (force = false) => {
       setLoading(true);
@@ -239,7 +237,6 @@ export function useLinks(
     [fetchPage]
   );
 
-  // Append the next page to the existing list.
   const loadMore = useCallback(async () => {
     if (!hasMore || loading) return;
     setLoading(true);
@@ -260,9 +257,8 @@ export function useLinks(
   }, [fetchPage, page, hasMore, loading]);
 
   useEffect(() => {
-    const url = buildLinksUrl(filters, 1, pageSize);
-    if (globalCache.has(url)) {
-      const cached = globalCache.get(url) as LinksPage | undefined;
+    if (globalCache.has(firstUrl)) {
+      const cached = globalCache.get(firstUrl) as LinksPage | undefined;
       if (cached) {
         setLinks(cached.items);
         setTotal(cached.total);
@@ -275,7 +271,7 @@ export function useLinks(
     refresh();
 
     return subscribeRefresh(() => refresh(true), "links");
-  }, [refresh]);
+  }, [firstUrl, refresh]);
 
   return { links, loading, refresh, loadMore, hasMore, total, setLinks };
 }
@@ -329,25 +325,22 @@ export function useTags() {
 }
 
 export function useNotesList(params?: { q?: string; filter?: string; folderId?: string | null }) {
-  const getUrl = useCallback(() => {
-    const searchParams = new URLSearchParams();
-    if (params?.q?.trim()) searchParams.append("q", params.q.trim());
-    if (params?.filter && params.filter !== "all") searchParams.append("filter", params.filter);
-    if (params?.folderId) searchParams.append("folderId", params.folderId);
-    return `/api/notes?${searchParams.toString()}`;
-  }, [params?.q, params?.filter, params?.folderId]);
+  const q = params?.q?.trim() || "";
+  const filter = params?.filter || "all";
+  const folderId = params?.folderId || null;
 
-  const [notes, setNotes] = useState<any[]>(() => {
-    const url = getUrl();
-    return (globalCache.get(url) as any[]) || [];
-  });
-  const [loading, setLoading] = useState(() => {
-    const url = getUrl();
-    return !globalCache.has(url);
-  });
+  const url = useMemo(() => {
+    const searchParams = new URLSearchParams();
+    if (q) searchParams.append("q", q);
+    if (filter && filter !== "all") searchParams.append("filter", filter);
+    if (folderId) searchParams.append("folderId", folderId);
+    return `/api/notes?${searchParams.toString()}`;
+  }, [q, filter, folderId]);
+
+  const [notes, setNotes] = useState<any[]>(() => (globalCache.get(url) as any[]) || []);
+  const [loading, setLoading] = useState(() => !globalCache.has(url));
 
   const refresh = useCallback(async (force = false) => {
-    const url = getUrl();
     if (force && !globalCache.has(url) && notes.length === 0) setLoading(true);
     try {
       const data = await fetchWithCache(url, force);
@@ -359,10 +352,9 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
     } finally {
       setLoading(false);
     }
-  }, [getUrl, notes.length]);
+  }, [url]);
 
   useEffect(() => {
-    const url = getUrl();
     if (globalCache.has(url)) {
       setNotes(globalCache.get(url) as any[]);
       setLoading(false);
@@ -371,7 +363,7 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
     }
     refresh();
     return subscribeRefresh(() => refresh(true), "notes");
-  }, [refresh, getUrl]);
+  }, [url, refresh]);
 
   return { notes, loading, refresh, setNotes };
 }
@@ -451,9 +443,11 @@ export async function fetchMetadata(url: string) {
 }
 
 export function useRoadmaps(searchQuery?: string) {
-  const url = searchQuery
-    ? `/api/roadmaps?q=${encodeURIComponent(searchQuery)}`
-    : "/api/roadmaps";
+  const q = searchQuery?.trim() || "";
+  const url = useMemo(
+    () => (q ? `/api/roadmaps?q=${encodeURIComponent(q)}` : "/api/roadmaps"),
+    [q]
+  );
 
   const [roadmaps, setRoadmaps] = useState<import("@/lib/types").SerializedRoadmap[]>(() => {
     const cached = globalCache.get(url) as { items?: import("@/lib/types").SerializedRoadmap[] } | undefined;
@@ -489,11 +483,8 @@ export function useRoadmaps(searchQuery?: string) {
       setLoading(true);
     }
     refresh();
-  }, [refresh, url]);
-
-  useEffect(() => {
     return subscribeRefresh(() => refresh(true), "roadmaps");
-  }, [refresh]);
+  }, [url, refresh]);
 
   return { roadmaps, loading, refresh, setRoadmaps };
 }

@@ -21,10 +21,21 @@ import {
   Globe,
   MoreVertical,
   LayoutGrid,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface RoadmapCanvasProps {
   roadmapId: string;
@@ -67,6 +78,10 @@ export function RoadmapCanvas({
 
   // Connecting mode state
   const [connectingSourceId, setConnectingSourceId] = useState<string | null>(null);
+
+  // Deletion confirmation state
+  const [nodeToDelete, setNodeToDelete] = useState<SerializedRoadmapNode | null>(null);
+  const [edgeToDeleteId, setEdgeToDeleteId] = useState<string | null>(null);
 
   // Sync positions when props change (unless dragging)
   useEffect(() => {
@@ -123,6 +138,8 @@ export function RoadmapCanvas({
     }
   };
 
+  const rafRef = useRef<number | null>(null);
+
   // Pan Canvas Mouse Handlers
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
     if (e.target === containerRef.current || (e.target as HTMLElement).tagName === "svg" || (e.target as HTMLElement).id === "canvas-bg") {
@@ -133,28 +150,37 @@ export function RoadmapCanvas({
   };
 
   const handleCanvasPointerMove = (e: React.PointerEvent) => {
-    if (isPanning) {
-      setPan({
-        x: e.clientX - panStartRef.current.x,
-        y: e.clientY - panStartRef.current.y,
-      });
-      return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
     }
 
-    if (draggingNodeId) {
-      const dx = (e.clientX - dragStartPosRef.current.pointerX) / scale;
-      const dy = (e.clientY - dragStartPosRef.current.pointerY) / scale;
+    rafRef.current = requestAnimationFrame(() => {
+      if (isPanning) {
+        setPan({
+          x: clientX - panStartRef.current.x,
+          y: clientY - panStartRef.current.y,
+        });
+        return;
+      }
 
-      const newX = Math.round(dragStartPosRef.current.nodeX + dx);
-      const newY = Math.round(dragStartPosRef.current.nodeY + dy);
+      if (draggingNodeId) {
+        const dx = (clientX - dragStartPosRef.current.pointerX) / scale;
+        const dy = (clientY - dragStartPosRef.current.pointerY) / scale;
 
-      setLocalPositions((prev) => ({
-        ...prev,
-        [draggingNodeId]: { x: newX, y: newY },
-      }));
+        const newX = Math.round(dragStartPosRef.current.nodeX + dx);
+        const newY = Math.round(dragStartPosRef.current.nodeY + dy);
 
-      queuePositionSave(draggingNodeId, newX, newY);
-    }
+        setLocalPositions((prev) => ({
+          ...prev,
+          [draggingNodeId]: { x: newX, y: newY },
+        }));
+
+        queuePositionSave(draggingNodeId, newX, newY);
+      }
+    });
   };
 
   const handleCanvasPointerUp = (e: React.PointerEvent) => {
@@ -349,7 +375,7 @@ export function RoadmapCanvas({
                 <g
                   transform={`translate(${midX - 10}, ${midY - 10})`}
                   className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                  onClick={() => onDeleteEdge(edge.id)}
+                  onClick={() => setEdgeToDeleteId(edge.id)}
                 >
                   <circle cx="10" cy="10" r="10" className="fill-destructive text-white" />
                   <text
@@ -370,32 +396,32 @@ export function RoadmapCanvas({
 
         {/* Nodes Layer */}
         {nodes.map((node) => {
-          const pos = localPositions[node.id] || { x: node.positionX || 0, y: node.positionY || 0 };
-          const isConnectingSource = connectingSourceId === node.id;
           const isCompleted = node.status === "COMPLETED";
           const isInProgress = node.status === "IN_PROGRESS";
+          const pos = localPositions[node.id] || { x: node.positionX || 0, y: node.positionY || 0 };
+          const isDragging = draggingNodeId === node.id;
+          const isConnectingSource = connectingSourceId === node.id;
 
           return (
             <div
               key={node.id}
               style={{
                 transform: `translate(${pos.x}px, ${pos.y}px)`,
-                width: NODE_WIDTH,
+                width: `${NODE_WIDTH}px`,
               }}
               onPointerDown={(e) => handleNodePointerDown(node.id, e)}
               className={cn(
-                "absolute rounded-xl border p-4 shadow-md transition-shadow cursor-grab active:cursor-grabbing backdrop-blur-md glass-panel flex flex-col justify-between gap-3 bg-card/95",
-                isCompleted
-                  ? "border-emerald-500/60 shadow-emerald-500/10 bg-emerald-500/5"
-                  : isInProgress
-                  ? "border-amber-500/60 shadow-amber-500/10 bg-amber-500/5 ring-1 ring-amber-500/30"
-                  : "border-border/80 hover:border-primary/40",
-                isConnectingSource && "ring-2 ring-primary animate-pulse"
+                "absolute top-0 left-0 p-4 rounded-2xl border transition-shadow glass-panel bg-card/95 shadow-md flex flex-col justify-between select-none cursor-grab active:cursor-grabbing group",
+                isDragging && "shadow-2xl ring-2 ring-primary border-primary z-30 scale-[1.02]",
+                isConnectingSource && "ring-2 ring-primary border-primary",
+                !isDragging && isCompleted && "border-emerald-500/50 bg-emerald-500/5",
+                !isDragging && isInProgress && "border-amber-500/50 bg-amber-500/5",
+                !isDragging && !isCompleted && !isInProgress && "border-border/80 hover:border-primary/50"
               )}
             >
-              {/* Card Header: Type Badge & Status Button */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {node.type === "LINK" && (
                     <Badge variant="outline" className="text-[10px] gap-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
                       <Link2 className="w-3 h-3" /> Link
@@ -413,43 +439,87 @@ export function RoadmapCanvas({
                   )}
                 </div>
 
-                {/* Status Toggle Badge */}
-                <button
-                  type="button"
-                  onClick={(e) => cycleStatus(node, e)}
-                  className={cn(
-                    "flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer border",
-                    isCompleted
-                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30"
-                      : isInProgress
-                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/30"
-                      : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                  )}
-                >
-                  {isCompleted ? (
-                    <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Selesai
-                    </>
-                  ) : isInProgress ? (
-                    <>
-                      <Clock className="w-3 h-3 text-amber-500 animate-spin" /> Proses
-                    </>
-                  ) : (
-                    <>
-                      <Circle className="w-3 h-3 text-muted-foreground" /> To Do
-                    </>
-                  )}
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer outline-none shadow-2xs group active:scale-95",
+                        isCompleted
+                          ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25"
+                          : isInProgress
+                          ? "border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25"
+                          : "border-border/80 bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full animate-pulse",
+                          isCompleted ? "bg-emerald-500" : isInProgress ? "bg-amber-500" : "bg-slate-400"
+                        )}
+                      />
+                      <span>
+                        {isCompleted ? "Selesai" : isInProgress ? "Proses" : "To Do"}
+                      </span>
+                      <ChevronDown className="w-3 h-3 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end" className="w-44 p-1.5 rounded-2xl border-border/80 bg-card/95 backdrop-blur-2xl shadow-xl space-y-1 z-50">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-2.5 py-1 font-mono">
+                      Status Node
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="my-1 bg-border/40" />
+
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(node.id, "TODO")}
+                      className={cn(
+                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
+                        node.status === "TODO" ? "bg-muted font-semibold text-foreground" : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span>To Do</span>
+                      </div>
+                      {node.status === "TODO" && <Check className="w-3.5 h-3.5 text-primary stroke-[2.5]" />}
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(node.id, "IN_PROGRESS")}
+                      className={cn(
+                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
+                        node.status === "IN_PROGRESS" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold" : "hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>Dalam Proses</span>
+                      </div>
+                      {node.status === "IN_PROGRESS" && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[2.5]" />}
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(node.id, "COMPLETED")}
+                      className={cn(
+                        "flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors",
+                        node.status === "COMPLETED" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold" : "hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span>Selesai</span>
+                      </div>
+                      {node.status === "COMPLETED" && <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Title & Description */}
-              <div className="space-y-1">
-                <h4
-                  className={cn(
-                    "text-sm font-semibold text-foreground line-clamp-2 leading-tight",
-                    isCompleted && "line-through text-muted-foreground"
-                  )}
-                >
+              <div className="my-2 space-y-1">
+                <h4 className={cn("text-sm font-semibold text-foreground line-clamp-1", isCompleted && "line-through text-muted-foreground")}>
                   {node.title}
                 </h4>
                 {node.description && (
@@ -459,31 +529,27 @@ export function RoadmapCanvas({
                 )}
               </div>
 
-              {/* Attached Link metadata chip if type LINK */}
+              {/* Link preview chip if available */}
               {node.type === "LINK" && node.link && (
                 <a
                   href={node.link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center justify-between p-1.5 rounded-lg border border-primary/20 bg-background/80 hover:bg-muted text-xs transition-colors group/link mt-1"
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-primary/20 bg-background/80 hover:bg-muted text-[11px] transition-colors font-medium text-foreground hover:text-primary mb-2 max-w-full"
                 >
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    {node.link.favicon ? (
-                      <img src={node.link.favicon} alt="" className="w-3.5 h-3.5 rounded object-contain shrink-0" />
-                    ) : (
-                      <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    )}
-                    <span className="truncate text-[11px] font-medium text-foreground group-hover/link:text-primary">
-                      {node.link.title}
-                    </span>
-                  </div>
-                  <ExternalLink className="w-3 h-3 text-muted-foreground group-hover/link:text-primary shrink-0" />
+                  {node.link.favicon ? (
+                    <img src={node.link.favicon} alt="" className="w-3 h-3 rounded object-contain shrink-0" />
+                  ) : (
+                    <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
+                  )}
+                  <span className="truncate">{node.link.title}</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
                 </a>
               )}
 
-              {/* Node Card Bottom Actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+              {/* Footer / Connect & Delete toolbar */}
+              <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-1">
                 <button
                   type="button"
                   onClick={(e) => handleNodeConnectClick(node.id, e)}
@@ -503,9 +569,9 @@ export function RoadmapCanvas({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onDeleteNode(node.id);
+                    setNodeToDelete(node);
                   }}
-                  className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors"
+                  className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors cursor-pointer"
                   title="Hapus Node"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -515,6 +581,44 @@ export function RoadmapCanvas({
           );
         })}
       </div>
+
+      {/* Delete Node Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!nodeToDelete}
+        onOpenChange={(open) => !open && setNodeToDelete(null)}
+        title="Hapus Node Roadmap"
+        description={
+          nodeToDelete
+            ? `Apakah Anda yakin ingin menghapus node "${nodeToDelete.title}"? Seluruh koneksi pada node ini akan ikut terhapus.`
+            : "Apakah Anda yakin ingin menghapus node ini?"
+        }
+        confirmText="Hapus"
+        cancelText="Batal"
+        destructive={true}
+        onConfirm={() => {
+          if (nodeToDelete) {
+            onDeleteNode(nodeToDelete.id);
+            setNodeToDelete(null);
+          }
+        }}
+      />
+
+      {/* Delete Edge Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!edgeToDeleteId}
+        onOpenChange={(open) => !open && setEdgeToDeleteId(null)}
+        title="Hapus Koneksi Alur"
+        description="Apakah Anda yakin ingin menghapus garis koneksi ini?"
+        confirmText="Hapus"
+        cancelText="Batal"
+        destructive={true}
+        onConfirm={() => {
+          if (edgeToDeleteId) {
+            onDeleteEdge(edgeToDeleteId);
+            setEdgeToDeleteId(null);
+          }
+        }}
+      />
     </div>
   );
 }

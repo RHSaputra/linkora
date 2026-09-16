@@ -315,7 +315,7 @@ export function LinkoraAIChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-8 sm:bottom-24 z-[60] w-auto sm:w-[400px] h-[min(540px,78vh)] rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-border/80 bg-card/95 backdrop-blur-2xl"
+            className="fixed bottom-[72px] left-3 right-3 sm:left-auto sm:right-8 sm:bottom-24 z-[60] w-auto sm:w-[460px] md:w-[500px] h-[min(580px,80vh)] sm:h-[min(640px,82vh)] rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-primary/25 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 backdrop-blur-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-accent/10">

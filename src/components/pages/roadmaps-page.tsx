@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AIRoadmapGeneratorDialog } from "@/components/roadmap/ai-roadmap-generator-dialog";
 import { useRoadmaps, deleteRoadmap } from "@/hooks/use-data";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { toast } from "@/components/ui/custom-toast";
@@ -45,7 +46,8 @@ export function RoadmapsPage() {
   const { t, locale } = useTranslation();
   const { requireAuth } = useRequireAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const { roadmaps, loading, refresh, setRoadmaps } = useRoadmaps(searchQuery);
+  const debouncedSearchQuery = useDebounce(searchQuery, 250);
+  const { roadmaps, loading, refresh, setRoadmaps } = useRoadmaps(debouncedSearchQuery);
 
   // Dialog States
   const [createDialogOpen, setCreateDialogOpen] = useState(false);

@@ -599,25 +599,26 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 glass-panel">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">{t("notes.selectFolder")}</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setFolder(null)} className="cursor-pointer">
-                <FolderIcon className="w-4 h-4 mr-2 text-muted-foreground" />
-                <span>{t("notes.noFolder")}</span>
-                {!note?.folderId && <Check className="ml-auto w-3.5 h-3.5 text-primary" />}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {folders.map((f) => (
-                <DropdownMenuItem key={f.id} onClick={() => setFolder(f.id)} className="cursor-pointer">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"
-                    style={{ backgroundColor: f.color }}
-                  />
-                  <span className="truncate flex-1">{f.name}</span>
-                  {note?.folderId === f.id && <Check className="ml-auto w-3.5 h-3.5 text-primary" />}
+            <DropdownMenuContent align="end" className="w-56 border border-primary/20 bg-white dark:bg-slate-900 shadow-xl backdrop-blur-2xl rounded-2xl p-1.5">
+              <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">{t("notes.selectFolder")}</DropdownMenuLabel>
+              <div className="max-h-44 overflow-y-auto space-y-0.5 pr-1">
+                <DropdownMenuItem onClick={() => setFolder(null)} className="cursor-pointer rounded-xl text-xs font-medium">
+                  <FolderIcon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                  <span>{t("notes.noFolder")}</span>
+                  {!note?.folderId && <Check className="ml-auto w-3.5 h-3.5 text-primary" />}
                 </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
+                {folders.map((f) => (
+                  <DropdownMenuItem key={f.id} onClick={() => setFolder(f.id)} className="cursor-pointer rounded-xl text-xs font-medium">
+                    <FolderIcon
+                      className="w-4 h-4 mr-2 shrink-0"
+                      style={{ color: f.color || "#6366f1" }}
+                    />
+                    <span className="truncate flex-1">{f.name}</span>
+                    {note?.folderId === f.id && <Check className="ml-auto w-3.5 h-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+              <DropdownMenuSeparator className="my-1" />
               <DropdownMenuItem
                 onClick={() => setNewFolderOpen(true)}
                 className="text-primary font-medium cursor-pointer"
