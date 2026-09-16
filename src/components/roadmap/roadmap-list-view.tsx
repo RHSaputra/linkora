@@ -112,27 +112,15 @@ export function RoadmapListView({
               {/* Main Step Glass Card */}
               <div
                 className={cn(
-                  "p-5 rounded-2xl border transition-all duration-300 glass-panel bg-card/95 shadow-xs hover:shadow-xl relative overflow-hidden flex flex-col justify-between gap-4",
+                  "p-5 rounded-2xl border-2 transition-all duration-300 glass-panel bg-card/95 shadow-xs hover:shadow-xl relative overflow-hidden flex flex-col justify-between gap-4",
                   isCompleted
-                    ? "border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/10 shadow-emerald-500/5"
+                    ? "border-emerald-500/70 dark:border-emerald-400/60 bg-emerald-500/5 dark:bg-emerald-950/10 shadow-emerald-500/5"
                     : isInProgress
-                    ? "border-amber-500/40 bg-amber-500/5 dark:bg-amber-950/10 shadow-amber-500/5"
-                    : "border-border/80 hover:border-primary/50"
+                    ? "border-amber-500/70 dark:border-amber-400/60 bg-amber-500/5 dark:bg-amber-950/10 shadow-amber-500/5"
+                    : "border-border/80 hover:border-primary/60"
                 )}
               >
-                {/* Top Status Accent Ribbon Bar */}
-                <div
-                  className={cn(
-                    "absolute top-0 left-0 right-0 h-1",
-                    isCompleted
-                      ? "bg-gradient-to-r from-emerald-400 to-teal-500"
-                      : isInProgress
-                      ? "bg-gradient-to-r from-amber-400 to-orange-500"
-                      : "bg-gradient-to-r from-primary/30 to-accent/30"
-                  )}
-                />
-
-                <div className="space-y-3 flex-1 pt-1">
+                <div className="space-y-3 flex-1">
                   {/* Header Row: Type Badge & Status Selector */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">

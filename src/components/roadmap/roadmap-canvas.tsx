@@ -411,12 +411,12 @@ export function RoadmapCanvas({
               }}
               onPointerDown={(e) => handleNodePointerDown(node.id, e)}
               className={cn(
-                "absolute top-0 left-0 p-4 rounded-2xl border transition-shadow glass-panel bg-card/95 shadow-md flex flex-col justify-between select-none cursor-grab active:cursor-grabbing group",
+                "absolute top-0 left-0 p-4 rounded-2xl border-2 transition-all glass-panel bg-card/95 shadow-md flex flex-col justify-between select-none cursor-grab active:cursor-grabbing group",
                 isDragging && "shadow-2xl ring-2 ring-primary border-primary z-30 scale-[1.02]",
                 isConnectingSource && "ring-2 ring-primary border-primary",
-                !isDragging && isCompleted && "border-emerald-500/50 bg-emerald-500/5",
-                !isDragging && isInProgress && "border-amber-500/50 bg-amber-500/5",
-                !isDragging && !isCompleted && !isInProgress && "border-border/80 hover:border-primary/50"
+                !isDragging && isCompleted && "border-emerald-500/70 dark:border-emerald-400/60 bg-emerald-500/5 shadow-emerald-500/5",
+                !isDragging && isInProgress && "border-amber-500/70 dark:border-amber-400/60 bg-amber-500/5 shadow-amber-500/5",
+                !isDragging && !isCompleted && !isInProgress && "border-border/80 hover:border-primary/60"
               )}
             >
               {/* Header */}
