@@ -420,11 +420,6 @@ export function RoadmapCanvas({
                 transform: `translate(${pos.x}px, ${pos.y}px)`,
                 width: `${NODE_WIDTH}px`,
               }}              onPointerDown={(e) => handleNodePointerDown(node.id, e)}
-              onClick={(e) => {
-                if (!hasDraggedRef.current) {
-                  setSelectedNodeForDetail(node);
-                }
-              }}
               className={cn(
                 "absolute top-0 left-0 p-4 rounded-2xl border-2 transition-all glass-panel bg-card/95 shadow-md flex flex-col justify-between select-none cursor-grab active:cursor-grabbing group",
                 isDragging && "shadow-2xl ring-2 ring-primary border-primary z-30 scale-[1.02]",
@@ -533,14 +528,8 @@ export function RoadmapCanvas({
               </div>
 
               {/* Title & Description */}
-              <div
-                className="my-2 space-y-1 cursor-pointer group/title"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedNodeForDetail(node);
-                }}
-              >
-                <h4 className={cn("text-sm font-semibold text-foreground line-clamp-1 group-hover/title:text-primary transition-colors", isCompleted && "line-through text-muted-foreground")}>
+              <div className="my-2 space-y-1">
+                <h4 className={cn("text-sm font-semibold text-foreground line-clamp-1", isCompleted && "line-through text-muted-foreground")}>
                   {node.title}
                 </h4>
                 {node.description && (
