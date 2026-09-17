@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { ai, GEMINI_MODELS } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
@@ -29,8 +29,6 @@ export async function POST(req: NextRequest) {
       console.error("GEMINI_API_KEY environment variable is not configured.");
       return NextResponse.json({ error: "Layanan Liko AI belum dikonfigurasi pada server." }, { status: 500 });
     }
-
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const limitCheck = await rateLimit(`ai_roadmap_${userId}`, { limit: 10, windowMs: 60 * 1000 });
     if (!limitCheck.success) {
@@ -89,11 +87,10 @@ ATURAN PENTING:
 3. Hubungkan langkah-langkah secara logis berurutan (0 -> 1 -> 2 -> 3 dst) atau bercabang jika ada tugas paralel.
 4. Jika ada link bookmark user yang relevan, gunakan type "LINK" dan sertakan linkId yang tepat.`;
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
     let rawText = "";
     let lastError: any = null;
 
-    for (const modelName of MODELS) {
+    for (const modelName of GEMINI_MODELS) {
       try {
         const response = await withTimeout(
           ai.models.generateContent({

@@ -4,29 +4,35 @@ import { ai, GEMINI_MODELS } from "@/lib/gemini";
 import { getAiCache, setAiCache, withTimeout } from "@/lib/ai-cache";
 
 const SYSTEM_PROMPT = `
-Anda adalah AI Knowledge Analyzer cerdas dari Linkora.
+Anda adalah AI Knowledge & Content Analyzer profesional dari Linkora.
 
-Tugas:
-Analisis URL, judul, deskripsi, dan konten tautan web berikut, lalu ekstrak informasi penting dalam format JSON.
+Tugas Utama:
+Analisis konten web, artikel, dokumentasi, beasiswa, lowongan kerja, tutorial, video, atau repository berikut secara MENDALAM, DETAIL, SANGAT LENGKAP, DAN KOMPREHENSIF. Tuliskan analisis yang kaya informasi sebagai catatan pengetahuan permanen.
 
 Aturan Pembuatan Catatan ("notes"):
-- Hasilkan RANGKUMAN PLAIN TEXT BERKUALITAS TINGGI, RAPI, DAN MUDAH DIBACA.
-- Gunakan HURUF KAPITAL untuk judul bagian (contoh: RINGKASAN KONTEN:, POIN PENTING:).
-- Gunakan simbol bullet asli (•) untuk daftar poin penting.
-- Gunakan \n untuk membuat jarak antar baris.
-- JANGAN GUNAKAN MARKDOWN SEPERTI **, #, ATAU BACKTICKS.
+1. "notes" HARUS BERISI ANALISIS DAN RANGKUMAN PANJANG, LENGKAP, DETAIL, TERSTRUKTUR, DAN BERKUALITAS TINGGI (DILARANG KRAS MENGHASILKAN RINGKASAN PENDEK 2-3 KALIMAT!).
+2. Susun minimal 4-5 Bagian Utama dengan HURUF KAPITAL, contoh:
+   RINGKASAN UTAMA & OVERVIEW:
+   POIN-POIN KUNCI & PEMBAHASAN DETAIL:
+   MANFAAT, TARGET AUDIENS & FITUR UTAMA:
+   REKOMENDASI & PANDUAN PRAKTIS:
+   KESIMPULAN:
+3. Gunakan simbol bullet asli (•) untuk mendaftar poin-poin penjelasan di setiap bagian.
+4. Gunakan baris baru (\n) di antara setiap paragraf dan bagian agar rapi dan mudah dibaca.
+5. DILARANG MENGGUNAKAN MARKDOWN (seperti **, #, ###, atau backticks). Gunakan format PLAIN TEXT yang bersih dan mudah dibaca.
+6. Berikan penjelasan yang mendalam dan panjang di setiap bagian agar catatan ini sangat berguna bagi pengguna.
 
-Format JSON Output Murni:
+Format Output Murni JSON:
 {
-  "title": "Judul tautan yang singkat, padat, dan jelas",
-  "description": "Deskripsi singkat mengenai isi tautan (maksimal 160 karakter)",
-  "category": "Kategori spesifik (Beasiswa, Lowongan Kerja, Magang, Video, AI Tools, Tutorial, Artikel, Project, Finance, atau Custom)",
-  "tags": ["tag1", "tag2", "tag3"],
-  "notes": "STRING PLAIN TEXT RANGKUMAN BERKUALITAS. Tulis dengan rapi menggunakan huruf kapital untuk judul bagian dan bullet point asli (•).",
+  "title": "Judul tautan yang representatif, jelas, dan rapi",
+  "description": "Deskripsi singkat mengenai konten tautan (max 160 karakter)",
+  "category": "Kategori yang paling spesifik (contoh: Beasiswa, Lowongan Kerja, Magang, Video, AI Tools, Tutorial, Artikel, Project, Finance, atau Custom)",
+  "tags": ["tag1", "tag2", "tag3", "tag4"],
+  "notes": "ANALISIS MENDALAM LENGKAP DETAIL DENGAN BEBERAPA BAGIAN KATEGORI KONTEN. Gunakan huruf kapital untuk judul bagian dan bullet point asli (•).",
   "deadline": "YYYY-MM-DDTHH:mm:ss.000Z" | null,
   "priority": "Tinggi" | "Sedang" | "Rendah"
 }
-Output HARUS murni JSON tanpa backticks markdown.
+Output HARUS murni JSON tanpa formatting markdown.
 `;
 
 import { auth } from "@/auth";
@@ -84,7 +90,7 @@ export async function POST(request: NextRequest) {
     let html = "";
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
-        timeoutMs: 7000,
+        timeoutMs: 8000,
         maxSizeBytes: 2 * 1024 * 1024,
       });
       html = text;
@@ -104,8 +110,8 @@ export async function POST(request: NextRequest) {
       metaDescription = $('meta[name="description"]').attr("content") || 
                        $('meta[property="og:description"]').attr("content") || "";
       extractedText = $("body").text().replace(/\s+/g, " ").trim();
-      if (extractedText.length > 8000) {
-        extractedText = extractedText.substring(0, 8000) + "...";
+      if (extractedText.length > 10000) {
+        extractedText = extractedText.substring(0, 10000) + "...";
       }
     }
 
@@ -119,6 +125,7 @@ export async function POST(request: NextRequest) {
     `;
 
     let responseText: string | null = null;
+    let lastError: any = null;
 
     if (process.env.GEMINI_API_KEY) {
       for (const modelName of GEMINI_MODELS) {
@@ -133,7 +140,7 @@ export async function POST(request: NextRequest) {
                 responseMimeType: "application/json",
               }
             }),
-            18000
+            30000
           );
 
           if (response?.text) {
@@ -142,6 +149,7 @@ export async function POST(request: NextRequest) {
           }
         } catch (err: any) {
           console.warn(`Model ${modelName} failed, trying fallback if available:`, err?.message || err);
+          lastError = err;
         }
       }
     }
@@ -186,7 +194,10 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    setAiCache(cacheKey, parsedResponse);
+    // Only cache successful AI responses with substantial detailed notes
+    if (responseText && parsedResponse && parsedResponse.notes && parsedResponse.notes.length >= 200) {
+      setAiCache(cacheKey, parsedResponse);
+    }
 
     return NextResponse.json(parsedResponse);
   } catch (error: any) {

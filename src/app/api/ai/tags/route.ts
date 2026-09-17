@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { ai, GEMINI_MODELS } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { withTimeout } from "@/lib/ai-cache";
-
 import { rateLimit } from "@/lib/rate-limit";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function POST(_req: NextRequest) {
   try {
@@ -52,11 +49,10 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
     let responseText: string | null = null;
     let lastError: any = null;
 
-    for (const modelName of MODELS) {
+    for (const modelName of GEMINI_MODELS) {
       try {
         const response = await withTimeout(
           ai.models.generateContent({
