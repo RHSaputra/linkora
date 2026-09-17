@@ -81,6 +81,16 @@ export function LinkCard({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRemoveFromCollectionOpen, setIsRemoveFromCollectionOpen] = useState(false);
   const [isNoteConverterOpen, setIsNoteConverterOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(link.thumbnail || null);
+  const [imgError, setImgError] = useState(false);
+
+  const fallbackScreenshot = useMemo(() => {
+    try {
+      return `https://s0.wp.com/mshots/v1/${encodeURIComponent(link.url)}?w=800&h=450`;
+    } catch {
+      return null;
+    }
+  }, [link.url]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -359,11 +369,11 @@ export function LinkCard({
       >
         {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
         <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
-          {/* Background Image / Thumbnail */}
-          {link.thumbnail ? (
+          {/* Background Image / Thumbnail with Fallback Redirect */}
+          {(imgSrc || fallbackScreenshot) && !imgError ? (
             <div className="absolute inset-0">
               <Image
-                src={link.thumbnail}
+                src={imgSrc || fallbackScreenshot || ""}
                 alt={link.title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -371,6 +381,13 @@ export function LinkCard({
                 loading="lazy"
                 decoding="async"
                 unoptimized
+                onError={() => {
+                  if (imgSrc && imgSrc !== fallbackScreenshot && fallbackScreenshot) {
+                    setImgSrc(fallbackScreenshot);
+                  } else {
+                    setImgError(true);
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-card/85 via-card/30 to-transparent pointer-events-none" />
             </div>

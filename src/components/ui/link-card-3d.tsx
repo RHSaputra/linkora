@@ -44,6 +44,16 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isNoteConverterOpen, setIsNoteConverterOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(link.thumbnail || null);
+  const [imgError, setImgError] = useState(false);
+
+  const fallbackScreenshot = useMemo(() => {
+    try {
+      return `https://s0.wp.com/mshots/v1/${encodeURIComponent(link.url)}?w=800&h=450`;
+    } catch {
+      return null;
+    }
+  }, [link.url]);
 
   // Check if link already has a note
   const existingNote = useMemo(() => {
@@ -315,11 +325,18 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative h-36 w-full overflow-hidden bg-foreground/5 border-b border-foreground/5 shrink-0">
-            {link.thumbnail ? (
+            {(imgSrc || fallbackScreenshot) && !imgError ? (
               <img
-                src={link.thumbnail}
+                src={imgSrc || fallbackScreenshot || ""}
                 alt={link.title}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                onError={() => {
+                  if (imgSrc && imgSrc !== fallbackScreenshot && fallbackScreenshot) {
+                    setImgSrc(fallbackScreenshot);
+                  } else {
+                    setImgError(true);
+                  }
+                }}
               />
             ) : (
               <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5 overflow-hidden">

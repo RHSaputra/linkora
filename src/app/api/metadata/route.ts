@@ -100,6 +100,11 @@ export async function POST(request: NextRequest) {
       // Safe fallback: return partial data with favicon
     }
 
+    // Fallback image redirect if og:image extraction failed or was missing
+    if (!thumbnail) {
+      thumbnail = `https://s0.wp.com/mshots/v1/${encodeURIComponent(parsedUrl.toString())}?w=800&h=450`;
+    }
+
     return NextResponse.json({
       title,
       description,
