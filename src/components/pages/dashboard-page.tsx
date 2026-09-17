@@ -252,10 +252,9 @@ export function DashboardPage({
 
                 {/* Minimalist Summary & Top Categories Legend */}
                 <div className="flex items-center justify-between gap-1.5 text-xs">
-                  <div className="flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                  <div className="flex items-center gap-2 flex-wrap max-w-[70%]">
                     {s.categoryStats.slice(0, 3).map((cat) => (
-                      <span key={cat.category} className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(cat.category) }} />
+                      <span key={cat.category} className="inline-flex items-center text-[11px] font-medium text-muted-foreground">
                         <span className="truncate max-w-[70px]">{cat.category}</span>
                       </span>
                     ))}
@@ -671,15 +670,9 @@ export function DashboardPage({
                   className="p-3.5 rounded-2xl bg-foreground/[0.03] hover:bg-foreground/[0.07] border border-border/50 hover:border-primary/40 transition-all space-y-2 group block shadow-xs"
                 >
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs border border-white/20"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                        {cat.category}
-                      </span>
-                    </div>
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
+                      {cat.category}
+                    </span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold text-foreground">
                         {cat.count} {locale === "en" ? (cat.count === 1 ? "link" : "links") : "tautan"}
