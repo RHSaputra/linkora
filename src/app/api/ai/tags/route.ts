@@ -52,7 +52,7 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    const MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash"];
+    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
     let responseText: string | null = null;
     let lastError: any = null;
 

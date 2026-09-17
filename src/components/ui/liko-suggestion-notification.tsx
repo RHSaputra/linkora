@@ -9,7 +9,7 @@ import { invalidateAndRefresh } from "@/hooks/use-data";
 export function LikoSuggestionNotification() {
   const [suggestion, setSuggestion] = useState<{
     link: SerializedLink;
-    status: "idle" | "organizing" | "success" | "error" | "already_categorized";
+    status: "organizing" | "success" | "error" | "already_categorized";
     assignedCategory?: string;
   } | null>(null);
 
@@ -22,6 +22,49 @@ export function LikoSuggestionNotification() {
     }
   };
 
+  const autoOrganizeLink = async (link: SerializedLink) => {
+    clearTimer();
+    setSuggestion({
+      link,
+      status: "organizing",
+    });
+
+    window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: true } }));
+
+    try {
+      const res = await fetch("/api/ai/organize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ linkId: link.id }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const assigned = data.changes?.[0]?.category || "Kategori Baru";
+
+        setSuggestion({
+          link: { ...link, category: assigned },
+          status: "success",
+          assignedCategory: assigned,
+        });
+
+        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
+
+        autoDismissTimerRef.current = setTimeout(() => {
+          setSuggestion(null);
+        }, 4000);
+      } else {
+        setSuggestion({ link, status: "error" });
+        autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
+      }
+    } catch {
+      setSuggestion({ link, status: "error" });
+      autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
+    } finally {
+      window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: false } }));
+    }
+  };
+
   useEffect(() => {
     const handleLinkAdded = (e: Event) => {
       const customEvent = e as CustomEvent<{ link: SerializedLink }>;
@@ -29,7 +72,6 @@ export function LikoSuggestionNotification() {
 
       if (link) {
         clearTimer();
-        // Check if link is uncategorized or "Custom"
         const needsCategorizing =
           !link.category ||
           link.category === "Custom" ||
@@ -37,20 +79,14 @@ export function LikoSuggestionNotification() {
           link.category.trim() === "";
 
         if (needsCategorizing) {
-          // Trigger Liko suggestion to organize
-          setSuggestion({
-            link,
-            status: "idle",
-          });
+          autoOrganizeLink(link);
         } else {
-          // Link is already categorized — show Liko confirmation popup
           setSuggestion({
             link,
             status: "already_categorized",
             assignedCategory: link.category,
           });
 
-          // Auto-close categorized notification after 4 seconds
           autoDismissTimerRef.current = setTimeout(() => {
             setSuggestion(null);
           }, 4000);
@@ -64,52 +100,6 @@ export function LikoSuggestionNotification() {
       clearTimer();
     };
   }, []);
-
-  const handleOrganizeNow = async () => {
-    if (!suggestion?.link?.id) return;
-
-    clearTimer();
-    setSuggestion((prev) => (prev ? { ...prev, status: "organizing" } : null));
-
-    // Broadcast organizing state to sync animations in main dashboard
-    window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: true } }));
-
-    try {
-      const res = await fetch("/api/ai/organize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ linkId: suggestion.link.id }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const assigned = data.changes?.[0]?.category || "Kategori Baru";
-
-        setSuggestion((prev) => (prev ? {
-          ...prev,
-          status: "success",
-          assignedCategory: assigned,
-          link: { ...prev.link, category: assigned }
-        } : null));
-
-        // Invalidate cache and refresh UI across links, dashboard, collections, tags
-        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
-
-        // Auto close after 4 seconds
-        autoDismissTimerRef.current = setTimeout(() => {
-          setSuggestion(null);
-        }, 4000);
-      } else {
-        setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-        autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
-      }
-    } catch {
-      setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-      autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
-    } finally {
-      window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: false } }));
-    }
-  };
 
   const handleDismiss = () => {
     clearTimer();
@@ -143,34 +133,6 @@ export function LikoSuggestionNotification() {
                   {suggestion.status === "already_categorized" ? "Asisten Liko" : "Saran Liko"}
                 </span>
               </div>
-
-              {suggestion.status === "idle" && (
-                <>
-                  <p className="text-xs sm:text-sm text-foreground leading-relaxed font-normal break-words">
-                    Tautan <span className="font-semibold text-foreground">"{suggestion.link.title || suggestion.link.url}"</span> belum memiliki kategori spesifik.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Bantu tentukan kategorinya sekarang?
-                  </p>
-
-                  <div className="flex items-center gap-2 mt-2.5">
-                    <button
-                      type="button"
-                      onClick={handleOrganizeNow}
-                      className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                    >
-                      <Zap className="h-3.5 w-3.5" /> Rapikan Sekarang
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDismiss}
-                      className="px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground text-xs font-semibold hover:bg-muted active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                    >
-                      Nanti Saja
-                    </button>
-                  </div>
-                </>
-              )}
 
               {suggestion.status === "already_categorized" && (
                 <div className="py-0.5">

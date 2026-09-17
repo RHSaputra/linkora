@@ -104,7 +104,7 @@ Pastikan ID sama persis dengan input. Kategori harus singkat (1-2 kata).
 Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
 `;
 
-    const MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash"];
+    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
     let responseText: string | null = null;
     let lastError: any = null;
 
@@ -120,7 +120,7 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
           }),
           30000
         );
-        if (response.text) {
+        if (response?.text) {
           responseText = response.text;
           break;
         }
