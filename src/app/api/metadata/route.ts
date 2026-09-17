@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
         thumbnail =
           extractMeta(html, "og:image") ||
           extractMeta(html, "twitter:image");
+
+        // Resolve relative image URLs to absolute URLs
+        if (thumbnail && !thumbnail.startsWith("http://") && !thumbnail.startsWith("https://")) {
+          try {
+            thumbnail = new URL(thumbnail, parsedUrl.toString()).toString();
+          } catch {
+            thumbnail = null;
+          }
+        }
       }
     } catch {
       // Safe fallback: return partial data with favicon

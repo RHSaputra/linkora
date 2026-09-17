@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
     `;
 
     let responseText: string | null = null;
+    let lastError: any = null;
 
     for (const modelName of GEMINI_MODELS) {
       try {
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
               responseMimeType: "application/json",
             }
           }),
-          15000
+          20000
         );
 
         if (response?.text) {
@@ -168,45 +169,20 @@ export async function POST(request: NextRequest) {
         }
       } catch (err: any) {
         console.warn(`Model ${modelName} failed, trying fallback if available:`, err?.message || err);
+        lastError = err;
       }
     }
 
-    let parsedResponse: any = null;
-
-    if (responseText) {
-      try {
-        parsedResponse = JSON.parse(responseText);
-      } catch (_e) {
-        try {
-          const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-          parsedResponse = JSON.parse(cleanedText);
-        } catch {}
-      }
+    if (!responseText) {
+      throw lastError || new Error("Tidak ada respon dari server AI.");
     }
 
-    // Smart Metadata Fallback if AI response was unavailable or unparseable
-    if (!parsedResponse) {
-      const fallbackTitle = title || parsedUrl.hostname.replace("www.", "") || "Tautan Web";
-      const fallbackDesc = metaDescription || (extractedText ? extractedText.slice(0, 150) + "..." : "Tautan tersimpan di Linkora.");
-      
-      let fallbackCategory = "Custom";
-      const lower = `${fallbackTitle} ${fallbackDesc} ${parsedUrl.toString()}`.toLowerCase();
-      if (lower.includes("beasiswa") || lower.includes("scholarship")) fallbackCategory = "Beasiswa";
-      else if (lower.includes("loker") || lower.includes("job") || lower.includes("career")) fallbackCategory = "Lowongan Kerja";
-      else if (lower.includes("intern") || lower.includes("magang")) fallbackCategory = "Magang";
-      else if (lower.includes("video") || lower.includes("youtube")) fallbackCategory = "Video";
-      else if (lower.includes("ai") || lower.includes("gpt") || lower.includes("claude")) fallbackCategory = "AI Tools";
-      else if (lower.includes("tutorial") || lower.includes("learn") || lower.includes("guide")) fallbackCategory = "Tutorial";
-
-      parsedResponse = {
-        title: fallbackTitle,
-        description: fallbackDesc,
-        category: fallbackCategory,
-        tags: [fallbackCategory.toLowerCase()],
-        notes: `RINGKASAN TAUTAN:\n• Judul: ${fallbackTitle}\n• URL: ${parsedUrl.toString()}\n• Deskripsi: ${fallbackDesc}`,
-        deadline: null,
-        priority: "Sedang",
-      };
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(responseText);
+    } catch (_e) {
+      const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+      parsedResponse = JSON.parse(cleanedText);
     }
 
     setAiCache(cacheKey, parsedResponse);
