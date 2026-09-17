@@ -104,9 +104,8 @@ Pastikan ID sama persis dengan input. Kategori harus singkat (1-2 kata).
 Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
 `;
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
+    const MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
     let responseText: string | null = null;
-    let lastError: any = null;
 
     for (const modelName of MODELS) {
       try {
@@ -118,28 +117,74 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
             ],
             config: { responseMimeType: "application/json" }
           }),
-          30000
+          15000
         );
         if (response?.text) {
           responseText = response.text;
           break;
         }
       } catch (err: any) {
-        console.warn(`Organize model ${modelName} failed, trying fallback:`, err?.message || err);
-        lastError = err;
+        console.warn(`Organize model ${modelName} failed, trying next:`, err?.message || err);
       }
     }
 
-    if (!responseText) {
-      throw lastError || new Error("Tidak ada respon dari server AI.");
+    let parsedResponse: { id: string, category: string }[] = [];
+    if (responseText) {
+      try {
+        parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
+      } catch (_e) {
+        console.warn("Failed to parse Gemini JSON output for organize, using smart fallback");
+      }
     }
 
-    let parsedResponse: { id: string, category: string }[] = [];
-    try {
-      parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
-    } catch (_e) {
-      console.error("Failed to parse Gemini response for organize");
-      return NextResponse.json({ error: "Gagal memproses keluaran AI" }, { status: 500 });
+    // Smart fallback if AI response was empty or unparseable
+    if (parsedResponse.length === 0) {
+      const fallbackCategories: Record<string, string> = {
+        beasiswa: "Beasiswa",
+        scholarship: "Beasiswa",
+        grant: "Beasiswa",
+        loker: "Lowongan Kerja",
+        job: "Lowongan Kerja",
+        career: "Lowongan Kerja",
+        hiring: "Lowongan Kerja",
+        intern: "Magang",
+        magang: "Magang",
+        video: "Video",
+        youtube: "Video",
+        vimeo: "Video",
+        ai: "AI Tools",
+        chatgpt: "AI Tools",
+        claude: "AI Tools",
+        gemini: "AI Tools",
+        tutorial: "Tutorial",
+        guide: "Tutorial",
+        learn: "Tutorial",
+        course: "Tutorial",
+        github: "Project",
+        project: "Project",
+        code: "Project",
+        kampus: "Kampus",
+        university: "Kampus",
+        college: "Kampus",
+        berita: "Artikel",
+        news: "Artikel",
+        article: "Artikel",
+        blog: "Artikel",
+        finance: "Finance",
+        crypto: "Finance",
+      };
+
+      parsedResponse = linksData.map((l) => {
+        const text = `${l.title} ${l.description || ""} ${l.url}`.toLowerCase();
+        let matchedCategory = "Teknologi";
+        for (const [kw, cat] of Object.entries(fallbackCategories)) {
+          if (text.includes(kw)) {
+            matchedCategory = cat;
+            break;
+          }
+        }
+        return { id: l.id, category: matchedCategory };
+      });
     }
 
     // Update DB
