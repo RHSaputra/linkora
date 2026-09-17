@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { ai, GEMINI_MODELS } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 /**
  * Build a context summary of the user's link collection to inject into Liko's
@@ -284,11 +282,10 @@ ${userContext}`;
       }
     }
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
     let responseStream: any = null;
     let lastError: any = null;
 
-    for (const modelName of MODELS) {
+    for (const modelName of GEMINI_MODELS) {
       try {
         responseStream = await ai.models.generateContentStream({
           model: modelName,
