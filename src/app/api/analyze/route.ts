@@ -4,40 +4,29 @@ import { ai, GEMINI_MODELS } from "@/lib/gemini";
 import { getAiCache, setAiCache, withTimeout } from "@/lib/ai-cache";
 
 const SYSTEM_PROMPT = `
-Anda adalah AI Knowledge Analyzer.
+Anda adalah AI Knowledge Analyzer cerdas dari Linkora.
 
 Tugas:
-Analisis halaman, artikel, video, website, dokumentasi, beasiswa, magang, lowongan kerja, tutorial, berita, AI tools, repository GitHub, kursus, atau konten lainnya.
+Analisis URL, judul, deskripsi, dan konten tautan web berikut, lalu ekstrak informasi penting dalam format JSON.
 
-Tujuan:
-Mengubah konten panjang menjadi informasi yang rapi, lengkap, dan mudah dipahami dalam format PLAIN TEXT.
+Aturan Pembuatan Catatan ("notes"):
+- Hasilkan RANGKUMAN PLAIN TEXT BERKUALITAS TINGGI, RAPI, DAN MUDAH DIBACA.
+- Gunakan HURUF KAPITAL untuk judul bagian (contoh: RINGKASAN KONTEN:, POIN PENTING:).
+- Gunakan simbol bullet asli (•) untuk daftar poin penting.
+- Gunakan \n untuk membuat jarak antar baris.
+- JANGAN GUNAKAN MARKDOWN SEPERTI **, #, ATAU BACKTICKS.
 
-Aturan:
-- JANGAN GUNAKAN FORMAT MARKDOWN (seperti **, *, #, atau backticks).
-- Gunakan HURUF KAPITAL untuk penekanan atau judul bagian (contoh: NAMA BEASISWA:).
-- Beri jarak baris kosong antar bagian menggunakan \n agar tidak menumpuk.
-- Gunakan karakter bullet asli (•) atau strip (-) untuk membuat list.
-- Fokus pada informasi yang berguna dan langsung ke intinya.
-- Jika informasi tidak ditemukan, jangan mengarang.
-
-Tambahkan data meta berikut (ekstrak dari konten):
-- Kategori otomatis (Beasiswa, Loker, Artikel, Video, Tutorial, atau Custom)
-- Tag otomatis (array of string, max 5)
-- Prioritas (Rendah/Sedang/Tinggi)
-- Deadline jika ditemukan (format YYYY-MM-DDTHH:mm jika bisa, atau null)
-- Estimasi waktu membaca atau menonton
-
-Format Output JSON:
+Format JSON Output Murni:
 {
-  "title": "Judul singkat",
-  "description": "Deskripsi singkat (max 160 chars)",
-  "category": "Kategori otomatis",
-  "tags": ["tag1", "tag2"],
-  "notes": "STRING PLAIN TEXT BERISI RINGKASAN. Tulis dengan rapi, gunakan escape character \\n untuk baris baru, gunakan bullet point asli (•), dan JANGAN ADA karakter markdown.",
+  "title": "Judul tautan yang singkat, padat, dan jelas",
+  "description": "Deskripsi singkat mengenai isi tautan (maksimal 160 karakter)",
+  "category": "Kategori spesifik (Beasiswa, Lowongan Kerja, Magang, Video, AI Tools, Tutorial, Artikel, Project, Finance, atau Custom)",
+  "tags": ["tag1", "tag2", "tag3"],
+  "notes": "STRING PLAIN TEXT RANGKUMAN BERKUALITAS. Tulis dengan rapi menggunakan huruf kapital untuk judul bagian dan bullet point asli (•).",
   "deadline": "YYYY-MM-DDTHH:mm:ss.000Z" | null,
   "priority": "Tinggi" | "Sedang" | "Rendah"
 }
-Output HARUS murni JSON. JANGAN merender markdown apapun di luar JSON.
+Output HARUS murni JSON tanpa backticks markdown.
 `;
 
 import { auth } from "@/auth";
@@ -91,26 +80,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(cached);
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is not configured" },
-        { status: 500 }
-      );
-    }
-
     // 1. Fetch website content safely with anti-SSRF & size guard
     let html = "";
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
-        timeoutMs: 6000,
+        timeoutMs: 7000,
         maxSizeBytes: 2 * 1024 * 1024,
       });
       html = text;
     } catch (error) {
       console.warn("Could not fetch URL directly, falling back to basic metadata if possible.", error);
-      // We continue, the AI will just analyze the URL itself which might not yield much, but it won't crash.
     }
-
 
     // 2. Extract content with Cheerio
     let extractedText = "";
@@ -119,18 +99,11 @@ export async function POST(request: NextRequest) {
 
     if (html) {
       const $ = cheerio.load(html);
-      
-      // Remove unnecessary elements
       $("script, style, noscript, iframe, img, svg, video").remove();
-      
       title = $("title").text().trim();
       metaDescription = $('meta[name="description"]').attr("content") || 
                        $('meta[property="og:description"]').attr("content") || "";
-                       
-      // Get readable text from body
       extractedText = $("body").text().replace(/\s+/g, " ").trim();
-      
-      // Limit text to roughly 8000 characters to process much faster
       if (extractedText.length > 8000) {
         extractedText = extractedText.substring(0, 8000) + "...";
       }
@@ -139,50 +112,78 @@ export async function POST(request: NextRequest) {
     // 3. Call Gemini with fallback models in case of high demand (503)
     const userPrompt = `
       URL: ${parsedUrl.toString()}
-      Title: ${title}
-      Description: ${metaDescription}
+      Title: ${title || "Tidak ada judul"}
+      Description: ${metaDescription || "Tidak ada deskripsi"}
       Content:
-      ${extractedText}
+      ${extractedText || "Halaman web umum. Analisis URL ini berdasarkan topik dan domain tersebut."}
     `;
 
     let responseText: string | null = null;
-    let lastError: any = null;
 
-    for (const modelName of GEMINI_MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }] }
-            ],
-            config: {
-              responseMimeType: "application/json",
-            }
-          }),
-          20000
-        );
+    if (process.env.GEMINI_API_KEY) {
+      for (const modelName of GEMINI_MODELS) {
+        try {
+          const response = await withTimeout(
+            ai.models.generateContent({
+              model: modelName,
+              contents: [
+                { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }] }
+              ],
+              config: {
+                responseMimeType: "application/json",
+              }
+            }),
+            18000
+          );
 
-        if (response?.text) {
-          responseText = response.text;
-          break;
+          if (response?.text) {
+            responseText = response.text;
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`Model ${modelName} failed, trying fallback if available:`, err?.message || err);
         }
-      } catch (err: any) {
-        console.warn(`Model ${modelName} failed, trying fallback if available:`, err?.message || err);
-        lastError = err;
       }
     }
 
-    if (!responseText) {
-      throw lastError || new Error("Tidak ada respon dari server AI.");
+    let parsedResponse: any = null;
+
+    if (responseText) {
+      try {
+        parsedResponse = JSON.parse(responseText);
+      } catch (_e) {
+        try {
+          const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+          parsedResponse = JSON.parse(cleanedText);
+        } catch {}
+      }
     }
 
-    let parsedResponse: any;
-    try {
-      parsedResponse = JSON.parse(responseText);
-    } catch (_e) {
-      const cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      parsedResponse = JSON.parse(cleanedText);
+    // Resilient Fallback if AI API returned empty or failed
+    if (!parsedResponse) {
+      const hostname = parsedUrl.hostname.replace("www.", "");
+      const cleanTitle = title || hostname.charAt(0).toUpperCase() + hostname.slice(1);
+      const cleanDesc = metaDescription || (extractedText ? extractedText.slice(0, 160) + "..." : `Tautan dari ${hostname}`);
+      
+      let fallbackCategory = "Custom";
+      const lower = `${cleanTitle} ${cleanDesc} ${parsedUrl.toString()}`.toLowerCase();
+      if (lower.includes("beasiswa") || lower.includes("scholarship")) fallbackCategory = "Beasiswa";
+      else if (lower.includes("loker") || lower.includes("job") || lower.includes("career")) fallbackCategory = "Lowongan Kerja";
+      else if (lower.includes("intern") || lower.includes("magang")) fallbackCategory = "Magang";
+      else if (lower.includes("video") || lower.includes("youtube")) fallbackCategory = "Video";
+      else if (lower.includes("ai") || lower.includes("gpt") || lower.includes("claude")) fallbackCategory = "AI Tools";
+      else if (lower.includes("tutorial") || lower.includes("learn") || lower.includes("guide")) fallbackCategory = "Tutorial";
+      else if (lower.includes("github") || lower.includes("code") || lower.includes("project")) fallbackCategory = "Project";
+
+      parsedResponse = {
+        title: cleanTitle,
+        description: cleanDesc,
+        category: fallbackCategory,
+        tags: [fallbackCategory.toLowerCase()],
+        notes: `INFORMASI TAUTAN:\n• Judul: ${cleanTitle}\n• Domain: ${hostname}\n• Deskripsi: ${cleanDesc}`,
+        deadline: null,
+        priority: "Sedang",
+      };
     }
 
     setAiCache(cacheKey, parsedResponse);
