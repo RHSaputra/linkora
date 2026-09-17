@@ -14,7 +14,7 @@ import {
 import { deleteLink, toggleFavorite, openLink, useNotes } from "@/hooks/use-data";
 import { Card3D } from "./3d-card";
 import { motion } from "framer-motion";
-import { CATEGORY_COLORS, cn, formatRelativeTime } from "@/lib/utils";
+import { CATEGORY_COLORS, getCategoryColor, cn, formatRelativeTime } from "@/lib/utils";
 
 import { ViewLinkDialog } from "@/components/links/view-link-dialog";
 import { ManageCollectionsDialog } from "@/components/links/manage-collections-dialog";
@@ -39,7 +39,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
   const { requireAuth } = useRequireAuth();
   const { notes } = useNotes();
   const { t, locale } = useTranslation();
-  const catColor = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom;
+  const catColor = getCategoryColor(link.category);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

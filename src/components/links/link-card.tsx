@@ -14,7 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { SerializedLink } from "@/lib/types";
-import { CATEGORY_COLORS, cn, formatRelativeTime, getFaviconUrl } from "@/lib/utils";
+import { CATEGORY_COLORS, getCategoryColor, cn, formatRelativeTime, getFaviconUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,7 +57,7 @@ export function LinkCard({
   const { notes } = useNotes();
   const { t, locale } = useTranslation();
   const favicon = link.favicon || getFaviconUrl(link.url);
-  const categoryColor = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom;
+  const categoryColor = getCategoryColor(link.category);
 
   // Check if link is already converted to a note
   const existingNote = useMemo(() => {

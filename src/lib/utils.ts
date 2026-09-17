@@ -81,5 +81,35 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Tutorial: "#06b6d4",
   "Lowongan Kerja": "#f97316",
   Project: "#ec4899",
-  Custom: "#6b7280",
+  Custom: "#64748b",
+  Uncategorized: "#94a3b8",
 };
+
+const DYNAMIC_PALETTE = [
+  "#6366f1", // Indigo
+  "#a855f7", // Purple
+  "#ec4899", // Pink
+  "#f43f5e", // Rose
+  "#10b981", // Emerald
+  "#06b6d4", // Cyan
+  "#f59e0b", // Amber
+  "#3b82f6", // Blue
+  "#8b5cf6", // Violet
+  "#14b8a6", // Teal
+  "#f97316", // Orange
+  "#84cc16", // Lime
+];
+
+export function getCategoryColor(category: string | null | undefined): string {
+  if (!category) return "#64748b";
+  if (CATEGORY_COLORS[category]) {
+    return CATEGORY_COLORS[category];
+  }
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % DYNAMIC_PALETTE.length;
+  return DYNAMIC_PALETTE[index];
+}
+

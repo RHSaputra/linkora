@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Calendar, Tag, Folder, BookOpen, Clock, FileText, CheckCircle2 } from "lucide-react";
-import { CATEGORY_COLORS } from "@/lib/utils";
+import { CATEGORY_COLORS, getCategoryColor } from "@/lib/utils";
 import { LikoNoteConverterModal } from "./liko-note-converter-modal";
 import { useNotes } from "@/hooks/use-data";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -29,6 +29,8 @@ export function ViewLinkDialog({
   const { notes } = useNotes();
   const { t, locale } = useTranslation();
   const [isConverterOpen, setIsConverterOpen] = useState(false);
+
+  const catColor = getCategoryColor(link?.category);
 
   // Check if this link already has a note
   const existingNote = useMemo(() => {
@@ -57,7 +59,7 @@ export function ViewLinkDialog({
 
           <div className="space-y-6 mt-2 flex-1 min-h-0 overflow-y-auto pr-1">
             <div className="flex flex-wrap gap-2 items-center">
-              <Badge variant="outline" style={{ borderColor: `${CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom}40`, color: CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Custom }}>
+              <Badge variant="outline" style={{ borderColor: `${catColor}40`, color: catColor }}>
                 <Folder className="w-3 h-3 mr-1" /> {link.category}
               </Badge>
               {link.tags?.map(tag => (

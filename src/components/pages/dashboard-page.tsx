@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useDashboard, subscribeRefresh, invalidateAndRefresh } from "@/hooks/use-data";
-import { CATEGORY_COLORS } from "@/lib/utils";
+import { CATEGORY_COLORS, getCategoryColor } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
 import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 import { useSession } from "next-auth/react";
@@ -235,27 +235,37 @@ export function DashboardPage({
                 </div>
 
                 {/* Progress Cluster Bar */}
-                <div className="h-3 w-full bg-muted rounded-full overflow-hidden flex gap-0.5 p-0.5">
+                <div className="h-3.5 w-full bg-muted/80 rounded-full overflow-hidden flex gap-0.5 p-0.5 shadow-inner">
                   {s.categoryStats.map((cat, idx) => {
-                    const pct = Math.max(4, (cat.count / s.totalLinks) * 100);
-                    const color = CATEGORY_COLORS[cat.category] || "bg-primary";
+                    const pct = Math.max(3, (cat.count / s.totalLinks) * 100);
+                    const color = getCategoryColor(cat.category);
                     return (
                       <div
                         key={idx}
-                        style={{ width: `${pct}%` }}
-                        className={`h-full rounded-full transition-all duration-500 ${color}`}
-                        title={`${cat.category}: ${cat.count}`}
+                        style={{ width: `${pct}%`, backgroundColor: color }}
+                        className="h-full rounded-xs transition-all duration-300 hover:brightness-110"
+                        title={`${cat.category}: ${cat.count} tautan (${((cat.count / s.totalLinks) * 100).toFixed(1)}%)`}
                       />
                     );
                   })}
                 </div>
 
-                {/* Minimalist Summary Footer */}
-                <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
-                  <span className="font-medium text-muted-foreground">
-                    <strong className="text-foreground font-bold">{s.categoryStats.length}</strong> {t("dashboard.activeCategories")}
-                  </span>
-                  <span className="font-mono bg-primary/15 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                {/* Minimalist Summary & Top Categories Legend */}
+                <div className="flex items-center justify-between gap-1.5 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                    {s.categoryStats.slice(0, 3).map((cat) => (
+                      <span key={cat.category} className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(cat.category) }} />
+                        <span className="truncate max-w-[70px]">{cat.category}</span>
+                      </span>
+                    ))}
+                    {s.categoryStats.length > 3 && (
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        +{s.categoryStats.length - 3}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-mono bg-primary/15 text-primary border border-primary/20 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0">
                     {s.totalLinks} {t("dashboard.totalLinks")}
                   </span>
                 </div>
@@ -632,16 +642,16 @@ export function DashboardPage({
 
           {/* Full Distribution Segment Bar */}
           <div className="space-y-1.5 pt-2">
-            <div className="h-3 rounded-full bg-muted/70 overflow-hidden flex shadow-inner p-[1px]">
+            <div className="h-3.5 rounded-full bg-muted/70 overflow-hidden flex shadow-inner p-[1px] gap-0.5">
               {s.categoryStats.map((cat) => {
                 const pct = s.totalLinks > 0 ? (cat.count / s.totalLinks) * 100 : 0;
-                const color = CATEGORY_COLORS[cat.category] || CATEGORY_COLORS.Custom;
+                const color = getCategoryColor(cat.category);
                 return (
                   <div
                     key={cat.category}
-                    className="h-full hover:opacity-80 transition-opacity rounded-xs"
+                    className="h-full hover:opacity-90 transition-opacity rounded-xs cursor-pointer"
                     style={{ width: `${pct}%`, backgroundColor: color }}
-                    title={`${cat.category}: ${cat.count} (${pct.toFixed(1)}%)`}
+                    title={`${cat.category}: ${cat.count} tautan (${pct.toFixed(1)}%)`}
                   />
                 );
               })}
@@ -652,7 +662,7 @@ export function DashboardPage({
           <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[340px] mt-4">
             {s.categoryStats.map((cat, i) => {
               const pct = s.totalLinks > 0 ? (cat.count / s.totalLinks) * 100 : 0;
-              const color = CATEGORY_COLORS[cat.category] || CATEGORY_COLORS.Custom;
+              const color = getCategoryColor(cat.category);
               return (
                 <Link
                   key={cat.category}
@@ -663,7 +673,7 @@ export function DashboardPage({
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className="w-3 h-3 rounded-full shrink-0 shadow-xs"
+                        className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs border border-white/20"
                         style={{ backgroundColor: color }}
                       />
                       <span className="font-bold text-foreground group-hover:text-primary transition-colors">
@@ -674,8 +684,8 @@ export function DashboardPage({
                       <span className="text-xs font-mono font-bold text-foreground">
                         {cat.count} {locale === "en" ? (cat.count === 1 ? "link" : "links") : "tautan"}
                       </span>
-                      <span className="text-[11px] font-mono text-muted-foreground">
-                        ({pct.toFixed(1)}%)
+                      <span className="text-[11px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                        {pct.toFixed(1)}%
                       </span>
                     </div>
                   </div>
