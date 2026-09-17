@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, X, Plus, AlertTriangle } from "lucide-react";
@@ -32,7 +32,6 @@ import {
   scheduleCapacitorLocalNotification, 
   requestWebNotificationPermission 
 } from "@/lib/notification-service";
-import { useTags } from "@/hooks/use-data";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
@@ -65,6 +64,8 @@ export function AddLinkDialog({
   const [fetchingMeta, setFetchingMeta] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Duplicate detection state
   const [duplicateWarning, setDuplicateWarning] = useState<{
@@ -85,7 +86,18 @@ export function AddLinkDialog({
     setThumbnail("");
     setIsFavorite(false);
     setReminderAt("");
+    setDuplicateWarning(null);
+    setShowExitConfirm(false);
   }, []);
+
+  // Auto-expand notes textarea height according to text content
+  useEffect(() => {
+    if (notesRef.current) {
+      notesRef.current.style.height = "auto";
+      const newHeight = Math.max(160, notesRef.current.scrollHeight);
+      notesRef.current.style.height = `${newHeight}px`;
+    }
+  }, [notes]);
 
   useEffect(() => {
     if (editLink) {
@@ -108,13 +120,42 @@ export function AddLinkDialog({
     }
   }, [editLink, open, resetForm]);
 
+  const checkHasUnsavedChanges = useCallback(() => {
+    if (saving) return false;
+    if (editLink) {
+      return (
+        url !== (editLink.url || "") ||
+        title !== (editLink.title || "") ||
+        description !== (editLink.description || "") ||
+        notes !== (editLink.notes || "")
+      );
+    }
+    return Boolean(url.trim() || title.trim() || notes.trim() || description.trim());
+  }, [editLink, saving, url, title, description, notes]);
+
+  const handleAttemptClose = useCallback(() => {
+    if (checkHasUnsavedChanges()) {
+      setShowExitConfirm(true);
+    } else {
+      resetForm();
+      onOpenChange(false);
+    }
+  }, [checkHasUnsavedChanges, onOpenChange, resetForm]);
+
+  const handleOpenChangeRequest = (newOpen: boolean) => {
+    if (!newOpen) {
+      handleAttemptClose();
+    } else {
+      onOpenChange(true);
+    }
+  };
+
   const handleUrlPaste = async (value: string) => {
     setUrl(value);
     setDuplicateWarning(null);
     if (!editLink && value.startsWith("http")) {
       setFetchingMeta(true);
       try {
-        // Run metadata fetch and duplicate check in parallel
         const [meta, dupRes] = await Promise.all([
           fetchMetadata(value),
           fetch("/api/ai/check-duplicate", {
@@ -130,7 +171,6 @@ export function AddLinkDialog({
           if (meta.favicon) setFavicon(meta.favicon);
           if (meta.thumbnail) setThumbnail(meta.thumbnail);
 
-          // If we have a title now but no dup from URL, do a title-based check
           if (dupRes?.type === "none" && meta.title) {
             try {
               const titleCheck = await fetch("/api/ai/check-duplicate", {
@@ -160,7 +200,6 @@ export function AddLinkDialog({
       setTags([...tags, tagInput.trim()]);
       setTagInput("");
     } else if (tag) {
-      // Clear input even if it's duplicate
       setTagInput("");
     }
   };
@@ -287,12 +326,10 @@ export function AddLinkDialog({
         toast.success(editLink ? "Link berhasil diperbarui!" : "Link baru berhasil ditambahkan!", "Sukses");
         onSuccess();
 
-        // If newly created link (not edit), notify Liko assistant to check if categorization is needed
         if (!editLink && savedData) {
           window.dispatchEvent(new CustomEvent("liko-link-added", { detail: { link: savedData } }));
         }
 
-        // Schedule Mobile & Web notifications if reminder is set in the future
         if (savedData?.reminderAt && new Date(savedData.reminderAt) > new Date()) {
           requestWebNotificationPermission().catch(() => {});
           scheduleCapacitorLocalNotification({
@@ -316,7 +353,7 @@ export function AddLinkDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChangeRequest}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>{editLink ? t("links.modalEditTitle") : t("links.modalAddTitle")}</DialogTitle>
@@ -536,14 +573,22 @@ export function AddLinkDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">{t("links.notesLabel")}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="notes" className="font-medium">{t("links.notesLabel")}</Label>
+                {notes && (
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {notes.length} {locale === "en" ? "characters" : "karakter"}
+                  </span>
+                )}
+              </div>
               <Textarea
+                ref={notesRef}
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t("links.notesPlaceholder")}
-                rows={5}
-                className="text-base sm:text-sm leading-relaxed"
+                rows={6}
+                className="text-base sm:text-sm leading-relaxed p-3.5 bg-muted/20 hover:bg-muted/30 focus:bg-background transition-colors min-h-[160px] sm:min-h-[180px]"
               />
             </div>
 
@@ -557,7 +602,7 @@ export function AddLinkDialog({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60 shrink-0">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl text-xs cursor-pointer">
+            <Button type="button" variant="outline" onClick={handleAttemptClose} className="rounded-xl text-xs cursor-pointer">
               {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={saving} className="rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
@@ -589,7 +634,6 @@ export function AddLinkDialog({
 
                 {/* Mascot Avatar with Silky-Smooth AI Glow */}
                 <div className="relative w-28 h-28 flex items-center justify-center mb-6">
-                  {/* Smooth Ambient Glow Halo */}
                   <motion.div
                     className="absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-500/30 via-primary/30 to-purple-500/30 blur-lg pointer-events-none transform-gpu"
                     animate={{
@@ -603,14 +647,12 @@ export function AddLinkDialog({
                     }}
                   />
 
-                  {/* Smooth Outer Subtle Dashed Ring */}
                   <motion.div
                     className="absolute -inset-1 rounded-full border border-dashed border-primary/30 pointer-events-none transform-gpu"
                     animate={{ rotate: -360 }}
                     transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                   />
 
-                  {/* Silky-Smooth Spinning Conic Laser Ring */}
                   <motion.div
                     className="absolute inset-0 rounded-full transform-gpu"
                     animate={{ rotate: 360 }}
@@ -621,7 +663,6 @@ export function AddLinkDialog({
                     </div>
                   </motion.div>
 
-                  {/* Stable Sharp Mascot Image Container with Gentle Floating */}
                   <motion.div
                     className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-background shadow-xl bg-background z-10 transform-gpu"
                     animate={{ y: [0, -2, 0] }}
@@ -663,7 +704,66 @@ export function AddLinkDialog({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Exit Confirmation Dialog Overlay */}
+        <AnimatePresence>
+          {showExitConfirm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 12 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 12 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                className="w-full max-w-md rounded-2xl sm:rounded-3xl p-6 bg-card border border-amber-500/30 shadow-2xl flex flex-col gap-4 text-left"
+              >
+                <div className="flex items-start gap-3.5 text-amber-600 dark:text-amber-400">
+                  <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 mt-0.5">
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">
+                      {locale === "en" ? "Exit without saving?" : "Yakin ingin keluar?"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {locale === "en"
+                        ? "The link details you entered haven't been saved yet."
+                        : "Tautan yang sudah kamu masukkan belum disimpan ke daftar."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-2 border-t border-border/50">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowExitConfirm(false);
+                      resetForm();
+                      onOpenChange(false);
+                    }}
+                    className="w-full sm:w-auto rounded-xl text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 cursor-pointer"
+                  >
+                    {locale === "en" ? "Discard & Exit" : "Ya, Keluar & Hapus"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setShowExitConfirm(false)}
+                    className="w-full sm:w-auto rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                  >
+                    {locale === "en" ? "Continue Adding Link" : "Lanjutkan Tambah Tautan"}
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
 }
+
