@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
-import { Link2, FileEdit, GraduationCap, Search, BrainCircuit, CalendarClock } from "lucide-react"
+import { Link2, FileEdit, Search, BrainCircuit, CalendarClock, GitFork } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
 
 // ── Data 6 Card Solusi — Warna Senada & Harmonis dengan Brand Linkora ──
@@ -34,11 +34,11 @@ const getSolutions = (locale: string) => [
     initialOffset: { x: 0, y: -70 },
   },
   {
-    title: "Opportunity Tracker",
+    title: locale === "en" ? "Animated Visual Roadmap" : "Roadmap Visual Animasi",
     description: locale === "en"
-      ? "Track internships, scholarships, competitions, and career milestones with clear status workflows."
-      : "Lacak magang, beasiswa, lomba, dan peluang karir dengan status tahapan terstruktur.",
-    icon: GraduationCap,
+      ? "Design learning paths, project steps, and visual workflows interactively with node connection animations."
+      : "Rancang alur kerja, roadmap belajar, dan target proyek secara visual dengan kanvas interaktif beranimasi.",
+    icon: GitFork,
     color: "text-violet-600 dark:text-violet-400",
     bg: "bg-violet-50 dark:bg-violet-500/15 border-violet-200 dark:border-violet-500/30",
     activeBorder: "border-2 border-violet-500 dark:border-violet-400 bg-violet-50/80 dark:bg-violet-950/40 ring-2 ring-violet-500/20",

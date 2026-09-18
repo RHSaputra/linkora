@@ -125,6 +125,7 @@ export function buildLinksUrl(
     tag?: string;
     favorite?: boolean;
     collectionId?: string;
+    sort?: string;
   },
   page = 1,
   pageSize?: number
@@ -135,6 +136,7 @@ export function buildLinksUrl(
   if (filters?.tag) params.set("tag", filters.tag);
   if (filters?.favorite) params.set("favorite", "true");
   if (filters?.collectionId) params.set("collectionId", filters.collectionId);
+  if (filters?.sort) params.set("sort", filters.sort);
   if (pageSize) {
     params.set("page", String(page));
     params.set("pageSize", String(pageSize));
@@ -184,6 +186,7 @@ export function useLinks(
     tag?: string;
     favorite?: boolean;
     collectionId?: string;
+    sort?: string;
   },
   options?: { pageSize?: number }
 ) {
@@ -194,10 +197,11 @@ export function useLinks(
   const filterTag = filters?.tag || "";
   const filterFavorite = Boolean(filters?.favorite);
   const filterCollectionId = filters?.collectionId || "";
+  const filterSort = filters?.sort || "added";
 
   const firstUrl = useMemo(
-    () => buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId }, 1, pageSize),
-    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, pageSize]
+    () => buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort }, 1, pageSize),
+    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize]
   );
 
   const [links, setLinks] = useState<SerializedLink[]>(
@@ -210,11 +214,11 @@ export function useLinks(
 
   const fetchPage = useCallback(
     async (p: number, force = false): Promise<LinksPage | null> => {
-      const url = buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId }, p, pageSize);
+      const url = buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort }, p, pageSize);
       const data = await fetchWithCache<LinksPage>(url, force);
       return (data as LinksPage) || null;
     },
-    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, pageSize]
+    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize]
   );
 
   const refresh = useCallback(

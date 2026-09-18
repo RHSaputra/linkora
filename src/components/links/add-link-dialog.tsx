@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, Plus, AlertTriangle } from "lucide-react";
+import { Loader2, X, Plus, AlertTriangle, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +68,8 @@ export function AddLinkDialog({
   const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Duplicate detection state
-  const [duplicateWarning, setDuplicateWarning] = useState<{
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateData, setDuplicateData] = useState<{
     type: "exact" | "similar_url" | "similar_title" | "none";
     message: string | null;
     duplicates: { id: string; title: string; url: string }[];
@@ -86,7 +87,8 @@ export function AddLinkDialog({
     setThumbnail("");
     setIsFavorite(false);
     setReminderAt("");
-    setDuplicateWarning(null);
+    setDuplicateData(null);
+    setShowDuplicateModal(false);
     setShowExitConfirm(false);
   }, []);
 
@@ -152,7 +154,8 @@ export function AddLinkDialog({
 
   const handleUrlPaste = async (value: string) => {
     setUrl(value);
-    setDuplicateWarning(null);
+    setDuplicateData(null);
+    setShowDuplicateModal(false);
     if (!editLink && value.startsWith("http")) {
       setFetchingMeta(true);
       try {
@@ -179,14 +182,16 @@ export function AddLinkDialog({
                 body: JSON.stringify({ url: value, title: meta.title }),
               }).then((r) => (r.ok ? r.json() : null));
               if (titleCheck && titleCheck.type !== "none") {
-                setDuplicateWarning(titleCheck);
+                setDuplicateData(titleCheck);
+                setShowDuplicateModal(true);
               }
             } catch {}
           }
         }
 
         if (dupRes && dupRes.type !== "none") {
-          setDuplicateWarning(dupRes);
+          setDuplicateData(dupRes);
+          setShowDuplicateModal(true);
         }
       } finally {
         setFetchingMeta(false);
@@ -210,6 +215,10 @@ export function AddLinkDialog({
 
   const handleAnalyze = async () => {
     if (!url) return;
+    if (duplicateData && duplicateData.type !== "none") {
+      setShowDuplicateModal(true);
+      return;
+    }
     if (requireAuth(
       locale === "en" ? "Automatic AI Analysis" : "Analisis AI Otomatis",
       locale === "en" ? "Sign in or register for free to analyze links automatically using AI." : "Masuk atau daftar gratis untuk menganalisis link secara otomatis menggunakan AI."
@@ -247,6 +256,12 @@ export function AddLinkDialog({
           });
         }
         if (data.notes) setNotes(data.notes);
+        if (data.previewImage?.url || data.thumbnail) {
+          setThumbnail(data.previewImage?.url || data.thumbnail);
+        }
+        if (data.favicon) {
+          setFavicon(data.favicon);
+        }
         if (data.deadline) {
           const date = new Date(data.deadline);
           if (!isNaN(date.getTime())) {
@@ -260,20 +275,15 @@ export function AddLinkDialog({
             return [...prev, priorityTag];
           });
         }
+        toast.success(
+          locale === "en" ? "AI successfully analyzed the link!" : "AI berhasil menganalisis link!",
+          locale === "en" ? "Analysis Complete" : "Analisis Selesai"
+        );
       } else {
         const errorData = await res.json().catch(() => ({}));
-        let msg = errorData.error || (locale === "en" ? "Failed to analyze link at this time." : "Gagal menganalisis link saat ini.");
-        try {
-          if (typeof msg === "string" && (msg.startsWith("{") || msg.includes("error"))) {
-            const parsed = JSON.parse(msg);
-            if (parsed?.error?.message) msg = parsed.error.message;
-          }
-        } catch {}
-        
-        if (typeof msg === "string" && (msg.includes("503") || msg.includes("high demand") || msg.includes("UNAVAILABLE") || msg.includes("not found"))) {
-          msg = locale === "en" 
-            ? "AI Server is experiencing high demand. Please try clicking AI Analysis again in a few seconds."
-            : "Server AI sedang sibuk karena antrean tinggi. Silakan coba klik Analisis AI kembali beberapa saat lagi.";
+        let msg = locale === "en" ? "Failed to analyze link automatically." : "Gagal menganalisis link secara otomatis.";
+        if (errorData?.error) {
+          msg = errorData.error;
         }
         
         toast.error(msg, locale === "en" ? "AI Analysis Failed" : "Gagal Analisis AI");
@@ -294,6 +304,29 @@ export function AddLinkDialog({
     if (requireAuth(t("links.saveLink"), t("auth.authRequiredDesc"))) {
       return;
     }
+
+    // Block duplicate URL creation!
+    if (!editLink && url) {
+      if (duplicateData && duplicateData.type !== "none") {
+        setShowDuplicateModal(true);
+        return; // Prevent saving duplicate link
+      }
+
+      try {
+        const checkRes = await fetch("/api/ai/check-duplicate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, title }),
+        }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+        if (checkRes && checkRes.type !== "none") {
+          setDuplicateData(checkRes);
+          setShowDuplicateModal(true);
+          return; // Prevent saving duplicate link
+        }
+      } catch {}
+    }
+
     setSaving(true);
 
     try {
@@ -352,6 +385,8 @@ export function AddLinkDialog({
     }
   };
 
+  const isDuplicate = Boolean(duplicateData && duplicateData.type !== "none");
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChangeRequest}>
       <DialogContent className="sm:max-w-[700px]">
@@ -367,10 +402,66 @@ export function AddLinkDialog({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="url">{t("links.urlLabel")}</Label>
-                {url && !isAnalyzing && (
-                  <span className="text-xs text-primary font-medium flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" /> {t("links.readyToAnalyze")}
-                  </span>
+                {url && (
+                  <AnimatePresence mode="wait">
+                    {isDuplicate ? (
+                      <motion.span
+                        key="duplicate-status"
+                        initial={{ opacity: 0, y: -2 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -2 }}
+                        className="text-xs text-red-600 dark:text-red-400 font-bold flex items-center gap-1.5"
+                      >
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                        </span>
+                        {locale === "en" ? "Duplicate Link (Cannot Be Analyzed)" : "Tautan Duplikat (Tidak Bisa Dianalisis)"}
+                      </motion.span>
+                    ) : fetchingMeta ? (
+                      <motion.span
+                        key="fetching-status"
+                        initial={{ opacity: 0, y: -2 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -2 }}
+                        className="text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5"
+                      >
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                        </span>
+                        {locale === "en" ? "Fetching Preview & Info..." : "Mengambil Preview & Informasi..."}
+                      </motion.span>
+                    ) : isAnalyzing ? (
+                      <motion.span
+                        key="analyzing-status"
+                        initial={{ opacity: 0, y: -2 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -2 }}
+                        className="text-xs text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1.5"
+                      >
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                        </span>
+                        {locale === "en" ? "Liko AI Is Analyzing..." : "Liko AI Sedang Menganalisis..."}
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="ready-status"
+                        initial={{ opacity: 0, y: -2 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -2 }}
+                        className="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5"
+                      >
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                        </span>
+                        {locale === "en" ? "Ready for AI Analysis" : "Siap Dianalisis AI"}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 )}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -386,19 +477,19 @@ export function AddLinkDialog({
                   />
                   {fetchingMeta && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
                     </div>
                   )}
                 </div>
                 <div className="relative shrink-0">
                   <Button
                     type="button"
-                    disabled={!url || isAnalyzing || fetchingMeta}
+                    disabled={!url || isAnalyzing || fetchingMeta || isDuplicate}
                     onClick={handleAnalyze}
                     className={`w-full sm:w-auto h-10 sm:h-9 relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
-                      url && !isAnalyzing
-                        ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm hover:shadow-md active:scale-95"
-                        : "bg-secondary text-secondary-foreground"
+                      url && !isAnalyzing && !fetchingMeta && !isDuplicate
+                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md active:scale-95"
+                        : "bg-secondary text-secondary-foreground opacity-60"
                     }`}
                   >
                     {isAnalyzing && (
@@ -408,63 +499,45 @@ export function AddLinkDialog({
                   </Button>
                 </div>
               </div>
-              
-              {/* Duplicate warning banner */}
-              <AnimatePresence>
-                {duplicateWarning && duplicateWarning.type !== "none" && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className={`flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 mt-1.5 border ${
-                      duplicateWarning.type === "exact"
-                        ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
-                        : "bg-orange-500/8 border-orange-500/20 text-orange-700 dark:text-orange-400"
-                    }`}>
-                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold leading-snug break-words">{duplicateWarning.message}</p>
-                        {duplicateWarning.duplicates.length > 0 && (
-                          <div className="mt-1 space-y-1">
-                            {duplicateWarning.duplicates.slice(0, 2).map((dup) => (
-                              <p key={dup.id} className="text-[11px] opacity-90 break-all leading-snug font-mono">
-                                {dup.title || dup.url}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setDuplicateWarning(null)}
-                          className="text-[11px] underline opacity-60 hover:opacity-100 mt-1 cursor-pointer"
-                        >
-                          Tutup peringatan
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Guide hint when URL is pasted */}
-              {url && !isAnalyzing && !duplicateWarning && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-primary/10 via-accent/10 to-transparent border border-primary/20 rounded-xl px-3 py-2 mt-1.5"
-                >
-                  <p className="text-xs text-foreground/90 leading-tight">
-                    Tautan siap dianalisis. Fitur <span className="font-bold text-primary">Analisis AI</span> akan mengisi kategori, deskripsi, dan tag secara otomatis.
-                  </p>
-                </motion.div>
-              )}
-
-              {(fetchingMeta || isAnalyzing) && (
-                <p className="text-xs text-muted-foreground">
-                  {isAnalyzing ? "Menganalisis link dengan AI..." : "Mengambil favicon, judul, dan preview..."}
-                </p>
+              {/* Dynamic Guide Hint Box */}
+              {url && (
+                <AnimatePresence mode="wait">
+                  {isDuplicate ? (
+                    <motion.div
+                      key="hint-duplicate"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2 mt-1.5"
+                    >
+                      <p className="text-xs text-red-600 dark:text-red-400 leading-tight font-medium">
+                        ⚠️ Tautan ini sudah tersimpan di koleksimu. Analisis AI dan penambahan link diblokir.
+                      </p>
+                    </motion.div>
+                  ) : fetchingMeta ? (
+                    <motion.div
+                      key="hint-fetching"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2 mt-1.5"
+                    >
+                      <p className="text-xs text-amber-700 dark:text-amber-400 leading-tight font-medium">
+                        ⏳ Sedang mengambil favicon, judul, dan preview gambar dari situs web...
+                      </p>
+                    </motion.div>
+                  ) : !isAnalyzing && (
+                    <motion.div
+                      key="hint-ready"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-xl px-3 py-2 mt-1.5"
+                    >
+                      <p className="text-xs text-foreground/90 leading-tight">
+                        ✨ Tautan siap dianalisis. Klik tombol <span className="font-bold text-blue-600 dark:text-blue-400">Analisis AI</span> untuk mengisi kategori, deskripsi, dan tag secara otomatis.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               )}
             </div>
 
@@ -705,6 +778,99 @@ export function AddLinkDialog({
           )}
         </AnimatePresence>
 
+        {/* Duplicate Link Detected Dialog Overlay */}
+        <AnimatePresence>
+          {showDuplicateModal && duplicateData && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/75 backdrop-blur-md p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 16 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 16 }}
+                transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                className="relative w-full max-w-md rounded-3xl p-6 sm:p-7 bg-card border border-amber-500/30 shadow-2xl shadow-amber-500/10 flex flex-col gap-5 overflow-hidden text-left"
+              >
+                {/* Ambient Glows */}
+                <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/15 blur-3xl rounded-full pointer-events-none" />
+                <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
+
+                {/* Header Icon + Text */}
+                <div className="flex items-start gap-4 relative z-10">
+                  <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 shrink-0 shadow-xs">
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-bold uppercase tracking-wider">
+                      {locale === "en" ? "Duplicate URL Detected" : "Tautan Sudah Ada"}
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground font-heading leading-tight">
+                      {locale === "en" ? "Cannot Add Duplicate Link" : "Tautan Tidak Dapat Ditambahkan"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {duplicateData.message || (locale === "en" 
+                        ? "This link is already in your collection. Duplicate links cannot be added."
+                        : "Tautan ini sudah tersimpan dalam koleksimu dan tidak dapat ditambahkan lagi.")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Existing Link Details */}
+                {duplicateData.duplicates && duplicateData.duplicates.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-muted/50 border border-border/80 space-y-1.5 relative z-10">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      {locale === "en" ? "Existing Link in Collection" : "Tautan yang Sudah Tersimpan"}
+                    </p>
+                    {duplicateData.duplicates.slice(0, 1).map((dup) => (
+                      <div key={dup.id} className="space-y-0.5">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {dup.title || dup.url}
+                        </p>
+                        <p className="text-xs text-primary font-mono truncate">
+                          {dup.url}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-2 border-t border-border/50 relative z-10">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDuplicateModal(false)}
+                    className="w-full sm:w-auto rounded-xl text-xs font-medium cursor-pointer"
+                  >
+                    {locale === "en" ? "Close" : "Tutup"}
+                  </Button>
+                  {duplicateData.duplicates && duplicateData.duplicates.length > 0 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const targetUrl = duplicateData.duplicates[0]?.url || url;
+                        if (targetUrl) {
+                          window.open(targetUrl, "_blank", "noopener,noreferrer");
+                        }
+                        setShowDuplicateModal(false);
+                        resetForm();
+                        onOpenChange(false);
+                      }}
+                      className="w-full sm:w-auto rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>{locale === "en" ? "Go to Existing Link" : "Buka Tautan Yang Sudah Ada"}</span>
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Exit Confirmation Dialog Overlay */}
         <AnimatePresence>
           {showExitConfirm && (
@@ -766,4 +932,3 @@ export function AddLinkDialog({
     </Dialog>
   );
 }
-

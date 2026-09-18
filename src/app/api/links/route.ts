@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get("tag");
     const favorite = searchParams.get("favorite");
     const collectionId = searchParams.get("collectionId");
+    const sort = searchParams.get("sort") || "added";
     const pageRaw = searchParams.get("page");
     const pageSizeRaw = searchParams.get("pageSize");
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     const pageSize = pageSizeRaw ? Math.max(1, parseInt(pageSizeRaw, 10) || 1) : null;
 
     // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
-    const cacheKey = `cache:links:${userId}:${q || ""}:${category || ""}:${tag || ""}:${favorite || ""}:${collectionId || ""}:${page}:${pageSize || ""}`;
+    const cacheKey = `cache:links:${userId}:${q || ""}:${category || ""}:${tag || ""}:${favorite || ""}:${collectionId || ""}:${sort}:${page}:${pageSize || ""}`;
     const cachedData = await getCache<any>(cacheKey);
     if (cachedData) {
       return NextResponse.json(cachedData, {
@@ -67,9 +68,21 @@ export async function GET(request: NextRequest) {
         : {}),
     };
 
+    let orderBy: any = { createdAt: "desc" };
+    if (sort === "edited" || sort === "updated") {
+      orderBy = { updatedAt: "desc" };
+    } else if (sort === "opened") {
+      orderBy = [
+        { lastOpenedAt: { sort: "desc", nulls: "last" } },
+        { updatedAt: "desc" },
+      ];
+    } else {
+      orderBy = { createdAt: "desc" };
+    }
+
     const findManyArgs: any = {
       where,
-      orderBy: { updatedAt: "desc" },
+      orderBy,
       include: {
         collections: { include: { collection: true } },
       },

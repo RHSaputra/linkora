@@ -48,16 +48,28 @@ export function ViewLinkDialog({
 
   const hasAnalysisContent = Boolean(link.notes || link.aiSummary);
 
+  const [imgError, setImgError] = useState(false);
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[720px] max-h-[90vh] flex flex-col overflow-hidden p-6">
           <DialogHeader>
             <DialogTitle className="text-xl leading-snug">{link.title}</DialogTitle>
-            {link.description && <DialogDescription className="mt-2">{link.description}</DialogDescription>}
+            {link.description && <DialogDescription className="mt-2 text-sm">{link.description}</DialogDescription>}
           </DialogHeader>
 
-          <div className="space-y-6 mt-2 flex-1 min-h-0 overflow-y-auto pr-1">
+          <div className="space-y-5 mt-2 flex-1 min-h-0 overflow-y-auto pr-1.5">
+            {link.thumbnail && !imgError && (
+              <div className="relative w-full h-44 sm:h-52 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0">
+                <img
+                  src={link.thumbnail}
+                  alt={link.title}
+                  onError={() => setImgError(true)}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 items-center">
               <Badge variant="outline" style={{ borderColor: `${catColor}40`, color: catColor }}>
                 <Folder className="w-3 h-3 mr-1" /> {link.category}

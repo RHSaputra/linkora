@@ -89,6 +89,7 @@ export function LinkoraAIChat() {
       let tags: string[] = [];
       let notes = "";
       let deadline: string | null = null;
+      let thumbnail: string | null = null;
 
       if (analyzeRes.ok) {
         const data = await analyzeRes.json();
@@ -98,6 +99,9 @@ export function LinkoraAIChat() {
         if (data.tags && Array.isArray(data.tags)) tags = data.tags;
         if (data.notes) notes = data.notes;
         if (data.deadline) deadline = data.deadline;
+        if (data.previewImage?.url || data.thumbnail) {
+          thumbnail = data.previewImage?.url || data.thumbnail;
+        }
       }
 
       // 2. Save the link
@@ -111,6 +115,7 @@ export function LinkoraAIChat() {
           category,
           tags,
           notes,
+          thumbnail: thumbnail || undefined,
           reminderAt: deadline || null,
         }),
       });

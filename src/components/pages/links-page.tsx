@@ -9,6 +9,7 @@ import { useLinks, useTags } from "@/hooks/use-data";
 import { SerializedLink } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { cn } from "@/lib/utils";
 
 import { useViewMode } from "@/hooks/use-view-mode";
 import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
@@ -27,6 +28,7 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
   const [category, setCategory] = useState("all");
   const [tag, setTag] = useState("");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
+  const [sort, setSort] = useState<"added" | "edited" | "opened">("added");
   const { tags } = useTags();
 
   // AI Search state
@@ -112,6 +114,7 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
       category: category === "all" ? undefined : category,
       tag: tag || undefined,
       favorite: favoriteOnly,
+      sort,
     },
     { pageSize: 24 }
   );
@@ -143,6 +146,48 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
 
         <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
       </motion.div>
+
+      {/* Quick Filter Pill Switcher Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="inline-flex items-center p-1 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-inner">
+          <button
+            type="button"
+            onClick={() => setSort("added")}
+            className={cn(
+              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
+              sort === "added"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
+                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+            )}
+          >
+            {t("dashboard.filterAdded")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSort("edited")}
+            className={cn(
+              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
+              sort === "edited"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
+                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+            )}
+          >
+            {t("dashboard.filterEdited")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSort("opened")}
+            className={cn(
+              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
+              sort === "opened"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
+                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+            )}
+          >
+            {t("dashboard.filterOpened")}
+          </button>
+        </div>
+      </div>
 
       <SearchBar
         query={query}
