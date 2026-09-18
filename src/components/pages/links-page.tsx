@@ -147,45 +147,41 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
         <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
       </motion.div>
 
-      {/* Quick Filter Pill Switcher Tabs */}
+      {/* Quick Filter Pill Switcher Tabs with Animated Glow & Sliding Indicator */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-        <div className="inline-flex items-center p-1 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-inner">
-          <button
-            type="button"
-            onClick={() => setSort("added")}
-            className={cn(
-              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
-              sort === "added"
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
-                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            )}
-          >
-            {t("dashboard.filterAdded")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSort("edited")}
-            className={cn(
-              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
-              sort === "edited"
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
-                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            )}
-          >
-            {t("dashboard.filterEdited")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSort("opened")}
-            className={cn(
-              "px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap",
-              sort === "opened"
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]"
-                : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
-            )}
-          >
-            {t("dashboard.filterOpened")}
-          </button>
+        <div className="relative inline-flex items-center p-0.5 sm:p-1 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-inner">
+          {[
+            { id: "added", label: t("dashboard.filterAdded") },
+            { id: "edited", label: t("dashboard.filterEdited") },
+            { id: "opened", label: t("dashboard.filterOpened") },
+          ].map((item) => {
+            const isActive = sort === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSort(item.id as "added" | "edited" | "opened")}
+                className={cn(
+                  "relative px-3 sm:px-3.5 py-1 text-[11px] sm:text-xs font-bold rounded-full transition-colors duration-200 cursor-pointer select-none whitespace-nowrap z-10",
+                  isActive
+                    ? "text-primary-foreground font-bold"
+                    : "text-slate-600 dark:text-slate-300 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeSortPill"
+                    className="absolute inset-0 rounded-full bg-primary shadow-sm shadow-primary/30 z-[-1]"
+                    transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                  >
+                    {/* Glowing animated ring around the active button */}
+                    <div className="absolute -inset-[2px] rounded-full bg-gradient-to-r from-primary via-indigo-400 to-purple-500 opacity-65 blur-[2px] animate-pulse z-[-1]" />
+                  </motion.div>
+                )}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
