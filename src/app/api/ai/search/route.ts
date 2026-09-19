@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { executeGeminiRequest, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { serializeLink } from "@/lib/types";
-import { withTimeout } from "@/lib/ai-cache";
 import { rateLimit } from "@/lib/rate-limit";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,7 +32,6 @@ export async function POST(req: NextRequest) {
 
     const userId = session.user.id;
 
-    // Gather user's categories and tags for AI context
     const [categoryGroups, allLinks] = await Promise.all([
       prisma.link.groupBy({
         by: ["category"],
@@ -51,7 +47,6 @@ export async function POST(req: NextRequest) {
 
     const userCategories = categoryGroups.map((g) => g.category);
 
-    // Extract unique tags
     const tagSet = new Set<string>();
     for (const link of allLinks) {
       try {
@@ -64,7 +59,6 @@ export async function POST(req: NextRequest) {
       }
     }
     const userTags = Array.from(tagSet).slice(0, 50);
-
     const today = new Date().toISOString().split("T")[0];
 
     const SYSTEM_PROMPT = `Anda adalah mesin pencari cerdas untuk aplikasi bookmark manager bernama Linkora.
@@ -95,38 +89,23 @@ Output HARUS berupa JSON object:
 
 Output murni JSON, tanpa markdown.`;
 
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro"];
-    let responseText: string | null = null;
-    let lastError: any = null;
+    let filters: any = null;
 
-    for (const modelName of MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: SYSTEM_PROMPT + "\n\nQuery pengguna: " + query }],
-              },
-            ],
-            config: { responseMimeType: "application/json" },
-          }),
-          6000
-        );
-        if (response.text) {
-          responseText = response.text;
-          break;
-        }
-      } catch (err: any) {
-        console.warn(`AI Search model ${modelName} failed:`, err?.message || err);
-        lastError = err;
-      }
+    try {
+      const { data } = await executeGeminiRequest<any>({
+        contents: [{ role: "user", parts: [{ text: "Query pengguna: " + query }] }],
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0.1,
+        responseMimeType: "application/json",
+        expectJson: true,
+        timeoutMs: 10000,
+      });
+      filters = data;
+    } catch (err: any) {
+      console.warn("AI search request failed, falling back to keyword search:", err?.message || err);
     }
 
-    // If AI fails, fallback to basic keyword search
-    if (!responseText) {
-      console.warn("AI search failed, falling back to basic search:", lastError?.message);
+    if (!filters) {
       const fallbackLinks = await prisma.link.findMany({
         where: {
           userId,
@@ -151,35 +130,9 @@ Output murni JSON, tanpa markdown.`;
       });
     }
 
-    let filters: {
-      keywords: string[];
-      category: string | null;
-      tags: string[];
-      favorite: boolean | null;
-      dateFrom: string | null;
-      dateTo: string | null;
-      explanation: string;
-    };
-
-    try {
-      filters = JSON.parse(
-        responseText.replace(/```json/g, "").replace(/```/g, "").trim()
-      );
-    } catch {
-      // Parse failed, fallback
-      return NextResponse.json({
-        items: [],
-        total: 0,
-        explanation: null,
-        aiPowered: false,
-      });
-    }
-
-    // Build Prisma where clause from AI-extracted filters
     const where: any = { userId };
     const andConditions: any[] = [];
 
-    // Category filter
     if (filters.category) {
       const matched = userCategories.find(
         (c) => c.toLowerCase() === filters.category!.toLowerCase()
@@ -189,12 +142,10 @@ Output murni JSON, tanpa markdown.`;
       }
     }
 
-    // Favorite filter
     if (filters.favorite === true) {
       where.isFavorite = true;
     }
 
-    // Date range filter
     if (filters.dateFrom || filters.dateTo) {
       const dateFilter: any = {};
       if (filters.dateFrom) {
@@ -208,18 +159,16 @@ Output murni JSON, tanpa markdown.`;
       where.createdAt = dateFilter;
     }
 
-    // Tag filter
     if (filters.tags && filters.tags.length > 0) {
       andConditions.push({
-        OR: filters.tags.map((t) => ({
+        OR: filters.tags.map((t: string) => ({
           tags: { contains: `"${t}"` },
         })),
       });
     }
 
-    // Keyword search across multiple fields
     if (filters.keywords && filters.keywords.length > 0) {
-      const keywordConditions = filters.keywords.map((kw) => ({
+      const keywordConditions = filters.keywords.map((kw: string) => ({
         OR: [
           { title: { contains: kw.toLowerCase() } },
           { description: { contains: kw.toLowerCase() } },
@@ -249,10 +198,7 @@ Output murni JSON, tanpa markdown.`;
     });
   } catch (error: any) {
     console.error("Error in AI search:", error);
-    return NextResponse.json(
-      { error: "Gagal melakukan pencarian cerdas" },
-      { status: 500 }
-    );
+    const normalized = normalizeAiError(error);
+    return NextResponse.json({ error: normalized.friendlyMessage }, { status: normalized.statusCode });
   }
 }
-

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ai, GEMINI_MODELS } from "@/lib/gemini";
+import { executeGeminiRequest, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { withTimeout } from "@/lib/ai-cache";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(_req: NextRequest) {
@@ -25,23 +24,27 @@ export async function POST(_req: NextRequest) {
       );
     }
 
-    // Get up to 10 links that don't have tags
     const links = await prisma.link.findMany({
       where: {
         userId: user.id,
-        tags: "[]"
+        tags: "[]",
       },
-      take: 10
+      take: 10,
     });
 
     if (links.length === 0) {
       return NextResponse.json({ message: "No links need tagging", processed: 0 });
     }
 
-    const linksData = links.map(l => ({ id: l.id, title: l.title, description: l.description, category: l.category }));
+    const linksData = links.map((l) => ({
+      id: l.id,
+      title: l.title,
+      description: l.description,
+      category: l.category,
+    }));
 
     const SYSTEM_PROMPT = `
-Anda adalah AI Tagger.
+Anda adalah AI Tagger dari Linkora.
 Tugas: Hasilkan 3-5 tag yang relevan untuk setiap tautan berdasarkan judul, deskripsi, dan kategorinya.
 Input berupa JSON array berisi object { id, title, description, category }.
 Output HARUS berupa JSON array berisi object { id, tags }. tags adalah array of string.
@@ -49,53 +52,27 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    let responseText: string | null = null;
-    let lastError: any = null;
+    const { data: parsedResponse } = await executeGeminiRequest<any>({
+      contents: [{ role: "user", parts: [{ text: "Input: " + JSON.stringify(linksData) }] }],
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      expectJson: true,
+      timeoutMs: 20000,
+    });
 
-    for (const modelName of GEMINI_MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-            ],
-            config: { responseMimeType: "application/json" }
-          }),
-          20000
-        );
-        if (response.text) {
-          responseText = response.text;
-          break;
-        }
-      } catch (err: any) {
-        console.warn(`Tags model ${modelName} failed, trying fallback:`, err?.message || err);
-        lastError = err;
-      }
+    if (!parsedResponse || !Array.isArray(parsedResponse)) {
+      return NextResponse.json({ error: "Gagal memproses tag dari server AI" }, { status: 500 });
     }
 
-    if (!responseText) {
-      throw lastError || new Error("Tidak ada respon dari server AI.");
-    }
-
-    let parsedResponse: { id: string, tags: string[] }[] = [];
-    try {
-      parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
-    } catch (_e) {
-      console.error("Failed to parse Gemini response for tags");
-      return NextResponse.json({ error: "Gagal memproses keluaran AI" }, { status: 500 });
-    }
-
-    // Update DB with userId ownership check
     let updatedCount = 0;
     for (const item of parsedResponse) {
       if (item.id && Array.isArray(item.tags) && item.tags.length > 0) {
-        // Ensure link belongs to user
-        const targetLink = links.find(l => l.id === item.id);
+        const targetLink = links.find((l) => l.id === item.id);
         if (targetLink) {
           await prisma.link.update({
             where: { id: item.id },
-            data: { tags: JSON.stringify(item.tags) }
+            data: { tags: JSON.stringify(item.tags) },
           });
           updatedCount++;
         }
@@ -103,12 +80,9 @@ Output murni JSON, tanpa markdown.
     }
 
     return NextResponse.json({ message: "Success", processed: updatedCount });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in AI tags:", error);
-    return NextResponse.json(
-      { error: "Gagal memproses tag otomatis" },
-      { status: 500 }
-    );
+    const normalized = normalizeAiError(error);
+    return NextResponse.json({ error: normalized.friendlyMessage }, { status: normalized.statusCode });
   }
 }
-

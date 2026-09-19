@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ai, GEMINI_MODELS } from "@/lib/gemini";
+import { executeGeminiRequest, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { withTimeout } from "@/lib/ai-cache";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(_req: NextRequest) {
@@ -25,26 +24,22 @@ export async function POST(_req: NextRequest) {
       );
     }
 
-    // Get up to 5 links that don't have aiSummary
     const links = await prisma.link.findMany({
       where: {
         userId: user.id,
-        OR: [
-          { aiSummary: null },
-          { aiSummary: "" }
-        ]
+        OR: [{ aiSummary: null }, { aiSummary: "" }],
       },
-      take: 5
+      take: 5,
     });
 
     if (links.length === 0) {
       return NextResponse.json({ message: "No links need summarizing", processed: 0 });
     }
 
-    const linksData = links.map(l => ({ id: l.id, title: l.title, description: l.description }));
+    const linksData = links.map((l) => ({ id: l.id, title: l.title, description: l.description }));
 
     const SYSTEM_PROMPT = `
-Anda adalah AI Summarizer.
+Anda adalah AI Summarizer dari Linkora.
 Tugas: Buat ringkasan pendek (1-2 kalimat) dalam bahasa Indonesia untuk masing-masing tautan berikut berdasarkan judul dan deskripsi.
 Input berupa JSON array berisi object { id, title, description }.
 Output HARUS berupa JSON array berisi object { id, aiSummary }.
@@ -52,52 +47,27 @@ Pastikan ID sama dengan input.
 Output murni JSON, tanpa markdown.
 `;
 
-    let responseText: string | null = null;
-    let lastError: any = null;
+    const { data: parsedResponse } = await executeGeminiRequest<any>({
+      contents: [{ role: "user", parts: [{ text: "Input: " + JSON.stringify(linksData) }] }],
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      expectJson: true,
+      timeoutMs: 20000,
+    });
 
-    for (const modelName of GEMINI_MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-            ],
-            config: { responseMimeType: "application/json" }
-          }),
-          20000
-        );
-        if (response.text) {
-          responseText = response.text;
-          break;
-        }
-      } catch (err: any) {
-        console.warn(`Summarize model ${modelName} failed, trying fallback:`, err?.message || err);
-        lastError = err;
-      }
+    if (!parsedResponse || !Array.isArray(parsedResponse)) {
+      return NextResponse.json({ error: "Gagal memproses ringkasan dari server AI" }, { status: 500 });
     }
 
-    if (!responseText) {
-      throw lastError || new Error("Tidak ada respon dari server AI.");
-    }
-
-    let parsedResponse: { id: string, aiSummary: string }[] = [];
-    try {
-      parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
-    } catch (_e) {
-      console.error("Failed to parse Gemini response for summarize");
-      return NextResponse.json({ error: "Gagal memproses keluaran AI" }, { status: 500 });
-    }
-
-    // Update DB with ownership verification
     let updatedCount = 0;
     for (const item of parsedResponse) {
       if (item.id && item.aiSummary) {
-        const targetLink = links.find(l => l.id === item.id);
+        const targetLink = links.find((l) => l.id === item.id);
         if (targetLink) {
           await prisma.link.update({
             where: { id: item.id },
-            data: { aiSummary: item.aiSummary }
+            data: { aiSummary: item.aiSummary },
           });
           updatedCount++;
         }
@@ -105,12 +75,9 @@ Output murni JSON, tanpa markdown.
     }
 
     return NextResponse.json({ message: "Success", processed: updatedCount });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in AI summarize:", error);
-    return NextResponse.json(
-      { error: "Gagal membuat ringkasan otomatis" },
-      { status: 500 }
-    );
+    const normalized = normalizeAiError(error);
+    return NextResponse.json({ error: normalized.friendlyMessage }, { status: normalized.statusCode });
   }
 }
-

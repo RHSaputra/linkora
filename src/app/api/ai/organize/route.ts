@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ai, GEMINI_MODELS } from "@/lib/gemini";
+import { executeGeminiRequest, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { withTimeout } from "@/lib/ai-cache";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(_req: NextRequest) {
@@ -20,8 +19,8 @@ export async function GET(_req: NextRequest) {
     const count = await prisma.link.count({
       where: {
         userId: user.id,
-        category: { in: ["Custom", "Uncategorized", ""] }
-      }
+        category: { in: ["Custom", "Uncategorized", ""] },
+      },
     });
 
     return NextResponse.json({ count });
@@ -50,32 +49,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-
     let body: any = {};
     try {
       body = await req.json();
-    } catch {
-      // Body is empty or not JSON
-    }
+    } catch {}
 
     let links: any[] = [];
 
     if (body?.linkId) {
-      // Target single link
       const singleLink = await prisma.link.findFirst({
-        where: { id: body.linkId, userId: user.id }
+        where: { id: body.linkId, userId: user.id },
       });
       if (singleLink) {
         links = [singleLink];
       }
     } else {
-      // Get up to 20 uncategorized or "Custom" category links
       links = await prisma.link.findMany({
         where: {
           userId: user.id,
-          category: { in: ["Custom", "Uncategorized", ""] }
+          category: { in: ["Custom", "Uncategorized", ""] },
         },
-        take: 20
+        take: 20,
       });
     }
 
@@ -88,7 +82,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const linksData = links.map(l => ({ id: l.id, title: l.title, description: l.description, url: l.url }));
+    const linksData = links.map((l) => ({ id: l.id, title: l.title, description: l.description, url: l.url }));
 
     const SYSTEM_PROMPT = `
 Anda adalah AI Knowledge & Link Organizer cerdas dari Linkora bernama Liko.
@@ -101,40 +95,26 @@ Pastikan ID sama persis dengan input. Kategori harus singkat (1-2 kata).
 Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
 `;
 
-    let responseText: string | null = null;
+    let parsedResponse: { id: string; category: string }[] = [];
 
-    for (const modelName of GEMINI_MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nInput: " + JSON.stringify(linksData) }] }
-            ],
-            config: { responseMimeType: "application/json" }
-          }),
-          15000
-        );
-        if (response?.text) {
-          responseText = response.text;
-          break;
-        }
-      } catch (err: any) {
-        console.warn(`Organize model ${modelName} failed, trying next:`, err?.message || err);
+    try {
+      const { data } = await executeGeminiRequest<any>({
+        contents: [{ role: "user", parts: [{ text: "Input: " + JSON.stringify(linksData) }] }],
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0.2,
+        responseMimeType: "application/json",
+        expectJson: true,
+        timeoutMs: 20000,
+      });
+
+      if (Array.isArray(data)) {
+        parsedResponse = data;
       }
+    } catch (err) {
+      console.warn("AI organize failed, using smart keyword fallback:", err);
     }
 
-    let parsedResponse: { id: string, category: string }[] = [];
-    if (responseText) {
-      try {
-        parsedResponse = JSON.parse(responseText.replace(/```json/g, "").replace(/```/g, "").trim() || "[]");
-      } catch (_e) {
-        console.warn("Failed to parse Gemini JSON output for organize, using smart fallback");
-      }
-    }
-
-    // Smart fallback if AI response was empty or unparseable
-    if (parsedResponse.length === 0) {
+    if (!parsedResponse || parsedResponse.length === 0) {
       const fallbackCategories: Record<string, string> = {
         beasiswa: "Beasiswa",
         scholarship: "Beasiswa",
@@ -183,17 +163,16 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
       });
     }
 
-    // Update DB
     let updatedCount = 0;
     const changes: { title: string; category: string }[] = [];
     for (const item of parsedResponse) {
       if (item.id && item.category && typeof item.category === "string") {
-        const link = linksData.find(l => l.id === item.id);
+        const link = linksData.find((l) => l.id === item.id);
         if (link) {
           const cleanCategory = item.category.trim().slice(0, 50);
           await prisma.link.update({
             where: { id: item.id },
-            data: { category: cleanCategory }
+            data: { category: cleanCategory },
           });
           changes.push({ title: link.title, category: cleanCategory });
           updatedCount++;
@@ -210,10 +189,7 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
     });
   } catch (error: any) {
     console.error("Error in AI organize:", error);
-    return NextResponse.json(
-      { error: "Gagal merapikan kategori tautan" },
-      { status: 500 }
-    );
+    const normalized = normalizeAiError(error);
+    return NextResponse.json({ error: normalized.friendlyMessage }, { status: normalized.statusCode });
   }
 }
-

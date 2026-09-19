@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ai, GEMINI_MODELS } from "@/lib/gemini";
+import { executeGeminiRequest, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { serializeRoadmap } from "@/lib/types";
 import { calculateAutoLayout } from "@/lib/roadmap-layout";
-import { withTimeout } from "@/lib/ai-cache";
-
-function extractJsonString(str: string): string {
-  const clean = str.replace(/```json/gi, "").replace(/```/g, "").trim();
-  const firstOpen = clean.indexOf("{");
-  const lastClose = clean.lastIndexOf("}");
-  if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
-    return clean.substring(firstOpen, lastClose + 1);
-  }
-  return clean;
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,14 +14,9 @@ export async function POST(req: NextRequest) {
     }
     const userId = session.user.id;
 
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY environment variable is not configured.");
-      return NextResponse.json({ error: "Layanan Liko AI belum dikonfigurasi pada server." }, { status: 500 });
-    }
-
-    const limitCheck = await rateLimit(`ai_roadmap_${userId}`, { limit: 10, windowMs: 60 * 1000 });
+    const limitCheck = await rateLimit(`ai_roadmap_${userId}`, { limit: 12, windowMs: 60 * 1000 });
     if (!limitCheck.success) {
-      return NextResponse.json({ error: "Terlalu banyak permintaan AI. Coba lagi sebentar." }, { status: 429 });
+      return NextResponse.json({ error: "Terlalu banyak permintaan AI Roadmap. Coba lagi sebentar." }, { status: 429 });
     }
 
     const body = await req.json();
@@ -42,7 +26,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Topik roadmap wajib diisi" }, { status: 400 });
     }
 
-    // Fetch user's existing links so Gemini can intelligently attach relevant Link nodes if matching
     const userLinks = await prisma.link.findMany({
       where: { userId },
       take: 30,
@@ -87,51 +70,19 @@ ATURAN PENTING:
 3. Hubungkan langkah-langkah secara logis berurutan (0 -> 1 -> 2 -> 3 dst) atau bercabang jika ada tugas paralel.
 4. Jika ada link bookmark user yang relevan, gunakan type "LINK" dan sertakan linkId yang tepat.`;
 
-    let rawText = "";
-    let lastError: any = null;
+    const { data: aiResult } = await executeGeminiRequest<any>({
+      contents: [{ role: "user", parts: [{ text: `Topik user: "${topic.trim()}"` }] }],
+      systemInstruction: systemPrompt,
+      temperature: 0.25,
+      responseMimeType: "application/json",
+      expectJson: true,
+      timeoutMs: 30000,
+    });
 
-    for (const modelName of GEMINI_MODELS) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
-            model: modelName,
-            contents: [
-              { role: "user", parts: [{ text: `${systemPrompt}\n\nTopik user: "${topic.trim()}"` }] },
-            ],
-            config: {
-              temperature: 0.3,
-            },
-          }),
-          25000
-        );
-        rawText = response.text || "";
-        if (rawText.trim()) break;
-      } catch (err: any) {
-        console.warn(`Roadmap AI model ${modelName} failed, trying next fallback:`, err?.message || err);
-        lastError = err;
-      }
-    }
-
-    if (!rawText.trim()) {
-      console.error("All Gemini models failed for roadmap generation:", lastError);
-      return NextResponse.json({ error: "Liko AI gagal terhubung dengan server AI. Silakan coba lagi." }, { status: 500 });
-    }
-
-    const cleanJsonText = extractJsonString(rawText);
-
-    let aiResult: any;
-    try {
-      aiResult = JSON.parse(cleanJsonText);
-    } catch (_err) {
-      console.error("Gagal parse JSON Gemini:", rawText);
-      return NextResponse.json({ error: "Liko AI menghasilkan respon yang tidak valid. Silakan coba lagi." }, { status: 500 });
-    }
-
-    if (!aiResult.nodes || !Array.isArray(aiResult.nodes) || aiResult.nodes.length === 0) {
+    if (!aiResult || !aiResult.nodes || !Array.isArray(aiResult.nodes) || aiResult.nodes.length === 0) {
       return NextResponse.json({ error: "AI tidak dapat menghasilkan langkah untuk topik ini." }, { status: 400 });
     }
 
-    // Prepare temp items for layout engine
     const tempNodes = aiResult.nodes.map((n: any, idx: number) => ({
       id: `temp_${idx}`,
       index: idx,
@@ -143,18 +94,15 @@ ATURAN PENTING:
       targetNodeId: `temp_${e.targetIndex}`,
     }));
 
-    // Calculate non-overlapping layout coordinates
     const layoutedNodes = calculateAutoLayout(tempNodes, tempEdges);
     const layoutMap = new Map<number, { x: number; y: number }>();
     layoutedNodes.forEach((ln) => {
       layoutMap.set(ln.index, { x: ln.positionX, y: ln.positionY });
     });
 
-    // Save to Database
     let roadmapId = existingRoadmapId;
 
     if (!roadmapId) {
-      // Create new roadmap
       const created = await prisma.roadmap.create({
         data: {
           title: aiResult.title || topic.trim(),
@@ -165,14 +113,12 @@ ATURAN PENTING:
       roadmapId = created.id;
     }
 
-    // Create Nodes & Keep Track of DB Node IDs by Index
     const createdNodeIds: string[] = [];
 
     for (let i = 0; i < aiResult.nodes.length; i++) {
       const n = aiResult.nodes[i];
       const pos = layoutMap.get(i) || { x: 80 + (i % 3) * 340, y: 80 + Math.floor(i / 3) * 210 };
 
-      // Verify linkId if provided
       let validLinkId: string | null = null;
       if (n.type === "LINK" && n.linkId) {
         const linkExists = userLinks.some((l) => l.id === n.linkId);
@@ -194,7 +140,6 @@ ATURAN PENTING:
       createdNodeIds.push(node.id);
     }
 
-    // Create Edges
     if (aiResult.edges && Array.isArray(aiResult.edges)) {
       for (const e of aiResult.edges) {
         const sIndex = e.sourceIndex;
@@ -232,6 +177,7 @@ ATURAN PENTING:
     return NextResponse.json(serializeRoadmap(fullRoadmap));
   } catch (error) {
     console.error("POST /api/ai/roadmap-generate error:", error);
-    return NextResponse.json({ error: "Gagal membuat roadmap dengan Liko AI" }, { status: 500 });
+    const normalized = normalizeAiError(error);
+    return NextResponse.json({ error: normalized.friendlyMessage }, { status: normalized.statusCode });
   }
 }
