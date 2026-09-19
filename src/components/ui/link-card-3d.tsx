@@ -331,7 +331,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
           {/* Holographic Border Top */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
-          <div className="relative h-36 sm:h-44 md:h-48 lg:h-52 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
+          <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
             {(imgSrc || fallbackScreenshot) && !imgError ? (
               <img
                 src={imgSrc || fallbackScreenshot || ""}
@@ -357,7 +357,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
             {/* ── TOP-LEFT: CATEGORY BADGE ── */}
             <div className="absolute top-3 left-3 z-10 pointer-events-none" style={{ transform: "translateZ(50px)" }}>
               <span 
-                className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs inline-flex items-center select-none"
+                className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs inline-flex items-center select-none"
                 style={{ color: catColor }}
               >
                 {link.category}
@@ -379,7 +379,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
                 onReminderChange={() => onUpdate()}
                 showLabel={hasActiveReminder}
                 className={cn(
-                  "h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
+                  "h-7 px-2.5 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
                   hasActiveReminder
                     ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
                     : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
@@ -389,21 +389,21 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
           </div>
 
           {/* ── CARD BODY (UNIFORM EQUAL HEIGHT FLEX LAYOUT) ── */}
-          <div className="p-3.5 sm:p-5 md:p-6 flex-1 flex flex-col justify-between space-y-3 sm:space-y-4 z-20" style={{ transform: "translateZ(40px)" }}>
-            <div className="space-y-2.5 sm:space-y-3">
+          <div className="p-4 flex-1 flex flex-col justify-between space-y-3 z-20" style={{ transform: "translateZ(40px)" }}>
+            <div className="space-y-2.5">
               <div className="flex items-start gap-3">
                 {/* Favicon Box */}
-                <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80 mt-0.5">
+                <div className="relative h-9 w-9 shrink-0 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80 mt-0.5">
                   {link.favicon ? (
-                    <img src={link.favicon} alt="" className="h-5 w-5 sm:h-5 sm:w-5 object-contain" />
+                    <img src={link.favicon} alt="" className="h-5 w-5 object-contain" />
                   ) : (
-                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
                   )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-sm sm:text-base md:text-lg leading-snug line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
                       {link.title}
                     </h3>
                     <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
@@ -490,17 +490,17 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
               </div>
 
               {/* Description / AI Summary Reserved Area */}
-              <div className="min-h-[2.5rem] sm:min-h-[3rem] flex items-center pt-0.5">
+              <div className="min-h-[2.25rem] flex items-center pt-0.5">
                 {link.description ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                     {link.description}
                   </p>
                 ) : link.aiSummary ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                     {link.aiSummary}
                   </p>
                 ) : (
-                  <p className="text-[11px] sm:text-xs text-muted-foreground/50 line-clamp-1 italic">
+                  <p className="text-[11px] text-muted-foreground/50 line-clamp-1 italic">
                     {new URL(link.url).hostname.replace('www.', '') ? `Tautan dari ${new URL(link.url).hostname.replace('www.', '')}` : "Informasi tautan tersimpan"}
                   </p>
                 )}
@@ -510,12 +510,12 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
               {link.tags && link.tags.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5 min-h-[1.5rem]">
                   {link.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[10px] sm:text-xs px-2 py-0.5 font-normal rounded-md">
+                    <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal rounded-md">
                       #{tag}
                     </Badge>
                   ))}
                   {link.tags.length > 3 && (
-                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                    <span className="text-[10px] text-muted-foreground font-medium">
                       +{link.tags.length - 3}
                     </span>
                   )}
@@ -524,9 +524,9 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
             </div>
 
             {/* ── CARD FOOTER & ACTIONS ANCHORED AT BOTTOM ── */}
-            <div className="mt-auto space-y-2.5 pt-3 border-t border-border/40">
-              <div className="flex items-center justify-between text-[11px] sm:text-xs text-muted-foreground/80 font-medium tracking-normal">
-                <div className="flex items-center gap-2 truncate max-w-[190px]">
+            <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium tracking-normal">
+                <div className="flex items-center gap-2 truncate max-w-[170px]">
                   <span className="truncate font-mono font-medium text-foreground/70">
                     {new URL(link.url).hostname.replace('www.', '') || link.category}
                   </span>
@@ -536,7 +536,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
                         e.stopPropagation();
                         router.push(`/notes/${existingNote.id}`);
                       }}
-                      className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
+                      className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
                       title={`Catatan Terkait: "${existingNote.title}"`}
                     >
                       <BookOpen className="w-2.5 h-2.5" /> Catatan
@@ -549,12 +549,12 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2.5 pt-1">
+              <div className="flex items-center gap-2 pt-1">
                 <Button 
                   type="button"
                   variant="secondary" 
                   size="sm" 
-                  className="flex-1 text-xs sm:text-sm h-8 sm:h-9 px-3 rounded-xl transition-all active:scale-95 font-semibold cursor-pointer"
+                  className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsViewOpen(true);
@@ -565,7 +565,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
                 <Button 
                   type="button"
                   size="sm" 
-                  className="flex-1 text-xs sm:text-sm h-8 sm:h-9 px-3 rounded-xl transition-all active:scale-95 font-semibold cursor-pointer"
+                  className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleExternalOpen();

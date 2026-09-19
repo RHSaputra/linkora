@@ -67,7 +67,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
       if (!val) handleDismiss();
       else setOpen(true);
     }}>
-      <DialogContent className="sm:max-w-[640px] md:max-w-[700px] p-0 overflow-hidden rounded-[2.5rem] bg-white dark:bg-slate-900 border border-primary/20 shadow-2xl shadow-primary/15 dark:shadow-primary/30">
+      <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-[2.5rem] bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 border border-primary/25 shadow-2xl shadow-primary/15 dark:shadow-primary/30">
         {/* Main Stage with Large Dominant Liko Mascot */}
         <div className="relative w-full pt-10 pb-6 px-6 sm:px-8 text-center bg-gradient-to-b from-primary/15 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/5 dark:to-transparent overflow-hidden">
           {/* Ambient Glow Bubbles */}
