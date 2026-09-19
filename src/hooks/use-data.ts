@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { SerializedLink, DashboardStats, SerializedCollection } from "@/lib/types";
 
 // Simple in-memory cache and request deduplicator
@@ -200,68 +200,29 @@ export function useLinks(
   const filterCollectionId = filters?.collectionId || "";
   const filterSort = filters?.sort || "added";
 
+  const filterKey = `${filterQ}:${filterCategory}:${filterTag}:${filterFavorite}:${filterCollectionId}:${filterSort}:${pageSize}`;
+
   const [page, setPage] = useState(initialPage);
-
-  const initialUrl = useMemo(
-    () => buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort }, initialPage, pageSize),
-    [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, initialPage, pageSize]
-  );
-
-  const [links, setLinks] = useState<SerializedLink[]>(
-    () => (globalCache.get(initialUrl) as LinksPage | undefined)?.items || []
-  );
-  const [loading, setLoading] = useState(() => !globalCache.has(initialUrl));
+  const [links, setLinks] = useState<SerializedLink[]>([]);
+  const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
 
+  const prevFilterKeyRef = useRef(filterKey);
+  const isMountedRef = useRef(false);
+
   const fetchPage = useCallback(
     async (p: number, force = false): Promise<LinksPage | null> => {
-      const url = buildLinksUrl({ q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort }, p, pageSize);
+      const url = buildLinksUrl(
+        { q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort },
+        p,
+        pageSize
+      );
       const data = await fetchWithCache<LinksPage>(url, force);
       return (data as LinksPage) || null;
     },
     [filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize]
   );
-
-  const refresh = useCallback(
-    async (force = false, targetPage?: number) => {
-      setLoading(true);
-      const pToFetch = targetPage ?? page ?? initialPage;
-      try {
-        const d = await fetchPage(pToFetch, force);
-        if (d) {
-          setLinks(d.items);
-          setTotal(d.total);
-          setHasMore(d.hasMore);
-          setPage(pToFetch);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchPage, page, initialPage]
-  );
-
-  const loadMore = useCallback(async () => {
-    if (!hasMore || loading) return;
-    setLoading(true);
-    try {
-      const next = page + 1;
-      const d = await fetchPage(next);
-      if (d) {
-        setLinks((prev) => [...prev, ...d.items]);
-        setTotal(d.total);
-        setHasMore(d.hasMore);
-        setPage(next);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchPage, page, hasMore, loading]);
 
   const goToPage = useCallback(
     async (targetPage: number, force = false) => {
@@ -284,9 +245,62 @@ export function useLinks(
     [fetchPage]
   );
 
+  const refresh = useCallback(
+    async (force = false) => {
+      setLoading(true);
+      try {
+        const d = await fetchPage(page, force);
+        if (d) {
+          setLinks(d.items);
+          setTotal(d.total);
+          setHasMore(d.hasMore);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchPage, page]
+  );
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loading) return;
+    setLoading(true);
+    try {
+      const next = page + 1;
+      const d = await fetchPage(next);
+      if (d) {
+        setLinks((prev) => [...prev, ...d.items]);
+        setTotal(d.total);
+        setHasMore(d.hasMore);
+        setPage(next);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPage, page, hasMore, loading]);
+
   useEffect(() => {
-    if (globalCache.has(initialUrl)) {
-      const cached = globalCache.get(initialUrl) as LinksPage | undefined;
+    let targetPage = page;
+
+    if (isMountedRef.current && prevFilterKeyRef.current !== filterKey) {
+      prevFilterKeyRef.current = filterKey;
+      targetPage = 1;
+      setPage(1);
+    }
+    isMountedRef.current = true;
+
+    const currentUrl = buildLinksUrl(
+      { q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort },
+      targetPage,
+      pageSize
+    );
+
+    if (globalCache.has(currentUrl)) {
+      const cached = globalCache.get(currentUrl) as LinksPage | undefined;
       if (cached) {
         setLinks(cached.items);
         setTotal(cached.total);
@@ -296,10 +310,19 @@ export function useLinks(
     } else {
       setLoading(true);
     }
-    refresh(false, initialPage);
+
+    fetchPage(targetPage).then((d) => {
+      if (d) {
+        setLinks(d.items);
+        setTotal(d.total);
+        setHasMore(d.hasMore);
+        setPage(targetPage);
+      }
+      setLoading(false);
+    });
 
     return subscribeRefresh(() => refresh(true), "links");
-  }, [initialUrl, refresh, initialPage]);
+  }, [filterKey]);
 
   return { links, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
 }
