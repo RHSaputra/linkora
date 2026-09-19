@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
+
 
 import { executeGeminiRequest, executeGeminiStream } from "../src/lib/ai/client";
 
