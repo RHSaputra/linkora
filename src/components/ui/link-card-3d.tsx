@@ -550,30 +550,45 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 pt-1">
-                <Button 
-                  type="button"
-                  variant="secondary" 
-                  size="sm" 
-                  className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsViewOpen(true);
-                  }}
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.92, rotate: -1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  className="flex-1"
                 >
-                  {t("links.overviewBtn")}
-                </Button>
-                <Button 
-                  type="button"
-                  size="sm" 
-                  className="flex-1 text-[11px] h-8 px-2 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleExternalOpen();
-                  }}
+                  <Button 
+                    type="button"
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full text-[11px] h-8 px-2 rounded-xl transition-all font-medium cursor-pointer shadow-xs active:shadow-inner"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsViewOpen(true);
+                    }}
+                  >
+                    {t("links.overviewBtn")}
+                  </Button>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.92, rotate: 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  className="flex-1"
                 >
-                  <span>{t("links.openLinkBtn")}</span>
-                  <ExternalLink className="h-3.5 w-3.5 ml-1" />
-                </Button>
+                  <Button 
+                    type="button"
+                    size="sm" 
+                    className="w-full text-[11px] h-8 px-2 rounded-xl transition-all font-medium cursor-pointer shadow-xs active:shadow-inner"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExternalOpen();
+                    }}
+                  >
+                    <span>{t("links.openLinkBtn")}</span>
+                    <ExternalLink className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </div>
