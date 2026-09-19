@@ -593,12 +593,13 @@ export function LinkCard({
               >
                 <Button 
                   type="button"
-                  variant="secondary" 
+                  variant="outline" 
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl transition-all font-medium cursor-pointer shadow-xs active:shadow-inner"
+                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-primary/25 bg-slate-100 dark:bg-slate-800/80 hover:bg-primary/10 text-primary dark:text-primary-foreground font-semibold shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   onClick={handleCardClick}
                 >
-                  {t("links.overviewBtn")}
+                  <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span>{t("links.overviewBtn")}</span>
                 </Button>
               </motion.div>
 
@@ -611,14 +612,14 @@ export function LinkCard({
                 <Button 
                   type="button"
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl transition-all font-medium cursor-pointer shadow-xs active:shadow-inner"
+                  className="w-full text-[11px] h-8 px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm shadow-primary/25 border border-primary/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleExternalOpen();
                   }}
                 >
                   <span>{t("links.openLinkBtn")}</span>
-                  <ExternalLink className="h-3.5 w-3.5 ml-1" />
+                  <ExternalLink className="h-3.5 w-3.5 text-white/90 shrink-0" />
                 </Button>
               </motion.div>
             </div>
