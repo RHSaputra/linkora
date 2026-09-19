@@ -11,33 +11,63 @@ export interface TextSanitizeOptions {
 }
 
 /**
- * Normalizes text output from AI responses.
- * Cleans extra symbols (*, #, ---, !?) while leaving valid formatting intact.
+ * Context-aware AI Response Normalizer
+ * Preserves URLs, code blocks, shell commands, and code identifiers untouched.
+ * Cleans unwanted decorative headers (# ## ###), decorative lines (---, ===), and redundant symbols.
  */
-export function sanitizeAIResponseText(text: string | null | undefined, options: TextSanitizeOptions = {}): string {
+export function normalizeAIResponse(text: string | null | undefined): string {
   if (!text) return "";
 
-  let cleaned = text.trim();
+  let input = text.trim();
 
-  // Strip JSON markdown wrapper if mistakenly returned as plain text
-  if (cleaned.startsWith("```json")) {
-    cleaned = cleaned.replace(/^```json\s*/i, "").replace(/```$/g, "").trim();
+  // Strip JSON markdown wrapper if present
+  if (input.startsWith("```json")) {
+    input = input.replace(/^```json\s*/i, "").replace(/```$/g, "").trim();
   }
 
-  // Remove decorative markdown headers (# ## ###) if requested or redundant
-  if (options.stripMarkdownHeadings) {
-    cleaned = cleaned.replace(/^(#{1,6})\s+/gm, "");
-  }
+  // Tokenize and protect URLs, fenced code blocks, inline code, and shell commands
+  const protectedTokens: string[] = [];
+  const tokenPlaceholderPrefix = "___LINKORA_PROTECTED_TOKEN_";
 
-  // Remove decorative lines like --- or ===
-  if (options.stripDecorativeSymbols) {
-    cleaned = cleaned.replace(/^[=\-]{3,}\s*$/gm, "");
-  }
+  const addToken = (val: string) => {
+    const idx = protectedTokens.length;
+    protectedTokens.push(val);
+    return `${tokenPlaceholderPrefix}${idx}___`;
+  };
 
-  // Remove excessive blank lines (more than 2 consecutive newlines)
-  cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+  // 1. Protect Fenced Code Blocks (```...```)
+  let processed = input.replace(/```[\s\S]*?```/g, (match) => addToken(match));
 
-  return cleaned.trim();
+  // 2. Protect URLs (http://, https://)
+  processed = processed.replace(/https?:\/\/[^\s<>"{}|\\^`\)]+/gi, (match) => addToken(match));
+
+  // 3. Protect Inline Code (`...`)
+  processed = processed.replace(/`[^`]+`/g, (match) => addToken(match));
+
+  // 4. Remove decorative markdown headers (# ## ###) at start of lines
+  processed = processed.replace(/^(#{1,6})\s+/gm, "");
+
+  // 5. Remove decorative lines like --- or ===
+  processed = processed.replace(/^[=\-]{3,}\s*$/gm, "");
+
+  // 6. Remove excessive blank lines (more than 2 consecutive newlines)
+  processed = processed.replace(/\n{3,}/g, "\n\n");
+
+  // Restore protected tokens
+  protectedTokens.forEach((val, idx) => {
+    const placeholder = `${tokenPlaceholderPrefix}${idx}___`;
+    processed = processed.split(placeholder).join(val);
+  });
+
+  return processed.trim();
+}
+
+/**
+ * Normalizes text output from AI responses.
+ * Cleans extra symbols while leaving valid formatting intact.
+ */
+export function sanitizeAIResponseText(text: string | null | undefined, options: TextSanitizeOptions = {}): string {
+  return normalizeAIResponse(text);
 }
 
 /**
