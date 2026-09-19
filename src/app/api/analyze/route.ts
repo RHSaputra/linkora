@@ -102,7 +102,11 @@ function resolveAndValidateImageUrl(rawUrl: string | undefined | null, baseUrl: 
 }
 
 /**
- * Extract preview image with strict priority rules
+ * Extract preview image with strict priority rules:
+ * 1. og:image / og:image:secure_url
+ * 2. twitter:image / twitter:image:src
+ * 3. JSON-LD image / VideoObject thumbnailUrl / Product image
+ * 4. Main article / body images
  */
 function extractPreviewImage($: cheerio.CheerioAPI, baseUrl: string, jsonLdImages: string[]): PreviewImageInfo | null {
   const candidates: { url: string; alt?: string; source: string }[] = [];
@@ -205,6 +209,10 @@ function extractStructuredJsonLd($: cheerio.CheerioAPI): {
           }
         }
 
+        if (item.thumbnailUrl) {
+          if (typeof item.thumbnailUrl === "string") jsonLdImages.push(item.thumbnailUrl);
+        }
+
         if (itemType === "JobPosting") {
           summaryLines.push(
             `[JSON-LD JOB POSTING]: Title="${item.title || ""}", HiringOrg="${item.hiringOrganization?.name || ""}", DatePosted="${item.datePosted || ""}", ValidThrough="${item.validThrough || ""}", Location="${item.jobLocation?.address?.addressLocality || item.jobLocation?.address?.addressRegion || ""}", EmploymentType="${item.employmentType || ""}", BaseSalary="${item.baseSalary?.value?.value || item.baseSalary?.value || ""}"`
@@ -251,7 +259,7 @@ function extractStructuredJsonLd($: cheerio.CheerioAPI): {
 }
 
 /**
- * Domain, Platform & Category Classifier
+ * Expanded Domain, Platform & Category Classifier
  */
 function detectPlatformAndCategory(
   url: string,
@@ -262,14 +270,17 @@ function detectPlatformAndCategory(
   const lowerUrl = url.toLowerCase();
   const pageTitle = $("title").text().toLowerCase();
 
+  // 1. YouTube & Video
   if (hostname.includes("youtube.com") || hostname.includes("youtu.be") || detectedJsonTypes.includes("VideoObject")) {
     return { platform: "YouTube Video", suggestedCategory: "Video", profile: "VIDEO" };
   }
 
+  // 2. GitHub & Code Repositories
   if (hostname.includes("github.com") || hostname.includes("gitlab.com") || hostname.includes("bitbucket.org")) {
     return { platform: "GitHub Repository", suggestedCategory: "Project", profile: "GITHUB" };
   }
 
+  // 3. Academic & Scientific Research Papers
   if (
     hostname.includes("arxiv.org") ||
     hostname.includes("nature.com") ||
@@ -288,6 +299,7 @@ function detectPlatformAndCategory(
     return { platform: "Jurnal & Paper Ilmiah", suggestedCategory: "Kampus", profile: "PAPER" };
   }
 
+  // 4. Job Listings & Career Portals
   if (
     detectedJsonTypes.includes("JobPosting") ||
     hostname.includes("linkedin.com/jobs") ||
@@ -312,6 +324,7 @@ function detectPlatformAndCategory(
     return { platform: "Portal Lowongan Kerja", suggestedCategory: "Lowongan Kerja", profile: "JOB" };
   }
 
+  // 5. Scholarships & Beasiswa
   if (
     lowerUrl.includes("beasiswa") ||
     lowerUrl.includes("scholarship") ||
@@ -326,6 +339,46 @@ function detectPlatformAndCategory(
     return { platform: "Portal Beasiswa", suggestedCategory: "Beasiswa", profile: "SCHOLARSHIP" };
   }
 
+  // 6. Courses & Online Learning
+  if (
+    detectedJsonTypes.includes("Course") ||
+    hostname.includes("udemy.com") ||
+    hostname.includes("coursera.org") ||
+    hostname.includes("edx.org") ||
+    hostname.includes("dicoding.com") ||
+    hostname.includes("ruangguru.com") ||
+    lowerUrl.includes("/course/") ||
+    pageTitle.includes("kursus") ||
+    pageTitle.includes("online course")
+  ) {
+    return { platform: "Platform Kursus & Pembelajaran", suggestedCategory: "Tutorial", profile: "COURSE" };
+  }
+
+  // 7. Events & Webinars
+  if (
+    detectedJsonTypes.includes("Event") ||
+    hostname.includes("eventbrite.com") ||
+    hostname.includes("meetup.com") ||
+    hostname.includes("lu.ma") ||
+    hostname.includes("agendakota.id") ||
+    lowerUrl.includes("/event/") ||
+    pageTitle.includes("webinar") ||
+    pageTitle.includes("konferensi")
+  ) {
+    return { platform: "Portal Acara & Webinar", suggestedCategory: "Custom", profile: "EVENT" };
+  }
+
+  // 8. Datasets & ML Data Repos
+  if (
+    detectedJsonTypes.includes("Dataset") ||
+    hostname.includes("kaggle.com") ||
+    hostname.includes("huggingface.co/datasets") ||
+    lowerUrl.includes("/dataset")
+  ) {
+    return { platform: "Repository Dataset & ML", suggestedCategory: "Project", profile: "DATASET" };
+  }
+
+  // 9. E-Commerce & Products
   if (
     detectedJsonTypes.includes("Product") ||
     hostname.includes("shopee.") ||
@@ -340,6 +393,7 @@ function detectPlatformAndCategory(
     return { platform: "Platform E-Commerce", suggestedCategory: "Custom", profile: "PRODUCT" };
   }
 
+  // 10. News & Journalism
   if (
     detectedJsonTypes.includes("NewsArticle") ||
     hostname.includes("detik.com") ||
@@ -355,6 +409,7 @@ function detectPlatformAndCategory(
     return { platform: "Media Berita", suggestedCategory: "Custom", profile: "NEWS" };
   }
 
+  // 11. Volunteer Programs
   if (
     hostname.includes("indorelawan.org") ||
     hostname.includes("volunteermatch.org") ||
@@ -367,6 +422,7 @@ function detectPlatformAndCategory(
     return { platform: "Platform Volunteer & Social Action", suggestedCategory: "Custom", profile: "VOLUNTEER" };
   }
 
+  // 12. AI Tools & Platforms
   if (
     hostname.includes("huggingface.co") ||
     hostname.includes("replicate.com") ||
@@ -379,6 +435,7 @@ function detectPlatformAndCategory(
     return { platform: "Direktori & Platform AI", suggestedCategory: "AI Tools", profile: "AI_TOOL" };
   }
 
+  // 13. Technical Documentation & Developer Guides
   if (
     hostname.startsWith("docs.") ||
     hostname.startsWith("developer.") ||
@@ -390,6 +447,11 @@ function detectPlatformAndCategory(
     detectedJsonTypes.includes("SoftwareApplication")
   ) {
     return { platform: "Dokumentasi Teknis & Developer Guide", suggestedCategory: "Tutorial", profile: "TECH_DOC" };
+  }
+
+  // 14. PDFs & Technical Documents
+  if (lowerUrl.endsWith(".pdf") || lowerUrl.includes("/pdf/") || pageTitle.includes(".pdf")) {
+    return { platform: "Dokumen & Report PDF", suggestedCategory: "Custom", profile: "DOCUMENT" };
   }
 
   return { platform: "Web Article & Content", suggestedCategory: "Tutorial", profile: "GENERAL" };
@@ -613,6 +675,71 @@ BEST PRACTICES & CONSTRAINTS:
 
 INFORMASI YANG TIDAK DITEMUKAN:
 (Sebutkan jika lisensi, dokumentasi API lengkap, atau petunjuk setup tidak ditemukan pada halaman. DILARANG MENGARANG DATA)
+`;
+
+    case "COURSE":
+      return `
+PROFIL DEEP EXTRACTION: KURSUS & PEMBELAJARAN (${platform})
+Struktur Catatan Wajib:
+IDENTITAS KURSUS:
+(Nama Kursus, Penyelenggara/Platform, Instruktur/Pengajar, Tingkat Kesulitan, Bahasa)
+
+TOPIK & MATERI PEMBELAJARAN:
+(Garis besar kurikulum, modul utama, skill yang dipelajari)
+
+PRASYARAT & HARGA:
+(Pengetahuan dasar yang diminta, Harga/Skema Gratis/Berbayar, Akses Sertifikat)
+
+INFORMASI YANG TIDAK DITEMUKAN:
+(Sebutkan jika durasi detail, instruktur, atau prasyarat tidak tertera pada halaman. DILARANG MENGARANG DATA)
+`;
+
+    case "EVENT":
+      return `
+PROFIL DEEP EXTRACTION: EVENT & WEBINAR (${platform})
+Struktur Catatan Wajib:
+IDENTITAS EVENT:
+(Nama Acara, Penyelenggara, Waktu & Tanggal, Lokasi Online/Onsite)
+
+PEMBICARA & AGENDA UTAMA:
+(Daftar narasumber, topik pembahasan, susunan acara)
+
+TIKET & CARA PENDAFTARAN:
+(Harga Tiket/Gratis, Batas Akhir Registrasi, Link Formulir)
+
+INFORMASI YANG TIDAK DITEMUKAN:
+(Sebutkan jika daftar pembicara, harga tiket, atau lokasi pasti tidak tertera pada halaman. DILARANG MENGARANG DATA)
+`;
+
+    case "DOCUMENT":
+      return `
+PROFIL DEEP EXTRACTION: DOKUMEN & LAPORAN (${platform})
+Struktur Catatan Wajib:
+IDENTITAS DOKUMEN:
+(Judul Dokumen, Institusi/Penulis, Tanggal Terbit, Jenis Dokumen)
+
+RINGKASAN EKSEKUTIF & TEMUAN UTAMA:
+(Tujuan dokumen, fakta kunci, hasil analisis utama)
+
+REKOMENDASI & INSIGHT:
+(Langkah strategis, rekomendasi kebijakan, poin penting untuk disimpan)
+
+INFORMASI YANG TIDAK DITEMUKAN:
+(Sebutkan jika tanggal, penulis, atau lampiran tidak ditemukan pada halaman. DILARANG MENGARANG DATA)
+`;
+
+    case "DATASET":
+      return `
+PROFIL DEEP EXTRACTION: DATASET & REPOSITORY DATA (${platform})
+Struktur Catatan Wajib:
+IDENTITAS DATASET:
+(Nama Dataset, Publisher/Author, Ukuran & Format Data, Lisensi Data)
+
+DESKRIPSI DATA & POTENSI USE CASE:
+(Fitur/Kolom utama, domain masalah, kecocokan penggunaan ML/AI)
+
+INFORMASI YANG TIDAK DITEMUKAN:
+(Sebutkan jika lisensi, ukuran file, atau struktur kolom tidak tertera pada halaman. DILARANG MENGARANG DATA)
 `;
 
     case "PRODUCT":
