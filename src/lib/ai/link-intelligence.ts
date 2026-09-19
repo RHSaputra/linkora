@@ -1061,7 +1061,18 @@ export async function analyzeUrlWithLinkIntelligence(
     console.warn("Fetch attempt 1 failed:", error?.message || error);
   }
 
-  if (!html || html.trim().length < 50) {
+  const isCloudflareChallenge = (text: string) => {
+    if (!text) return true;
+    const lower = text.toLowerCase();
+    return (
+      lower.includes("<title>just a moment...</title>") ||
+      lower.includes("cf-browser-verification") ||
+      lower.includes("attention required! | cloudflare") ||
+      lower.includes("enable javascript and cookies to continue")
+    );
+  };
+
+  if (!html || html.trim().length < 50 || isCloudflareChallenge(html)) {
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
         timeoutMs: 10000,
@@ -1076,7 +1087,28 @@ export async function analyzeUrlWithLinkIntelligence(
     }
   }
 
-  if (!html || html.trim().length < 50) {
+  if (!html || html.trim().length < 50 || isCloudflareChallenge(html)) {
+    try {
+      const jinaTarget = `https://r.jina.ai/${parsedUrl.toString()}`;
+      const validatedJina = await validateSafeExternalUrl(jinaTarget);
+      const res = await fetch(validatedJina.toString(), {
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data?.content) {
+          const title = json.data.title || "";
+          const desc = json.data.description || "";
+          const content = json.data.content || "";
+          html = `<!DOCTYPE html><html><head><title>${title}</title><meta name="description" content="${desc}"></head><body><h1>${title}</h1><p>${desc}</p><div>${content}</div></body></html>`;
+        }
+      }
+    } catch (jinaErr: any) {
+      console.warn("Reader proxy fallback attempt failed:", jinaErr?.message || jinaErr);
+    }
+  }
+
+  if (!html || html.trim().length < 50 || isCloudflareChallenge(html)) {
     throw new Error(
       "Halaman web tidak dapat diakses atau konten tidak tersedia untuk dibaca. Pastikan link bersifat publik, aktif, dan tidak dilindungi captcha."
     );
