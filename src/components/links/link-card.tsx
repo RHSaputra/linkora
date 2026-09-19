@@ -595,11 +595,10 @@ export function LinkCard({
                   type="button"
                   variant="outline" 
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-primary/25 bg-slate-100 dark:bg-slate-800/80 hover:bg-primary/10 text-primary dark:text-primary-foreground font-semibold shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-primary/25 bg-slate-100 dark:bg-slate-800/80 hover:bg-primary/10 text-primary dark:text-primary-foreground font-semibold shadow-xs transition-all cursor-pointer flex items-center justify-center"
                   onClick={handleCardClick}
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>{t("links.overviewBtn")}</span>
+                  {t("links.overviewBtn")}
                 </Button>
               </motion.div>
 
