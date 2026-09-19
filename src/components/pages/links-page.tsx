@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { useViewMode } from "@/hooks/use-view-mode";
 import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
+import { usePageStateRestoration } from "@/hooks/use-page-state-restoration";
 
 interface LinksPageProps {
   refreshKey: number;
@@ -36,6 +37,13 @@ function getPageNumbers(current: number, total: number): (number | string)[] {
 export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPageProps) {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useViewMode();
+  const { getSavedState, savePageState, restoreScrollPos } = usePageStateRestoration("links");
+
+  // Read saved state on mount (page, display mode, scroll position)
+  const savedStateRef = useRef(getSavedState());
+  const initialPage = savedStateRef.current.page && savedStateRef.current.page > 0 ? savedStateRef.current.page : 1;
+  const initialMode = savedStateRef.current.displayMode || "paginated";
+
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [category, setCategory] = useState("all");
@@ -45,9 +53,14 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
   const { tags } = useTags();
 
   // Pagination & Display Mode State (Default: 12 cards per page)
-  const [displayMode, setDisplayMode] = useState<"paginated" | "all">("paginated");
-  const [aiPage, setAiPage] = useState(1);
+  const [displayMode, setDisplayModeState] = useState<"paginated" | "all">(initialMode);
+  const [aiPage, setAiPage] = useState(initialPage);
   const gridTopRef = useRef<HTMLDivElement>(null);
+
+  const setDisplayMode = (mode: "paginated" | "all") => {
+    setDisplayModeState(mode);
+    savePageState({ displayMode: mode });
+  };
 
   // AI Search state
   const [aiResults, setAiResults] = useState<SerializedLink[] | null>(null);
@@ -100,7 +113,6 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
         setAiResults(data.items || []);
         setAiExplanation(null);
       }
-      setAiPage(1);
     } catch (err: any) {
       if (err.name !== "AbortError") {
         setAiResults(null);
@@ -123,11 +135,6 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
     }
   }, [query]);
 
-  // Reset AI page when filters change
-  useEffect(() => {
-    setAiPage(1);
-  }, [category, tag, favoriteOnly, sort]);
-
   // Regular search (used when query is NOT natural language)
   const isNL = isNaturalLanguageQuery(debouncedQuery);
   const { links, loading, refresh, loadMore, goToPage, page, hasMore, total } = useLinks(
@@ -138,7 +145,7 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
       favorite: favoriteOnly,
       sort,
     },
-    { pageSize: displayMode === "paginated" ? 12 : 100 }
+    { pageSize: displayMode === "paginated" ? 12 : 100, initialPage }
   );
 
   useEffect(() => {
@@ -158,6 +165,20 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
 
   const currentPage = isAiActive ? aiPage : page;
 
+  // Save current page state
+  useEffect(() => {
+    if (currentPage > 0) {
+      savePageState({ page: currentPage, displayMode });
+    }
+  }, [currentPage, displayMode, savePageState]);
+
+  // Restore scroll position after results finished loading
+  useEffect(() => {
+    if (!isLoadingResults && (isAiActive ? (aiResults?.length ?? 0) > 0 : links.length > 0)) {
+      restoreScrollPos(100);
+    }
+  }, [isLoadingResults, isAiActive, aiResults?.length, links.length, restoreScrollPos]);
+
   // Filter links based on display mode
   const displayLinks = (
     displayMode === "paginated" && isAiActive
@@ -167,6 +188,14 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
+    savePageState({ page: newPage, scrollPos: 0 });
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("page", newPage.toString());
+      window.history.replaceState(null, "", url.toString());
+    }
+
     if (isAiActive) {
       setAiPage(newPage);
     } else {

@@ -23,6 +23,7 @@ import { QuickReminderPopover } from "@/components/reminders/quick-reminder-popo
 import { LikoNoteConverterModal } from "@/components/links/liko-note-converter-modal";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { saveCurrentScrollPosition } from "@/hooks/use-page-state-restoration";
 
 import { LinkViewMode } from "@/hooks/use-view-mode";
 
@@ -106,6 +107,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
   };
 
   const handleExternalOpen = async () => {
+    saveCurrentScrollPosition("links");
     await openLink(link);
     onUpdate();
   };
@@ -121,7 +123,10 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
         className="group relative w-full"
       >
         <div
-          onClick={() => setIsViewOpen(true)}
+          onClick={() => {
+            saveCurrentScrollPosition("links");
+            setIsViewOpen(true);
+          }}
           className="glass-panel rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/40 border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
         >
           {/* Left: Favicon / Icon + Details */}

@@ -32,6 +32,7 @@ import { QuickReminderPopover } from "@/components/reminders/quick-reminder-popo
 import { LikoNoteConverterModal } from "@/components/links/liko-note-converter-modal";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { saveCurrentScrollPosition } from "@/hooks/use-page-state-restoration";
 
 import { LinkViewMode } from "@/hooks/use-view-mode";
 
@@ -94,10 +95,12 @@ export function LinkCard({
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    saveCurrentScrollPosition("links");
     setIsViewOpen(true);
   };
 
   const handleExternalOpen = async () => {
+    saveCurrentScrollPosition("links");
     await openLink(link);
     onUpdate?.();
   };
