@@ -107,7 +107,7 @@ export function AddNodeDialog({ open, onOpenChange, onSubmit }: AddNodeDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-primary/25 sm:max-w-lg bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl backdrop-blur-2xl rounded-3xl">
+      <DialogContent className="border-primary/20 sm:max-w-xl md:max-w-2xl bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl backdrop-blur-2xl rounded-3xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading font-bold text-foreground">
             {t("roadmaps.addNode")}

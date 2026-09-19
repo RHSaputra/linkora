@@ -196,7 +196,7 @@ export function LikoNoteConverterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden border border-border/80 bg-background/95 backdrop-blur-xl shadow-2xl rounded-3xl">
+      <DialogContent className="sm:max-w-[680px] md:max-w-[740px] p-0 overflow-hidden border border-primary/20 bg-white dark:bg-slate-900 backdrop-blur-2xl shadow-2xl rounded-3xl">
         <div className="relative">
           {/* Confetti canvas */}
           <canvas

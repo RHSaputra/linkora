@@ -94,10 +94,10 @@ export function AddLinksToCollectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{locale === "en" ? "Manage Collection Links" : "Tambah / Hapus Tautan"}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl bg-white dark:bg-slate-900 border border-primary/20 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+        <DialogHeader className="space-y-1.5">
+          <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">{locale === "en" ? "Manage Collection Links" : "Tambah / Hapus Tautan"}</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             {locale === "en" ? `Organize links included in the collection ` : `Atur tautan yang masuk ke dalam koleksi `}
             <strong>{collection.name}</strong>.
           </DialogDescription>

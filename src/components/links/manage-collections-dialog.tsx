@@ -86,10 +86,10 @@ export function ManageCollectionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("links.manageCollection")}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-xl md:max-w-2xl bg-white dark:bg-slate-900 border border-primary/20 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+        <DialogHeader className="space-y-1.5">
+          <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">{t("links.manageCollection")}</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             {locale === "en" ? "Select which collections should include this link." : "Pilih koleksi mana saja yang menyimpan tautan ini."}
           </DialogDescription>
         </DialogHeader>

@@ -389,10 +389,10 @@ export function AddLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChangeRequest}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader>
-          <DialogTitle>{editLink ? t("links.modalEditTitle") : t("links.modalAddTitle")}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[760px] bg-white dark:bg-slate-900 border border-primary/20 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+        <DialogHeader className="space-y-1.5">
+          <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">{editLink ? t("links.modalEditTitle") : t("links.modalAddTitle")}</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
             {t("links.modalAddDesc")}
           </DialogDescription>
         </DialogHeader>

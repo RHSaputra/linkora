@@ -53,10 +53,10 @@ export function ViewLinkDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[720px] max-h-[90vh] flex flex-col overflow-hidden p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl leading-snug">{link.title}</DialogTitle>
-            {link.description && <DialogDescription className="mt-2 text-sm">{link.description}</DialogDescription>}
+        <DialogContent className="sm:max-w-[820px] md:max-w-[880px] max-h-[90vh] flex flex-col overflow-hidden p-6 sm:p-8 bg-white dark:bg-slate-900 border border-primary/20 rounded-3xl shadow-2xl backdrop-blur-2xl space-y-4">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-bold font-heading leading-snug">{link.title}</DialogTitle>
+            {link.description && <DialogDescription className="mt-1 text-sm text-muted-foreground">{link.description}</DialogDescription>}
           </DialogHeader>
 
           <div className="space-y-5 mt-2 flex-1 min-h-0 overflow-y-auto pr-1.5">

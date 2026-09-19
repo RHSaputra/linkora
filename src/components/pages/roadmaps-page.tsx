@@ -380,19 +380,19 @@ export function RoadmapsPage() {
 
       {/* Create Roadmap Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="border-primary/25 sm:max-w-md bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+        <DialogContent className="border-primary/20 sm:max-w-xl md:max-w-2xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground">
               {t("roadmaps.createTitle")}
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground">
               {t("roadmaps.createDesc")}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateSubmit} className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
+          <form onSubmit={handleCreateSubmit} className="space-y-5 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-foreground">
                 Judul Roadmap <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -400,36 +400,39 @@ export function RoadmapsPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Contoh: Deploy Website ke Production, Belajar Next.js"
                 required
-                className="bg-background/80 text-sm"
+                className="h-11 sm:h-12 px-4 text-sm sm:text-base rounded-xl bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 transition-colors"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-foreground">
                 Deskripsi (Opsional)
               </Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Tuliskan tujuan atau gambaran singkat dari alur kerja ini..."
-                rows={3}
-                className="bg-background/80 text-xs"
+                rows={4}
+                className="min-h-[100px] p-3 sm:p-4 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 transition-colors"
               />
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-3 gap-2 sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
+                size="lg"
                 onClick={() => setCreateDialogOpen(false)}
                 disabled={isSubmitting}
+                className="h-11 px-5 rounded-xl font-bold text-sm cursor-pointer"
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
+                size="lg"
                 disabled={!title.trim() || isSubmitting}
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md cursor-pointer"
               >
                 {isSubmitting ? t("common.saving") : t("common.create")}
               </Button>
@@ -440,51 +443,54 @@ export function RoadmapsPage() {
 
       {/* Edit Roadmap Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="border-primary/25 sm:max-w-md bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-heading font-bold text-foreground">
+        <DialogContent className="border-primary/20 sm:max-w-xl md:max-w-2xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground">
               Edit Roadmap
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleEditSubmit} className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
+          <form onSubmit={handleEditSubmit} className="space-y-5 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-foreground">
                 Judul Roadmap <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="bg-background/80 text-sm"
+                className="h-11 sm:h-12 px-4 text-sm sm:text-base rounded-xl bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 transition-colors"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-foreground">
                 Deskripsi
               </Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="bg-background/80 text-xs"
+                rows={4}
+                className="min-h-[100px] p-3 sm:p-4 text-sm rounded-xl bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 transition-colors"
               />
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-3 gap-2 sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
+                size="lg"
                 onClick={() => setEditDialogOpen(false)}
                 disabled={isSubmitting}
+                className="h-11 px-5 rounded-xl font-bold text-sm cursor-pointer"
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
+                size="lg"
                 disabled={!title.trim() || isSubmitting}
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md cursor-pointer"
               >
                 {isSubmitting ? t("common.saving") : t("common.saveChanges")}
               </Button>

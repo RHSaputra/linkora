@@ -926,17 +926,17 @@ export function NotesPage() {
 
       {/* Create / Edit Folder Dialog */}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-        <DialogContent className="sm:max-w-md border-primary/25 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="sm:max-w-xl md:max-w-2xl border-primary/20 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl space-y-5">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">
               {editingFolder
                 ? (locale === "en" ? "Edit Note Folder" : "Edit Folder Catatan")
                 : (locale === "en" ? "Create Note Folder" : "Buat Folder Catatan")}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSaveFolder} className="space-y-4 py-2">
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+          <form onSubmit={handleSaveFolder} className="space-y-5 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-foreground mb-1.5 block">
                 {locale === "en" ? "Folder Name" : "Nama Folder"}
               </label>
               <Input
@@ -945,6 +945,7 @@ export function NotesPage() {
                 onChange={(e) => setFolderName(e.target.value)}
                 autoFocus
                 required
+                className="h-11 sm:h-12 px-4 text-sm sm:text-base rounded-xl bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 transition-colors"
               />
             </div>
 

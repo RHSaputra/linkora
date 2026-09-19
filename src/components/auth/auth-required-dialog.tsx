@@ -54,7 +54,7 @@ export function AuthRequiredDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[460px] p-6 sm:p-8 rounded-[2.5rem] border-primary/30 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl shadow-primary/20 backdrop-blur-2xl">
+      <DialogContent className="sm:max-w-[580px] md:max-w-[640px] p-6 sm:p-8 rounded-[2.5rem] border border-primary/20 bg-white dark:bg-slate-900 shadow-2xl shadow-primary/20 backdrop-blur-2xl space-y-5">
         <DialogHeader className="text-center sm:text-center pb-2">
           {/* Liko Mascot Avatar with Ambient Rings */}
           <div className="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">

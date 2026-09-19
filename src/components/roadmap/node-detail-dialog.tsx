@@ -75,7 +75,7 @@ export function NodeDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl p-6 rounded-3xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card shadow-2xl space-y-5 overflow-hidden">
+        <DialogContent className="sm:max-w-2xl md:max-w-3xl p-6 sm:p-8 rounded-3xl border border-primary/20 bg-white dark:bg-slate-900 shadow-2xl space-y-6 overflow-hidden">
           <DialogHeader className="space-y-3 text-left">
             {/* Badges & Status Selector Row */}
             <div className="flex items-center justify-between gap-3 flex-wrap">

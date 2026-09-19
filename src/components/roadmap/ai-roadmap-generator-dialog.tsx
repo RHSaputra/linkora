@@ -94,7 +94,7 @@ export function AIRoadmapGeneratorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-primary/30 sm:max-w-2xl bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 p-6 sm:p-8 space-y-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
+      <DialogContent className="border-primary/20 sm:max-w-2xl md:max-w-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6 shadow-2xl backdrop-blur-2xl rounded-3xl">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-md bg-background shrink-0">

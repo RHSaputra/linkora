@@ -886,21 +886,21 @@ export function CollectionsPage({
 
       {/* ── DIALOG: BUAT/EDIT KOLEKSI TAUTAN ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 border border-primary/20 shadow-2xl backdrop-blur-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading text-foreground">{t("collections.modalCreateTitle")}</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">{t("collections.modalCreateDesc")}</DialogDescription>
+        <DialogContent className="sm:max-w-xl md:max-w-2xl rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-primary/20 shadow-2xl backdrop-blur-2xl space-y-5">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">{t("collections.modalCreateTitle")}</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">{t("collections.modalCreateDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5 pt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="col-name" className="text-xs font-bold text-foreground">{t("collections.nameLabel")}</Label>
+            <div className="space-y-2">
+              <Label htmlFor="col-name" className="text-sm font-bold text-foreground">{t("collections.nameLabel")}</Label>
               <Input
                 id="col-name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t("collections.namePlaceholder")}
-                className="rounded-xl text-xs h-10 bg-background/80 focus-visible:ring-primary/50"
+                className="rounded-xl text-sm sm:text-base h-11 sm:h-12 px-4 bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus-visible:ring-primary/50"
               />
             </div>
 
@@ -995,25 +995,25 @@ export function CollectionsPage({
 
       {/* ── DIALOG: BUAT/EDIT KOLEKSI CATATAN ── */}
       <Dialog open={noteFolderDialogOpen} onOpenChange={setNoteFolderDialogOpen}>
-        <DialogContent className="sm:max-w-[440px] rounded-3xl p-6 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 border border-cyan-500/20 shadow-2xl backdrop-blur-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading text-foreground">
+        <DialogContent className="sm:max-w-xl md:max-w-2xl rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-cyan-500/20 shadow-2xl backdrop-blur-2xl space-y-5">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-xl sm:text-2xl font-bold font-heading text-foreground">
               {editingNoteFolder ? t("collections.modalEditNoteFolderTitle") : t("collections.modalCreateNoteFolderTitle")}
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground">
               {t("collections.modalCreateNoteFolderDesc")}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveNoteFolder} className="space-y-5 pt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="note-folder-name" className="text-xs font-bold text-foreground">{t("collections.nameLabel")}</Label>
+            <div className="space-y-2">
+              <Label htmlFor="note-folder-name" className="text-sm font-bold text-foreground">{t("collections.nameLabel")}</Label>
               <Input
                 id="note-folder-name"
                 value={noteFolderName}
                 onChange={(e) => setNoteFolderName(e.target.value)}
                 placeholder={t("collections.namePlaceholder")}
-                className="rounded-xl text-xs h-10 bg-background/80 focus-visible:ring-cyan-500/50"
+                className="rounded-xl text-sm sm:text-base h-11 sm:h-12 px-4 bg-slate-50 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus-visible:ring-cyan-500/50"
               />
             </div>
 

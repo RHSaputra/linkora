@@ -277,7 +277,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-[580px] max-h-[90vh] overflow-y-auto p-4 sm:p-8 rounded-2xl sm:rounded-3xl border-primary/25 bg-slate-50/98 dark:bg-slate-900/98 sm:bg-white sm:dark:bg-slate-900/98 shadow-2xl backdrop-blur-2xl">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-[680px] md:max-w-[740px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-primary/20 bg-white dark:bg-slate-900 shadow-2xl backdrop-blur-2xl space-y-5">
         <DialogHeader className="pb-4 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
