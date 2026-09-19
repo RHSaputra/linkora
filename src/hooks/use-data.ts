@@ -82,7 +82,7 @@ export function subscribeRefresh(
   cb: () => void,
   resource?: RefreshResource
 ) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === "undefined") return () => { };
   const handler = (e: Event) => {
     const detail = (e as CustomEvent<{ resources?: RefreshResource[] }>).detail;
     if (detail == null) {
@@ -260,6 +260,27 @@ export function useLinks(
     }
   }, [fetchPage, page, hasMore, loading]);
 
+  const goToPage = useCallback(
+    async (targetPage: number, force = false) => {
+      if (targetPage < 1) return;
+      setLoading(true);
+      try {
+        const d = await fetchPage(targetPage, force);
+        if (d) {
+          setLinks(d.items);
+          setTotal(d.total);
+          setHasMore(d.hasMore);
+          setPage(targetPage);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchPage]
+  );
+
   useEffect(() => {
     if (globalCache.has(firstUrl)) {
       const cached = globalCache.get(firstUrl) as LinksPage | undefined;
@@ -277,7 +298,7 @@ export function useLinks(
     return subscribeRefresh(() => refresh(true), "links");
   }, [firstUrl, refresh]);
 
-  return { links, loading, refresh, loadMore, hasMore, total, setLinks };
+  return { links, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
 }
 
 export function useCollections() {
@@ -291,8 +312,8 @@ export function useCollections() {
       if (Array.isArray(data)) {
         setCollections(data);
       }
-    } catch(e) {
-       console.error(e);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -409,9 +430,9 @@ export async function openLink(link: SerializedLink) {
 export async function toggleFavorite(link: SerializedLink): Promise<SerializedLink | null> {
   const res = await fetch(`/api/links/${link.id}/favorite`, { method: "POST" });
   if (res.ok) {
-     const data = await res.json();
-     invalidateAndRefresh(["links", "dashboard"]);
-     return data;
+    const data = await res.json();
+    invalidateAndRefresh(["links", "dashboard"]);
+    return data;
   }
   const data = await res.json().catch(() => ({}));
   const msg = data.error || "Gagal mengubah status favorit";

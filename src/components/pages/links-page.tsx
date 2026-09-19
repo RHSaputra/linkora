@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link2, Zap } from "lucide-react";
+import { Link2, Zap, ChevronLeft, ChevronRight, Eye, Layers } from "lucide-react";
 import { LinkCard } from "@/components/links/link-card";
 import { SearchBar, isNaturalLanguageQuery } from "@/components/links/search-bar";
 import { useLinks, useTags } from "@/hooks/use-data";
@@ -20,6 +20,19 @@ interface LinksPageProps {
   openEditLink: (link: SerializedLink) => void;
 }
 
+function getPageNumbers(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, "...", total];
+  }
+  if (current >= total - 3) {
+    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, "...", current - 1, current, current + 1, "...", total];
+}
+
 export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPageProps) {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useViewMode();
@@ -30,6 +43,11 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [sort, setSort] = useState<"added" | "edited" | "opened">("added");
   const { tags } = useTags();
+
+  // Pagination & Display Mode State (Default: 12 cards per page)
+  const [displayMode, setDisplayMode] = useState<"paginated" | "all">("paginated");
+  const [aiPage, setAiPage] = useState(1);
+  const gridTopRef = useRef<HTMLDivElement>(null);
 
   // AI Search state
   const [aiResults, setAiResults] = useState<SerializedLink[] | null>(null);
@@ -46,7 +64,6 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
 
   // AI Search effect — triggers when debounced query is a natural language query
   const performAiSearch = useCallback(async (q: string) => {
-    // Cancel any in-flight AI request
     if (aiAbortRef.current) {
       aiAbortRef.current.abort();
     }
@@ -80,10 +97,10 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
         setAiResults(data.items || []);
         setAiExplanation(data.explanation || null);
       } else {
-        // Fallback results from server — still show them but mark as non-AI
         setAiResults(data.items || []);
         setAiExplanation(null);
       }
+      setAiPage(1);
     } catch (err: any) {
       if (err.name !== "AbortError") {
         setAiResults(null);
@@ -106,27 +123,59 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
     }
   }, [query]);
 
+  // Reset AI page when filters change
+  useEffect(() => {
+    setAiPage(1);
+  }, [category, tag, favoriteOnly, sort]);
+
   // Regular search (used when query is NOT natural language)
   const isNL = isNaturalLanguageQuery(debouncedQuery);
-  const { links, loading, refresh, loadMore, hasMore, total } = useLinks(
+  const { links, loading, refresh, loadMore, goToPage, page, hasMore, total } = useLinks(
     {
-      q: isNL ? undefined : debouncedQuery, // Skip regular search if AI is handling it
+      q: isNL ? undefined : debouncedQuery,
       category: category === "all" ? undefined : category,
       tag: tag || undefined,
       favorite: favoriteOnly,
       sort,
     },
-    { pageSize: 24 }
+    { pageSize: displayMode === "paginated" ? 12 : 100 }
   );
 
   useEffect(() => {
     if (refreshKey > 0) refresh(true);
   }, [refreshKey, refresh]);
 
-  // Determine which results to display safely with fallback array
-  const displayLinks = (isNL && aiResults !== null ? aiResults : links) || [];
-  const displayTotal = isNL && aiResults !== null ? aiResults.length : (total ?? displayLinks.length);
-  const isLoadingResults = isNL ? isAiSearching : loading;
+  // Calculate Display Items & Pagination Metrics
+  const isAiActive = isNL && aiResults !== null;
+  const rawLinks = isAiActive ? aiResults : links;
+  const displayTotal = isAiActive ? aiResults.length : (total ?? rawLinks.length);
+  const isLoadingResults = isAiActive ? isAiSearching : loading;
+
+  const pageSize = 12;
+  const totalPages = isAiActive
+    ? Math.max(1, Math.ceil(aiResults.length / pageSize))
+    : Math.max(1, Math.ceil(displayTotal / pageSize));
+
+  const currentPage = isAiActive ? aiPage : page;
+
+  // Filter links based on display mode
+  const displayLinks = (
+    displayMode === "paginated" && isAiActive
+      ? aiResults.slice((aiPage - 1) * pageSize, aiPage * pageSize)
+      : rawLinks
+  ) || [];
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    if (isAiActive) {
+      setAiPage(newPage);
+    } else {
+      goToPage(newPage);
+    }
+    if (gridTopRef.current) {
+      gridTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -144,7 +193,39 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
           </p>
         </div>
 
-        <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          {/* Quick Mode Switcher Pill (12 Per Halaman vs Lihat Semua) */}
+          {displayTotal > 12 && (
+            <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-xl border border-border/60 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setDisplayMode("paginated")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg transition-all cursor-pointer select-none",
+                  displayMode === "paginated"
+                    ? "bg-background text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("links.modePaginated")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayMode("all")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg transition-all cursor-pointer select-none",
+                  displayMode === "all"
+                    ? "bg-background text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("links.modeAll")}
+              </button>
+            </div>
+          )}
+
+          <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
       </motion.div>
 
       {/* Quick Filter Pill Switcher Tabs with Animated Glow & Sliding Indicator */}
@@ -174,7 +255,6 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
                     className="absolute inset-0 rounded-full bg-primary shadow-sm shadow-primary/30 z-[-1]"
                     transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   >
-                    {/* Glowing animated ring around the active button */}
                     <div className="absolute -inset-[2px] rounded-full bg-gradient-to-r from-primary via-indigo-400 to-purple-500 opacity-65 blur-[2px] animate-pulse z-[-1]" />
                   </motion.div>
                 )}
@@ -197,6 +277,9 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
         tags={tags}
         isAiSearching={isAiSearching}
       />
+
+      {/* Anchor for smooth scroll target when changing pages */}
+      <div ref={gridTopRef} className="scroll-mt-6" />
 
       {/* AI Explanation Banner */}
       <AnimatePresence>
@@ -236,7 +319,8 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
             ))}
           </div>
 
-          {!isNL && hasMore && (
+          {/* Load More Button in View All Mode */}
+          {displayMode === "all" && !isNL && hasMore && (
             <div className="flex justify-center mt-8">
               <button
                 type="button"
@@ -246,6 +330,113 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
               >
                 {loading ? t("common.loading") : t("links.loadMore")}
               </button>
+            </div>
+          )}
+
+          {/* Pagination Controls Bar & View All Toggle */}
+          {displayTotal > 0 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl glass-panel bg-card/80 border border-border/70 shadow-sm backdrop-blur-md">
+              {/* Range Information */}
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+                {displayMode === "paginated" && displayTotal > 12 ? (
+                  <span>
+                    {t("links.showingRange", {
+                      start: (currentPage - 1) * pageSize + 1,
+                      end: Math.min(currentPage * pageSize, displayTotal),
+                      total: displayTotal,
+                    })}
+                  </span>
+                ) : (
+                  <span>{t("links.countSaved", { count: displayTotal })}</span>
+                )}
+              </div>
+
+              {/* Center Pagination Navigation Controls */}
+              {displayMode === "paginated" && totalPages > 1 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1">
+                  {/* Previous Button */}
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1 || isLoadingResults}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-muted text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 cursor-pointer select-none"
+                    title={t("links.previousPage")}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("links.previousPage")}</span>
+                  </button>
+
+                  {/* Page Numbers */}
+                  {getPageNumbers(currentPage, totalPages).map((p, idx) => {
+                    if (p === "...") {
+                      return (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground select-none">
+                          ...
+                        </span>
+                      );
+                    }
+                    const pageNum = p as number;
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => handlePageChange(pageNum)}
+                        disabled={isLoadingResults}
+                        className={cn(
+                          "relative min-w-[34px] h-[34px] px-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer select-none flex items-center justify-center",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
+                            : "bg-background/80 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages || isLoadingResults}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-muted text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 cursor-pointer select-none"
+                    title={t("links.nextPage")}
+                  >
+                    <span className="hidden sm:inline">{t("links.nextPage")}</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* View All / Paginated Toggle Button */}
+              {displayTotal > 12 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayMode(displayMode === "paginated" ? "all" : "paginated")}
+                    className={cn(
+                      "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer select-none shadow-xs active:scale-95",
+                      displayMode === "all"
+                        ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+                        : "bg-background hover:bg-muted border-border text-foreground"
+                    )}
+                  >
+                    {displayMode === "paginated" ? (
+                      <>
+                        <Eye className="h-3.5 w-3.5 text-primary" />
+                        <span>{t("links.viewAllLinks", { count: displayTotal })}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Layers className="h-3.5 w-3.5 text-primary" />
+                        <span>{t("links.viewPaginated")}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>
