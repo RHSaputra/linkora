@@ -4,10 +4,15 @@ import { LinkoraAiError, normalizeAiError } from "./errors";
 import { parseAIStructuredJson, sanitizeAIResponseText } from "./sanitizer";
 
 /**
- * Single Shared Gemini Client Instance across Linkora.
- * ALL AI features (Chat, Link Analysis, Roadmap, Search, Organize, Summarize, Tags) MUST use this client.
+ * Get or create GoogleGenAI Client dynamically.
+ * This guarantees process.env.GEMINI_API_KEY is read dynamically on request execution.
  */
-export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+export function getAiClient(): GoogleGenAI {
+  const apiKey = process.env.GEMINI_API_KEY || "";
+  return new GoogleGenAI({ apiKey });
+}
+
+export const ai = getAiClient();
 
 /**
  * Utility helper to apply a strict execution timeout to promises.
@@ -42,16 +47,14 @@ export interface GeminiRequestOptions {
 
 /**
  * Central Shared Request Engine for Non-Streaming Gemini API Calls
- * - Handles automatic model fallback looping across standardized production models
- * - Handles timeout control
- * - Normalizes errors
- * - Sanitizes / parses response outputs
  */
 export async function executeGeminiRequest<T = string>(options: GeminiRequestOptions): Promise<{ data: T; modelUsed: GeminiModelName }> {
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim().length === 0) {
     throw new LinkoraAiError("GEMINI_API_KEY belum dikonfigurasi pada server.", "AI_AUTH_ERROR", 500);
   }
 
+  const client = getAiClient();
   const timeoutMs = options.timeoutMs ?? AI_CONFIG.timeouts.standard;
   let lastError: any = null;
 
@@ -74,7 +77,7 @@ export async function executeGeminiRequest<T = string>(options: GeminiRequestOpt
       }
 
       const response = await withTimeout(
-        ai.models.generateContent({
+        client.models.generateContent({
           model: modelName,
           contents: options.contents,
           config,
@@ -114,15 +117,17 @@ export async function executeGeminiStream(options: {
   temperature?: number;
   maxOutputTokens?: number;
 }): Promise<{ stream: any; modelUsed: GeminiModelName }> {
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim().length === 0) {
     throw new LinkoraAiError("GEMINI_API_KEY belum dikonfigurasi pada server.", "AI_AUTH_ERROR", 500);
   }
 
+  const client = getAiClient();
   let lastError: any = null;
 
   for (const modelName of GEMINI_MODELS) {
     try {
-      const responseStream = await ai.models.generateContentStream({
+      const responseStream = await client.models.generateContentStream({
         model: modelName,
         contents: options.contents,
         config: {
