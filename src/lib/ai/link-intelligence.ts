@@ -61,7 +61,7 @@ function getRandomUserAgent(): string {
  */
 export function extractUrlsFromTextMessage(text: string): string[] {
   if (!text || typeof text !== "string") return [];
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`]+|www\.[^\s<>"{}|\\^`]+)/gi;
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`]+|www\.[^\s<>"{}|\\^`]+|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+(?:com|org|net|edu|gov|mil|io|ai|co|id|me|dev|app|info|biz|site|tech|store|link|xyz|online|page|is|tv|cc|so|sh|to)(?::\d+)?(?:\/[^\s<>"{}|\\^`]*)?)/gi;
   const matches = text.match(urlRegex) || [];
 
   const cleanedUrls: string[] = [];

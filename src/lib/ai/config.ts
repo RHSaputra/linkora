@@ -8,7 +8,7 @@ export const AI_CONFIG = {
   
   /**
    * Standardized Production Models List in Order of Preference
-   * Primary: gemini-3.6-flash (Active flagship model)
+   * Primary: gemini-3.6-flash (Active flagship production model)
    * Fallbacks: gemini-3.5-flash-lite, gemini-2.5-flash
    */
   models: {

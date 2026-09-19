@@ -12,7 +12,6 @@ export function getAiClient(): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
-export const ai = getAiClient();
 
 /**
  * Utility helper to apply a strict execution timeout to promises.
@@ -111,12 +110,13 @@ export async function executeGeminiRequest<T = string>(options: GeminiRequestOpt
 
 /**
  * Central Shared Request Engine for Streaming Gemini API Calls (used by Liko AI Chat)
+ * Validates the first chunk before returning to guarantee fallback on 429 / Rate-Limits.
  */
 export async function executeGeminiStream(options: {
   contents: any[];
   temperature?: number;
   maxOutputTokens?: number;
-}): Promise<{ stream: any; modelUsed: GeminiModelName }> {
+}): Promise<{ stream: AsyncIterable<{ text?: string }>; modelUsed: GeminiModelName }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.trim().length === 0) {
     throw new LinkoraAiError("GEMINI_API_KEY belum dikonfigurasi pada server.", "AI_AUTH_ERROR", 500);
@@ -136,9 +136,21 @@ export async function executeGeminiStream(options: {
         },
       });
 
-      if (responseStream) {
-        return { stream: responseStream, modelUsed: modelName as GeminiModelName };
+      const iterator = responseStream[Symbol.asyncIterator]();
+      const firstResult = await iterator.next();
+
+      async function* wrappedStream() {
+        if (firstResult.value) {
+          yield firstResult.value;
+        }
+        while (true) {
+          const nextRes = await iterator.next();
+          if (nextRes.done) break;
+          if (nextRes.value) yield nextRes.value;
+        }
       }
+
+      return { stream: wrappedStream(), modelUsed: modelName as GeminiModelName };
     } catch (err: any) {
       console.warn(`Stream model ${modelName} failed:`, err?.message || err);
       lastError = err;
