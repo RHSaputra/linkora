@@ -41,6 +41,7 @@ export function LinkoraAIChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [savedNoteMsgIds, setSavedNoteMsgIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,6 +50,15 @@ export function LinkoraAIChat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // Auto-resize textarea height as message text changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const newHeight = Math.min(Math.max(40, textareaRef.current.scrollHeight), 140);
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [message]);
 
   // Dynamically update the initial greeting when the user switches locale
   useEffect(() => {
@@ -467,25 +477,34 @@ export function LinkoraAIChat() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-border bg-card">
-              <div className="flex gap-2 items-center relative">
-                <input
-                  type="text"
+            <div className="p-3 sm:p-4 border-t border-border bg-card">
+              <div className="flex items-end gap-2 relative bg-background/80 border border-border rounded-2xl p-1.5 focus-within:ring-2 focus-within:ring-primary/50 transition-all shadow-sm">
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
                   placeholder={locale === "en" ? "Ask anything or paste URL to save..." : "Tanya atau paste URL untuk simpan..."}
-                  className="flex-1 bg-background/80 border border-border rounded-full pl-4 pr-12 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground shadow-sm transition-all"
+                  className="flex-1 bg-transparent border-0 resize-none px-3 py-2 text-base sm:text-sm focus:outline-none text-foreground placeholder:text-muted-foreground min-h-[40px] max-h-[140px] leading-relaxed overflow-y-auto scrollbar-thin"
                 />
                 <button
                   type="button"
                   onClick={handleSend}
                   disabled={!message.trim()}
-                  className="absolute right-2 w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover active:scale-90 disabled:opacity-0 disabled:scale-75 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
+                  className="shrink-0 w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary-hover active:scale-90 disabled:opacity-0 disabled:scale-75 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation mb-0.5"
                   aria-label={locale === "en" ? "Send Message" : "Kirim Pesan"}
                 >
                   <Send className="w-4 h-4 ml-0.5" />
                 </button>
+              </div>
+              <div className="text-[10px] text-muted-foreground/60 text-right mt-1 px-1 hidden sm:block">
+                {locale === "en" ? "Press Enter to send, Shift + Enter for new line" : "Tekan Enter untuk kirim, Shift + Enter untuk baris baru"}
               </div>
             </div>
           </motion.div>

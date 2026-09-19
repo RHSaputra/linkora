@@ -47,8 +47,8 @@ export function normalizeAIResponse(text: string | null | undefined): string {
   // 4. Remove decorative markdown headers (# ## ###) at start of lines
   processed = processed.replace(/^(#{1,6})\s+/gm, "");
 
-  // 5. Remove decorative lines like --- or ===
-  processed = processed.replace(/^[=\-]{3,}\s*$/gm, "");
+  // 5. Remove decorative divider lines (---, ***, ___, ===)
+  processed = processed.replace(/^[\=\-\*\_]{3,}\s*$/gm, "");
 
   // 6. Remove excessive blank lines (more than 2 consecutive newlines)
   processed = processed.replace(/\n{3,}/g, "\n\n");
@@ -66,7 +66,7 @@ export function normalizeAIResponse(text: string | null | undefined): string {
  * Normalizes text output from AI responses.
  * Cleans extra symbols while leaving valid formatting intact.
  */
-export function sanitizeAIResponseText(text: string | null | undefined, options: TextSanitizeOptions = {}): string {
+export function sanitizeAIResponseText(text: string | null | undefined, _options: TextSanitizeOptions = {}): string {
   return normalizeAIResponse(text);
 }
 
@@ -81,7 +81,7 @@ export function parseAIStructuredJson<T = any>(text: string | null | undefined):
     return JSON.parse(text);
   } catch {}
 
-  let cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+  const cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
   try {
     return JSON.parse(cleaned);
   } catch {}
@@ -118,3 +118,4 @@ export function parseAIStructuredJson<T = any>(text: string | null | undefined):
 
   return null;
 }
+
