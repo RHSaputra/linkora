@@ -328,14 +328,14 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
       </AnimatePresence>
 
       {isLoadingResults ? (
-        <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
+        <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
           {[...Array(6)].map((_, i) => (
-            <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-xl animate-pulse" : "h-40 bg-muted rounded-xl animate-pulse"} />
+            <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-xl animate-pulse" : "h-64 bg-muted rounded-2xl animate-pulse"} />
           ))}
         </div>
       ) : displayLinks.length > 0 ? (
         <>
-          <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"}>
+          <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
             {displayLinks.map((link, i) => (
               <LinkCard
                 key={link.id}
