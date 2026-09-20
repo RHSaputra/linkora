@@ -2108,7 +2108,7 @@ function EditorToolbar({
   if (!editor) return null;
 
   return (
-    <div className="flex items-center sm:flex-wrap overflow-x-auto sm:overflow-x-visible scrollbar-none gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full relative lg:sticky lg:top-[76px] z-10 transition-all">
+    <div className="flex items-center sm:flex-wrap overflow-x-auto sm:overflow-x-visible scrollbar-none gap-1 p-1.5 bg-card/95 border border-border/80 rounded-2xl mb-4 backdrop-blur-xl shadow-xs max-w-full sticky top-0 z-20 transition-all">
       {/* History */}
       <MenuButton
         onClick={() => editor.chain().focus().undo().run()}
@@ -2883,8 +2883,8 @@ export function NoteEditor({
       <div
         ref={deskContainerRef}
         className={cn(
-          "w-full rounded-2xl transition-colors min-h-[620px] relative overflow-hidden",
-          isPageView ? "bg-neutral-100/90 dark:bg-neutral-900/90 py-6 sm:py-10 px-2 sm:px-4 flex justify-center shadow-inner overflow-x-auto" : ""
+          "w-full rounded-2xl transition-colors relative overflow-y-auto max-h-[calc(100vh-14rem)] sm:max-h-[calc(100vh-16rem)] min-h-[500px] scrollbar-thin scrollbar-thumb-border/60",
+          isPageView ? "bg-neutral-100/90 dark:bg-neutral-900/90 py-6 sm:py-10 px-2 sm:px-4 flex justify-center shadow-inner" : ""
         )}
       >
         {isPageView ? (
