@@ -56,7 +56,7 @@ export function Showcase() {
                 <div className="w-32 bg-gray-900/60 rounded-xl p-2.5 border border-white/5 flex flex-col justify-between shrink-0 hidden sm:flex">
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                      <Bookmark className="w-3.5 h-3.5" /> Linkora
+                      <Bookmark className="w-3.5 h-3.5" /> <LinkoraText />
                     </div>
                     <div className="space-y-1 pt-2">
                       <div className="text-[10px] px-2 py-1 rounded bg-primary/20 text-primary font-medium flex items-center gap-1">
@@ -152,7 +152,7 @@ export function Showcase() {
               <div className="space-y-2.5 pt-3">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-primary flex items-center gap-1">
-                    <Bookmark className="w-3.5 h-3.5" /> Linkora
+                    <Bookmark className="w-3.5 h-3.5" /> <LinkoraText />
                   </div>
                   <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">
                     U

@@ -95,3 +95,25 @@ export function LinkorianText({
     </span>
   );
 }
+
+export function FormatBrandText({ text, className = "" }: { text: string; className?: string }) {
+  if (!text) return null;
+
+  const regex = /(Linkorian|Linkora)/gi;
+  const parts = text.split(regex);
+
+  return (
+    <span className={className}>
+      {parts.map((part, index) => {
+        const lower = part.toLowerCase();
+        if (lower === 'linkorian') {
+          return <LinkorianText key={index} className={className} />;
+        } else if (lower === 'linkora') {
+          return <LinkoraText key={index} className={className} />;
+        }
+        return part;
+      })}
+    </span>
+  );
+}
+

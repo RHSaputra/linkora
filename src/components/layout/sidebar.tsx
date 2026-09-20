@@ -27,7 +27,7 @@ import {
   GitFork,
 } from "lucide-react";
 import { playNotificationSound, requestWebNotificationPermission } from "@/lib/notification-service";
-import { LinkoraText } from "@/components/ui/linkora-text";
+import { LinkoraText, FormatBrandText } from "@/components/ui/linkora-text";
 import { cn } from "@/lib/utils";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { Button } from "@/components/ui/button";
@@ -505,7 +505,7 @@ function NavContent({
                   {t("auth.logoutConfirmTitle")}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  {t("auth.logoutConfirmDesc")}
+                  <FormatBrandText text={t("auth.logoutConfirmDesc")} />
                 </DialogDescription>
               </div>
             </div>

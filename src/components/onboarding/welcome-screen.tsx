@@ -38,7 +38,7 @@ export function OnboardingWelcomeScreen() {
             Halo <LinkorianText />, Selamat datang di <LinkoraText />
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-            Mari jelajahi fitur-fitur canggih Linkora, termasuk analisis AI otomatis, pembuat catatan cerdas, roadmap visual, pengingat, dan Asisten Liko AI.
+            Mari jelajahi fitur-fitur canggih <LinkoraText />, termasuk analisis AI otomatis, pembuat catatan cerdas, roadmap visual, pengingat, dan Asisten Liko AI.
           </p>
         </div>
 

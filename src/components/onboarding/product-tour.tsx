@@ -8,6 +8,7 @@ import { OnboardingWelcomeScreen } from "@/components/onboarding/welcome-screen"
 import { OnboardingSkipConfirm } from "@/components/onboarding/skip-confirm";
 import { ONBOARDING_STEPS } from "@/lib/onboarding-state";
 import { getPrevStep } from "@/lib/onboarding-state";
+import { LinkoraText } from "@/components/ui/linkora-text";
 
 interface TargetRect {
   top: number;
@@ -118,7 +119,7 @@ function CompletionScreen({
             Kamu siap menjelajah!
           </h2>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            Selamat menggunakan Linkora. Simpan tautan, ubah menjadi catatan pribadi, rancang roadmap visual, dan biarkan Liko AI membantu alur kerjamu.
+            Selamat menggunakan <LinkoraText />. Simpan tautan, ubah menjadi catatan pribadi, rancang roadmap visual, dan biarkan Liko AI membantu alur kerjamu.
           </p>
         </div>
         <div className="px-8 pb-8">
@@ -126,7 +127,7 @@ function CompletionScreen({
             onClick={onComplete}
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
           >
-            Mulai Menggunakan Linkora
+            Mulai Menggunakan <LinkoraText />
           </button>
         </div>
       </motion.div>

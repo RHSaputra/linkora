@@ -36,9 +36,11 @@ export function CTA() {
               </span>
             </h2>
             <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {locale === "en"
-                ? "Start building your clean, intelligent, synchronized knowledge and link repository with Linkora today."
-                : "Mulai bangun sistem arsip dan pengetahuan pribadi yang rapi, cerdas, dan tersinkronisasi bersama Linkora hari ini."}
+              {locale === "en" ? (
+                <>Start building your clean, intelligent, synchronized knowledge and link repository with <LinkoraText /> today.</>
+              ) : (
+                <>Mulai bangun sistem arsip dan pengetahuan pribadi yang rapi, cerdas, dan tersinkronisasi bersama <LinkoraText /> hari ini.</>
+              )}
             </p>
             
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">

@@ -7,6 +7,7 @@ import { invalidateAndRefresh } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { FormatBrandText } from "@/components/ui/linkora-text";
 
 const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
 
@@ -383,7 +384,7 @@ export function LinkoraAIChat() {
                           : "bg-card/90 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-sm border border-border/60"
                       }`}
                     >
-                      {msg.content}
+                      <FormatBrandText text={msg.content} />
                     </div>
 
                     {/* Quick Capture action buttons for messages with detected URLs */}
