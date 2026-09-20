@@ -367,7 +367,7 @@ export function AddLinkDialog({
           requestWebNotificationPermission().catch(() => {});
           scheduleCapacitorLocalNotification({
             id: Math.abs(savedData.id.split("").reduce((a: number, b: string) => ((a << 5) - a) + b.charCodeAt(0), 0)),
-            title: `⏰ Pengingat: ${savedData.title || "Tautan Linkora"}`,
+            title: `⏰ Pengingat: ${savedData.title || "Tautan Linkorian"}`,
             body: `Waktunya meninjau tautan: ${savedData.url}`,
             scheduleDate: new Date(savedData.reminderAt),
             url: savedData.url,

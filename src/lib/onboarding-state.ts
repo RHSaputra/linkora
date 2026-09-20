@@ -23,7 +23,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     targetId: "dashboard",
     title: "Beranda Utama",
     description:
-      "Pusat aktivitas utama kamu. Dapatkan ringkasan statistik tautan, catatan, dan akses cepat ke seluruh fitur Linkora.",
+      "Pusat aktivitas utama kamu. Dapatkan ringkasan statistik tautan, catatan, dan akses cepat ke seluruh fitur Linkorian.",
     placement: "right",
   },
   {

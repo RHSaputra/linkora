@@ -35,8 +35,8 @@ export function LinkoraAIChat() {
       id: "1", 
       role: "ai", 
       content: locale === "en"
-        ? "Hi Linkorian! I'm Liko, your personal Linkora assistant. Ask me anything about your saved links, notes, or categories!"
-        : "Hai Linkorian! Aku Liko, asisten Linkora-mu. Aku siap membantumu mengelola tautan, catatan, dan berbagai hal lain. Tanya apa saja seputar tautan, kategori, atau hal lain yang bisa kubantu ya!" 
+        ? "Hi Linkorian! I'm Liko, your personal Linkorian assistant. Ask me anything about your saved links, notes, or categories!"
+        : "Hai Linkorian! Aku Liko, asisten Linkorian-mu. Aku siap membantumu mengelola tautan, catatan, dan berbagai hal lain. Tanya apa saja seputar tautan, kategori, atau hal lain yang bisa kubantu ya!" 
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -70,8 +70,8 @@ export function LinkoraAIChat() {
             ...m,
             content:
               locale === "en"
-                ? "Hi Linkorian! I'm Liko, your personal Linkora assistant. Ask me anything about your saved links, notes, or categories!"
-                : "Hai Linkorian! Aku Liko, asisten Linkora-mu. Aku siap membantumu mengelola tautan, catatan, dan berbagai hal lain. Tanya apa saja seputar tautan, kategori, atau hal lain yang bisa kubantu ya!",
+                ? "Hi Linkorian! I'm Liko, your personal Linkorian assistant. Ask me anything about your saved links, notes, or categories!"
+                : "Hai Linkorian! Aku Liko, asisten Linkorian-mu. Aku siap membantumu mengelola tautan, catatan, dan berbagai hal lain. Tanya apa saja seputar tautan, kategori, atau hal lain yang bisa kubantu ya!",
           };
         }
         return m;
@@ -311,7 +311,7 @@ export function LinkoraAIChat() {
               <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-background bg-background shadow-inner flex items-center justify-center">
                 <img 
                   src="/maskot.jpeg" 
-                  alt="Linkora AI Mascot" 
+                  alt="Linkorian AI Mascot" 
                   className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-300"
                 />
               </div>
@@ -339,7 +339,7 @@ export function LinkoraAIChat() {
                 <div className="relative w-10 h-10 rounded-full border border-primary/30 overflow-hidden shadow-md bg-background flex-shrink-0">
                   <img 
                     src="/maskot.jpeg" 
-                    alt="Linkora AI" 
+                    alt="Linkorian AI" 
                     className="w-full h-full object-cover object-top"
                   />
                 </div>

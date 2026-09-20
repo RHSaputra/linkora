@@ -83,7 +83,7 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-5 space-y-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start">
-              <img src="/logo.png" alt="Linkora Logo" className="h-12 w-auto object-contain" />
+              <img src="/logo.png" alt="Linkorian Logo" className="h-12 w-auto object-contain" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto md:mx-0">
               {locale === "en"

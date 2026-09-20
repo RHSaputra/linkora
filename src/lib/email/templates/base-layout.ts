@@ -73,8 +73,8 @@ export function renderBaseLayout({
                 <tr>
                   <td align="center" style="background-color: #090d16; padding: 28px 20px;">
                     <a href="${cleanAppUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
-                      <!-- Official Linkora Logo Banner -->
-                      <img class="header-logo" src="${logoBannerUrl}" alt="Linkora" width="165" style="display: block; width: 165px; max-width: 100%; height: auto; margin: 0 auto;" />
+                      <!-- Official Linkorian Logo Banner -->
+                      <img class="header-logo" src="${logoBannerUrl}" alt="Linkorian" width="165" style="display: block; width: 165px; max-width: 100%; height: auto; margin: 0 auto;" />
                     </a>
                   </td>
                 </tr>
@@ -109,13 +109,13 @@ export function renderBaseLayout({
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="font-size: 11px; line-height: 18px; color: #94a3b8; text-align: center;">
-                    <p style="margin: 0 0 6px;">Email resmi ini dikirim otomatis oleh sistem keamanan <strong>Linkora</strong>.</p>
+                    <p style="margin: 0 0 6px;">Email resmi ini dikirim otomatis oleh sistem keamanan <strong>Linkorian</strong>.</p>
                     <p style="margin: 0 0 6px;">
                       <a href="${cleanAppUrl}" style="color: #6366f1; text-decoration: none; font-weight: 600;">linkorian.online</a> |
                       <a href="${cleanAppUrl}/privacy" style="color: #64748b; text-decoration: none;">Kebijakan Privasi</a> |
                       <a href="mailto:supportlinkorian@gmail.com" style="color: #64748b; text-decoration: none;">Bantuan</a>
                     </p>
-                    <p style="margin: 0; color: #cbd5e1;">&copy; ${currentYear} Linkora. All rights reserved.</p>
+                    <p style="margin: 0; color: #cbd5e1;">&copy; ${currentYear} Linkorian. All rights reserved.</p>
                   </td>
                 </tr>
               </table>

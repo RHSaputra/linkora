@@ -60,7 +60,7 @@ export function AIOrb() {
         >
           <img 
             src="/maskot.jpeg" 
-            alt="Linkora AI" 
+            alt="Linkorian AI" 
             className="w-full h-full object-cover object-top"
           />
         </motion.div>

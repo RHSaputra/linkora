@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
             <div className="absolute inset-0 z-20">
               <img
                 src="/icon.jpg"
-                alt="Linkora Logo"
+                alt="Linkorian Logo"
                 className="absolute inset-0 w-full h-full object-cover z-30 pointer-events-none"
               />
             </div>

@@ -164,8 +164,8 @@ export async function scheduleCapacitorLocalNotification(options: {
     if (Capacitor.getPlatform() === "android") {
       await LocalNotifications.createChannel({
         id: "linkora_reminders",
-        name: "Pengingat Linkora",
-        description: "Notifikasi jadwal pengingat tautan dan catatan Linkora",
+        name: "Pengingat Linkorian",
+        description: "Notifikasi jadwal pengingat tautan dan catatan Linkorian",
         importance: 5, // HIGH importance for heads-up alerts
         visibility: 1,
         vibration: true,

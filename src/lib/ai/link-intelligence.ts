@@ -1014,7 +1014,7 @@ Platform / Domain: ${data.platform} (${data.hostname})
 Penulis/Publisher: ${data.author || "Tidak tertera"}
 Tanggal Publikasi: ${data.publishedDate || "Tidak tertera"}
 Deadline/Batas Waktu: ${data.deadline ? new Date(data.deadline).toLocaleString("id-ID") : "Tidak tertera"}
-Catatan Ekstraksi Faktual Linkora:
+Catatan Ekstraksi Faktual Linkorian:
 ${data.notes || "Tidak ada catatan tambahan"}
 
 === ATURAN STRICT UNTUK AI CHAT PADA TAUTAN INI ===
@@ -1128,7 +1128,7 @@ export async function analyzeUrlWithLinkIntelligence(
   );
 
   const SYSTEM_PROMPT = `
-Anda adalah Senior AI Universal Link Intelligence Engine & Knowledge Extraction Specialist dari Linkora.
+Anda adalah Senior AI Universal Link Intelligence Engine & Knowledge Extraction Specialist dari Linkorian.
 
 HASIL KLASIFIKASI KATEGORI TERVERIFIKASI (BUKTI UTAMA):
 Kategori: ${classification.category}

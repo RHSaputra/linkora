@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const linksData = links.map((l) => ({ id: l.id, title: l.title, description: l.description, url: l.url }));
 
     const SYSTEM_PROMPT = `
-Anda adalah AI Knowledge & Link Organizer cerdas dari Linkora bernama Liko.
+Anda adalah AI Knowledge & Link Organizer cerdas dari Linkorian bernama Liko.
 Tugas: Analisis judul, deskripsi, dan URL tautan berikut, lalu tentukan kategori yang paling tepat, spesifik, dan rapi untuk masing-masing tautan.
 Contoh Kategori: Tech, Design, Productivity, Business, Education, Entertainment, Tutorial, Artikel, Loker, Beasiswa, Finance, Tools, Career, News, Social Media, Health, Lifestyle.
 Gunakan huruf kapital di awal kata (contoh: Tech, Design).

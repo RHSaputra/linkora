@@ -8,7 +8,7 @@ export function renderPasswordResetEmail({
   appUrl,
   currentYear,
 }: PasswordResetTemplateProps): { subject: string; html: string; text: string } {
-  const subject = "Atur Ulang Password Akun Linkora";
+  const subject = "Atur Ulang Password Akun Linkorian";
   const greeting = userName ? `Halo Linkorian, ${escapeHtml(userName)}` : "Halo Linkorian";
 
   const content = `
@@ -21,7 +21,7 @@ export function renderPasswordResetEmail({
     </p>
 
     <p style="margin: 0 0 20px; font-size: 15px; line-height: 24px; color: #334155;">
-      Kami menerima permintaan untuk mengatur ulang kata sandi akun <strong>Linkora</strong> Anda. Jika Anda yang meminta perubahan ini, silakan klik tombol di bawah untuk membuat kata sandi baru yang aman:
+      Kami menerima permintaan untuk mengatur ulang kata sandi akun <strong>Linkorian</strong> Anda. Jika Anda yang meminta perubahan ini, silakan klik tombol di bawah untuk membuat kata sandi baru yang aman:
     </p>
 
     <!-- CTA Button (PAS TENGAH) -->
@@ -61,7 +61,7 @@ export function renderPasswordResetEmail({
       Salam hangat,
     </p>
     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a;">
-      Tim Linkora
+      Tim Linkorian
     </p>
 
     <!-- Fallback URL -->

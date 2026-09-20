@@ -691,7 +691,7 @@ export async function exportToDocx(
       ],
     },
     title,
-    creator: "Linkora Notes",
+    creator: "Linkorian Notes",
     styles: {
       default: {
         document: {

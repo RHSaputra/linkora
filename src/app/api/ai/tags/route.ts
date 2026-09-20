@@ -44,7 +44,7 @@ export async function POST(_req: NextRequest) {
     }));
 
     const SYSTEM_PROMPT = `
-Anda adalah AI Tagger dari Linkora.
+Anda adalah AI Tagger dari Linkorian.
 Tugas: Hasilkan 3-5 tag yang relevan untuk setiap tautan berdasarkan judul, deskripsi, dan kategorinya.
 Input berupa JSON array berisi object { id, title, description, category }.
 Output HARUS berupa JSON array berisi object { id, tags }. tags adalah array of string.

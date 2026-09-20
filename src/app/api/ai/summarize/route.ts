@@ -39,7 +39,7 @@ export async function POST(_req: NextRequest) {
     const linksData = links.map((l) => ({ id: l.id, title: l.title, description: l.description }));
 
     const SYSTEM_PROMPT = `
-Anda adalah AI Summarizer dari Linkora.
+Anda adalah AI Summarizer dari Linkorian.
 Tugas: Buat ringkasan pendek (1-2 kalimat) dalam bahasa Indonesia untuk masing-masing tautan berikut berdasarkan judul dan deskripsi.
 Input berupa JSON array berisi object { id, title, description }.
 Output HARUS berupa JSON array berisi object { id, aiSummary }.

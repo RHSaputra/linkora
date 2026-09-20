@@ -8,7 +8,7 @@ export function renderWelcomeEmail({
   appUrl = process.env.APP_URL || "https://linkorian.online",
   currentYear,
 }: WelcomeTemplateProps): { subject: string; html: string; text: string } {
-  const subject = "Selamat datang di Linkora!";
+  const subject = "Selamat datang di Linkorian!";
   const actionUrl = loginUrl || `${appUrl.replace(/\/$/, "")}/dashboard`;
 
   // Format greeting safely: avoid undefined, null, Guest, User123
@@ -18,8 +18,8 @@ export function renderWelcomeEmail({
   }
 
   const welcomeHeadline = displayName
-    ? `Halo Linkorian, ${escapeHtml(displayName)}! Selamat datang di Linkora.`
-    : "Halo Linkorian! Selamat datang di Linkora.";
+    ? `Halo Linkorian, ${escapeHtml(displayName)}! Selamat datang di Linkorian.`
+    : "Halo Linkorian! Selamat datang di Linkorian.";
 
   const content = `
     <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 30px;">
@@ -82,7 +82,7 @@ export function renderWelcomeEmail({
             <tr>
               <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
                 <a href="${actionUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.3px; text-align: center;">
-                  BUKA RUANG KERJA LINKORA
+                  BUKA RUANG KERJA LINKORIAN
                 </a>
               </td>
             </tr>
@@ -97,7 +97,7 @@ export function renderWelcomeEmail({
       Salam hangat,
     </p>
     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a;">
-      Tim Linkora
+      Tim Linkorian
     </p>
   `;
 

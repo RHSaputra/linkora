@@ -8,7 +8,7 @@ export function renderVerificationOtpEmail({
   appUrl,
   currentYear,
 }: VerificationOtpTemplateProps): { subject: string; html: string; text: string } {
-  const subject = "Kode verifikasi akun Linkora";
+  const subject = "Kode verifikasi akun Linkorian";
   const greeting = userName ? `Halo Linkorian, ${escapeHtml(userName)}` : "Halo Linkorian";
 
   const content = `
@@ -21,7 +21,7 @@ export function renderVerificationOtpEmail({
     </p>
 
     <p style="margin: 0 0 20px; font-size: 15px; line-height: 24px; color: #334155;">
-      Terima kasih telah bergabung di <strong>Linkora</strong>. Gunakan 6-digit kode verifikasi berikut untuk mengaktifkan akun Anda:
+      Terima kasih telah bergabung di <strong>Linkorian</strong>. Gunakan 6-digit kode verifikasi berikut untuk mengaktifkan akun Anda:
     </p>
 
     <!-- OTP Display Box -->
@@ -44,7 +44,7 @@ export function renderVerificationOtpEmail({
     </div>
 
     <p style="margin: 0 0 24px; font-size: 14px; line-height: 22px; color: #64748b;">
-      Jika Anda tidak merasa mendaftar di Linkora, silakan abaikan email ini dengan aman.
+      Jika Anda tidak merasa mendaftar di Linkorian, silakan abaikan email ini dengan aman.
     </p>
 
     <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0 20px;" />
@@ -53,7 +53,7 @@ export function renderVerificationOtpEmail({
       Salam hangat,
     </p>
     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a;">
-      Tim Linkora
+      Tim Linkorian
     </p>
   `;
 

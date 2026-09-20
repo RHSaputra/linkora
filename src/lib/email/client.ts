@@ -18,7 +18,7 @@ const simulatedInbox: SimulatedEmail[] = [];
  */
 export async function sendRawEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
-  const defaultFrom = process.env.EMAIL_FROM || "Linkora <onboarding@resend.dev>";
+  const defaultFrom = process.env.EMAIL_FROM || "Linkorian <onboarding@resend.dev>";
   const defaultReplyTo = process.env.EMAIL_REPLY_TO || undefined;
 
   const from = options.from || defaultFrom;

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 ${userLinks.map((l) => `- ID: "${l.id}", Judul: "${l.title}", URL: "${l.url}"`).join("\n")}`
       : "User belum memiliki link bookmark.";
 
-    const systemPrompt = `Anda adalah Liko AI, asisten spesialis pembuat Roadmap & Alur Kerja visual terstruktur di Linkora.
+    const systemPrompt = `Anda adalah Liko AI, asisten spesialis pembuat Roadmap & Alur Kerja visual terstruktur di Linkorian.
 Tugas Anda adalah merancang alur pengerjaan atau peta belajar yang LOGIS, RUNTUT, TERSTRUKTUR, dan BERDASARKAN DATA USER SESEUNGGUHNYA.
 
 ${linksContext}

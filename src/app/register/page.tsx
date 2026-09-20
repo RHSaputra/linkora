@@ -250,7 +250,7 @@ export default function RegisterPage() {
               <div className="relative w-full h-full">
                 <img 
                   src="/icon.jpg" 
-                  alt="Linkora Logo" 
+                  alt="Linkorian Logo" 
                   className="absolute inset-0 w-full h-full object-cover z-30 pointer-events-none" 
                 />
               </div>

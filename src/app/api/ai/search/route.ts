@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     const userTags = Array.from(tagSet).slice(0, 50);
     const today = new Date().toISOString().split("T")[0];
 
-    const SYSTEM_PROMPT = `Anda adalah mesin pencari cerdas untuk aplikasi bookmark manager bernama Linkora.
+    const SYSTEM_PROMPT = `Anda adalah mesin pencari cerdas untuk aplikasi bookmark manager bernama Linkorian.
 Tugas: Analisis query pencarian pengguna dalam bahasa natural, lalu ekstrak menjadi filter terstruktur.
 
 Konteks pengguna:
