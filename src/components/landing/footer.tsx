@@ -118,31 +118,55 @@ export function Footer() {
           </div>
 
           {/* Categorized Navigation Columns */}
-          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 text-left">
-            {/* Kategori: Produk */}
+          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-left">
+            {/* Kategori: Fitur */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
-                {t("landing.footerCategoryProduct")}
+                {locale === "en" ? "Features" : "Fitur"}
               </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li>
-                  <Link href="#solusi" className="hover:text-primary transition-colors block py-0.5">
-                    {t("landing.navSolutions")}
+                  <Link href="/features/bookmark-manager" className="hover:text-primary transition-colors block py-0.5">
+                    Bookmark Manager
                   </Link>
                 </li>
                 <li>
-                  <Link href="#cara-kerja" className="hover:text-primary transition-colors block py-0.5">
-                    {t("landing.navHowItWorks")}
+                  <Link href="/features/ai-link-analysis" className="hover:text-primary transition-colors block py-0.5">
+                    AI Link Analysis
                   </Link>
                 </li>
                 <li>
-                  <Link href="#use-cases" className="hover:text-primary transition-colors block py-0.5">
-                    {t("landing.navUseCases")}
+                  <Link href="/features/ai-knowledge-base" className="hover:text-primary transition-colors block py-0.5">
+                    AI Knowledge Base
                   </Link>
                 </li>
                 <li>
-                  <Link href="#demo" className="hover:text-primary transition-colors block py-0.5">
-                    {t("landing.navDemo")}
+                  <Link href="/features/link-organizer" className="hover:text-primary transition-colors block py-0.5">
+                    Link Organizer
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Kategori: Panduan */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
+                {locale === "en" ? "Guides" : "Panduan"}
+              </h4>
+              <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+                <li>
+                  <Link href="/guides/what-is-a-bookmark-manager" className="hover:text-primary transition-colors block py-0.5">
+                    Apa itu Bookmark Manager?
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/guides/how-to-organize-bookmarks-efficiently" className="hover:text-primary transition-colors block py-0.5">
+                    Organisasi Bookmark Cerdas
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/guides/how-to-build-a-personal-knowledge-base-from-saved-links" className="hover:text-primary transition-colors block py-0.5">
+                    Membangun Second Brain
                   </Link>
                 </li>
               </ul>
@@ -153,7 +177,7 @@ export function Footer() {
               <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
                 {t("landing.footerCategorySupport")}
               </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li>
                   <button
                     type="button"
@@ -182,7 +206,7 @@ export function Footer() {
               <h4 className="text-xs font-bold uppercase tracking-wider text-foreground font-heading">
                 {t("landing.footerCategoryAccount")}
               </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li>
                   <Link href="/login" className="hover:text-primary transition-colors block py-0.5">
                     {t("nav.login")}

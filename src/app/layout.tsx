@@ -26,11 +26,71 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://linkorian.online"),
   title: {
-    default: "Linkora — Ruang Kerja AI & Bookmark Hub Cerdas",
-    template: "%s | Linkora",
+    default: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
+    template: "%s | Linkorian",
   },
-  description: "Platform cerdas untuk menyimpan, mengelola, dan memahami tautan & catatan Anda dengan kecerdasan AI.",
+  description:
+    "Linkorian adalah platform cerdas AI bookmark manager dan link organizer untuk menyimpan, mengorganisasi, menganalisis URL, dan membangun personal knowledge base.",
+  applicationName: "Linkorian",
+  authors: [{ name: "Linkorian Team", url: "https://linkorian.online" }],
+  generator: "Next.js",
+  keywords: [
+    "Linkorian",
+    "bookmark manager",
+    "AI bookmark manager",
+    "link organizer",
+    "save links",
+    "link management",
+    "organize bookmarks",
+    "AI knowledge base",
+    "URL analyzer",
+    "link analysis tool",
+    "save and organize links",
+    "personal knowledge management",
+  ],
+  referrer: "origin-when-cross-origin",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://linkorian.online",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    alternateLocale: "en_US",
+    url: "https://linkorian.online",
+    siteName: "Linkorian",
+    title: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
+    description:
+      "Simpan, kelola, analisis, dan manfaatkan kembali seluruh tautan & pengetahuan Anda secara cerdas bersama Linkorian.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Linkorian AI Bookmark Manager Interface Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
+    description:
+      "Platform cerdas untuk menyimpan, mengorganisasi, menganalisis URL, dan membangun personal knowledge base.",
+    images: ["/logo.png"],
+    creator: "@linkorian",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Linkora — Ruang Kerja AI & Bookmark Hub Cerdas",
-    short_name: "Linkora",
-    description: "Platform cerdas untuk menyimpan, mengelola, dan memahami tautan & catatan Anda.",
+    name: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
+    short_name: "Linkorian",
+    description: "Platform cerdas untuk menyimpan, mengelola, menganalisis, dan memanfaatkan kembali tautan & pengetahuan Anda.",
     start_url: "/",
     display: "standalone",
     background_color: "#090d16",
