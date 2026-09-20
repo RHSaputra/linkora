@@ -464,9 +464,7 @@ export function CollectionsPage({
                       style={
                         isSelected
                           ? {
-                              borderColor: `${col.color}60`,
-                              backgroundColor: `${col.color}0F`,
-                              boxShadow: `0 4px 16px ${col.color}20`,
+                              borderColor: `${col.color}80`,
                             }
                           : {}
                       }
@@ -507,28 +505,20 @@ export function CollectionsPage({
             <div className="lg:col-span-2">
               {selectedLinkCollection ? (
                 <div className="space-y-4">
-                  {/* Selected Collection Glowing Banner */}
+                  {/* Selected Collection Banner */}
                   <div
-                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden shadow-lg backdrop-blur-md gap-4"
+                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden bg-card shadow-sm gap-4"
                     style={{
-                      borderColor: `${selectedLinkCollection.color}50`,
-                      background: `linear-gradient(135deg, ${selectedLinkCollection.color}15 0%, var(--card) 65%)`,
-                      boxShadow: `0 8px 30px ${selectedLinkCollection.color}18`,
+                      borderColor: `${selectedLinkCollection.color}80`,
                     }}
                   >
-                    <div
-                      className="absolute -right-10 -top-10 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-35"
-                      style={{ backgroundColor: selectedLinkCollection.color }}
-                    />
-
                     <div className="relative z-10 flex items-center gap-4">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-md"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
                         style={{
-                          backgroundColor: `${selectedLinkCollection.color}25`,
+                          backgroundColor: `${selectedLinkCollection.color}15`,
                           borderColor: `${selectedLinkCollection.color}60`,
                           color: selectedLinkCollection.color,
-                          boxShadow: `0 0 20px ${selectedLinkCollection.color}35`,
                         }}
                       >
                         <FolderOpen className="h-6 w-6" />
@@ -696,9 +686,7 @@ export function CollectionsPage({
                       style={
                         isSelected
                           ? {
-                              borderColor: `${folderColor}60`,
-                              backgroundColor: `${folderColor}0F`,
-                              boxShadow: `0 4px 16px ${folderColor}20`,
+                              borderColor: `${folderColor}80`,
                             }
                           : {}
                       }
@@ -739,28 +727,20 @@ export function CollectionsPage({
             <div className="lg:col-span-2">
               {selectedNoteFolder ? (
                 <div className="space-y-4">
-                  {/* Selected Note Folder Glowing Banner */}
+                  {/* Selected Note Folder Banner */}
                   <div
-                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden shadow-lg backdrop-blur-md gap-4"
+                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden bg-card shadow-sm gap-4"
                     style={{
-                      borderColor: `${selectedNoteFolder.color || "#06b6d4"}50`,
-                      background: `linear-gradient(135deg, ${selectedNoteFolder.color || "#06b6d4"}15 0%, var(--card) 65%)`,
-                      boxShadow: `0 8px 30px ${selectedNoteFolder.color || "#06b6d4"}18`,
+                      borderColor: `${selectedNoteFolder.color || "#06b6d4"}80`,
                     }}
                   >
-                    <div
-                      className="absolute -right-10 -top-10 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-35"
-                      style={{ backgroundColor: selectedNoteFolder.color || "#06b6d4" }}
-                    />
-
                     <div className="relative z-10 flex items-center gap-4">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-md"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
                         style={{
-                          backgroundColor: `${selectedNoteFolder.color || "#06b6d4"}25`,
+                          backgroundColor: `${selectedNoteFolder.color || "#06b6d4"}15`,
                           borderColor: `${selectedNoteFolder.color || "#06b6d4"}60`,
                           color: selectedNoteFolder.color || "#06b6d4",
-                          boxShadow: `0 0 20px ${selectedNoteFolder.color || "#06b6d4"}35`,
                         }}
                       >
                         <FileText className="h-6 w-6" />
