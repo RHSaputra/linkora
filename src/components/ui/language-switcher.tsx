@@ -60,7 +60,7 @@ export function FlagIcon({ locale, className }: { locale: string; className?: st
     );
   }
 
-  return <span className="text-sm">🌐</span>;
+  return <Globe className="w-4 h-4 shrink-0 text-muted-foreground" />;
 }
 
 export function LanguageSwitcher({

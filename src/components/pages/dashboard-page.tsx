@@ -197,7 +197,7 @@ export function DashboardPage({
             <div className="space-y-1.5 text-left">
 
               <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans flex items-center gap-1.5">
-                {locale === "en" ? "Hello," : "Halo,"} <LinkorianText /> 👋
+                {locale === "en" ? "Hello," : "Halo,"} <LinkorianText />
               </h2>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground font-heading leading-tight break-words">
                 {userName || "Linkorian"}

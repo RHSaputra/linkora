@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, Plus, AlertTriangle, ExternalLink } from "lucide-react";
+import { Loader2, X, Plus, AlertTriangle, ExternalLink, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -510,8 +510,9 @@ export function AddLinkDialog({
                       animate={{ opacity: 1, y: 0 }}
                       className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2 mt-1.5"
                     >
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
                       <p className="text-xs text-red-600 dark:text-red-400 leading-tight font-medium">
-                        ⚠️ Tautan ini sudah tersimpan di koleksimu. Analisis AI dan penambahan link diblokir.
+                        Tautan ini sudah tersimpan di koleksimu. Analisis AI dan penambahan link diblokir.
                       </p>
                     </motion.div>
                   ) : fetchingMeta ? (
@@ -521,8 +522,9 @@ export function AddLinkDialog({
                       animate={{ opacity: 1, y: 0 }}
                       className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2 mt-1.5"
                     >
+                      <Loader2 className="w-3.5 h-3.5 text-amber-500 animate-spin shrink-0" />
                       <p className="text-xs text-amber-700 dark:text-amber-400 leading-tight font-medium">
-                        ⏳ Sedang mengambil favicon, judul, dan preview gambar dari situs web...
+                        Sedang mengambil favicon, judul, dan preview gambar dari situs web...
                       </p>
                     </motion.div>
                   ) : !isAnalyzing && (
@@ -532,8 +534,9 @@ export function AddLinkDialog({
                       animate={{ opacity: 1, y: 0 }}
                       className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-xl px-3 py-2 mt-1.5"
                     >
+                      <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <p className="text-xs text-foreground/90 leading-tight">
-                        ✨ Tautan siap dianalisis. Klik tombol <span className="font-bold text-blue-600 dark:text-blue-400">Analisis AI</span> untuk mengisi kategori, deskripsi, dan tag secara otomatis.
+                        Tautan siap dianalisis. Klik tombol <span className="font-bold text-blue-600 dark:text-blue-400">Analisis AI</span> untuk mengisi kategori, deskripsi, dan tag secara otomatis.
                       </p>
                     </motion.div>
                   )}
