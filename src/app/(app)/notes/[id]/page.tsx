@@ -332,6 +332,45 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
     }
   }, [persistNote]);
 
+  // ─── UNLOAD & LEAVE WARNING PROTECTION ─────────────────────
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current || isSavingRef.current) {
+        // Save to localStorage immediately as emergency backup
+        saveDraft(id, {
+          title: pendingTitleRef.current ?? title,
+          content: pendingContentRef.current ?? "",
+          version: versionRef.current,
+        });
+
+        // Trigger browser's native confirmation dialog
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && (isDirtyRef.current || isSavingRef.current)) {
+        // Emergency save to localStorage if tab is hidden/switched
+        saveDraft(id, {
+          title: pendingTitleRef.current ?? title,
+          content: pendingContentRef.current ?? "",
+          version: versionRef.current,
+        });
+        flushSave();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [id, title, flushSave]);
+
   // ─── EVENT HANDLERS ────────────────────────────────────────
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
