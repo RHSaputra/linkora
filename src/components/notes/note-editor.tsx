@@ -179,6 +179,14 @@ function ToolbarDivider() {
   return <div className="w-px h-5 bg-border/60 mx-1 flex-shrink-0" />;
 }
 
+function getSafeFontCss(font?: string): string {
+  if (!font) return "sans-serif";
+  if (font.includes(",") || font.startsWith("'") || font.startsWith('"')) {
+    return font;
+  }
+  return font.includes(" ") ? `'${font}', sans-serif` : `${font}, sans-serif`;
+}
+
 // ─── Font Family Selector ───────────────────────────────────
 
 function FontFamilySelector({
@@ -209,12 +217,12 @@ function FontFamilySelector({
       // User selected text: apply font strictly to the selected text range
       editor.chain().focus().setFontFamily(fontValue).run();
     } else {
-      // No text selected: change the active document font so all newly typed text uses this font!
+      // No text selected: set font mark on active cursor AND update document settings default font!
       editor.chain().focus().setFontFamily(fontValue).run();
       if (documentSettings && onDocumentSettingsChange) {
         onDocumentSettingsChange({
           ...documentSettings,
-          defaultFont: fontName,
+          defaultFont: fontValue,
         });
       }
     }
@@ -2713,7 +2721,7 @@ export function NoteEditor({
     if (!editor || !editor.view?.dom) return;
     const dom = editor.view.dom as HTMLElement;
     if (dom) {
-      dom.style.fontFamily = `${localSettings.defaultFont}, sans-serif`;
+      dom.style.fontFamily = getSafeFontCss(localSettings.defaultFont);
       dom.style.fontSize = `${localSettings.defaultFontSize}pt`;
     }
   }, [editor, localSettings.defaultFont, localSettings.defaultFontSize]);
@@ -3216,7 +3224,7 @@ export function NoteEditor({
                     paddingLeft: `${marginLeftPx}px`,
                     paddingRight: `${marginRightPx}px`,
                     minHeight: `${paperHeightPx}px`,
-                    fontFamily: `${localSettings.defaultFont}, sans-serif`,
+                    fontFamily: getSafeFontCss(localSettings.defaultFont),
                     fontSize: `${localSettings.defaultFontSize}pt`,
                   }}
                   className="w-full relative z-10"
@@ -3229,7 +3237,7 @@ export function NoteEditor({
         ) : (
           <div
             style={{
-              fontFamily: `${localSettings.defaultFont}, sans-serif`,
+              fontFamily: getSafeFontCss(localSettings.defaultFont),
               fontSize: `${localSettings.defaultFontSize}pt`,
             }}
             className="paper-surface w-full bg-white text-[#111827] p-6 rounded-2xl border border-border/70 shadow-lg"
