@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { BookOpen, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "What is a Bookmark Manager? Guide & Benefits — Linkorian",
@@ -65,7 +66,7 @@ export default function GuideWhatIsBookmarkManagerPage() {
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground pb-8 mb-8 border-b border-border/40">
           <BookOpen className="w-4 h-4 text-primary" />
-          <span>Panduan Informasi • Oleh Tim Linkorian</span>
+          <span>Panduan Informasi • Oleh Tim <LinkorianText /></span>
         </div>
 
         {/* Article Body */}
@@ -78,7 +79,7 @@ export default function GuideWhatIsBookmarkManagerPage() {
             Definisi Bookmark Manager
           </h2>
           <p>
-            <strong>Bookmark Manager</strong> (Pengelola Markah Buku) adalah aplikasi atau perangkat lunak yang dirancang khusus untuk menyimpan, mengelompokkan, dan mengorganisasi alamat halaman web (URL) agar pengguna dapat menemukannya kembali dengan cepat.
+            <strong className="text-foreground">Bookmark Manager</strong> (Pengelola Markah Buku) adalah aplikasi atau perangkat lunak yang dirancang khusus untuk menyimpan, mengelompokkan, dan mengorganisasi alamat halaman web (URL) agar pengguna dapat menemukannya kembali dengan cepat dan rapi.
           </p>
 
           <h2 className="text-xl sm:text-2xl font-bold font-heading text-foreground pt-4">
@@ -94,7 +95,7 @@ export default function GuideWhatIsBookmarkManagerPage() {
             <div className="flex items-start gap-3 p-4 rounded-xl glass-panel border border-border/60">
               <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div>
-                <strong className="text-foreground">Modern AI Bookmark Manager (seperti Linkorian):</strong> Mengekstrak pratinjau gambar, deskripsi otomatis, ringkasan AI, pencarian teks kontekstual, serta integrasi catatan dokumen.
+                <strong className="text-foreground">Modern AI Bookmark Manager (seperti <LinkorianText />):</strong> Mengekstrak pratinjau gambar, deskripsi otomatis, ringkasan AI, pencarian teks kontekstual, serta integrasi catatan dokumen dalam satu ruang kerja.
               </div>
             </div>
           </div>
@@ -103,25 +104,24 @@ export default function GuideWhatIsBookmarkManagerPage() {
             Mengapa Anda Membutuhkan AI Bookmark Manager?
           </h2>
           <p>
-            Ketika jumlah tautan yang Anda simpan mencapai ratusan, pencarian berbasis judul statis tidak lagi efektif. AI Bookmark Manager seperti <strong>Linkorian</strong> memungkinkan Anda mengajukan pertanyaan atau mencari kata kunci samar untuk menemukan tautan yang relevan secara instan.
+            Ketika jumlah tautan yang Anda simpan mencapai ratusan, pencarian berbasis judul statis tidak lagi efektif. AI Bookmark Manager seperti <strong className="text-foreground"><LinkorianText /></strong> memungkinkan Anda mengajukan pertanyaan atau mencari kata kunci samar untuk menemukan tautan yang relevan secara instan tanpa perlu mengingat judul persisnya.
           </p>
         </article>
 
         {/* CTA Card */}
         <div className="mt-12 p-8 rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 border border-primary/30 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Mulai Gunakan Linkorian</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4">
+            <span>Mulai Bersama <LinkorianText /></span>
           </div>
           <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">Coba AI Bookmark Manager Cerdas</h3>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
-            Kelola seluruh tautan dan referensi web Anda dalam satu tempat yang terorganisir bersama Linkorian.
+            Kelola seluruh tautan dan referensi web Anda dalam satu tempat yang terorganisir bersama <LinkorianText />.
           </p>
           <Link
             href="/register"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 transition-all cursor-pointer text-xs sm:text-sm"
           >
-            <span>Daftar Gratis</span>
+            <span>Daftar <LinkorianText /> Gratis</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

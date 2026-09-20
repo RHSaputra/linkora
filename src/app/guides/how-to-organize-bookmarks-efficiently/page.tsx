@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { BookOpen, ArrowRight, CheckCircle2, Folder, Tag } from "lucide-react";
+import { BookOpen, ArrowRight, Folder, Tag } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "How to Organize Bookmarks Efficiently — Step-by-Step Guide | Linkorian",
@@ -75,7 +76,7 @@ export default function GuideHowToOrganizeBookmarksPage() {
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground pb-8 mb-8 border-b border-border/40">
           <BookOpen className="w-4 h-4 text-primary" />
-          <span>Panduan Praktis • Oleh Tim Linkorian</span>
+          <span>Panduan Praktis • Oleh Tim <LinkorianText /></span>
         </div>
 
         <article className="prose prose-invert max-w-none space-y-6 text-muted-foreground leading-relaxed text-sm sm:text-base">
@@ -88,7 +89,7 @@ export default function GuideHowToOrganizeBookmarksPage() {
             1. Kelompokkan Berdasarkan Proyek, Bukan Jenis Media
           </h2>
           <p>
-            Hindari membuat folder generik seperti "Video" atau "Artikel". Sebaliknya, buat folder berdasarkan tujuan penggunaan seperti <em>"Riset Tesis 2026"</em> atau <em>"Inspirasi UI Project A"</em>.
+            Hindari membuat folder generik seperti "Video" atau "Artikel". Sebaliknya, buat folder berdasarkan tujuan penggunaan seperti <span className="text-foreground italic font-normal">"Riset Tesis"</span> atau <span className="text-foreground italic font-normal">"Inspirasi UI Project"</span>.
           </p>
 
           <h2 className="text-xl sm:text-2xl font-bold font-heading text-foreground pt-4 flex items-center gap-2">
@@ -96,13 +97,13 @@ export default function GuideHowToOrganizeBookmarksPage() {
             2. Manfaatkan Sistem Multi-Tag
           </h2>
           <p>
-            Satu tautan sering kali mencakup beberapa topik sekaligus. Menggunakan tag fleksibel di **Linkorian** memungkinkan Anda menemukan artikel yang sama baik melalui tag `#React` maupun `#UI-Animation`.
+            Satu tautan sering kali mencakup beberapa topik sekaligus. Menggunakan tag fleksibel di <strong className="text-foreground"><LinkorianText /></strong> memungkinkan Anda menemukan artikel yang sama baik melalui tag <code className="text-primary px-1.5 py-0.5 rounded bg-primary/10">#React</code> maupun <code className="text-primary px-1.5 py-0.5 rounded bg-primary/10">#UI-Animation</code>.
           </p>
         </article>
 
         {/* CTA Card */}
         <div className="mt-12 p-8 rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 border border-primary/30 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">Rapikan Bookmark Anda Bersama Linkorian</h3>
+          <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">Rapikan Bookmark Anda Bersama <LinkorianText /></h3>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
             Gunakan folder warna, tag dinamis, dan ekstraksi AI otomatis sekarang juga.
           </p>
@@ -110,7 +111,7 @@ export default function GuideHowToOrganizeBookmarksPage() {
             href="/register"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 transition-all cursor-pointer text-xs sm:text-sm"
           >
-            <span>Daftar Linkorian</span>
+            <span>Daftar <LinkorianText /> Gratis</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
