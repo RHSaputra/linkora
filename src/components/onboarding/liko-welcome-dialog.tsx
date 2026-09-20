@@ -108,8 +108,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
               </div>
 
               {/* Active Assistant Live Badge */}
-              <div className="absolute -bottom-3.5 z-20 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-primary/40 backdrop-blur-xl shadow-xl shadow-primary/30 select-none">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <div className="absolute -bottom-3.5 z-20 inline-flex items-center px-4 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-primary/40 backdrop-blur-xl shadow-xl shadow-primary/30 select-none">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 font-extrabold text-xs font-heading">
                   Asisten AI Liko
                 </span>
