@@ -590,9 +590,9 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
                 size="sm"
                 className="gap-2 text-xs font-medium rounded-xl border-border/60 bg-background/50 hidden sm:inline-flex cursor-pointer"
               >
-                <div
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: note?.folder?.color || "var(--primary)" }}
+                <FolderIcon
+                  className="w-3.5 h-3.5 shrink-0"
+                  style={{ color: note?.folder?.color || "var(--primary)" }}
                 />
                 <span className="truncate max-w-[100px]">
                   {note?.folder?.name || t("notes.noFolder")}
