@@ -127,22 +127,27 @@ export function Footer() {
               <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li>
                   <Link href="/features/bookmark-manager" className="hover:text-primary transition-colors block py-0.5">
-                    Bookmark Manager
+                    {locale === "en" ? "Bookmark Manager" : "Pengelola Bookmark"}
                   </Link>
                 </li>
                 <li>
                   <Link href="/features/ai-link-analysis" className="hover:text-primary transition-colors block py-0.5">
-                    AI Link Analysis
+                    {locale === "en" ? "AI Link Analysis" : "Analisis Tautan AI"}
                   </Link>
                 </li>
                 <li>
                   <Link href="/features/ai-knowledge-base" className="hover:text-primary transition-colors block py-0.5">
-                    AI Knowledge Base
+                    {locale === "en" ? "AI Knowledge Base" : "Knowledge Base AI"}
                   </Link>
                 </li>
                 <li>
                   <Link href="/features/link-organizer" className="hover:text-primary transition-colors block py-0.5">
-                    Link Organizer
+                    {locale === "en" ? "Link Organizer" : "Pengorganisasi Tautan"}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/ai-roadmap" className="hover:text-primary transition-colors block py-0.5">
+                    {locale === "en" ? "AI Visual Roadmap" : "Roadmap Visual AI"}
                   </Link>
                 </li>
               </ul>
@@ -156,17 +161,17 @@ export function Footer() {
               <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li>
                   <Link href="/guides/what-is-a-bookmark-manager" className="hover:text-primary transition-colors block py-0.5">
-                    Apa itu Bookmark Manager?
+                    {locale === "en" ? "What is a Bookmark Manager?" : "Apa itu Bookmark Manager?"}
                   </Link>
                 </li>
                 <li>
                   <Link href="/guides/how-to-organize-bookmarks-efficiently" className="hover:text-primary transition-colors block py-0.5">
-                    Organisasi Bookmark Cerdas
+                    {locale === "en" ? "Smart Bookmark Organization" : "Organisasi Bookmark Cerdas"}
                   </Link>
                 </li>
                 <li>
                   <Link href="/guides/how-to-build-a-personal-knowledge-base-from-saved-links" className="hover:text-primary transition-colors block py-0.5">
-                    Membangun Second Brain
+                    {locale === "en" ? "Building a Second Brain" : "Membangun Second Brain"}
                   </Link>
                 </li>
               </ul>

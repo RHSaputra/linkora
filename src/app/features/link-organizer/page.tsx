@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Layers, Link2, CheckCircle2, ArrowRight, Tag, LayoutGrid } from "lucide-react";
+import { Link2, CheckCircle2, ArrowRight, Tag, LayoutGrid } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "Link Organizer — Simpan & Atur Tautan Web dengan Rapi | Linkorian",
@@ -54,10 +55,10 @@ export default function LinkOrganizerFeaturePage() {
             <span>Smart Link Organizer</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
-            Pengorganisasi Tautan Terbaik untuk Menyimpan & Mengelompokkan URL di <span className="text-primary">Linkorian</span>
+            Pengorganisasi Tautan Terbaik untuk Menyimpan & Mengelompokkan URL di <LinkorianText />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Hentikan kebiasaan membiarkan puluhan tab browser tetap terbuka. Dengan Linkorian Link Organizer, Anda dapat menyimpan URL dalam sekali klik dan menemukannya kembali kapan pun dibutuhkan.
+            Hentikan kebiasaan membiarkan puluhan tab browser tetap terbuka. Dengan <LinkorianText /> Link Organizer, Anda dapat menyimpan URL dalam sekali klik dan menemukannya kembali kapan pun dibutuhkan.
           </p>
         </div>
 
@@ -104,7 +105,7 @@ export default function LinkOrganizerFeaturePage() {
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all cursor-pointer"
           >
-            <span>Mulai Gunakan Linkorian</span>
+            <span>Mulai Gunakan <LinkorianText /></span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Sparkles, Cpu, FileText, ArrowRight, BrainCircuit, Search } from "lucide-react";
+import { Cpu, FileText, ArrowRight, BrainCircuit, Search } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "AI Link Analysis & URL Analyzer Tool — Linkorian",
@@ -50,14 +51,14 @@ export default function AiLinkAnalysisFeaturePage() {
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
-            <Sparkles className="w-4 h-4" />
+            <Cpu className="w-4 h-4" />
             <span>AI URL Analyzer & Link Intelligence</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
-            Analisis Konten Web & Artikel Secara Instan dengan AI <span className="text-primary">Linkorian</span>
+            Analisis Konten Web & Artikel Secara Instan dengan AI <LinkorianText />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Tidak sempat membaca artikel panjang 15 halaman? Fitur AI Link Analysis Linkorian secara otomatis mengekstrak wawasan utama, poin ringkasan, dan taksonomi kategori tanpa Anda harus membaca seluruh halaman dari awal.
+            Tidak sempat membaca artikel panjang 15 halaman? Fitur AI Link Analysis <LinkorianText /> secara otomatis mengekstrak wawasan utama, poin ringkasan, dan taksonomi kategori tanpa Anda harus membaca seluruh halaman dari awal.
           </p>
         </div>
 
@@ -97,10 +98,10 @@ export default function AiLinkAnalysisFeaturePage() {
         {/* Deep Dive Section */}
         <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-border/60 mb-20 space-y-6">
           <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-            Bagaimana Cara Kerja AI Link Analysis di Linkorian?
+            Bagaimana Cara Kerja AI Link Analysis di <LinkorianText />?
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Saat Anda memasukkan URL ke dalam Linkorian, mesin pengumpul data kami akan mengunduh dan membersihkan elemen halaman yang tidak penting. Selanjutnya, model kecerdasan buatan (AI) memproses teks utama untuk menghasilkan analisis komprehensif.
+            Saat Anda memasukkan URL ke dalam <LinkorianText />, mesin pengumpul data kami akan mengunduh dan membersihkan elemen halaman yang tidak penting. Selanjutnya, model kecerdasan buatan (AI) memproses teks utama untuk menghasilkan analisis komprehensif.
           </p>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Hasil analisis ini disimpan bersama tautan Anda, sehingga kapan pun Anda membutuhkan kembali informasi tersebut, Anda dapat membacanya secara langsung tanpa harus membuka ulang situs aslinya.
@@ -111,13 +112,13 @@ export default function AiLinkAnalysisFeaturePage() {
         <div className="text-center p-10 rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 border border-primary/30">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">Mulai Analisis Tautan Web Anda Sekarang</h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto mb-8">
-            Hemat hingga 80% waktu membaca riset dengan bantuan kecerdasan buatan Linkorian.
+            Hemat hingga 80% waktu membaca riset dengan bantuan kecerdasan buatan <LinkorianText />.
           </p>
           <Link
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all cursor-pointer"
           >
-            <span>Daftar Linkorian Gratis</span>
+            <span>Daftar <LinkorianText /> Gratis</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

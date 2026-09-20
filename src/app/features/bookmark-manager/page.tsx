@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Bookmark, Sparkles, Folder, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { Bookmark, Folder, ArrowRight, ShieldCheck, Zap, Search } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "AI Bookmark Manager — Organize & Manage Bookmarks Cerdas",
@@ -54,10 +55,10 @@ export default function BookmarkManagerFeaturePage() {
             <span>Modern Bookmark Manager</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
-            Kelola & Organisasi Bookmark Web Anda Tanpa Batas Bersama <span className="text-primary">Linkorian</span>
+            Kelola & Organisasi Bookmark Web Anda Tanpa Batas Bersama <LinkorianText />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Bookmark browser biasa sering membuat tautan menumpuk dan sulit ditemukan. Linkorian menghadirkan sistem manajemen markah buku modern berbasis AI yang terstruktur, rapi, dan cepat.
+            Bookmark browser biasa sering membuat tautan menumpuk dan sulit ditemukan. <LinkorianText /> menghadirkan sistem manajemen markah buku modern berbasis AI yang terstruktur, rapi, dan cepat.
           </p>
         </div>
 
@@ -75,11 +76,11 @@ export default function BookmarkManagerFeaturePage() {
 
           <div className="p-6 rounded-2xl glass-panel border border-border/60 hover:border-primary/40 transition-all">
             <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6" />
+              <Search className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold mb-2">Pencarian Kontekstual AI</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Cari tautan lama hanya berdasarkan kata kunci samar atau ingatan konteks. AI Linkorian memahami apa yang Anda maksud.
+              Cari tautan lama hanya berdasarkan kata kunci samar atau ingatan konteks. AI <LinkorianText /> memahami apa yang Anda maksud.
             </p>
           </div>
 
@@ -97,13 +98,13 @@ export default function BookmarkManagerFeaturePage() {
         {/* Detailed Explanation */}
         <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-border/60 mb-20 space-y-6">
           <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-            Mengapa Memilih Linkorian AI Bookmark Manager?
+            Mengapa Memilih <LinkorianText /> AI Bookmark Manager?
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Seiring bertambahnya aktivitas online, kita menyimpan puluhan hingga ratusan tautan setiap minggu. Tanpa sistem pengorganisasian yang tepat, bookmark tersebut dengan cepat menjadi sampah digital yang tidak terpakai.
           </p>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Linkorian memecahkan masalah ini dengan menggabungkan penyimpanan 1-klik, ekstraksi metadata otomatis (judul, deskripsi, favicon, gambar pratinjau), serta asisten AI yang secara otomatis menyaring poin penting dari setiap tautan.
+            <LinkorianText /> memecahkan masalah ini dengan menggabungkan penyimpanan 1-klik, ekstraksi metadata otomatis (judul, deskripsi, favicon, gambar pratinjau), serta asisten AI yang secara otomatis menyaring poin penting dari setiap tautan.
           </p>
         </div>
 
@@ -111,13 +112,13 @@ export default function BookmarkManagerFeaturePage() {
         <div className="text-center p-10 rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 border border-primary/30">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">Siap Merapikan Bookmark Anda?</h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto mb-8">
-            Mulai simpan dan kelola seluruh tautan penting Anda secara gratis bersama Linkorian.
+            Mulai simpan dan kelola seluruh tautan penting Anda secara gratis bersama <LinkorianText />.
           </p>
           <Link
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all cursor-pointer"
           >
-            <span>Coba Linkorian Gratis</span>
+            <span>Coba <LinkorianText /> Gratis</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

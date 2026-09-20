@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Database, BrainCircuit, BookOpen, ArrowRight, Layers, Lock } from "lucide-react";
+import { Database, BookOpen, ArrowRight, Layers, Lock } from "lucide-react";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
   title: "AI Knowledge Base & Personal Knowledge Management — Linkorian",
@@ -54,10 +55,10 @@ export default function AiKnowledgeBaseFeaturePage() {
             <span>Second Brain & Knowledge System</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
-            Bangun Second Brain & AI Knowledge Base Pribadi Anda di <span className="text-primary">Linkorian</span>
+            Bangun Second Brain & AI Knowledge Base Pribadi Anda di <LinkorianText />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Menyimpan tautan saja tidak cukup jika Anda tidak dapat menghubungkannya dengan wawasan pribadi Anda. Linkorian menyatukan pengelola tautan dan editor dokumen cerdas ke dalam satu ruang kerja *Second Brain*.
+            Menyimpan tautan saja tidak cukup jika Anda tidak dapat menghubungkannya dengan wawasan pribadi Anda. <LinkorianText /> menyatukan pengelola tautan dan editor dokumen cerdas ke dalam satu ruang kerja <span className="italic font-normal">Second Brain</span>.
           </p>
         </div>
 
@@ -100,7 +101,7 @@ export default function AiKnowledgeBaseFeaturePage() {
             Dari Tautan Acak Menjadi Aset Pengetahuan
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Konsep Personal Knowledge Management (PKM) di Linkorian dirancang agar informasi tidak berhenti menjadi sekadar tumpukan URL. Dengan menggabungkan pencarian AI kontekstual dan ruang catatan terpadu, Anda dapat menghubungkan ide antar-artikel secara natural.
+            Konsep Personal Knowledge Management (PKM) di <LinkorianText /> dirancang agar informasi tidak berhenti menjadi sekadar tumpukan URL. Dengan menggabungkan pencarian AI kontekstual dan ruang catatan terpadu, Anda dapat menghubungkan ide antar-artikel secara natural.
           </p>
         </div>
 
@@ -114,7 +115,7 @@ export default function AiKnowledgeBaseFeaturePage() {
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all cursor-pointer"
           >
-            <span>Buat Account Linkorian</span>
+            <span>Daftar <LinkorianText /> Gratis</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
