@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Kelola ribuan markah buku dan tautan web secara rapi dengan AI Bookmark Manager dari Linkorian.",
     url: "https://linkorian.online/features/bookmark-manager",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Linkorian AI Bookmark Manager" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Linkorian AI Bookmark Manager" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Bookmark Manager — Linkorian",
+    description:
+      "Kelola ribuan markah buku dan tautan web secara rapi dengan AI Bookmark Manager dari Linkorian.",
+    images: ["/icon.jpg"],
   },
 };
 

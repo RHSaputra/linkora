@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Solusi pengorganisasi tautan web terbaik untuk menyimpan, memberi label, dan mengelompokkan koleksi URL Anda.",
     url: "https://linkorian.online/features/link-organizer",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Linkorian Link Organizer" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Linkorian Link Organizer" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Link Organizer — Linkorian",
+    description:
+      "Solusi pengorganisasi tautan web terbaik untuk menyimpan, memberi label, dan mengelompokkan koleksi URL Anda.",
+    images: ["/icon.jpg"],
   },
 };
 

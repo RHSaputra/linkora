@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Ubah ribuan tautan dan referensi acak menjadi repositori pengetahuan pribadi yang terstruktur dan siap pakai.",
     url: "https://linkorian.online/features/ai-knowledge-base",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Linkorian AI Knowledge Base" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Linkorian AI Knowledge Base" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Knowledge Base & Personal Knowledge Management — Linkorian",
+    description:
+      "Ubah ribuan tautan dan referensi acak menjadi repositori pengetahuan pribadi yang terstruktur dan siap pakai.",
+    images: ["/icon.jpg"],
   },
 };
 

@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Ubah tautan tersimpan menjadi sistem pengetahuan pribadi terstruktur dengan alur kerja PKM modern.",
     url: "https://linkorian.online/guides/how-to-build-a-personal-knowledge-base-from-saved-links",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Build AI Knowledge Base" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Build AI Knowledge Base" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Build a Personal Knowledge Base from Saved Links — Linkorian",
+    description:
+      "Ubah tautan tersimpan menjadi sistem pengetahuan pribadi terstruktur dengan alur kerja PKM modern.",
+    images: ["/icon.jpg"],
   },
 };
 

@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Panduan lengkap mengenai definisi, manfaat, dan cara kerja Bookmark Manager modern berbasis AI.",
     url: "https://linkorian.online/guides/what-is-a-bookmark-manager",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "What is a Bookmark Manager" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "What is a Bookmark Manager" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "What is a Bookmark Manager? Guide & Benefits — Linkorian",
+    description:
+      "Panduan lengkap mengenai definisi, manfaat, dan cara kerja Bookmark Manager modern berbasis AI.",
+    images: ["/icon.jpg"],
   },
 };
 

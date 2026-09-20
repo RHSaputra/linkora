@@ -76,10 +76,10 @@ export const metadata: Metadata = {
       "Simpan, kelola, analisis, dan manfaatkan kembali seluruh tautan & pengetahuan Anda secara cerdas bersama Linkorian.",
     images: [
       {
-        url: "/logo.png",
+        url: "/icon.jpg",
         width: 1200,
         height: 630,
-        alt: "Linkorian AI Bookmark Manager Interface Preview",
+        alt: "Linkorian Logo",
       },
     ],
   },
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     title: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
     description:
       "Platform cerdas untuk menyimpan, mengorganisasi, menganalisis URL, dan membangun personal knowledge base.",
-    images: ["/logo.png"],
+    images: ["/icon.jpg"],
     creator: "@linkorian",
   },
   icons: {

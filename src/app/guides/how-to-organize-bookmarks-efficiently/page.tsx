@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Panduan praktis merapikan tumpukan tautan web dan membangun workflow bookmark yang produktif.",
     url: "https://linkorian.online/guides/how-to-organize-bookmarks-efficiently",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "How to Organize Bookmarks" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "How to Organize Bookmarks" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Organize Bookmarks Efficiently — Step-by-Step Guide | Linkorian",
+    description:
+      "Panduan praktis merapikan tumpukan tautan web dan membangun workflow bookmark yang produktif.",
+    images: ["/icon.jpg"],
   },
 };
 

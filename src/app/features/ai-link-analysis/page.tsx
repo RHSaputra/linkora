@@ -17,7 +17,14 @@ export const metadata: Metadata = {
       "Ekstrak poin penting dan wawasan dari tautan apa pun secara instan dengan mesin analisis AI Linkorian.",
     url: "https://linkorian.online/features/ai-link-analysis",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Linkorian AI Link Analysis" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Linkorian AI Link Analysis" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Link Analysis & URL Analyzer Tool — Linkorian",
+    description:
+      "Ekstrak poin penting dan wawasan dari tautan apa pun secara instan dengan mesin analisis AI Linkorian.",
+    images: ["/icon.jpg"],
   },
 };
 

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
       "Platform cerdas untuk menyimpan, mengorganisasi, menganalisis URL, dan membangun personal knowledge base.",
     url: "https://linkorian.online",
     siteName: "Linkorian",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Linkorian AI Bookmark Manager" }],
+    images: [{ url: "/icon.jpg", width: 1200, height: 630, alt: "Linkorian Logo" }],
     type: "website",
   },
   twitter: {
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: "Linkorian — AI-Powered Bookmark Manager & Link Organizer",
     description:
       "Platform cerdas untuk menyimpan, mengorganisasi, menganalisis URL, dan membangun personal knowledge base.",
-    images: ["/logo.png"],
+    images: ["/icon.jpg"],
   },
 };
 
@@ -71,7 +71,7 @@ export default function LandingPage() {
     "@type": "Organization",
     "name": "Linkorian",
     "url": "https://linkorian.online",
-    "logo": "https://linkorian.online/logo.png",
+    "logo": "https://linkorian.online/icon.jpg",
   };
 
   const faqSchema = {
