@@ -521,19 +521,12 @@ export default function TermsPage() {
                 : "Jika Anda memiliki pertanyaan mengenai Ketentuan Layanan atau verifikasi pengembang:"}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="mailto:support@linkorian.online"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-md transition-all hover:bg-primary-hover active:scale-95"
-              >
-                <Mail className="h-4 w-4" />
-                <span>support@linkorian.online</span>
-              </a>
+            <div className="mt-6 flex items-center justify-center">
               <a
                 href="mailto:supportlinkorian@gmail.com"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:bg-muted active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md transition-all hover:bg-primary-hover active:scale-95"
               >
-                <Mail className="h-4 w-4 text-primary" />
+                <Mail className="h-4 w-4" />
                 <span>supportlinkorian@gmail.com</span>
               </a>
             </div>
