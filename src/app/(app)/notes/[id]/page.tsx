@@ -705,7 +705,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
 
           {note?.folder && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-foreground/5 font-medium">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: note.folder.color }} />
+              <FolderIcon className="w-3.5 h-3.5 shrink-0" style={{ color: note.folder.color }} />
               <span style={{ color: note.folder.color }}>{note.folder.name}</span>
             </div>
           )}

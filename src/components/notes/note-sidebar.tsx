@@ -9,6 +9,7 @@ import {
   Star,
   Layers,
   Pin,
+  Folder,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -126,9 +127,9 @@ export function NoteSidebar() {
                 >
                   <div className="flex items-center justify-between px-3 py-1.5 rounded-xl text-sm text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors group">
                     <div className="flex items-center gap-2 truncate">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: folder.color }}
+                      <Folder
+                        className="w-3.5 h-3.5 shrink-0"
+                        style={{ color: folder.color }}
                       />
                       <span className="truncate">{folder.name}</span>
                     </div>

@@ -799,9 +799,9 @@ export function NotesPage() {
                               color: note.folder.color,
                             }}
                           >
-                            <div
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{ backgroundColor: note.folder.color }}
+                            <FolderIcon
+                              className="w-3 h-3 shrink-0"
+                              style={{ color: note.folder.color }}
                             />
                             {note.folder.name}
                           </span>
