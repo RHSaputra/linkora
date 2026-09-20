@@ -108,18 +108,21 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
               </div>
 
               {/* Active Assistant Live Badge */}
-              <div className="absolute -bottom-3 z-20 inline-flex items-center px-4 py-1.5 rounded-full bg-card/95 border border-primary/30 backdrop-blur-md shadow-lg text-primary text-xs font-bold font-heading select-none">
-                <span>Asisten AI Liko</span>
+              <div className="absolute -bottom-3.5 z-20 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-primary/40 backdrop-blur-xl shadow-xl shadow-primary/30 select-none">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 font-extrabold text-xs font-heading">
+                  Asisten AI Liko
+                </span>
               </div>
             </div>
           </div>
 
           {/* Liko Speaking Speech / Dialogue Bubble */}
-          <div className="relative mt-7 max-w-md mx-auto">
+          <div className="relative mt-8 max-w-md mx-auto">
             {/* Speech Bubble Arrow Pointer */}
-            <div className="w-0 h-0 border-x-8 border-x-transparent border-b-8 border-b-card/90 dark:border-b-foreground/[0.04] mx-auto -mb-[1px] relative z-10" />
+            <div className="w-0 h-0 border-x-8 border-x-transparent border-b-8 border-b-white/95 dark:border-b-slate-800/80 mx-auto -mb-[1px] relative z-10" />
 
-            <div className="relative p-5 sm:p-6 rounded-2xl bg-card/90 dark:bg-foreground/[0.03] border border-border/80 dark:border-primary/25 backdrop-blur-md shadow-xl text-center">
+            <div className="relative p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-slate-800/70 border border-slate-200/80 dark:border-primary/30 backdrop-blur-xl shadow-xl text-center">
               <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug flex items-center justify-center gap-1.5 flex-wrap">
                 Halo <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span>
               </h2>
@@ -132,11 +135,11 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
         </div>
 
         {/* Action Buttons */}
-        <div className="p-5 sm:p-6 border-t border-border/60 flex flex-col sm:flex-row gap-3 bg-muted/20 dark:bg-card">
+        <div className="p-5 sm:p-6 border-t border-slate-200/60 dark:border-primary/20 flex flex-col sm:flex-row gap-3 bg-slate-100/70 dark:bg-slate-900/60 backdrop-blur-xl">
           <Button
             onClick={handleStartProfile}
-            variant="outline"
-            className="flex-1 rounded-xl text-xs font-semibold py-3 flex items-center justify-center gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary text-foreground active:scale-95 transition-all cursor-pointer"
+            type="button"
+            className="flex-1 rounded-xl text-xs font-semibold py-3 flex items-center justify-center gap-2 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-primary/20 border border-slate-200 dark:border-primary/35 text-foreground dark:text-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer"
           >
             <User className="h-4 w-4 text-primary" />
             Atur Profil Saya
@@ -144,7 +147,8 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
 
           <Button
             onClick={handleDismiss}
-            className="flex-1 rounded-xl bg-gradient-to-r from-primary via-primary-hover to-purple-600 text-primary-foreground font-bold text-xs py-3 shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            type="button"
+            className="flex-1 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-purple-600 hover:from-primary-hover hover:to-purple-700 text-primary-foreground font-bold text-xs py-3 shadow-lg shadow-primary/30 hover:shadow-primary/45 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             Mulai Jelajahi <ArrowRight className="h-4 w-4" />
           </Button>
