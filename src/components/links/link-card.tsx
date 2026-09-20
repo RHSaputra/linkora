@@ -165,7 +165,7 @@ export function LinkCard({
       >
         <div
           onClick={handleCardClick}
-          className="glass-panel rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/40 border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
+          className="glass-panel rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:border-border border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
         >
           {/* Left: Favicon / Thumbnail + Details */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
@@ -368,7 +368,7 @@ export function LinkCard({
     >
       <div
         onClick={handleCardClick}
-        className="glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/40 border border-border/80 bg-card/90 h-full flex flex-col justify-between"
+        className="glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border border border-border/80 bg-card/90 h-full flex flex-col justify-between"
       >
         {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
         <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
@@ -585,33 +585,23 @@ export function LinkCard({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-1">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.92, rotate: -1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1"
-              >
+              <div className="flex-1">
                 <Button 
                   type="button"
                   variant="outline" 
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-primary/25 bg-slate-100 dark:bg-slate-800/80 hover:bg-primary/10 text-primary dark:text-primary-foreground font-semibold shadow-xs transition-all cursor-pointer flex items-center justify-center"
+                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-border bg-slate-100 dark:bg-slate-800/80 hover:bg-muted text-foreground font-semibold shadow-xs transition-colors cursor-pointer flex items-center justify-center"
                   onClick={handleCardClick}
                 >
                   {t("links.overviewBtn")}
                 </Button>
-              </motion.div>
+              </div>
 
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.92, rotate: 1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1"
-              >
+              <div className="flex-1">
                 <Button 
                   type="button"
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm shadow-primary/25 border border-primary/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full text-[11px] h-8 px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm border border-transparent transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleExternalOpen();
@@ -620,7 +610,7 @@ export function LinkCard({
                   <span>{t("links.openLinkBtn")}</span>
                   <ExternalLink className="h-3.5 w-3.5 text-white/90 shrink-0" />
                 </Button>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
