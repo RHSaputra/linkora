@@ -534,7 +534,6 @@ export function AddLinkDialog({
                       animate={{ opacity: 1, y: 0 }}
                       className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 rounded-xl px-3 py-2 mt-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <p className="text-xs text-foreground/90 leading-tight">
                         Tautan siap dianalisis. Klik tombol <span className="font-bold text-blue-600 dark:text-blue-400">Analisis AI</span> untuk mengisi kategori, deskripsi, dan tag secara otomatis.
                       </p>
