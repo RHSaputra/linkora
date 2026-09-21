@@ -440,6 +440,10 @@ export function DashboardPage({
                   index={i}
                   viewMode={viewMode}
                   onUpdate={triggerRefresh}
+                  onDelete={(deletedId) => {
+                    s.favoriteLinks = s.favoriteLinks.filter((l) => l.id !== deletedId);
+                    setFilteredRecentLinks((prev) => prev.filter((l) => l.id !== deletedId));
+                  }}
                   onEdit={openEditLink}
                 />
               ))}
@@ -520,6 +524,9 @@ export function DashboardPage({
                     index={i}
                     viewMode={viewMode}
                     onUpdate={triggerRefresh}
+                    onDelete={(deletedId) => {
+                      setFilteredRecentLinks((prev) => prev.filter((l) => l.id !== deletedId));
+                    }}
                     onEdit={openEditLink}
                   />
                 ))}

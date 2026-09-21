@@ -39,6 +39,7 @@ import { LinkViewMode } from "@/hooks/use-view-mode";
 interface LinkCardProps {
   link: SerializedLink;
   onUpdate?: () => void;
+  onDelete?: (id: string) => void;
   onEdit?: (link: SerializedLink) => void;
   index?: number;
   collectionId?: string;
@@ -48,6 +49,7 @@ interface LinkCardProps {
 export function LinkCard({
   link,
   onUpdate,
+  onDelete,
   onEdit,
   index = 0,
   collectionId,
@@ -118,11 +120,12 @@ export function LinkCard({
   };
 
   const executeDelete = async () => {
+    onDelete?.(link.id);
     try {
       await deleteLink(link.id);
-      onUpdate?.();
     } catch (err) {
       console.error("Gagal menghapus link", err);
+      onUpdate?.();
     }
   };
 

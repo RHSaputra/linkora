@@ -581,6 +581,9 @@ export function CollectionsPage({
                             triggerRefresh();
                             refreshCollections();
                           }}
+                          onDelete={(deletedId) => {
+                            setCollectionLinks((prev) => prev.filter((l) => l.id !== deletedId));
+                          }}
                           onEdit={openEditLink}
                         />
                       ))}

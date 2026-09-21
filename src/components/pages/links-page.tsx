@@ -137,7 +137,7 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
 
   // Regular search (used when query is NOT natural language)
   const isNL = isNaturalLanguageQuery(debouncedQuery);
-  const { links, loading, refresh, loadMore, goToPage, page, hasMore, total } = useLinks(
+  const { links, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks } = useLinks(
     {
       q: isNL ? undefined : debouncedQuery,
       category: category === "all" ? undefined : category,
@@ -343,6 +343,13 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
                 index={i}
                 viewMode={viewMode}
                 onUpdate={triggerRefresh}
+                onDelete={(deletedId) => {
+                  if (isAiActive) {
+                    setAiResults((prev) => (prev ? prev.filter((l) => l.id !== deletedId) : null));
+                  } else {
+                    setLinks((prev) => prev.filter((l) => l.id !== deletedId));
+                  }
+                }}
                 onEdit={openEditLink}
               />
             ))}

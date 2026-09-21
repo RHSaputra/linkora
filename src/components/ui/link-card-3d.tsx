@@ -33,11 +33,12 @@ interface LinkCard3DProps {
   link: SerializedLink;
   index: number;
   onUpdate: () => void;
+  onDelete?: (id: string) => void;
   onEdit: (link: SerializedLink) => void;
   viewMode?: LinkViewMode;
 }
 
-export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" }: LinkCard3DProps) {
+export function LinkCard3D({ link, index, onUpdate, onDelete, onEdit, viewMode = "detail" }: LinkCard3DProps) {
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
   const { notes } = useNotes();
@@ -86,11 +87,12 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
   };
 
   const executeDelete = async () => {
+    onDelete?.(link.id);
     try {
       await deleteLink(link.id);
-      onUpdate();
     } catch (err) {
       console.error("Gagal menghapus link", err);
+      onUpdate();
     }
   };
 
