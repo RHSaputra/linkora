@@ -558,12 +558,12 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
     // 1. Initial sync with active session
     const user = session?.user;
     if (user) {
-      setProfileData((prev) => prev || { name: user.name || undefined, image: user.image });
+      setProfileData({ name: user.name || undefined, image: user.image });
     }
 
     // 2. Fetch fresh profile from API to ensure accurate DB state
     if (session?.user?.id) {
-      fetch("/api/user/profile")
+      fetch(`/api/user/profile?t=${Date.now()}`, { cache: "no-store" })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (data && !data.error) {
@@ -591,7 +591,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
     return () => {
       window.removeEventListener("linkora_profile_updated", handleProfileUpdated);
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, session?.user?.image, session?.user?.name]);
 
   const currentMobileName = profileData?.name || session?.user?.name || "User";
   const currentMobileImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;

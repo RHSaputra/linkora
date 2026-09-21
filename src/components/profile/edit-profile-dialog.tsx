@@ -30,7 +30,7 @@ import {
   BookOpen,
   ArrowUpRight,
 } from "lucide-react";
-import { invalidateAndRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
@@ -127,7 +127,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
         setSelectedAvatar(session.user.image || "");
       }
       // Fetch fresh profile stats
-      fetch("/api/user/profile")
+      fetch(`/api/user/profile?t=${Date.now()}`, { cache: "no-store" })
         .then((r) => r.json())
         .then((data) => {
           if (data && !data.error) {
@@ -259,7 +259,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
           );
         }
 
-        invalidateAndRefresh(["dashboard"]);
+        dispatchRefresh(["dashboard"], false);
 
         toast.success(locale === "en" ? "Your profile has been updated successfully!" : "Profil Anda berhasil diperbarui!", locale === "en" ? "Saved Successfully" : "Berhasil Disimpan");
         onOpenChange(false);

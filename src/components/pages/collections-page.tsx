@@ -33,6 +33,8 @@ import {
   useNoteFolders,
   deleteNoteFolder,
   invalidateAndRefresh,
+  updateGlobalCacheCollections,
+  dispatchRefresh,
 } from "@/hooks/use-data";
 import { SerializedLink } from "@/lib/types";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -151,14 +153,41 @@ export function CollectionsPage({
 
   // Link Collection Actions
   const createCollection = async (name: string, color: string, icon = "folder") => {
-    const res = await fetch("/api/collections", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, color, icon }),
-    });
-    if (res.ok) {
-      invalidateAndRefresh(["collections", "dashboard", "links"]);
-      triggerRefresh();
+    const tempId = `temp-${Date.now()}`;
+    const tempCol = {
+      id: tempId,
+      name,
+      color,
+      icon,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      userId: "",
+      _count: { links: 0 },
+    };
+
+    updateGlobalCacheCollections((prev) => [...prev, tempCol as any]);
+    dispatchRefresh(["collections", "dashboard"], false);
+
+    try {
+      const res = await fetch("/api/collections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, color, icon }),
+      });
+      if (res.ok) {
+        const realCol = await res.json();
+        updateGlobalCacheCollections((prev) =>
+          prev.map((c) => (c.id === tempId ? realCol : c))
+        );
+        setSelectedId(realCol.id);
+        dispatchRefresh(["collections", "dashboard"], false);
+      } else {
+        updateGlobalCacheCollections((prev) => prev.filter((c) => c.id !== tempId));
+        dispatchRefresh(["collections"], false);
+      }
+    } catch {
+      updateGlobalCacheCollections((prev) => prev.filter((c) => c.id !== tempId));
+      dispatchRefresh(["collections"], false);
     }
   };
 
@@ -181,10 +210,9 @@ export function CollectionsPage({
 
   const executeDeleteCollection = async () => {
     if (!selectedId) return;
-    await deleteCollection(selectedId);
+    const deletingId = selectedId;
     setSelectedId(null);
-    refreshCollections(true);
-    triggerRefresh();
+    await deleteCollection(deletingId);
   };
 
   const handleDeleteCollection = () => {
@@ -248,8 +276,7 @@ export function CollectionsPage({
         );
       }
       setNoteFolderDialogOpen(false);
-      invalidateAndRefresh(["noteFolders", "notes"]);
-      refreshNoteFolders(true);
+      dispatchRefresh(["noteFolders", "notes"], false);
     } catch (err) {
       console.error(err);
       toast.error(locale === "en" ? "Failed to save collection" : "Gagal menyimpan koleksi", "Error");
@@ -260,10 +287,10 @@ export function CollectionsPage({
 
   const executeDeleteNoteFolder = async () => {
     if (!selectedNoteFolderId) return;
+    const idToDelete = selectedNoteFolderId;
+    setSelectedNoteFolderId(null);
     try {
-      await deleteNoteFolder(selectedNoteFolderId);
-      setSelectedNoteFolderId(null);
-      refreshNoteFolders(true);
+      await deleteNoteFolder(idToDelete);
       toast.success(
         locale === "en" ? "Note collection deleted" : "Koleksi catatan dihapus",
         locale === "en" ? "Deleted" : "Dihapus"
@@ -288,7 +315,7 @@ export function CollectionsPage({
       });
       const data = await res.json();
       if (data.id) {
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
         router.push(`/notes/${data.id}`);
       }
     } catch (err) {

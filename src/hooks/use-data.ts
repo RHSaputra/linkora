@@ -59,6 +59,57 @@ export function setCachedData(url: string, data: unknown) {
   globalCache.set(url, data);
 }
 
+export function updateGlobalCacheLinks(updater: (links: SerializedLink[]) => SerializedLink[]) {
+  for (const [key, val] of globalCache.entries()) {
+    if (key.startsWith("/api/links")) {
+      const pageData = val as LinksPage | undefined;
+      if (pageData && Array.isArray(pageData.items)) {
+        const newItems = updater(pageData.items);
+        const diff = newItems.length - pageData.items.length;
+        globalCache.set(key, {
+          ...pageData,
+          items: newItems,
+          total: Math.max(0, (pageData.total || 0) + diff),
+        });
+      }
+    }
+  }
+}
+
+export function updateGlobalCacheCollections(updater: (collections: SerializedCollection[]) => SerializedCollection[]) {
+  for (const [key, val] of globalCache.entries()) {
+    if (key.startsWith("/api/collections") && Array.isArray(val)) {
+      globalCache.set(key, updater(val as SerializedCollection[]));
+    }
+  }
+}
+
+export function updateGlobalCacheNotes(updater: (notes: any[]) => any[]) {
+  for (const [key, val] of globalCache.entries()) {
+    if (key.startsWith("/api/notes") && Array.isArray(val)) {
+      globalCache.set(key, updater(val as any[]));
+    }
+  }
+}
+
+export function updateGlobalCacheRoadmaps(updater: (roadmaps: any[]) => any[]) {
+  for (const [key, val] of globalCache.entries()) {
+    if (key.startsWith("/api/roadmaps")) {
+      const data = val as { items?: any[] } | undefined;
+      if (data && Array.isArray(data.items)) {
+        globalCache.set(key, { ...data, items: updater(data.items) });
+      }
+    }
+  }
+}
+
+export function updateGlobalCacheDashboard(updater: (stats: DashboardStats) => DashboardStats) {
+  const current = globalCache.get("/api/dashboard") as DashboardStats | undefined;
+  if (current) {
+    globalCache.set("/api/dashboard", updater(current));
+  }
+}
+
 // ─── Granular refresh events ───────────────────────────────────────────────
 export type RefreshResource =
   | "dashboard"
@@ -71,51 +122,53 @@ export type RefreshResource =
 
 const REFRESH_EVENT = "refreshData";
 
-export function dispatchRefresh(resources: RefreshResource[] = []) {
+export function dispatchRefresh(resources: RefreshResource[] = [], force = false) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(
-    new CustomEvent(REFRESH_EVENT, { detail: { resources } })
+    new CustomEvent(REFRESH_EVENT, { detail: { resources, force } })
   );
 }
 
 export function subscribeRefresh(
-  cb: () => void,
+  cb: (force?: boolean) => void,
   resource?: RefreshResource
 ) {
   if (typeof window === "undefined") return () => { };
   const handler = (e: Event) => {
-    const detail = (e as CustomEvent<{ resources?: RefreshResource[] }>).detail;
+    const detail = (e as CustomEvent<{ resources?: RefreshResource[]; force?: boolean }>).detail;
     if (detail == null) {
-      cb();
+      cb(false);
       return;
     }
     if (resource && Array.isArray(detail.resources) && detail.resources.includes(resource)) {
-      cb();
+      cb(Boolean(detail.force));
     }
   };
   window.addEventListener(REFRESH_EVENT, handler);
   return () => window.removeEventListener(REFRESH_EVENT, handler);
 }
 
-export function invalidateAndRefresh(resources: RefreshResource[]) {
-  const resourceToPrefixMap: Record<RefreshResource, string[]> = {
-    dashboard: ["/api/dashboard"],
-    links: ["/api/links"],
-    collections: ["/api/collections"],
-    tags: ["/api/tags"],
-    notes: ["/api/notes"],
-    noteFolders: ["/api/notes/folders"],
-    roadmaps: ["/api/roadmaps"],
-  };
+export function invalidateAndRefresh(resources: RefreshResource[], force = true) {
+  if (force) {
+    const resourceToPrefixMap: Record<RefreshResource, string[]> = {
+      dashboard: ["/api/dashboard"],
+      links: ["/api/links"],
+      collections: ["/api/collections"],
+      tags: ["/api/tags"],
+      notes: ["/api/notes"],
+      noteFolders: ["/api/notes/folders"],
+      roadmaps: ["/api/roadmaps"],
+    };
 
-  for (const res of resources) {
-    const prefixes = resourceToPrefixMap[res] || [];
-    for (const prefix of prefixes) {
-      invalidateCache(prefix);
+    for (const res of resources) {
+      const prefixes = resourceToPrefixMap[res] || [];
+      for (const prefix of prefixes) {
+        invalidateCache(prefix);
+      }
     }
   }
 
-  dispatchRefresh(resources);
+  dispatchRefresh(resources, force);
 }
 
 export function buildLinksUrl(
@@ -172,8 +225,8 @@ export function useDashboard() {
   }, [stats]);
 
   useEffect(() => {
-    refresh();
-    return subscribeRefresh(() => refresh(true), "dashboard");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "dashboard");
   }, [refresh]);
 
   return { stats, loading, refresh };
@@ -328,7 +381,7 @@ export function useLinks(
       setLoading(false);
     });
 
-    return subscribeRefresh(() => refresh(true), "links");
+    return subscribeRefresh((force) => refresh(force), "links");
   }, [filterKey]);
 
   return { links, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
@@ -353,8 +406,8 @@ export function useCollections() {
   }, [collections.length]);
 
   useEffect(() => {
-    refresh();
-    return subscribeRefresh(() => refresh(true), "collections");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "collections");
   }, [refresh]);
 
   return { collections, loading, refresh, setCollections };
@@ -375,8 +428,8 @@ export function useTags() {
   }, []);
 
   useEffect(() => {
-    refresh();
-    return subscribeRefresh(() => refresh(true), "tags");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "tags");
   }, [refresh]);
 
   return { tags, refresh };
@@ -419,8 +472,8 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
     } else {
       setLoading(true);
     }
-    refresh();
-    return subscribeRefresh(() => refresh(true), "notes");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "notes");
   }, [url, refresh]);
 
   return { notes, loading, refresh, setNotes };
@@ -449,8 +502,8 @@ export function useNoteFolders() {
   }, [folders.length]);
 
   useEffect(() => {
-    refresh();
-    return subscribeRefresh(() => refresh(true), "noteFolders");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "noteFolders");
   }, [refresh]);
 
   return { folders, loading, refresh, setFolders };
@@ -462,33 +515,200 @@ export async function openLink(link: SerializedLink) {
 }
 
 export async function toggleFavorite(link: SerializedLink): Promise<SerializedLink | null> {
-  const res = await fetch(`/api/links/${link.id}/favorite`, { method: "POST" });
-  if (res.ok) {
-    const data = await res.json();
-    invalidateAndRefresh(["links", "dashboard"]);
-    return data;
+  const nextVal = !link.isFavorite;
+  const updatedLink = { ...link, isFavorite: nextVal };
+
+  // 1. Optimistically update global cache
+  updateGlobalCacheLinks((items) =>
+    items.map((item) => (item.id === link.id ? updatedLink : item))
+  );
+  setCachedData(`/api/links/${link.id}`, updatedLink);
+
+  // 2. Dispatch soft refresh
+  dispatchRefresh(["links", "dashboard"], false);
+
+  try {
+    const res = await fetch(`/api/links/${link.id}/favorite`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      setCachedData(`/api/links/${link.id}`, data);
+      return data;
+    }
+    throw new Error("Gagal mengubah status favorit");
+  } catch (err) {
+    // 3. Rollback on failure
+    updateGlobalCacheLinks((items) =>
+      items.map((item) => (item.id === link.id ? link : item))
+    );
+    dispatchRefresh(["links", "dashboard"], false);
+
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal mengubah status favorit", "Favorit");
+    });
+    throw err;
   }
-  const data = await res.json().catch(() => ({}));
-  const msg = data.error || "Gagal mengubah status favorit";
-  import("@/components/ui/custom-toast").then(({ toast }) => {
-    toast.error(msg, "Favorit");
-  });
-  throw new Error(msg);
 }
 
 export async function deleteLink(id: string) {
-  invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
-  return fetch(`/api/links/${id}`, { method: "DELETE" });
+  let removedLink: SerializedLink | null = null;
+
+  // 1. Optimistically remove from cache
+  updateGlobalCacheLinks((items) => {
+    const found = items.find((i) => i.id === id);
+    if (found) removedLink = found;
+    return items.filter((i) => i.id !== id);
+  });
+  updateGlobalCacheDashboard((stats) => {
+    const isFav = Boolean((removedLink as SerializedLink | null)?.isFavorite);
+    const currentFavCount = typeof stats.favoriteCount === "number" ? stats.favoriteCount : 0;
+    return {
+      ...stats,
+      totalLinks: Math.max(0, (stats.totalLinks || 0) - 1),
+      favoriteCount: isFav ? Math.max(0, currentFavCount - 1) : currentFavCount,
+      recentLinks: (stats.recentLinks || []).filter((l) => l.id !== id),
+      favoriteLinks: (stats.favoriteLinks || []).filter((l) => l.id !== id),
+      upcomingReminders: (stats.upcomingReminders || []).filter((l) => l.id !== id),
+    };
+  });
+
+  // 2. Dispatch soft refresh
+  dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
+
+  try {
+    const res = await fetch(`/api/links/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Gagal menghapus link");
+    return res;
+  } catch (err) {
+    // 3. Rollback on failure
+    if (removedLink) {
+      updateGlobalCacheLinks((items) => [removedLink!, ...items]);
+      updateGlobalCacheDashboard((stats) => ({
+        ...stats,
+        totalLinks: (stats.totalLinks || 0) + 1,
+      }));
+      dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus link", "Hapus Link");
+    });
+    throw err;
+  }
+}
+
+export async function createLinkOptimistic(newLinkData: Partial<SerializedLink>): Promise<SerializedLink | null> {
+  const tempId = `temp-${Date.now()}`;
+  const tempLink = {
+    id: tempId,
+    url: newLinkData.url || "",
+    title: newLinkData.title || newLinkData.url || "Untitled",
+    description: newLinkData.description || null,
+    category: newLinkData.category || "General",
+    tags: newLinkData.tags || [],
+    notes: newLinkData.notes || null,
+    favicon: newLinkData.favicon || null,
+    thumbnail: newLinkData.thumbnail || null,
+    isFavorite: Boolean(newLinkData.isFavorite),
+    openCount: 0,
+    lastOpenedAt: null,
+    reminderAt: newLinkData.reminderAt || null,
+    aiSummary: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    userId: "",
+    collections: [],
+  } as unknown as SerializedLink;
+
+  updateGlobalCacheLinks((items) => [tempLink, ...items]);
+  updateGlobalCacheDashboard((stats) => ({
+    ...stats,
+    totalLinks: (stats.totalLinks || 0) + 1,
+    recentLinks: [tempLink, ...(stats.recentLinks || [])],
+  }));
+  dispatchRefresh(["links", "dashboard", "tags"], false);
+
+  try {
+    const res = await fetch("/api/links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newLinkData),
+    });
+    if (res.ok) {
+      const realLink: SerializedLink = await res.json();
+      updateGlobalCacheLinks((items) =>
+        items.map((item) => (item.id === tempId ? realLink : item))
+      );
+      dispatchRefresh(["links", "dashboard", "tags"], false);
+      return realLink;
+    }
+    throw new Error("Gagal membuat link");
+  } catch (err) {
+    updateGlobalCacheLinks((items) => items.filter((item) => item.id !== tempId));
+    updateGlobalCacheDashboard((stats) => ({
+      ...stats,
+      totalLinks: Math.max(0, stats.totalLinks - 1),
+    }));
+    dispatchRefresh(["links", "dashboard", "tags"], false);
+
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menambahkan link", "Tambah Link");
+    });
+    throw err;
+  }
 }
 
 export async function deleteCollection(id: string) {
-  invalidateAndRefresh(["collections", "dashboard", "links"]);
-  return fetch(`/api/collections/${id}`, { method: "DELETE" });
+  let removedCol: SerializedCollection | null = null;
+  updateGlobalCacheCollections((items) => {
+    const found = items.find((c) => c.id === id);
+    if (found) removedCol = found;
+    return items.filter((c) => c.id !== id);
+  });
+  dispatchRefresh(["collections", "dashboard", "links"], false);
+
+  try {
+    const res = await fetch(`/api/collections/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Gagal menghapus koleksi");
+    return res;
+  } catch (err) {
+    if (removedCol) {
+      updateGlobalCacheCollections((items) => [...items, removedCol!]);
+      dispatchRefresh(["collections", "dashboard", "links"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus koleksi", "Koleksi");
+    });
+    throw err;
+  }
 }
 
 export async function deleteNoteFolder(id: string) {
-  invalidateAndRefresh(["noteFolders", "notes"]);
-  return fetch(`/api/notes/folders/${id}`, { method: "DELETE" });
+  let removedFolder: any = null;
+  for (const [key, val] of globalCache.entries()) {
+    if (key.startsWith("/api/notes/folders") && Array.isArray(val)) {
+      removedFolder = (val as any[]).find((f: any) => f.id === id);
+      globalCache.set(key, (val as any[]).filter((f: any) => f.id !== id));
+    }
+  }
+  dispatchRefresh(["noteFolders", "notes"], false);
+
+  try {
+    const res = await fetch(`/api/notes/folders/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Gagal menghapus folder catatan");
+    return res;
+  } catch (err) {
+    if (removedFolder) {
+      for (const [key, val] of globalCache.entries()) {
+        if (key.startsWith("/api/notes/folders") && Array.isArray(val)) {
+          globalCache.set(key, [...(val as any[]), removedFolder]);
+        }
+      }
+      dispatchRefresh(["noteFolders", "notes"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus folder catatan", "Folder Catatan");
+    });
+    throw err;
+  }
 }
 
 export async function fetchMetadata(url: string) {
@@ -541,19 +761,37 @@ export function useRoadmaps(searchQuery?: string) {
     } else {
       setLoading(true);
     }
-    refresh();
-    return subscribeRefresh(() => refresh(true), "roadmaps");
+    refresh(false);
+    return subscribeRefresh((force) => refresh(force), "roadmaps");
   }, [url, refresh]);
 
   return { roadmaps, loading, refresh, setRoadmaps };
 }
 
 export async function deleteRoadmap(id: string) {
-  const res = await fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
-  if (res.ok) {
-    invalidateAndRefresh(["roadmaps"]);
+  let removedRoadmap: any = null;
+  updateGlobalCacheRoadmaps((items) => {
+    const found = items.find((r) => r.id === id);
+    if (found) removedRoadmap = found;
+    return items.filter((r) => r.id !== id);
+  });
+  dispatchRefresh(["roadmaps"], false);
+
+  try {
+    const res = await fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Gagal menghapus roadmap");
+    return res;
+  } catch (err) {
+    if (removedRoadmap) {
+      updateGlobalCacheRoadmaps((items) => [...items, removedRoadmap]);
+      dispatchRefresh(["roadmaps"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus roadmap", "Roadmap");
+    });
+    throw err;
   }
-  return res;
 }
+
 
 

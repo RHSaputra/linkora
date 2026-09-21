@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await auth();
@@ -32,18 +34,25 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      createdAt: user.createdAt,
-      stats: {
-        totalLinks: user._count.links,
-        totalNotes: user._count.notes,
-        totalCollections: user._count.collections,
+    return NextResponse.json(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        createdAt: user.createdAt,
+        stats: {
+          totalLinks: user._count.links,
+          totalNotes: user._count.notes,
+          totalCollections: user._count.collections,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (error) {
     console.error("GET /api/user/profile error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });

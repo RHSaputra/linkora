@@ -56,7 +56,6 @@ function LoginFormContent() {
         setError(locale === "en" ? "Invalid email or password." : "Email atau kata sandi yang Anda masukkan salah.")
       } else {
         router.push("/dashboard")
-        router.refresh()
       }
     } catch (_err) {
       setError(locale === "en" ? "An error occurred. Please try again." : "Terjadi kesalahan. Silakan coba lagi.")

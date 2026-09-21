@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotesList, useNoteFolders, invalidateAndRefresh, setCachedData } from "@/hooks/use-data";
+import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { toast } from "@/components/ui/custom-toast";
 
@@ -141,7 +141,7 @@ export function NotesPage() {
       if (data.id) {
         // Pre-cache newly created note to avoid delay on note detail screen
         setCachedData(`/api/notes/${data.id}`, data);
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
         router.push(`/notes/${data.id}`);
       }
     } catch (error) {
@@ -165,7 +165,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isFavorite: nextVal }),
       });
-      invalidateAndRefresh(["notes", "noteFolders"]);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
       fetchNotes(true);
@@ -186,7 +186,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPinned: nextVal }),
       });
-      invalidateAndRefresh(["notes", "noteFolders"]);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
       fetchNotes(true);
@@ -200,9 +200,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folderId }),
       });
-      invalidateAndRefresh(["notes", "noteFolders"]);
-      fetchNotes(true);
-      fetchFolders(true);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
     }
@@ -217,8 +215,7 @@ export function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ACTIVE" }),
       });
-      invalidateAndRefresh(["notes", "noteFolders"]);
-      fetchNotes(true);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
     }
@@ -275,7 +272,7 @@ export function NotesPage() {
         method: "DELETE",
       });
       if (res.ok) {
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
       } else {
         toast.error(locale === "en" ? "Failed to delete note" : "Gagal menghapus catatan", "Error");
         fetchNotes(true);
@@ -313,7 +310,7 @@ export function NotesPage() {
       });
 
       if (res.ok) {
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
       } else {
         toast.error(locale === "en" ? "Failed to bulk delete notes" : "Gagal menghapus beberapa catatan", "Error");
         fetchNotes(true);
@@ -363,8 +360,7 @@ export function NotesPage() {
         });
       }
       setFolderDialogOpen(false);
-      invalidateAndRefresh(["notes", "noteFolders"]);
-      fetchFolders(true);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -382,9 +378,7 @@ export function NotesPage() {
         setActiveFolderId(null);
       }
       setDeleteFolderTarget(null);
-      invalidateAndRefresh(["notes", "noteFolders"]);
-      fetchFolders(true);
-      fetchNotes(true);
+      dispatchRefresh(["notes", "noteFolders"], false);
     } catch (error) {
       console.error(error);
     }

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, CheckCircle, Loader2 } from "lucide-react";
 import { SerializedLink } from "@/lib/types";
-import { invalidateAndRefresh } from "@/hooks/use-data";
+import { dispatchRefresh } from "@/hooks/use-data";
 
 export function LikoSuggestionNotification() {
   const [suggestion, setSuggestion] = useState<{
@@ -87,7 +87,7 @@ export function LikoSuggestionNotification() {
           link: { ...prev.link, category: assigned }
         } : null));
 
-        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
+        dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
 
         autoDismissTimerRef.current = setTimeout(() => {
           setSuggestion(null);

@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { openLink, toggleFavorite, deleteLink, useNotes, invalidateAndRefresh } from "@/hooks/use-data";
+import { openLink, toggleFavorite, deleteLink, useNotes, dispatchRefresh } from "@/hooks/use-data";
 import { ViewLinkDialog } from "@/components/links/view-link-dialog";
 import { ManageCollectionsDialog } from "@/components/links/manage-collections-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -145,7 +145,7 @@ export function LinkCard({
     if (!collectionId) return;
     try {
       await fetch(`/api/collections/${collectionId}/link/${link.id}`, { method: "DELETE" });
-      invalidateAndRefresh(["collections", "links", "dashboard"]);
+      dispatchRefresh(["collections", "links", "dashboard"], false);
       onUpdate?.();
     } catch (err) {
       console.error("Gagal mengeluarkan dari koleksi", err);

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -19,7 +21,11 @@ export async function GET(req: NextRequest) {
 
     if (!user || !user.image) {
       const fallbackUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user?.name || "Linkorian")}`;
-      return NextResponse.redirect(fallbackUrl);
+      return NextResponse.redirect(fallbackUrl, {
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      });
     }
 
     // Whitelist only safe raster image types
@@ -43,7 +49,7 @@ export async function GET(req: NextRequest) {
             status: 200,
             headers: {
               "Content-Type": mimeType,
-              "Cache-Control": "public, max-age=60, stale-while-revalidate=600",
+              "Cache-Control": "no-cache, no-store, must-revalidate",
               "X-Content-Type-Options": "nosniff",
               "Content-Security-Policy": "default-src 'none'",
             },

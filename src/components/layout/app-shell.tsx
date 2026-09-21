@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { SerializedLink } from "@/lib/types";
 import { LinkoraAIChat } from "@/components/layout/linkora-ai-chat";
 import { QuickNoteButton } from "@/components/notes/quick-note-button";
-import { invalidateAndRefresh, fetchWithCache, buildLinksUrl } from "@/hooks/use-data";
+import { invalidateAndRefresh, fetchWithCache, buildLinksUrl, dispatchRefresh } from "@/hooks/use-data";
 import { LikoSuggestionNotification } from "@/components/ui/liko-suggestion-notification";
 import { LikoWelcomeDialog } from "@/components/onboarding/liko-welcome-dialog";
 import { OnboardingProvider } from "@/components/providers/onboarding-provider";
@@ -107,7 +107,7 @@ export function AppShell({ children }: AppShellProps) {
   }, []);
 
   const handleSuccess = () => {
-    invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
+    dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
   };
 
   const contextValue: AppShellContextType = {

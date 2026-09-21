@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Link2, Loader2, CheckCircle, FileText, BookOpen } from "lucide-react";
-import { invalidateAndRefresh } from "@/hooks/use-data";
+import { invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
@@ -159,7 +159,7 @@ export function LinkoraAIChat() {
         }
 
         // Refresh data across links, dashboard, collections, tags
-        invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
+        dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
       } else {
         setMessages((prev) =>
           prev.map((m) => (m.id === msgId ? { ...m, captureState: "error" as QuickCaptureState } : m))
@@ -189,7 +189,7 @@ export function LinkoraAIChat() {
       }
 
       setSavedNoteMsgIds((prev) => new Set([...prev, msgId]));
-      invalidateAndRefresh(["notes", "noteFolders"]);
+      dispatchRefresh(["notes", "noteFolders"], false);
       toast.success(locale === "en" ? "Saved to Personal Notes!" : "Tersimpan di Personal Notes!", "Liko AI");
     } catch {
       toast.error(locale === "en" ? "Failed to save note to server." : "Gagal menyimpan catatan ke server.", locale === "en" ? "Failed" : "Gagal");

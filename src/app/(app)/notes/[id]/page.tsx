@@ -66,7 +66,7 @@ import {
   getNewerDraft,
   type NoteDraft,
 } from "@/hooks/use-note-draft";
-import { getCachedData, setCachedData, invalidateAndRefresh } from "@/hooks/use-data";
+import { getCachedData, setCachedData, invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
 const COLOR_OPTIONS = [
@@ -398,7 +398,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         const updated = await res.json();
         setCachedData(`/api/notes/${id}`, updated);
         setNote(updated);
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
       }
     } catch (error) {
       console.error(error);
@@ -427,7 +427,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         method: "DELETE",
       });
       clearDraft(id);
-      invalidateAndRefresh(["notes", "noteFolders"]);
+      dispatchRefresh(["notes", "noteFolders"], false);
       router.push("/notes");
     } catch (error) {
       console.error(error);
@@ -455,7 +455,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
         setFolder(newFolder.id);
         setNewFolderOpen(false);
         setNewFolderName("");
-        invalidateAndRefresh(["notes", "noteFolders"]);
+        dispatchRefresh(["notes", "noteFolders"], false);
       }
     } catch (error) {
       console.error(error);
