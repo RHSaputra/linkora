@@ -4,6 +4,14 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function makeNoCacheRedirect(url: string) {
+  const res = NextResponse.redirect(url, 307);
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+  res.headers.set("Pragma", "no-cache");
+  res.headers.set("Expires", "0");
+  return res;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -11,7 +19,12 @@ export async function GET(req: NextRequest) {
     const requestedUserId = searchParams.get("userId") || session?.user?.id;
 
     if (!requestedUserId) {
-      return new NextResponse(null, { status: 401 });
+      return new NextResponse(null, {
+        status: 401,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -21,11 +34,7 @@ export async function GET(req: NextRequest) {
 
     if (!user || !user.image) {
       const fallbackUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user?.name || "Linkorian")}`;
-      return NextResponse.redirect(fallbackUrl, {
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-        },
-      });
+      return makeNoCacheRedirect(fallbackUrl);
     }
 
     // Whitelist only safe raster image types
@@ -49,7 +58,9 @@ export async function GET(req: NextRequest) {
             status: 200,
             headers: {
               "Content-Type": mimeType,
-              "Cache-Control": "no-cache, no-store, must-revalidate",
+              "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+              "Pragma": "no-cache",
+              "Expires": "0",
               "X-Content-Type-Options": "nosniff",
               "Content-Security-Policy": "default-src 'none'",
             },
@@ -68,7 +79,7 @@ export async function GET(req: NextRequest) {
           !parsed.hostname.endsWith(".internal") &&
           !parsed.hostname.endsWith(".local")
         ) {
-          return NextResponse.redirect(user.image);
+          return makeNoCacheRedirect(user.image);
         }
       } catch {
         // Fallback below
@@ -76,10 +87,14 @@ export async function GET(req: NextRequest) {
     }
 
     const fallbackUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || "Linkorian")}`;
-    return NextResponse.redirect(fallbackUrl);
+    return makeNoCacheRedirect(fallbackUrl);
   } catch (error) {
     console.error("GET /api/user/avatar error:", error);
-    return new NextResponse(null, { status: 500 });
+    return new NextResponse(null, {
+      status: 500,
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
   }
 }
-

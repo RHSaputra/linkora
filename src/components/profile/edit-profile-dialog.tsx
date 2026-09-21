@@ -249,6 +249,15 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
         // Broadcast profile update event across the entire app for instant 0ms sync
         if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(
+              "linkora_cached_profile",
+              JSON.stringify({
+                name: payload.name,
+                image: payload.image,
+              })
+            );
+          } catch {}
           window.dispatchEvent(
             new CustomEvent("linkora_profile_updated", {
               detail: {

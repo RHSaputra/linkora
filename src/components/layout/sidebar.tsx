@@ -552,12 +552,20 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
   const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
 
-  const [profileData, setProfileData] = useState<{ name?: string; image?: string | null } | null>(null);
+  const [profileData, setProfileData] = useState<{ name?: string; image?: string | null } | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("linkora_cached_profile");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return null;
+  });
 
   useEffect(() => {
-    // 1. Initial sync with active session
+    // 1. Initial fallback sync with session ONLY if profileData is empty
     const user = session?.user;
-    if (user) {
+    if (user && !profileData) {
       setProfileData({ name: user.name || undefined, image: user.image });
     }
 
@@ -567,10 +575,14 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (data && !data.error) {
-            setProfileData({
+            const updated = {
               name: data.name,
               image: data.image,
-            });
+            };
+            setProfileData(updated);
+            try {
+              localStorage.setItem("linkora_cached_profile", JSON.stringify(updated));
+            } catch {}
           }
         })
         .catch(() => {});
@@ -580,10 +592,14 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
     const handleProfileUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<{ name?: string; image?: string | null }>;
       if (customEvent.detail) {
-        setProfileData({
+        const updated = {
           name: customEvent.detail.name,
           image: customEvent.detail.image,
-        });
+        };
+        setProfileData(updated);
+        try {
+          localStorage.setItem("linkora_cached_profile", JSON.stringify(updated));
+        } catch {}
       }
     };
 
@@ -591,7 +607,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
     return () => {
       window.removeEventListener("linkora_profile_updated", handleProfileUpdated);
     };
-  }, [session?.user?.id, session?.user?.image, session?.user?.name]);
+  }, [session?.user?.id]);
 
   const currentMobileName = profileData?.name || session?.user?.name || "User";
   const currentMobileImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;
@@ -633,17 +649,21 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
             <button
               type="button"
               onClick={onEditProfile}
-              className="h-8 w-8 rounded-full overflow-hidden border border-border/80 hover:border-primary transition-all active:scale-95 cursor-pointer shrink-0"
+              className="h-8 w-8 rounded-full overflow-hidden border border-border/80 hover:border-primary transition-all active:scale-95 cursor-pointer shrink-0 flex items-center justify-center bg-primary/10"
               title={currentMobileName}
             >
-              <img
-                src={currentMobileImage || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentMobileName)}`}
-                alt={currentMobileName}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentMobileName)}`;
-                }}
-              />
+              {currentMobileImage ? (
+                <img
+                  src={currentMobileImage}
+                  alt={currentMobileName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(currentMobileName)}`;
+                  }}
+                />
+              ) : (
+                <User className="h-4 w-4 text-primary" />
+              )}
             </button>
           ) : (
             <Button
