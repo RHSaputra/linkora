@@ -159,8 +159,8 @@ export function useDashboard() {
 
   const refresh = useCallback(async (force = false) => {
     try {
-      if (force && !globalCache.has("/api/dashboard")) setLoading(true);
-      const data = await fetchWithCache("/api/dashboard", force);
+      if (force && !globalCache.has("/api/dashboard") && !stats) setLoading(true);
+      const data = await fetchWithCache<DashboardStats>("/api/dashboard", force);
       if (data) {
         setStats(data);
       }
@@ -169,7 +169,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [stats]);
 
   useEffect(() => {
     refresh();
@@ -247,10 +247,17 @@ export function useLinks(
 
   const refresh = useCallback(
     async (force = false) => {
-      setLoading(true);
+      const currentUrl = buildLinksUrl(
+        { q: filterQ, category: filterCategory, tag: filterTag, favorite: filterFavorite, collectionId: filterCollectionId, sort: filterSort },
+        page,
+        pageSize
+      );
+      if (force && !globalCache.has(currentUrl) && links.length === 0) {
+        setLoading(true);
+      }
       try {
         const d = await fetchPage(page, force);
-        if (d) {
+        if (d && Array.isArray(d.items)) {
           setLinks(d.items);
           setTotal(d.total);
           setHasMore(d.hasMore);
@@ -261,7 +268,7 @@ export function useLinks(
         setLoading(false);
       }
     },
-    [fetchPage, page]
+    [fetchPage, page, filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize, links.length]
   );
 
   const loadMore = useCallback(async () => {
@@ -332,7 +339,7 @@ export function useCollections() {
   const [loading, setLoading] = useState(!globalCache.has("/api/collections"));
 
   const refresh = useCallback(async (force = false) => {
-    if (force && !globalCache.has("/api/collections")) setLoading(true);
+    if (force && !globalCache.has("/api/collections") && collections.length === 0) setLoading(true);
     try {
       const data = await fetchWithCache("/api/collections", force);
       if (Array.isArray(data)) {
@@ -343,7 +350,7 @@ export function useCollections() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [collections.length]);
 
   useEffect(() => {
     refresh();
@@ -403,7 +410,7 @@ export function useNotesList(params?: { q?: string; filter?: string; folderId?: 
     } finally {
       setLoading(false);
     }
-  }, [url]);
+  }, [url, notes.length]);
 
   useEffect(() => {
     if (globalCache.has(url)) {
@@ -428,6 +435,7 @@ export function useNoteFolders() {
   const [loading, setLoading] = useState(!globalCache.has("/api/notes/folders"));
 
   const refresh = useCallback(async (force = false) => {
+    if (force && !globalCache.has("/api/notes/folders") && folders.length === 0) setLoading(true);
     try {
       const data = await fetchWithCache("/api/notes/folders", force);
       if (Array.isArray(data)) {
@@ -438,7 +446,7 @@ export function useNoteFolders() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [folders.length]);
 
   useEffect(() => {
     refresh();

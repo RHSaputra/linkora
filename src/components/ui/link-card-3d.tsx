@@ -58,6 +58,19 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
     }
   }, [link.url]);
 
+  const domain = useMemo(() => {
+    if (!link?.url) return "";
+    try {
+      let target = link.url.trim();
+      if (!target.startsWith("http://") && !target.startsWith("https://")) {
+        target = "https://" + target;
+      }
+      return new URL(target).hostname.replace(/^www\./, "");
+    } catch {
+      return "";
+    }
+  }, [link?.url]);
+
   // Check if link already has a note
   const existingNote = useMemo(() => {
     if (!notes || !link) return null;
@@ -156,7 +169,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
 
               <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground font-medium mt-0.5 truncate">
                 <span className="truncate font-mono font-medium text-foreground/70">
-                  {new URL(link.url).hostname.replace('www.', '') || link.category}
+                  {domain || link.category}
                 </span>
                 <span>•</span>
                 <span className="shrink-0">{formatRelativeTime(link.createdAt || link.lastOpenedAt)}</span>
@@ -500,7 +513,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
                   </p>
                 ) : (
                   <p className="text-[11px] text-muted-foreground/50 line-clamp-1 italic">
-                    {new URL(link.url).hostname.replace('www.', '') ? `Tautan dari ${new URL(link.url).hostname.replace('www.', '')}` : "Informasi tautan tersimpan"}
+                    {domain ? `Tautan dari ${domain}` : "Informasi tautan tersimpan"}
                   </p>
                 )}
               </div>
@@ -527,7 +540,7 @@ export function LinkCard3D({ link, index, onUpdate, onEdit, viewMode = "detail" 
               <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium tracking-normal">
                 <div className="flex items-center gap-2 truncate max-w-[170px]">
                   <span className="truncate font-mono font-medium text-foreground/70">
-                    {new URL(link.url).hostname.replace('www.', '') || link.category}
+                    {domain || link.category}
                   </span>
                   {existingNote && (
                     <span 

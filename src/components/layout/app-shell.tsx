@@ -108,7 +108,6 @@ export function AppShell({ children }: AppShellProps) {
 
   const handleSuccess = () => {
     invalidateAndRefresh(["links", "dashboard", "collections", "tags"]);
-    triggerRefresh();
   };
 
   const contextValue: AppShellContextType = {

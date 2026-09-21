@@ -57,14 +57,12 @@ export function DashboardPage({
 
   useEffect(() => {
     if (refreshKey > 0) {
-      recentCacheRef.current = {};
       refresh(true);
     }
   }, [refreshKey, refresh]);
 
   useEffect(() => {
     const handleRefresh = () => {
-      recentCacheRef.current = {};
       refresh(true);
     };
     return subscribeRefresh(handleRefresh, "dashboard");
@@ -98,12 +96,15 @@ export function DashboardPage({
 
   useEffect(() => {
     if (stats) {
+      recentCacheRef.current["added"] = stats.recentLinks;
       if (recentFilter === "added") {
         setFilteredRecentLinks(stats.recentLinks);
       } else if (recentCacheRef.current[recentFilter]) {
         setFilteredRecentLinks(recentCacheRef.current[recentFilter]);
       } else {
-        setLoadingRecent(true);
+        if (filteredRecentLinks.length === 0) {
+          setLoadingRecent(true);
+        }
         fetch(`/api/dashboard/recent?filter=${recentFilter}`)
           .then((r) => r.json())
           .then((data) => {

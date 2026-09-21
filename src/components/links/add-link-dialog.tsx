@@ -103,18 +103,34 @@ export function AddLinkDialog({
 
   useEffect(() => {
     if (editLink) {
-      setUrl(editLink.url);
-      setTitle(editLink.title);
+      setUrl(editLink.url || "");
+      setTitle(editLink.title || "");
       setDescription(editLink.description || "");
-      setCategory(editLink.category);
-      setTags(editLink.tags);
+      setCategory(editLink.category || "Custom");
+      if (Array.isArray(editLink.tags)) {
+        setTags(editLink.tags);
+      } else if (typeof editLink.tags === "string") {
+        try {
+          const parsed = JSON.parse(editLink.tags);
+          setTags(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setTags([]);
+        }
+      } else {
+        setTags([]);
+      }
       setNotes(editLink.notes || "");
       setFavicon(editLink.favicon || "");
       setThumbnail(editLink.thumbnail || "");
-      setIsFavorite(editLink.isFavorite);
+      setIsFavorite(Boolean(editLink.isFavorite));
       const toLocalISO = (dateStr: Date | string) => {
-        const date = new Date(dateStr);
-        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        try {
+          const date = new Date(dateStr);
+          if (isNaN(date.getTime())) return "";
+          return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        } catch {
+          return "";
+        }
       };
       setReminderAt(editLink.reminderAt ? toLocalISO(editLink.reminderAt) : "");
     } else if (!open) {
@@ -329,13 +345,19 @@ export function AddLinkDialog({
 
     setSaving(true);
 
+    let targetUrl = url.trim();
+    if (targetUrl && !targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      targetUrl = "https://" + targetUrl;
+      setUrl(targetUrl);
+    }
+
     try {
       const payload = {
-        url,
+        url: targetUrl,
         title,
         description: description || undefined,
         category,
-        tags,
+        tags: Array.isArray(tags) ? tags : [],
         notes: notes || undefined,
         favicon: favicon || undefined,
         thumbnail: thumbnail || undefined,
