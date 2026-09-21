@@ -100,9 +100,9 @@ export async function POST(request: NextRequest) {
       // Safe fallback: return partial data with favicon
     }
 
-    // Return null if og:image/twitter:image extraction was missing (allows Linkora fallback banner)
+    // Flow: 1st priority og:image / twitter:image. 2nd priority: Website Screenshot (SS).
     if (!thumbnail) {
-      thumbnail = null;
+      thumbnail = `https://image.thum.io/get/width/800/crop/600/noanimate/${parsedUrl.toString()}`;
     }
 
     return NextResponse.json({

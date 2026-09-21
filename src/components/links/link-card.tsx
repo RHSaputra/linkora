@@ -85,16 +85,6 @@ export function LinkCard({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRemoveFromCollectionOpen, setIsRemoveFromCollectionOpen] = useState(false);
   const [isNoteConverterOpen, setIsNoteConverterOpen] = useState(false);
-  const [imgSrc, setImgSrc] = useState<string | null>(link.thumbnail || null);
-  const [imgError, setImgError] = useState(false);
-
-  const fallbackScreenshot = useMemo(() => {
-    try {
-      return `https://s0.wp.com/mshots/v1/${encodeURIComponent(link.url)}?w=800&h=450`;
-    } catch {
-      return null;
-    }
-  }, [link.url]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
