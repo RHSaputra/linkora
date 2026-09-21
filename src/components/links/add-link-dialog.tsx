@@ -24,8 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DEFAULT_CATEGORIES } from "@/lib/utils";
-import { fetchMetadata } from "@/hooks/use-data";
+import { DEFAULT_CATEGORIES, getFaviconUrl } from "@/lib/utils";
+import { fetchMetadata, updateGlobalCacheLinks, updateGlobalCacheDashboard, dispatchRefresh } from "@/hooks/use-data";
 import { SerializedLink } from "@/lib/types";
 import { toast } from "@/components/ui/custom-toast";
 import { 
@@ -321,29 +321,13 @@ export function AddLinkDialog({
       return;
     }
 
-    // Block duplicate URL creation!
+    // Block duplicate URL creation if duplicate is already confirmed
     if (!editLink && url) {
       if (duplicateData && duplicateData.type !== "none") {
         setShowDuplicateModal(true);
         return; // Prevent saving duplicate link
       }
-
-      try {
-        const checkRes = await fetch("/api/ai/check-duplicate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, title }),
-        }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-
-        if (checkRes && checkRes.type !== "none") {
-          setDuplicateData(checkRes);
-          setShowDuplicateModal(true);
-          return; // Prevent saving duplicate link
-        }
-      } catch {}
     }
-
-    setSaving(true);
 
     let targetUrl = url.trim();
     if (targetUrl && !targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
@@ -351,59 +335,191 @@ export function AddLinkDialog({
       setUrl(targetUrl);
     }
 
-    try {
-      const payload = {
+    const payload = {
+      url: targetUrl,
+      title: title || targetUrl,
+      description: description || undefined,
+      category: category || "Custom",
+      tags: Array.isArray(tags) ? tags : [],
+      notes: notes || undefined,
+      favicon: favicon || getFaviconUrl(targetUrl),
+      thumbnail: thumbnail || undefined,
+      isFavorite,
+      reminderAt: reminderAt ? new Date(reminderAt).toISOString() : null,
+    };
+
+    const endpoint = editLink ? `/api/links/${editLink.id}` : "/api/links";
+
+    if (!editLink) {
+      const tempId = "temp-" + Date.now();
+      const tempLink: SerializedLink = {
+        id: tempId,
+        userId: "user-temp",
         url: targetUrl,
-        title,
-        description: description || undefined,
-        category,
-        tags: Array.isArray(tags) ? tags : [],
-        notes: notes || undefined,
-        favicon: favicon || undefined,
-        thumbnail: thumbnail || undefined,
-        isFavorite,
-        reminderAt: reminderAt ? new Date(reminderAt).toISOString() : null,
+        title: payload.title,
+        description: payload.description || null,
+        category: payload.category,
+        tags: payload.tags,
+        notes: payload.notes || null,
+        favicon: payload.favicon || null,
+        thumbnail: payload.thumbnail || null,
+        isFavorite: payload.isFavorite,
+        reminderAt: payload.reminderAt,
+        openCount: 0,
+        lastOpenedAt: null,
+        aiSummary: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
-      const endpoint = editLink ? `/api/links/${editLink.id}` : "/api/links";
-      const method = editLink ? "PATCH" : "POST";
+      // 1. Instantly update Global Cache Links (prepending to all /api/links queries)
+      updateGlobalCacheLinks((items) => [tempLink, ...(items || [])]);
 
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editLink ? { ...payload, id: editLink.id } : payload),
+      // 2. Instantly update Dashboard Cache
+      updateGlobalCacheDashboard((stats) => {
+        if (!stats) return stats;
+        const newCatStats = [...(stats.categoryStats || [])];
+        const existingCat = newCatStats.find((c) => c.category === tempLink.category);
+        if (existingCat) {
+          existingCat.count += 1;
+        } else {
+          newCatStats.push({ category: tempLink.category, count: 1 });
+        }
+        return {
+          ...stats,
+          totalLinks: (stats.totalLinks || 0) + 1,
+          favoriteCount: tempLink.isFavorite ? (stats.favoriteCount || 0) + 1 : (stats.favoriteCount || 0),
+          recentLinks: [tempLink, ...(stats.recentLinks || [])],
+          favoriteLinks: tempLink.isFavorite ? [tempLink, ...(stats.favoriteLinks || [])] : (stats.favoriteLinks || []),
+          upcomingReminders: tempLink.reminderAt ? [tempLink, ...(stats.upcomingReminders || [])] : (stats.upcomingReminders || []),
+          categoryStats: newCatStats,
+        };
       });
 
-      if (res.ok) {
-        const savedData = await res.json().catch(() => null);
-        resetForm();
-        onOpenChange(false);
-        toast.success(editLink ? "Link berhasil diperbarui!" : "Link baru berhasil ditambahkan!", "Sukses");
-        onSuccess();
+      // 3. Dispatch refresh event so any active page components re-render immediately (0ms delay)
+      dispatchRefresh(["links", "dashboard", "tags"], false);
 
-        if (!editLink && savedData) {
-          window.dispatchEvent(new CustomEvent("liko-link-added", { detail: { link: savedData } }));
-        }
+      // 4. Instantly close modal and reset form!
+      resetForm();
+      onOpenChange(false);
+      onSuccess(tempLink);
+      toast.success("Link baru berhasil ditambahkan!", "Sukses");
 
-        if (savedData?.reminderAt && new Date(savedData.reminderAt) > new Date()) {
-          requestWebNotificationPermission().catch(() => {});
-          scheduleCapacitorLocalNotification({
-            id: Math.abs(savedData.id.split("").reduce((a: number, b: string) => ((a << 5) - a) + b.charCodeAt(0), 0)),
-            title: `⏰ Pengingat: ${savedData.title || "Tautan Linkorian"}`,
-            body: `Waktunya meninjau tautan: ${savedData.url}`,
-            scheduleDate: new Date(savedData.reminderAt),
-            url: savedData.url,
-            targetId: savedData.id,
-          }).catch(() => {});
+      // 5. Perform server fetch in background
+      (async () => {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (res.ok) {
+            const savedData: SerializedLink = await res.json().catch(() => null);
+            if (savedData) {
+              // Replace tempLink with savedData in cache
+              updateGlobalCacheLinks((items) =>
+                (items || []).map((item) => (item.id === tempId ? savedData : item))
+              );
+              updateGlobalCacheDashboard((stats) => {
+                if (!stats) return stats;
+                return {
+                  ...stats,
+                  recentLinks: (stats.recentLinks || []).map((l) => (l.id === tempId ? savedData : l)),
+                  favoriteLinks: (stats.favoriteLinks || []).map((l) => (l.id === tempId ? savedData : l)),
+                  upcomingReminders: (stats.upcomingReminders || []).map((l) => (l.id === tempId ? savedData : l)),
+                };
+              });
+              dispatchRefresh(["links", "dashboard", "tags"], false);
+              window.dispatchEvent(new CustomEvent("liko-link-added", { detail: { link: savedData } }));
+
+              if (savedData.reminderAt && new Date(savedData.reminderAt) > new Date()) {
+                requestWebNotificationPermission().catch(() => {});
+                scheduleCapacitorLocalNotification({
+                  id: Math.abs(savedData.id.split("").reduce((a: number, b: string) => ((a << 5) - a) + b.charCodeAt(0), 0)),
+                  title: `⏰ Pengingat: ${savedData.title || "Tautan Linkorian"}`,
+                  body: `Waktunya meninjau tautan: ${savedData.url}`,
+                  scheduleDate: new Date(savedData.reminderAt),
+                  url: savedData.url,
+                  targetId: savedData.id,
+                }).catch(() => {});
+              }
+            }
+          } else {
+            // Server error: revert optimistic item
+            const errorData = await res.json().catch(() => ({}));
+            updateGlobalCacheLinks((items) => (items || []).filter((item) => item.id !== tempId));
+            updateGlobalCacheDashboard((stats) => {
+              if (!stats) return stats;
+              return {
+                ...stats,
+                totalLinks: Math.max(0, (stats.totalLinks || 0) - 1),
+                favoriteCount: tempLink.isFavorite ? Math.max(0, (stats.favoriteCount || 0) - 1) : (stats.favoriteCount || 0),
+                recentLinks: (stats.recentLinks || []).filter((l) => l.id !== tempId),
+                favoriteLinks: (stats.favoriteLinks || []).filter((l) => l.id !== tempId),
+                upcomingReminders: (stats.upcomingReminders || []).filter((l) => l.id !== tempId),
+              };
+            });
+            dispatchRefresh(["links", "dashboard", "tags"], false);
+            toast.error(errorData.error || "Gagal menyimpan link ke server.", "Gagal");
+          }
+        } catch (err: any) {
+          // Network error: revert optimistic item
+          updateGlobalCacheLinks((items) => (items || []).filter((item) => item.id !== tempId));
+          updateGlobalCacheDashboard((stats) => {
+            if (!stats) return stats;
+            return {
+              ...stats,
+              totalLinks: Math.max(0, (stats.totalLinks || 0) - 1),
+              favoriteCount: tempLink.isFavorite ? Math.max(0, (stats.favoriteCount || 0) - 1) : (stats.favoriteCount || 0),
+              recentLinks: (stats.recentLinks || []).filter((l) => l.id !== tempId),
+              favoriteLinks: (stats.favoriteLinks || []).filter((l) => l.id !== tempId),
+              upcomingReminders: (stats.upcomingReminders || []).filter((l) => l.id !== tempId),
+            };
+          });
+          dispatchRefresh(["links", "dashboard", "tags"], false);
+          toast.error(err?.message || "Terjadi kesalahan saat menyimpan link.", "Error");
         }
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        toast.error(errorData.error || "Gagal menyimpan link.", "Gagal");
+      })();
+    } else {
+      // EDIT MODE
+      setSaving(true);
+      try {
+        const res = await fetch(endpoint, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, id: editLink.id }),
+        });
+        if (res.ok) {
+          const savedData = await res.json().catch(() => null);
+          if (savedData) {
+            updateGlobalCacheLinks((items) =>
+              (items || []).map((item) => (item.id === editLink.id ? savedData : item))
+            );
+            updateGlobalCacheDashboard((stats) => {
+              if (!stats) return stats;
+              return {
+                ...stats,
+                recentLinks: (stats.recentLinks || []).map((l) => (l.id === editLink.id ? savedData : l)),
+                favoriteLinks: (stats.favoriteLinks || []).map((l) => (l.id === editLink.id ? savedData : l)),
+                upcomingReminders: (stats.upcomingReminders || []).map((l) => (l.id === editLink.id ? savedData : l)),
+              };
+            });
+            dispatchRefresh(["links", "dashboard", "tags"], false);
+          }
+          resetForm();
+          onOpenChange(false);
+          toast.success("Link berhasil diperbarui!", "Sukses");
+          onSuccess(savedData);
+        } else {
+          const errorData = await res.json().catch(() => ({}));
+          toast.error(errorData.error || "Gagal memperbarui link.", "Gagal");
+        }
+      } catch (err: any) {
+        toast.error(err?.message || "Terjadi kesalahan saat memperbarui link.", "Error");
+      } finally {
+        setSaving(false);
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Terjadi kesalahan saat menyimpan link.", "Error");
-    } finally {
-      setSaving(false);
     }
   };
 

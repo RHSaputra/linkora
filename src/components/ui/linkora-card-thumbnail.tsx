@@ -29,9 +29,17 @@ export function LinkoraCardThumbnail({
   className,
   aspectRatio = "card",
 }: LinkoraCardThumbnailProps) {
-  const [imgSrc, setImgSrc] = useState<string | null>(thumbnail || null);
+  const [imgSrc, setImgSrc] = useState<string | null>(() => (thumbnail && !thumbnail.includes("s0.wp.com/mshots") ? thumbnail : null));
   const [imgError, setImgError] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+
+  React.useEffect(() => {
+    const validThumb = thumbnail && !thumbnail.includes("s0.wp.com/mshots") ? thumbnail : null;
+    setImgSrc(validThumb);
+    setImgError(false);
+    setFaviconError(false);
+  }, [thumbnail, favicon, url]);
 
   const catColor = useMemo(() => getCategoryColor(category), [category]);
 
@@ -144,8 +152,13 @@ export function LinkoraCardThumbnail({
             boxShadow: `0 10px 25px -5px ${catColor}50`,
           }}
         >
-          {fallbackFavicon ? (
-            <img src={fallbackFavicon} alt="" className="h-6 w-6 sm:h-7 sm:w-7 rounded-md object-contain" />
+          {fallbackFavicon && !faviconError ? (
+            <img
+              src={fallbackFavicon}
+              alt=""
+              className="h-6 w-6 sm:h-7 sm:w-7 rounded-md object-contain"
+              onError={() => setFaviconError(true)}
+            />
           ) : (
             <span>{domainInfo.initials}</span>
           )}
