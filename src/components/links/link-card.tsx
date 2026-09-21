@@ -35,6 +35,7 @@ import { useTranslation } from "@/components/providers/i18n-provider";
 import { saveCurrentScrollPosition } from "@/hooks/use-page-state-restoration";
 
 import { LinkViewMode } from "@/hooks/use-view-mode";
+import { LinkoraCardThumbnail } from "@/components/ui/linkora-card-thumbnail";
 
 interface LinkCardProps {
   link: SerializedLink;
@@ -374,38 +375,16 @@ export function LinkCard({
         className="glass-panel rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border border border-border/80 bg-card/90 h-full flex flex-col justify-between"
       >
         {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
-        <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
-          {/* Background Image / Thumbnail with Fallback Redirect */}
-          {(imgSrc || fallbackScreenshot) && !imgError ? (
-            <div className="absolute inset-0">
-              <Image
-                src={imgSrc || fallbackScreenshot || ""}
-                alt={link.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-                decoding="async"
-                unoptimized
-                onError={() => {
-                  if (imgSrc && imgSrc !== fallbackScreenshot && fallbackScreenshot) {
-                    setImgSrc(fallbackScreenshot);
-                  } else {
-                    setImgError(true);
-                  }
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-card/85 via-card/30 to-transparent pointer-events-none" />
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-60" />
-              {/* Central Translucent Icon Box */}
-              <div className="p-3 bg-background/50 rounded-2xl backdrop-blur-md border border-primary/20 shadow-sm group-hover:scale-110 transition-transform duration-500 z-0">
-                <ExternalLink className="h-6 w-6 text-primary/70" />
-              </div>
-            </div>
-          )}
+        <div className="relative w-full shrink-0">
+          <LinkoraCardThumbnail
+            url={link.url}
+            title={link.title}
+            category={link.category}
+            thumbnail={link.thumbnail}
+            favicon={link.favicon}
+            linkId={link.id}
+            onUpdate={onUpdate}
+          />
 
           {/* ── TOP-LEFT: CATEGORY BADGE ── */}
           <div className="absolute top-3 left-3 z-10 pointer-events-none">

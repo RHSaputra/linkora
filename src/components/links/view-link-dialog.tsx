@@ -12,6 +12,7 @@ import { LikoNoteConverterModal } from "./liko-note-converter-modal";
 import { useNotes } from "@/hooks/use-data";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { LinkoraCardThumbnail } from "@/components/ui/linkora-card-thumbnail";
 
 export function ViewLinkDialog({
   link,
@@ -60,16 +61,16 @@ export function ViewLinkDialog({
           </DialogHeader>
 
           <div className="space-y-5 mt-2 flex-1 min-h-0 overflow-y-auto pr-1.5">
-            {link.thumbnail && !imgError && (
-              <div className="relative w-full h-44 sm:h-52 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0">
-                <img
-                  src={link.thumbnail}
-                  alt={link.title}
-                  onError={() => setImgError(true)}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+            <LinkoraCardThumbnail
+              url={link.url}
+              title={link.title}
+              category={link.category}
+              thumbnail={link.thumbnail}
+              favicon={link.favicon}
+              linkId={link.id}
+              aspectRatio="dialog"
+              className="rounded-2xl"
+            />
             <div className="flex flex-wrap gap-2 items-center">
               <Badge variant="outline" style={{ borderColor: `${catColor}40`, color: catColor }}>
                 <Folder className="w-3 h-3 mr-1" /> {link.category}

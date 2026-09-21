@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import { LinkViewMode } from "@/hooks/use-view-mode";
+import { LinkoraCardThumbnail } from "@/components/ui/linkora-card-thumbnail";
 
 interface LinkCard3DProps {
   link: SerializedLink;
@@ -345,28 +346,17 @@ export function LinkCard3D({ link, index, onUpdate, onDelete, onEdit, viewMode =
         >
 
           
-          <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5 border-b border-border/50 shrink-0">
-            {(imgSrc || fallbackScreenshot) && !imgError ? (
-              <img
-                src={imgSrc || fallbackScreenshot || ""}
-                alt={link.title}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                onError={() => {
-                  if (imgSrc && imgSrc !== fallbackScreenshot && fallbackScreenshot) {
-                    setImgSrc(fallbackScreenshot);
-                  } else {
-                    setImgError(true);
-                  }
-                }}
-              />
-            ) : (
-              <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5 overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
-                <div className="p-3 bg-background/40 rounded-2xl backdrop-blur-md border border-primary/20 shadow-sm group-hover:scale-110 transition-transform duration-500 z-0">
-                  <ExternalLink className="h-6 w-6 text-primary/60" />
-                </div>
-              </div>
-            )}
+          {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
+          <div className="relative w-full shrink-0">
+            <LinkoraCardThumbnail
+              url={link.url}
+              title={link.title}
+              category={link.category}
+              thumbnail={link.thumbnail}
+              favicon={link.favicon}
+              linkId={link.id}
+              onUpdate={onUpdate}
+            />
 
             {/* ── TOP-LEFT: CATEGORY BADGE ── */}
             <div className="absolute top-3 left-3 z-10 pointer-events-none" style={{ transform: "translateZ(50px)" }}>
