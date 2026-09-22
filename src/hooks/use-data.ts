@@ -89,8 +89,12 @@ export function updateGlobalCacheCollections(updater: (collections: SerializedCo
 
 export function updateGlobalCacheNotes(updater: (notes: any[]) => any[]) {
   for (const [key, val] of globalCache.entries()) {
-    if (key.startsWith("/api/notes") && Array.isArray(val)) {
-      globalCache.set(key, updater(val as any[]));
+    if (key.startsWith("/api/notes") && !key.startsWith("/api/notes/folders")) {
+      if (Array.isArray(val)) {
+        globalCache.set(key, updater(val as any[]));
+      } else if (val && typeof val === "object" && "items" in val && Array.isArray((val as any).items)) {
+        globalCache.set(key, { ...(val as any), items: updater((val as any).items) });
+      }
     }
   }
 }
@@ -723,6 +727,67 @@ export async function deleteNoteFolder(id: string) {
     }
     import("@/components/ui/custom-toast").then(({ toast }) => {
       toast.error("Gagal menghapus folder catatan", "Folder Catatan");
+    });
+    throw err;
+  }
+}
+
+export async function deleteNote(id: string, isPermanent = false) {
+  let removedNotes: any[] = [];
+
+  // 1. Optimistically remove from global cache
+  updateGlobalCacheNotes((items) => {
+    const found = items.find((n) => n.id === id);
+    if (found) removedNotes.push(found);
+    return items.filter((n) => n.id !== id);
+  });
+  dispatchRefresh(["notes", "noteFolders"], false);
+
+  try {
+    const res = await fetch(`/api/notes/${id}${isPermanent ? "?permanent=true" : ""}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Gagal menghapus catatan");
+    return res;
+  } catch (err) {
+    if (removedNotes.length > 0) {
+      updateGlobalCacheNotes((items) => [...removedNotes, ...items]);
+      dispatchRefresh(["notes", "noteFolders"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus catatan", "Catatan");
+    });
+    throw err;
+  }
+}
+
+export async function deleteNotesBulk(ids: string[], isPermanent = false) {
+  let removedNotes: any[] = [];
+  const idSet = new Set(ids);
+
+  // 1. Optimistically remove from global cache
+  updateGlobalCacheNotes((items) => {
+    const found = items.filter((n) => idSet.has(n.id));
+    removedNotes.push(...found);
+    return items.filter((n) => !idSet.has(n.id));
+  });
+  dispatchRefresh(["notes", "noteFolders"], false);
+
+  try {
+    const res = await fetch("/api/notes/bulk", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, permanent: isPermanent }),
+    });
+    if (!res.ok) throw new Error("Gagal menghapus beberapa catatan");
+    return res;
+  } catch (err) {
+    if (removedNotes.length > 0) {
+      updateGlobalCacheNotes((items) => [...removedNotes, ...items]);
+      dispatchRefresh(["notes", "noteFolders"], false);
+    }
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error("Gagal menghapus beberapa catatan", "Catatan");
     });
     throw err;
   }

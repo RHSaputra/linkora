@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData } from "@/hooks/use-data";
+import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData, deleteNote, deleteNotesBulk } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { toast } from "@/components/ui/custom-toast";
 
@@ -252,7 +252,7 @@ export function NotesPage() {
     const target = deleteNoteTarget;
     const isPermanent = target.status === "TRASH" || activeFilter === "trash";
 
-    // Close modal & optimistically filter out item
+    // Close modal & optimistically filter out item immediately
     setDeleteNoteTarget(null);
     setNotes((prev) => prev.filter((n) => n.id !== target.id));
     setSelectedNoteIds((prev) => {
@@ -268,18 +268,9 @@ export function NotesPage() {
     );
 
     try {
-      const res = await fetch(`/api/notes/${target.id}${isPermanent ? "?permanent=true" : ""}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        dispatchRefresh(["notes", "noteFolders"], false);
-      } else {
-        toast.error(locale === "en" ? "Failed to delete note" : "Gagal menghapus catatan", "Error");
-        fetchNotes(true);
-      }
+      await deleteNote(target.id, isPermanent);
     } catch (error) {
       console.error(error);
-      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", "Error");
       fetchNotes(true);
     }
   };
@@ -303,21 +294,9 @@ export function NotesPage() {
     );
 
     try {
-      const res = await fetch("/api/notes/bulk", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: idsToDelete, permanent: isPermanent }),
-      });
-
-      if (res.ok) {
-        dispatchRefresh(["notes", "noteFolders"], false);
-      } else {
-        toast.error(locale === "en" ? "Failed to bulk delete notes" : "Gagal menghapus beberapa catatan", "Error");
-        fetchNotes(true);
-      }
+      await deleteNotesBulk(idsToDelete, isPermanent);
     } catch (error) {
       console.error(error);
-      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", "Error");
       fetchNotes(true);
     }
   };

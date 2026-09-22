@@ -106,6 +106,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<string>("");
+  const [chosenPresetUrl, setChosenPresetUrl] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -122,6 +123,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   useEffect(() => {
     if (open) {
+      setChosenPresetUrl(null);
       if (session?.user) {
         setName(session.user.name || "");
         setSelectedAvatar(session.user.image || "");
@@ -142,11 +144,12 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
         })
         .catch(() => {});
     } else {
-      // Reset sensitive form fields
+      // Reset sensitive form fields & preset selection
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setShowPasswordSection(false);
+      setChosenPresetUrl(null);
     }
   }, [open, session]);
 
@@ -176,6 +179,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     try {
       const resized = await resizeImage(file, 400, 400, 0.88);
       setSelectedAvatar(resized);
+      setChosenPresetUrl(null);
       toast.success(
         locale === "en" ? "Your profile photo is ready to save!" : "Foto profil Anda siap disimpan!",
         locale === "en" ? "Photo Selected" : "Foto Terpilih"
@@ -355,6 +359,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                       size="sm"
                       onClick={() => {
                         setSelectedAvatar("");
+                        setChosenPresetUrl(null);
                       }}
                       className="rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground gap-1"
                     >
@@ -375,13 +380,14 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               </Label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 pt-1">
                 {AVATARS.map((preset) => {
-                  const isSelected = selectedAvatar === preset.url;
+                  const isSelected = chosenPresetUrl === preset.url;
                   return (
                     <button
                       key={preset.id}
                       type="button"
                       onClick={() => {
                         setSelectedAvatar(preset.url);
+                        setChosenPresetUrl(preset.url);
                       }}
                       className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-white dark:bg-slate-800/90 hover:bg-primary/5 cursor-pointer shadow-2xs ${
                         isSelected
