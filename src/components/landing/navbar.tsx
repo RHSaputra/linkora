@@ -159,7 +159,7 @@ export function Navbar() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="md:hidden glass-panel border-b border-foreground/10 px-6 py-6 space-y-4 bg-background/95 backdrop-blur-2xl"
+          className="md:hidden glass-panel border-b border-foreground/10 px-6 py-6 space-y-4 bg-background/95 backdrop-blur-2xl max-h-[85vh] overflow-y-auto w-full max-w-full overflow-x-hidden"
         >
           <div className="flex flex-col space-y-3">
             {navLinks.map((item) => (

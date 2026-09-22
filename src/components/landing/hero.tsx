@@ -46,21 +46,21 @@ export function Hero() {
   // Desktop: -140% entrance with full 30deg 3D tilt
   // Mobile: -40% entrance with subtle 10deg tilt for max GPU smoothness
   const phoneXDesktop = useTransform(scrollYProgress, [0.05, 0.5, 1], ["-140%", "0%", "0%"])
-  const phoneXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], ["-40%", "0%", "0%"])
+  const phoneXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], ["0%", "0%", "0%"])
   const phoneX = isDesktop ? phoneXDesktop : phoneXMobile
 
   const phoneY = useTransform(scrollYProgress, [0.05, 0.5, 1], ["20px", "0px", "0px"])
 
   const phoneRotateYDesktop = useTransform(scrollYProgress, [0.05, 0.5, 1], [30, 0, 0])
-  const phoneRotateYMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [10, 0, 0])
+  const phoneRotateYMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [0, 0, 0])
   const phoneRotateY = isDesktop ? phoneRotateYDesktop : phoneRotateYMobile
 
   const phoneRotateXDesktop = useTransform(scrollYProgress, [0.05, 0.5, 1], [8, 0, 0])
-  const phoneRotateXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [3, 0, 0])
+  const phoneRotateXMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [0, 0, 0])
   const phoneRotateX = isDesktop ? phoneRotateXDesktop : phoneRotateXMobile
 
   const phoneRotateZDesktop = useTransform(scrollYProgress, [0.05, 0.5, 1], [-5, 0, 0])
-  const phoneRotateZMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [-1, 0, 0])
+  const phoneRotateZMobile = useTransform(scrollYProgress, [0.05, 0.5, 1], [0, 0, 0])
   const phoneRotateZ = isDesktop ? phoneRotateZDesktop : phoneRotateZMobile
 
   const phoneScale = useTransform(scrollYProgress, [0.05, 0.5, 1], [0.85, 1, 1])
@@ -74,7 +74,7 @@ export function Hero() {
   return (
     <section
       ref={containerRef}
-      className="relative h-[210vh] md:h-[230vh] w-full bg-background"
+      className="relative h-[120vh] md:h-[230vh] w-full bg-background overflow-x-clip"
     >
       {/* Sticky Viewport Stage - 100dvh safe for mobile browsers */}
       <div className="sticky top-0 h-[100dvh] md:h-screen min-h-0 sm:min-h-[560px] max-h-screen w-full flex items-center justify-center overflow-x-clip overflow-y-hidden">

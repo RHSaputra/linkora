@@ -13,7 +13,7 @@ export function CTA() {
   const { t, locale } = useTranslation()
 
   return (
-    <section className="py-14 md:py-18 relative overflow-hidden bg-background">
+    <section className="py-8 sm:py-14 md:py-18 relative overflow-x-clip bg-background">
       {/* Dynamic ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-[130px] pointer-events-none" />
       

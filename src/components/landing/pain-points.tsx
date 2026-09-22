@@ -182,7 +182,7 @@ export function PainPoints() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[320vh] md:h-[500vh] bg-slate-50 dark:bg-background"
+      className="relative w-full h-[140vh] md:h-[500vh] bg-slate-50 dark:bg-background overflow-x-clip"
     >
       <div className="sticky top-0 w-full h-[100dvh] md:h-screen overflow-hidden flex flex-col justify-center items-center">
         {/* Atmospheric Glow */}

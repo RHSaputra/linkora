@@ -48,8 +48,8 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-24 relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
+    <section id="pricing" className="py-10 md:py-20 relative overflow-x-clip">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[600px] h-[320px] sm:h-[600px] bg-primary/10 blur-[100px] sm:blur-[150px] rounded-full pointer-events-none" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -150,7 +150,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section id="faq" className="py-24 relative bg-foreground/[0.02] border-t border-foreground/5">
+    <section id="faq" className="py-10 md:py-20 relative bg-foreground/[0.02] border-t border-foreground/5 overflow-x-clip">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">Pertanyaan yang Sering Diajukan</h2>

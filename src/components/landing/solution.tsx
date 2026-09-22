@@ -131,7 +131,7 @@ export function Solution() {
     <section 
       id="solusi" 
       ref={containerRef}
-      className="relative w-full h-auto lg:h-[350vh] bg-slate-50 dark:bg-background py-14 sm:py-20 lg:py-0"
+      className="relative w-full h-auto lg:h-[350vh] bg-slate-50 dark:bg-background py-8 sm:py-14 lg:py-0 overflow-x-clip"
     >
       <div className="relative lg:sticky lg:top-0 w-full h-auto lg:h-screen lg:overflow-hidden flex flex-col justify-center items-center">
         {/* Glow ambient background */}
@@ -139,12 +139,12 @@ export function Solution() {
 
         <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
-          {/* Header Section: Meluncur Mulus dari Kiri & Kanan */}
+          {/* Header Section: Vertical Fade */}
           <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6 overflow-x-clip px-2 py-3">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-foreground flex flex-col items-center gap-1 sm:gap-1.5 leading-[1.15] sm:leading-[1.18] mb-4 sm:mb-5 md:mb-6">
               <motion.span
-                initial={{ x: -100, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
+                initial={{ y: -15, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",
@@ -157,8 +157,8 @@ export function Solution() {
                 {locale === "en" ? "One Unified Ecosystem for All" : "Satu Ekosistem Untuk Semua"}
               </motion.span>
               <motion.span
-                initial={{ x: 100, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
+                initial={{ y: 15, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: false, amount: 0.1 }}
                 transition={{
                   type: "spring",

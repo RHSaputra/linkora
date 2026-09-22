@@ -139,7 +139,7 @@ export function HowItWorks() {
   })
 
   return (
-    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background py-14 sm:py-20 lg:py-0">
+    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background py-8 sm:py-14 lg:py-0 overflow-x-clip">
       <div className="relative lg:sticky lg:top-0 h-auto lg:h-screen w-full lg:overflow-hidden flex flex-col items-center justify-center lg:py-[4vh]">
         <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
           

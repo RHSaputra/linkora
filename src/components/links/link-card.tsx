@@ -223,7 +223,7 @@ export function LinkCard({
               onReminderChange={() => onUpdate?.()}
               showLabel={hasActiveReminder}
               className={cn(
-                "h-7 px-2 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
+                "h-7 px-1.5 sm:px-2 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none shrink-0",
                 hasActiveReminder
                   ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
                   : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
@@ -536,8 +536,8 @@ export function LinkCard({
 
           {/* ── CARD FOOTER & ACTIONS ANCHORED AT BOTTOM ── */}
           <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium tracking-normal">
-              <div className="flex items-center gap-2 truncate max-w-[170px]">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium tracking-normal gap-1">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate pr-1">
                 <span className="truncate font-mono font-medium text-foreground/70">
                   {domain || link.category}
                 </span>
@@ -554,37 +554,37 @@ export function LinkCard({
                   </span>
                 )}
               </div>
-              <span>
+              <span className="shrink-0 text-right">
                 {formatRelativeTime(link.createdAt || link.lastOpenedAt)}
               </span>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-1">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Button 
                   type="button"
                   variant="outline" 
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl border border-border bg-slate-100 dark:bg-slate-800/80 hover:bg-muted text-foreground font-semibold shadow-xs transition-colors cursor-pointer flex items-center justify-center"
+                  className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl border border-border bg-slate-100 dark:bg-slate-800/80 hover:bg-muted text-foreground font-semibold shadow-xs transition-colors cursor-pointer flex items-center justify-center truncate"
                   onClick={handleCardClick}
                 >
                   {t("links.overviewBtn")}
                 </Button>
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Button 
                   type="button"
                   size="sm" 
-                  className="w-full text-[11px] h-8 px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm border border-transparent transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm border border-transparent transition-colors cursor-pointer flex items-center justify-center gap-1 truncate"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleExternalOpen();
                   }}
                 >
-                  <span>{t("links.openLinkBtn")}</span>
-                  <ExternalLink className="h-3.5 w-3.5 text-white/90 shrink-0" />
+                  <span className="truncate">{t("links.openLinkBtn")}</span>
+                  <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/90 shrink-0" />
                 </Button>
               </div>
             </div>
