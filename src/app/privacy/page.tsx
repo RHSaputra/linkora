@@ -263,7 +263,7 @@ export default function PrivacyPage() {
             </Link>
             <div className="h-4 w-px bg-border/60 hidden sm:block" />
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Linkora Logo" className="h-8 sm:h-9 w-auto object-contain" />
+              <img src="/linkorian.jpeg" alt="Linkorian Logo" className="h-8 sm:h-9 w-auto object-contain rounded-lg" />
             </Link>
           </div>
 

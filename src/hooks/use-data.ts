@@ -63,14 +63,17 @@ export function updateGlobalCacheLinks(updater: (links: SerializedLink[]) => Ser
   for (const [key, val] of globalCache.entries()) {
     if (key.startsWith("/api/links")) {
       const pageData = val as LinksPage | undefined;
-      if (pageData && Array.isArray(pageData.items)) {
-        const newItems = updater(pageData.items);
-        const diff = newItems.length - pageData.items.length;
+      const currentItems = pageData && Array.isArray(pageData.items) ? pageData.items : (Array.isArray(val) ? (val as any) : []);
+      const newItems = updater(currentItems) || [];
+      const diff = newItems.length - currentItems.length;
+      if (pageData && typeof pageData === "object" && !Array.isArray(pageData)) {
         globalCache.set(key, {
           ...pageData,
           items: newItems,
           total: Math.max(0, (pageData.total || 0) + diff),
         });
+      } else {
+        globalCache.set(key, newItems);
       }
     }
   }
@@ -261,6 +264,9 @@ export function useLinks(
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
 
+  const safeLinks = Array.isArray(links) ? links : [];
+  const linksLength = safeLinks.length;
+
   const prevFilterKeyRef = useRef(filterKey);
   const isMountedRef = useRef(false);
 
@@ -283,11 +289,15 @@ export function useLinks(
       setLoading(true);
       try {
         const d = await fetchPage(targetPage, force);
-        if (d) {
+        if (d && Array.isArray(d.items)) {
           setLinks(d.items);
           setTotal(d.total);
           setHasMore(d.hasMore);
           setPage(targetPage);
+        } else if (Array.isArray(d)) {
+          setLinks(d as any);
+        } else {
+          setLinks([]);
         }
       } catch (error) {
         console.error(error);
@@ -305,7 +315,7 @@ export function useLinks(
         page,
         pageSize
       );
-      if (force && !globalCache.has(currentUrl) && links.length === 0) {
+      if (force && !globalCache.has(currentUrl) && linksLength === 0) {
         setLoading(true);
       }
       try {
@@ -314,6 +324,8 @@ export function useLinks(
           setLinks(d.items);
           setTotal(d.total);
           setHasMore(d.hasMore);
+        } else if (Array.isArray(d)) {
+          setLinks(d as any);
         }
       } catch (error) {
         console.error(error);
@@ -321,7 +333,7 @@ export function useLinks(
         setLoading(false);
       }
     },
-    [fetchPage, page, filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize, links.length]
+    [fetchPage, page, filterQ, filterCategory, filterTag, filterFavorite, filterCollectionId, filterSort, pageSize, linksLength]
   );
 
   const loadMore = useCallback(async () => {
@@ -330,8 +342,8 @@ export function useLinks(
     try {
       const next = page + 1;
       const d = await fetchPage(next);
-      if (d) {
-        setLinks((prev) => [...prev, ...d.items]);
+      if (d && Array.isArray(d.items)) {
+        setLinks((prev) => [...(Array.isArray(prev) ? prev : []), ...d.items]);
         setTotal(d.total);
         setHasMore(d.hasMore);
         setPage(next);
@@ -361,10 +373,13 @@ export function useLinks(
 
     if (globalCache.has(currentUrl)) {
       const cached = globalCache.get(currentUrl) as LinksPage | undefined;
-      if (cached) {
+      if (cached && Array.isArray(cached.items)) {
         setLinks(cached.items);
         setTotal(cached.total);
         setHasMore(cached.hasMore);
+        setLoading(false);
+      } else if (Array.isArray(cached)) {
+        setLinks(cached as any);
         setLoading(false);
       }
     } else {
@@ -372,11 +387,13 @@ export function useLinks(
     }
 
     fetchPage(targetPage).then((d) => {
-      if (d) {
+      if (d && Array.isArray(d.items)) {
         setLinks(d.items);
         setTotal(d.total);
         setHasMore(d.hasMore);
         setPage(targetPage);
+      } else if (Array.isArray(d)) {
+        setLinks(d as any);
       }
       setLoading(false);
     });
@@ -384,7 +401,7 @@ export function useLinks(
     return subscribeRefresh((force) => refresh(force), "links");
   }, [filterKey]);
 
-  return { links, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
+  return { links: safeLinks, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
 }
 
 export function useCollections() {

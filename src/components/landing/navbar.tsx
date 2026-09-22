@@ -84,7 +84,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <img src="/logo.png" alt="Linkorian Logo" className="h-8 sm:h-12 w-auto object-contain" />
+          <img src="/linkorian.jpeg" alt="Linkorian Logo" className="h-11 sm:h-14 w-auto object-contain rounded-xl drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
         </Link>
 
         {/* Desktop Nav */}

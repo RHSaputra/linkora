@@ -13,7 +13,7 @@ export function renderBaseLayout({
   currentYear = new Date().getFullYear(),
 }: LayoutOptions): string {
   const cleanAppUrl = appUrl.replace(/\/$/, "");
-  const logoBannerUrl = `${cleanAppUrl}/logo.png`;
+  const logoBannerUrl = `${cleanAppUrl}/linkorian.jpeg`;
   const iconUrl = `${cleanAppUrl}/icon.jpg`;
 
   return `<!DOCTYPE html>

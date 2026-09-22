@@ -285,20 +285,20 @@ function NavContent({
 
   return (
     <>
-      <div className="flex items-center justify-center px-6 py-8">
+      <div className="flex items-center justify-center px-3 py-3">
         <Dialog>
           <DialogTrigger asChild>
             <img 
-              src="/logo.png" 
+              src="/linkorian.jpeg" 
               alt="Linkorian Logo" 
-              className="w-full h-auto max-w-[180px] object-contain drop-shadow-md hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className="w-full h-auto max-w-[85px] sm:max-w-[95px] object-contain rounded-lg drop-shadow-sm hover:scale-105 transition-transform duration-300 cursor-pointer"
             />
           </DialogTrigger>
           <DialogContent className="border-primary/20 sm:max-w-xl md:max-w-2xl bg-white dark:bg-slate-900 shadow-2xl backdrop-blur-2xl flex flex-col items-center justify-center p-8 sm:p-12 rounded-3xl">
             <img 
-              src="/logo.png" 
+              src="/linkorian.jpeg" 
               alt="Linkorian Logo" 
-              className="w-full h-auto max-w-[300px] object-contain drop-shadow-xl"
+              className="w-full h-auto max-w-[280px] sm:max-w-[320px] object-contain rounded-3xl drop-shadow-xl"
             />
             <div className="mt-8 text-center space-y-2">
               <h2 className="text-2xl font-heading font-bold text-foreground"><LinkoraText /></h2>
@@ -627,7 +627,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
             <Menu className="h-5 w-5" />
           </Button>
           <Link href="/dashboard" className="flex items-center gap-1.5 active:scale-95 transition-transform">
-            <img src="/logo.png" alt="Linkorian" className="h-7 w-auto object-contain" />
+            <img src="/linkorian.jpeg" alt="Linkorian" className="h-8 w-auto object-contain rounded-xl shadow-xs" />
           </Link>
         </div>
 
