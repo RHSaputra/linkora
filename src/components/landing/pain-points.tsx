@@ -126,55 +126,49 @@ export function PainPoints() {
   // ── TRANSFORMS KOLOM KIRI (5 CARDS) ──
   const leftColumnX = useTransform(
     scrollYProgress,
-    [0.00, 0.55, 0.66, 0.78, 0.90, 1.00],
-    isDesktop ? ["50%", "50%", "0%", "0%", "44%", "44%"] : ["0%", "0%", "0%", "0%", "0%", "0%"]
+    [0.00, 1.00],
+    ["0%", "0%"]
   )
 
   const cardTextOpacity = useTransform(
     scrollYProgress,
-    [0.76, 0.83, 1.00],
-    [1, 0, 0]
+    [0.00, 1.00],
+    [1, 1]
   )
 
   // ── TRANSFORMS KOLOM KANAN (CARD BESAR SOLUSI) ──
   const rightColumnOpacity = useTransform(
     scrollYProgress,
-    [0.00, 0.66, 0.72, 1.00],
-    [0, 0, 1, 1]
+    [0.00, 0.25, 0.50, 1.00],
+    [0.4, 0.7, 1, 1]
   )
 
   const rightColumnX = useTransform(
     scrollYProgress,
-    [0.00, 0.78, 0.90, 1.00],
-    isDesktop ? ["0%", "0%", "-50%", "-50%"] : ["0%", "0%", "0%", "0%"]
+    [0.00, 1.00],
+    ["0%", "0%"]
   )
 
   const rightCardScale = useTransform(
     scrollYProgress,
-    [0.66, 0.72, 0.78, 0.90, 1.00],
-    [0.92, 1.0, 1.0, 1.03, 1.03]
+    [0.00, 0.50, 1.00],
+    [0.96, 1.0, 1.0]
   )
 
-  const rightCardPointerEvents = useTransform(
-    rightColumnOpacity,
-    (val) => (isDesktop ? "auto" : val > 0.5 ? "auto" : "none")
-  )
+  const rightCardPointerEvents = "auto" as const
 
   const checkScale = useTransform(
     scrollYProgress,
-    [0.66, 0.72, 0.78, 0.84, 0.90, 0.96],
-    [0.88, 1.24, 1.0, 1.0, 1.30, 1.0]
+    [0.00, 0.50, 1.00],
+    [0.9, 1.0, 1.0]
   )
 
   const checkGlow = useTransform(
     scrollYProgress,
-    [0.66, 0.72, 0.78, 0.84, 0.90, 0.96],
+    [0.00, 0.50, 1.00],
     [
       "0 0 0px rgba(59, 130, 246, 0)",
       "0 0 35px rgba(59, 130, 246, 0.7)",
-      "0 0 0px rgba(59, 130, 246, 0)",
-      "0 0 0px rgba(59, 130, 246, 0)",
-      "0 0 45px rgba(59, 130, 246, 0.85)",
       "0 0 0px rgba(59, 130, 246, 0)",
     ]
   )
@@ -182,9 +176,9 @@ export function PainPoints() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[140vh] md:h-[500vh] bg-slate-50 dark:bg-background overflow-x-clip"
+      className="relative w-full py-12 md:py-20 bg-slate-50 dark:bg-background overflow-x-clip"
     >
-      <div className="sticky top-0 w-full h-[100dvh] md:h-screen overflow-hidden flex flex-col justify-center items-center">
+      <div className="w-full overflow-hidden flex flex-col justify-center items-center">
         {/* Atmospheric Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] md:w-[700px] h-[340px] sm:h-[500px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px] pointer-events-none z-0" />
 
@@ -203,7 +197,7 @@ export function PainPoints() {
           </div>
 
           {/* ── Main Grid Container ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
             
             {/* ── Kolom Kiri: 5 Chaos Cards (Layer z-10) ── */}
             <motion.div
@@ -222,7 +216,7 @@ export function PainPoints() {
                   <motion.div
                     key={idx}
                     animate={{
-                      scale: isActive ? 1.035 : 1.0,
+                      scale: isActive ? 1.025 : 1.0,
                       y: isActive ? -2 : 0,
                     }}
                     transition={{
@@ -267,20 +261,17 @@ export function PainPoints() {
               })}
             </motion.div>
 
-            {/* ── Kolom Kanan: Card Besar Linkora (Layer Paling Atas z-30) ── */}
+            {/* ── Kolom Kanan: Card Besar Linkora ── */}
             <motion.div
               style={{
                 x: rightColumnX,
                 opacity: rightColumnOpacity,
                 scale: rightCardScale,
                 pointerEvents: rightCardPointerEvents,
-                zIndex: 30,
+                zIndex: 20,
                 willChange: "transform, opacity",
               }}
-              className={cn(
-                "min-h-[240px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-2xl sm:rounded-3xl bg-white dark:bg-card p-5 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden",
-                isDesktop ? "relative" : "absolute inset-0 z-30 shadow-primary/20 backdrop-blur-xl"
-              )}
+              className="relative min-h-[240px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-2xl sm:rounded-3xl bg-white dark:bg-card p-5 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden"
             >
               {/* Gradient ambient background */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-sky-500/5 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none" />
