@@ -271,18 +271,18 @@ export function Testimonials() {
   }
 
   return (
-    <section className="py-14 md:py-20 relative overflow-hidden bg-background">
+    <section className="py-10 md:py-20 relative overflow-hidden bg-background">
       {/* Background glow ambiance */}
-      <div className="absolute right-0 top-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-accent/10 rounded-full blur-[70px] md:blur-[140px] pointer-events-none" />
-      <div className="absolute left-0 bottom-1/4 w-[250px] sm:w-[450px] h-[250px] sm:h-[450px] bg-primary/10 rounded-full blur-[80px] md:blur-[150px] pointer-events-none" />
+      <div className="absolute right-0 top-1/2 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-accent/10 rounded-full blur-[70px] md:blur-[140px] pointer-events-none" />
+      <div className="absolute left-0 bottom-1/4 w-[200px] sm:w-[450px] h-[200px] sm:h-[450px] bg-primary/10 rounded-full blur-[80px] md:blur-[150px] pointer-events-none" />
       
-      <div className="container px-4 md:px-6 relative z-10 mb-8 sm:mb-12">
+      <div className="container px-3.5 sm:px-6 relative z-10 mb-6 sm:mb-12">
         <div className="text-center max-w-3xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-3 sm:mb-4 text-foreground"
+            className="text-xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-2 sm:mb-4 text-foreground"
           >
             {locale === "en" ? "Loved by Students & Professionals" : "Disukai oleh Pelajar & Profesional"}
           </motion.h2>
@@ -291,7 +291,7 @@ export function Testimonials() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ delay: 0.1 }}
-            className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed"
+            className="text-[11px] sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed"
           >
             {locale === "en" ? "How " : "Bagaimana "}<LinkoraText /> {locale === "en" ? "empowers thousands of learners and creators to stay organized." : "membantu ribuan pengguna tetap terorganisir dan produktif."}
           </motion.p>
@@ -301,8 +301,8 @@ export function Testimonials() {
       {/* Infinite 24/7 Auto-Scrolling Testimonial Carousel Track */}
       <div className="relative w-full overflow-hidden">
         {/* Soft edge gradient fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-28 bg-gradient-to-r from-background via-background/80 to-transparent z-20 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-28 bg-gradient-to-l from-background via-background/80 to-transparent z-20 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-6 sm:w-16 md:w-28 bg-gradient-to-r from-background via-background/80 to-transparent z-20 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-6 sm:w-16 md:w-28 bg-gradient-to-l from-background via-background/80 to-transparent z-20 pointer-events-none" />
 
         <div
           ref={containerRef}
@@ -312,27 +312,27 @@ export function Testimonials() {
           onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
           onScroll={handleScroll}
-          className="flex gap-4 sm:gap-6 overflow-x-auto overflow-y-hidden py-4 px-6 sm:px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
+          className="flex gap-3 sm:gap-6 overflow-x-auto overflow-y-hidden py-3 px-4 sm:px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
         >
           {allTestimonials.map((tItem, idx) => (
             <div
               key={`${tItem.author}-${idx}`}
-              className="w-[280px] sm:w-[320px] md:w-[370px] min-h-[220px] sm:min-h-[240px] shrink-0 glass-panel p-5 sm:p-6 md:p-7 rounded-2xl sm:rounded-3xl border border-border/60 hover:border-primary/50 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
+              className="w-[240px] xs:w-[270px] sm:w-[320px] md:w-[370px] min-h-[190px] sm:min-h-[240px] shrink-0 glass-panel p-3.5 sm:p-6 md:p-7 rounded-xl sm:rounded-3xl border border-border/60 hover:border-primary/50 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
             >
               <div>
-                <Quote className="w-7 h-7 sm:w-8 sm:h-8 text-foreground/5 group-hover:text-primary/20 transition-colors duration-300 mb-2 pointer-events-none" />
-                <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-normal">
+                <Quote className="w-5 h-5 sm:w-8 sm:h-8 text-foreground/5 group-hover:text-primary/20 transition-colors duration-300 mb-1.5 sm:mb-2 pointer-events-none" />
+                <p className="text-[11px] sm:text-sm text-foreground/90 leading-relaxed font-normal">
                   &ldquo;{tItem.quote}&rdquo;
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 pt-4 mt-3 border-t border-border/40">
-                <div className={`w-10 h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br ${tItem.bg} flex items-center justify-center font-bold text-white shadow-md text-xs sm:text-sm shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+              <div className="flex items-center gap-2.5 sm:gap-3 pt-3 sm:pt-4 mt-2 sm:mt-3 border-t border-border/40">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-2xl bg-gradient-to-br ${tItem.bg} flex items-center justify-center font-bold text-white shadow-md text-[11px] sm:text-sm shrink-0 group-hover:scale-105 transition-transform duration-300`}>
                   {tItem.initial}
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-foreground text-xs sm:text-sm truncate">{tItem.author}</h4>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground truncate">{tItem.role} • {tItem.univ}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{tItem.role} • {tItem.univ}</p>
                 </div>
               </div>
             </div>

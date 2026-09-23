@@ -146,14 +146,6 @@
 }
 
 @layer base {
-  html,
-  body {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-    width: 100% !important;
-    position: relative;
-  }
-
   * {
     @apply border-border outline-ring/50;
   }

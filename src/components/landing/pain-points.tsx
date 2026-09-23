@@ -188,10 +188,10 @@ export function PainPoints() {
         {/* Atmospheric Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] md:w-[700px] h-[340px] sm:h-[500px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px] pointer-events-none z-0" />
 
-        <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-6">
+        <div className="container px-3.5 sm:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-6">
           {/* ── Header: Title + Typewriter Subtitle ── */}
-          <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-6 md:mb-10">
-            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3 text-slate-900 dark:text-foreground">
+          <div className="text-center max-w-3xl mx-auto mb-2.5 sm:mb-6 md:mb-10">
+            <h2 className="text-xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-1.5 sm:mb-3 text-slate-900 dark:text-foreground">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">
                 {locale === "en" ? "Before Using" : "Sebelum Menggunakan"}
               </span>{" "}
@@ -203,7 +203,7 @@ export function PainPoints() {
           </div>
 
           {/* ── Main Grid Container ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 lg:gap-10 items-stretch max-w-5xl mx-auto relative">
             
             {/* ── Kolom Kiri: 5 Chaos Cards (Layer z-10) ── */}
             <motion.div
@@ -212,7 +212,7 @@ export function PainPoints() {
                 zIndex: 10,
                 willChange: "transform",
               }}
-              className="space-y-2 sm:space-y-3 flex flex-col justify-center relative"
+              className="space-y-1.5 sm:space-y-3 flex flex-col justify-center relative"
             >
               {problems.map((problem, idx) => {
                 const Icon = problem.icon
@@ -230,15 +230,15 @@ export function PainPoints() {
                       stiffness: 380,
                       damping: 26,
                     }}
-                    className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-2.5 sm:gap-4 border transition-all duration-300 overflow-hidden ${
+                    className={`p-2 sm:p-4 rounded-lg sm:rounded-2xl flex items-center gap-2 sm:gap-4 border transition-all duration-300 overflow-hidden ${
                       isActive
                         ? problem.activeClass
                         : "border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-sm opacity-90 hover:opacity-100"
                     }`}
                   >
                     {/* Badge Ikon */}
-                    <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20 transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <div className={`p-1 sm:p-2.5 rounded-md sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20 transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
+                      <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                     </div>
 
                     {/* Teks */}
@@ -247,7 +247,7 @@ export function PainPoints() {
                         opacity: cardTextOpacity,
                         willChange: "opacity" 
                       }}
-                      className="flex-1 text-xs sm:text-sm md:text-base font-semibold text-slate-800 dark:text-slate-100 leading-snug"
+                      className="flex-1 text-[11px] sm:text-sm md:text-base font-semibold text-slate-800 dark:text-slate-100 leading-snug"
                     >
                       {problem.text}
                     </motion.p>
@@ -260,7 +260,7 @@ export function PainPoints() {
                       }}
                       className="shrink-0"
                     >
-                      <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 dark:text-rose-400" />
+                      <XCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-rose-600 dark:text-rose-400" />
                     </motion.div>
                   </motion.div>
                 )
@@ -278,33 +278,33 @@ export function PainPoints() {
                 willChange: "transform, opacity",
               }}
               className={cn(
-                "min-h-[240px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-2xl sm:rounded-3xl bg-white dark:bg-card p-5 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden",
+                "min-h-[200px] sm:min-h-[340px] md:min-h-[420px] flex flex-col justify-center items-center rounded-xl sm:rounded-3xl bg-white dark:bg-card p-4 sm:p-8 md:p-10 text-center border-2 border-primary/40 dark:border-primary/50 shadow-2xl overflow-hidden",
                 isDesktop ? "relative" : "absolute inset-0 z-30 shadow-primary/20 backdrop-blur-xl"
               )}
             >
               {/* Gradient ambient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-sky-500/5 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-sky-500/5 to-transparent rounded-xl sm:rounded-3xl pointer-events-none" />
 
-              <div className="relative z-10 space-y-4 sm:space-y-6 w-full max-w-md mx-auto">
+              <div className="relative z-10 space-y-3 sm:space-y-6 w-full max-w-md mx-auto">
                 <motion.div
                   style={{
                     scale: checkScale,
                     boxShadow: checkGlow,
                     willChange: "transform, box-shadow",
                   }}
-                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-tr from-primary via-accent to-purple-500 p-0.5 shadow-xl shadow-primary/25 flex items-center justify-center"
+                  className="w-11 h-11 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-lg sm:rounded-2xl md:rounded-3xl bg-gradient-to-tr from-primary via-accent to-purple-500 p-0.5 shadow-xl shadow-primary/25 flex items-center justify-center"
                 >
-                  <div className="w-full h-full bg-white dark:bg-card rounded-[10px] sm:rounded-[14px] md:rounded-[22px] flex items-center justify-center shadow-xs">
-                    <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
+                  <div className="w-full h-full bg-white dark:bg-card rounded-[8px] sm:rounded-[14px] md:rounded-[22px] flex items-center justify-center shadow-xs">
+                    <CheckCircle2 className="w-5.5 h-5.5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
                   </div>
                 </motion.div>
 
                 {/* Headline & Body */}
-                <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-lg sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                <div className="space-y-1.5 sm:space-y-3">
+                  <h3 className="text-base sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     <LinkoraText /> {locale === "en" ? "Unifies Everything." : "Menyatukan Semuanya."}
                   </h3>
-                  <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  <p className="text-[11px] sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     {locale === "en" 
                       ? "One centralized workspace to save, analyze, summarize with AI, and retrieve all your critical information effortlessly."
                       : "Satu tempat terpusat untuk menyimpan, menganalisis, merangkum dengan AI, dan menemukan kembali semua informasi penting Anda tanpa stres."}

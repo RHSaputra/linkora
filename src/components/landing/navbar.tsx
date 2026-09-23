@@ -26,7 +26,7 @@ export function Navbar() {
     // Intersection Observer untuk deteksi section aktif
     const sections = ["solusi", "cara-kerja", "use-cases", "demo"];
     const currentSections = new Set<string>();
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         let changed = false;
@@ -78,13 +78,12 @@ export function Navbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/85 backdrop-blur-xl border-b border-foreground/10 shadow-lg py-3 sm:py-4" : "bg-transparent py-3.5 sm:py-6"
-      }`}
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/85 backdrop-blur-xl border-b border-foreground/10 shadow-lg py-2 sm:py-4" : "bg-transparent py-2.5 sm:py-6"
+        }`}
     >
-      <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
+      <div className="container mx-auto px-3.5 sm:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <img src="/linkorian.jpeg" alt="Linkorian Logo" className="h-11 sm:h-14 w-auto object-contain rounded-xl drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
+          <img src="/linkorian.jpeg" alt="Linkorian Logo" className="h-8.5 sm:h-14 w-auto object-contain rounded-lg sm:rounded-xl drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
         </Link>
 
         {/* Desktop Nav */}
@@ -101,7 +100,7 @@ export function Navbar() {
           </div>
           <div className="relative z-10 flex items-center gap-8 bg-background/95 backdrop-blur-xl px-6 py-2.5 rounded-full border border-foreground/5">
             {navLinks.map((item) => (
-              <Link 
+              <Link
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={() => setActiveSection(item.id)}
@@ -140,22 +139,22 @@ export function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher variant="pill" />
-          <button 
+          <button
             type="button"
             aria-label={mobileMenuOpen ? "Tutup Menu" : "Buka Menu"}
-            className="p-2 rounded-xl text-muted-foreground hover:text-foreground active:scale-90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation" 
+            className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:text-foreground active:scale-90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}

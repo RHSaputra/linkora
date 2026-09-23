@@ -137,11 +137,11 @@ export function Solution() {
         {/* Glow ambient background */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[500px] lg:w-[650px] h-[340px] sm:h-[500px] lg:h-[650px] bg-primary/10 rounded-full blur-[80px] lg:blur-[130px] pointer-events-none z-0" />
 
-        <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
+        <div className="container px-3.5 sm:px-6 relative z-10 mx-auto max-w-6xl my-auto py-2 sm:py-4">
           
           {/* Header Section: Meluncur Mulus dari Kiri & Kanan */}
-          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-6 overflow-x-clip px-2 py-3">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-foreground flex flex-col items-center gap-1 sm:gap-1.5 leading-[1.15] sm:leading-[1.18] mb-4 sm:mb-5 md:mb-6">
+          <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-8 lg:mb-6 overflow-x-clip px-2 py-2">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-foreground flex flex-col items-center gap-1 sm:gap-1.5 leading-[1.15] sm:leading-[1.18] mb-3 sm:mb-5 md:mb-6">
               <motion.span
                 initial={{ x: -100, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
@@ -182,7 +182,7 @@ export function Solution() {
                 damping: 22,
                 delay: 0.12,
               }}
-              className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
+              className="text-[11px] sm:text-sm md:text-base text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
             >
               {locale === "en"
                 ? "Tailored for students, job seekers, and professionals who demand a clean, organized digital workspace."
@@ -191,7 +191,7 @@ export function Solution() {
           </div>
 
           {/* Grid 6 Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 md:gap-4 max-w-6xl mx-auto w-full items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-4 max-w-6xl mx-auto w-full items-stretch">
             {solutions.map((item, idx) => {
               const Icon = item.icon
               const isActive = isDesktop ? activeCardIndex === idx : false
@@ -229,8 +229,8 @@ export function Solution() {
                       mass: 0.8,
                     }}
                     className={`
-                      h-full min-h-[170px] sm:min-h-[185px] md:min-h-[195px]
-                      p-4 sm:p-5 rounded-2xl sm:rounded-3xl cursor-default relative overflow-hidden group
+                      h-full min-h-[145px] sm:min-h-[185px] md:min-h-[195px]
+                      p-3.5 sm:p-5 rounded-xl sm:rounded-3xl cursor-default relative overflow-hidden group
                       flex flex-col justify-start transition-colors duration-250
                       ${
                         isActive
@@ -252,15 +252,15 @@ export function Solution() {
                     <motion.div
                       animate={isActive ? { scale: 1.12 } : { scale: 1 }}
                       transition={{ type: "spring", stiffness: 360, damping: 20 }}
-                      className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl ${item.bg} border flex items-center justify-center mb-3 shrink-0`}
+                      className={`w-8.5 h-8.5 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl ${item.bg} border flex items-center justify-center mb-2 sm:mb-3 shrink-0`}
                     >
-                      <Icon className={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${item.color}`} />
+                      <Icon className={`w-4 h-4 sm:w-5.5 sm:h-5.5 ${item.color}`} />
                     </motion.div>
 
                     {/* Judul Card */}
                     <h3
                       className={`
-                        text-base sm:text-lg font-bold mb-1.5 tracking-tight transition-colors duration-250
+                        text-sm sm:text-lg font-bold mb-1 tracking-tight transition-colors duration-250
                         ${isActive ? item.activeText : "text-slate-800 dark:text-foreground"}
                       `}
                     >
@@ -268,7 +268,7 @@ export function Solution() {
                     </h3>
 
                     {/* Deskripsi Card */}
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-muted-foreground leading-relaxed flex-1">
+                    <p className="text-[11px] sm:text-sm text-slate-600 dark:text-muted-foreground leading-relaxed flex-1">
                       {item.description}
                     </p>
                   </motion.div>

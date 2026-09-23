@@ -72,17 +72,17 @@ export function Comparison() {
   }
 
   return (
-    <section className="py-14 md:py-18 relative overflow-hidden bg-background">
+    <section className="py-10 md:py-18 relative overflow-hidden bg-background">
       {/* Glow Aura */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[700px] h-[340px] sm:h-[700px] bg-primary/10 rounded-full blur-[80px] sm:blur-[150px] pointer-events-none" />
 
-      <div className="container px-4 md:px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-12">
+      <div className="container px-3.5 sm:px-6 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-10 md:mb-12">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-foreground"
+            className="text-xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-2 sm:mb-4 text-foreground"
           >
             {locale === "en" ? "Why Choose " : "Mengapa Memilih "}<LinkoraText />?
           </motion.h2>
@@ -91,7 +91,7 @@ export function Comparison() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
             transition={{ delay: 0.1 }}
-            className="text-base md:text-lg text-muted-foreground"
+            className="text-[11px] sm:text-base md:text-lg text-muted-foreground"
           >
             {locale === "en"
               ? "One integrated system that is far smarter, more productive, and more organized than juggling separate tools."
@@ -106,9 +106,9 @@ export function Comparison() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden border border-border/70 shadow-2xl relative">
+          <div className="glass-panel rounded-xl sm:rounded-3xl overflow-hidden border border-border/70 shadow-2xl relative">
             {/* Mobile Scroll Indicator Cue */}
-            <div className="md:hidden flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-border/50 text-[11px] text-muted-foreground">
+            <div className="md:hidden flex items-center justify-between px-3.5 py-1.5 bg-primary/5 border-b border-border/50 text-[10px] text-muted-foreground">
               <span className="font-semibold text-primary">{locale === "en" ? "Feature Matrix" : "Matriks Fitur"}</span>
               <span className="flex items-center gap-1 font-medium text-primary animate-pulse">
                 {locale === "en" ? "Swipe to compare →" : "Geser untuk bandingkan →"}
@@ -116,34 +116,34 @@ export function Comparison() {
             </div>
 
             <div className="overflow-x-auto scrollbar-none">
-              <table className="w-full text-left border-collapse min-w-[540px] sm:min-w-[600px]">
+              <table className="w-full text-left border-collapse min-w-[460px] sm:min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border/60 bg-foreground/[0.02]">
-                    <th className="p-4 sm:p-6 font-bold text-foreground text-xs sm:text-sm uppercase tracking-wider w-2/5 sm:w-1/3 sticky left-0 z-20 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
+                    <th className="p-2.5 sm:p-6 font-bold text-foreground text-[10px] sm:text-sm uppercase tracking-wider w-2/5 sm:w-1/3 sticky left-0 z-20 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
                       {locale === "en" ? "Key Capabilities" : "Fitur Utama"}
                     </th>
-                    <th className="p-4 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                    <th className="p-2.5 sm:p-6 font-semibold text-center text-muted-foreground text-[10px] uppercase tracking-wider w-1/5">
                       {locale === "en" ? "Browser" : "Bookmark"}<br />
-                      <span className="text-[10px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "bookmarks" : "browser"}</span>
+                      <span className="text-[9px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "bookmarks" : "browser"}</span>
                     </th>
-                    <th className="p-4 sm:p-6 font-semibold text-center text-muted-foreground text-xs uppercase tracking-wider w-1/5">
+                    <th className="p-2.5 sm:p-6 font-semibold text-center text-muted-foreground text-[10px] uppercase tracking-wider w-1/5">
                       {locale === "en" ? "Standard" : "Aplikasi"}<br />
-                      <span className="text-[10px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "notes app" : "catatan biasa"}</span>
+                      <span className="text-[9px] sm:text-[11px] font-normal lowercase">{locale === "en" ? "notes app" : "catatan biasa"}</span>
                     </th>
-                    <th className="p-4 sm:p-6 font-bold text-center text-primary text-sm sm:text-base w-1/4 bg-primary/10 border-l border-primary/20">
+                    <th className="p-2.5 sm:p-6 font-bold text-center text-primary text-xs sm:text-base w-1/4 bg-primary/10 border-l border-primary/20">
                       <LinkoraText />
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/40 text-xs sm:text-sm">
+                <tbody className="divide-y divide-border/40 text-[11px] sm:text-sm">
                   {features.map((feature, idx) => (
                     <tr key={idx} className="hover:bg-foreground/[0.02] transition-colors">
-                      <td className="p-3.5 sm:p-5 font-medium text-foreground/90 sticky left-0 z-10 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
+                      <td className="p-2.5 sm:p-5 font-medium text-foreground/90 sticky left-0 z-10 bg-card/95 backdrop-blur-md md:static md:bg-transparent border-r border-border/40 md:border-r-0">
                         {feature.name}
                       </td>
-                      <td className="p-3.5 sm:p-5 text-center">{renderIcon(feature.bookmark)}</td>
-                      <td className="p-3.5 sm:p-5 text-center">{renderIcon(feature.notes)}</td>
-                      <td className="p-3.5 sm:p-5 text-center bg-primary/[0.04] border-l border-primary/20">{renderIcon(feature.linkora, true)}</td>
+                      <td className="p-2.5 sm:p-5 text-center">{renderIcon(feature.bookmark)}</td>
+                      <td className="p-2.5 sm:p-5 text-center">{renderIcon(feature.notes)}</td>
+                      <td className="p-2.5 sm:p-5 text-center bg-primary/[0.04] border-l border-primary/20">{renderIcon(feature.linkora, true)}</td>
                     </tr>
                   ))}
                 </tbody>

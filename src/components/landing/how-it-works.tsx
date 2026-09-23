@@ -141,9 +141,9 @@ export function HowItWorks() {
   return (
     <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background py-14 sm:py-20 lg:py-0">
       <div className="relative lg:sticky lg:top-0 h-auto lg:h-screen w-full lg:overflow-hidden flex flex-col items-center justify-center lg:py-[4vh]">
-        <div className="container px-4 md:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
+        <div className="container px-3.5 sm:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
           
-          <div className="text-center max-w-3xl mx-auto mb-6 md:mb-10 overflow-hidden py-1">
+          <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-10 overflow-hidden py-1">
             <motion.h2 
               initial={{ y: -20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
@@ -153,7 +153,7 @@ export function HowItWorks() {
                 stiffness: 110,
                 damping: 20,
               }}
-              className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900 dark:text-foreground"
+              className="text-xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3 text-slate-900 dark:text-foreground"
             >
               {locale === "en" ? "How " : "Bagaimana "}<LinkoraText /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">{locale === "en" ? "Works" : "Bekerja?"}</span>
             </motion.h2>
@@ -167,7 +167,7 @@ export function HowItWorks() {
                 damping: 22,
                 delay: 0.08,
               }}
-              className="text-xs sm:text-base md:text-lg text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
+              className="text-[11px] sm:text-base md:text-lg text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
             >
               {locale === "en"
                 ? "Three simple steps to build your personal knowledge base and link management powerhouse."
@@ -175,8 +175,8 @@ export function HowItWorks() {
             </motion.p>
           </div>
 
-          <div className="relative max-w-6xl mx-auto w-full pt-2 sm:pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 relative z-10 items-stretch">
+          <div className="relative max-w-6xl mx-auto w-full pt-1 sm:pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 lg:gap-10 relative z-10 items-stretch">
               {steps.map((item, idx) => {
                 const Icon = item.icon
                 const isActive = isDesktop ? activeStepIndex === idx : false
@@ -248,8 +248,8 @@ export function HowItWorks() {
                           mass: 0.8,
                         }}
                         className={`
-                          w-full h-full min-h-[260px] sm:min-h-[280px] md:min-h-[300px]
-                          p-6 md:p-8 rounded-3xl cursor-pointer relative overflow-hidden
+                          w-full h-full min-h-[200px] sm:min-h-[280px] md:min-h-[300px]
+                          p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl cursor-pointer relative overflow-hidden
                           flex flex-col justify-between transition-colors duration-300
                           ${
                             isActive
@@ -266,18 +266,18 @@ export function HowItWorks() {
                           `}
                         />
 
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-4 sm:mb-6">
                           <motion.div
                             animate={isActive ? { scale: 1.08 } : { scale: 1 }}
                             transition={{ type: "spring", stiffness: 360, damping: 20 }}
-                            className={`w-13 h-13 rounded-2xl ${item.bg} border flex items-center justify-center shadow-xs`}
+                            className={`w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl ${item.bg} border flex items-center justify-center shadow-xs`}
                           >
-                            <Icon className={`w-6 h-6 ${item.color}`} />
+                            <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${item.color}`} />
                           </motion.div>
 
                           <div
                             className={`
-                              px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider border transition-colors duration-300
+                              px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-bold tracking-wider border transition-colors duration-300
                               ${
                                 isActive
                                   ? item.activeBadge
@@ -289,16 +289,16 @@ export function HowItWorks() {
                           </div>
                         </div>
 
-                        <div className="space-y-2.5 flex-1">
+                        <div className="space-y-2 sm:space-y-2.5 flex-1">
                           <h3
                             className={`
-                              text-xl font-bold tracking-tight transition-colors duration-300
+                              text-base sm:text-xl font-bold tracking-tight transition-colors duration-300
                               ${isActive ? item.activeText : "text-slate-800 dark:text-foreground"}
                             `}
                           >
                             {item.title}
                           </h3>
-                          <p className="text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">
+                          <p className="text-[11px] sm:text-sm text-slate-600 dark:text-muted-foreground leading-relaxed">
                             {item.description}
                           </p>
                         </div>
@@ -307,12 +307,12 @@ export function HowItWorks() {
 
                     {/* Mobile Vertical Flow Connector - Natural & Clean */}
                     {idx < steps.length - 1 && (
-                      <div className="flex md:hidden flex-col items-center justify-center my-3 py-0.5 relative z-10 pointer-events-none">
-                        <div className="w-0.5 h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                        <div className="my-1 w-7 h-7 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-xs">
-                          <ArrowDown className="w-3.5 h-3.5 stroke-[2]" />
+                      <div className="flex md:hidden flex-col items-center justify-center my-2 py-0.5 relative z-10 pointer-events-none">
+                        <div className="w-0.5 h-2 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                        <div className="my-0.5 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-xs">
+                          <ArrowDown className="w-3 h-3 stroke-[2]" />
                         </div>
-                        <div className="w-0.5 h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                        <div className="w-0.5 h-2 bg-slate-200 dark:bg-slate-800 rounded-full" />
                       </div>
                     )}
                   </div>
