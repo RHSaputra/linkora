@@ -44,6 +44,13 @@ export interface GeminiRequestOptions {
   expectJson?: boolean;
 }
 
+function isRateLimitError(err: any): boolean {
+  if (!err) return false;
+  const str = String(err?.message || err).toLowerCase();
+  const status = err?.status || err?.statusCode || err?.error?.status || err?.error?.code;
+  return status === 429 || status === "RESOURCE_EXHAUSTED" || str.includes("quota") || str.includes("rate limit") || str.includes("resource_exhausted");
+}
+
 /**
  * Central Shared Request Engine for Non-Streaming Gemini API Calls
  */
@@ -58,49 +65,58 @@ export async function executeGeminiRequest<T = string>(options: GeminiRequestOpt
   let lastError: any = null;
 
   for (const modelName of GEMINI_MODELS) {
-    try {
-      const config: any = {
-        temperature: options.temperature ?? AI_CONFIG.temperatures.factual,
-      };
+    for (let attempt = 1; attempt <= AI_CONFIG.retry.maxAttempts; attempt++) {
+      try {
+        const config: any = {
+          temperature: options.temperature ?? AI_CONFIG.temperatures.factual,
+        };
 
-      if (options.maxOutputTokens) {
-        config.maxOutputTokens = options.maxOutputTokens;
-      }
-
-      if (options.responseMimeType) {
-        config.responseMimeType = options.responseMimeType;
-      }
-
-      if (options.systemInstruction) {
-        config.systemInstruction = options.systemInstruction;
-      }
-
-      const response = await withTimeout(
-        client.models.generateContent({
-          model: modelName,
-          contents: options.contents,
-          config,
-        }),
-        timeoutMs
-      );
-
-      const rawText = response?.text || "";
-
-      if (options.expectJson) {
-        const parsed = parseAIStructuredJson<T>(rawText);
-        if (parsed !== null) {
-          return { data: parsed, modelUsed: modelName as GeminiModelName };
+        if (options.maxOutputTokens) {
+          config.maxOutputTokens = options.maxOutputTokens;
         }
-        console.warn(`Model ${modelName} returned invalid JSON structure, trying next model fallback...`);
-      } else {
-        const cleanedText = sanitizeAIResponseText(rawText);
-        if (cleanedText) {
-          return { data: cleanedText as unknown as T, modelUsed: modelName as GeminiModelName };
+
+        if (options.responseMimeType && modelName === AI_CONFIG.models.primary) {
+          config.responseMimeType = options.responseMimeType;
+        }
+
+        if (options.systemInstruction) {
+          config.systemInstruction = options.systemInstruction;
+        }
+
+        const response = await withTimeout(
+          client.models.generateContent({
+            model: modelName,
+            contents: options.contents,
+            config,
+          }),
+          timeoutMs
+        );
+
+        const rawText = response?.text || "";
+
+        if (options.expectJson) {
+          const parsed = parseAIStructuredJson<T>(rawText);
+          if (parsed !== null) {
+            return { data: parsed, modelUsed: modelName as GeminiModelName };
+          }
+          console.warn(`Model ${modelName} (attempt ${attempt}) returned invalid JSON structure, retrying...`);
+        } else {
+          const cleanedText = sanitizeAIResponseText(rawText);
+          if (cleanedText) {
+            return { data: cleanedText as unknown as T, modelUsed: modelName as GeminiModelName };
+          }
+        }
+      } catch (err: any) {
+        console.warn(`Model ${modelName} call (attempt ${attempt}) failed:`, err?.message || err);
+        lastError = err;
+        if (isRateLimitError(err)) {
+          console.warn(`Model ${modelName} rate limited (429/Quota), switching to fallback model...`);
+          break; // Immediately try next model in GEMINI_MODELS
+        }
+        if (attempt < AI_CONFIG.retry.maxAttempts) {
+          await new Promise((r) => setTimeout(r, AI_CONFIG.retry.baseDelayMs * attempt));
         }
       }
-    } catch (err: any) {
-      console.warn(`Model ${modelName} call failed:`, err?.message || err);
-      lastError = err;
     }
   }
 
@@ -126,34 +142,46 @@ export async function executeGeminiStream(options: {
   let lastError: any = null;
 
   for (const modelName of GEMINI_MODELS) {
-    try {
-      const responseStream = await client.models.generateContentStream({
-        model: modelName,
-        contents: options.contents,
-        config: {
-          temperature: options.temperature ?? AI_CONFIG.temperatures.conversational,
-          maxOutputTokens: options.maxOutputTokens,
-        },
-      });
+    for (let attempt = 1; attempt <= AI_CONFIG.retry.maxAttempts; attempt++) {
+      try {
+        const responseStream = await client.models.generateContentStream({
+          model: modelName,
+          contents: options.contents,
+          config: {
+            temperature: options.temperature ?? AI_CONFIG.temperatures.conversational,
+            maxOutputTokens: options.maxOutputTokens,
+          },
+        });
 
-      const iterator = responseStream[Symbol.asyncIterator]();
-      const firstResult = await iterator.next();
+        const iterator = typeof (responseStream as any)[Symbol.asyncIterator] === "function"
+          ? (responseStream as any)[Symbol.asyncIterator]()
+          : (responseStream as any);
 
-      async function* wrappedStream() {
-        if (firstResult.value) {
-          yield firstResult.value;
+        const firstResult = await iterator.next();
+
+        async function* wrappedStream() {
+          if (firstResult && firstResult.value) {
+            yield firstResult.value;
+          }
+          while (true) {
+            const nextRes = await iterator.next();
+            if (!nextRes || nextRes.done) break;
+            if (nextRes.value) yield nextRes.value;
+          }
         }
-        while (true) {
-          const nextRes = await iterator.next();
-          if (nextRes.done) break;
-          if (nextRes.value) yield nextRes.value;
+
+        return { stream: wrappedStream(), modelUsed: modelName as GeminiModelName };
+      } catch (err: any) {
+        console.warn(`Stream model ${modelName} (attempt ${attempt}) failed:`, err?.message || err);
+        lastError = err;
+        if (isRateLimitError(err)) {
+          console.warn(`Stream model ${modelName} rate limited (429/Quota), switching to fallback model...`);
+          break; // Immediately try next model in GEMINI_MODELS
+        }
+        if (attempt < AI_CONFIG.retry.maxAttempts) {
+          await new Promise((r) => setTimeout(r, AI_CONFIG.retry.baseDelayMs * attempt));
         }
       }
-
-      return { stream: wrappedStream(), modelUsed: modelName as GeminiModelName };
-    } catch (err: any) {
-      console.warn(`Stream model ${modelName} failed:`, err?.message || err);
-      lastError = err;
     }
   }
 

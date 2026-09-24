@@ -15,7 +15,6 @@ export const AI_CONFIG = {
     primary: "gemini-3.6-flash",
     fallbacks: [
       "gemini-3.5-flash-lite",
-      "gemini-2.5-flash",
     ] as const,
   },
 
@@ -26,9 +25,9 @@ export const AI_CONFIG = {
   },
 
   timeouts: {
-    standard: 25000,
-    heavy: 50000,
-    fast: 10000,
+    standard: 35000,
+    heavy: 60000,
+    fast: 15000,
   },
 
   retry: {
