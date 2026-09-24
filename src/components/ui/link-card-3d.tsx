@@ -135,11 +135,7 @@ export function LinkCard3D({ link, index, onUpdate, onDelete, onEdit, viewMode =
   if (viewMode === "compact") {
     return (
       <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
-        transition={{ duration: 0.2, delay: Math.min(index, 6) * 0.02 }}
+        initial={false}
         className="group relative w-full"
       >
         <div
@@ -335,11 +331,7 @@ export function LinkCard3D({ link, index, onUpdate, onDelete, onEdit, viewMode =
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.3, delay: Math.min(index, 6) * 0.02 }}
+      initial={false}
       className="h-full flex flex-col"
     >
       <Card3D className="h-full flex flex-col">
