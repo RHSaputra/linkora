@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
             <div className="absolute inset-0 z-20">
               <img
                 src="/icon.jpg"
-                alt="Linkora Logo"
+                alt="Linkorian Logo"
                 className="absolute inset-0 w-full h-full object-cover z-30 pointer-events-none"
               />
             </div>
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
                 {locale === "en" ? "Forgot Password?" : "Lupa Kata Sandi?"}
               </h2>
               <p className="text-sm text-muted-foreground">
-                {locale === "en" ? "Enter the email address registered with your Linkora account." : "Masukkan alamat email yang terdaftar pada akun Linkora Anda."}
+                {locale === "en" ? "Enter the email address registered with your Linkorian account." : "Masukkan alamat email yang terdaftar pada akun Linkorian Anda."}
               </p>
             </div>
 

@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       case "welcome":
         sendResult = await sendWelcomeEmail({
           to: toEmail,
-          name: "Pengguna Linkora",
+          name: "Pengguna Linkorian",
           isGoogleAuth: false,
         });
         break;
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       case "reset":
         sendResult = await sendPasswordResetEmail({
           to: toEmail,
-          name: "Pengguna Linkora",
+          name: "Pengguna Linkorian",
           resetUrl: `${appUrl}/reset-password?token=demo_test_token_resend_security_123456&email=${encodeURIComponent(toEmail)}`,
           expiryMinutes: 15,
         });
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       default:
         sendResult = await sendVerificationOtpEmail({
           to: toEmail,
-          name: "Pengguna Linkora",
+          name: "Pengguna Linkorian",
           otp: Math.floor(100000 + Math.random() * 900000).toString(),
           expiryMinutes: 10,
         });

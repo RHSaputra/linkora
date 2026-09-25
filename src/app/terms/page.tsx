@@ -52,7 +52,7 @@ export default function TermsPage() {
           color: "text-blue-500 dark:text-blue-400",
           bg: "bg-blue-500/10 border-blue-500/20",
           title: "100% User Data Ownership",
-          desc: "You retain full ownership and intellectual property rights over all links, notes, documents, and assets created on Linkora.",
+          desc: "You retain full ownership and intellectual property rights over all links, notes, documents, and assets created on Linkorian.",
         },
         {
           icon: UserCheck,
@@ -82,7 +82,7 @@ export default function TermsPage() {
           color: "text-blue-500 dark:text-blue-400",
           bg: "bg-blue-500/10 border-blue-500/20",
           title: "Kepemilikan Hak Cipta 100%",
-          desc: "Anda memegang hak milik dan hak cipta penuh atas seluruh tautan, catatan, dokumen, dan konten yang disimpan di Linkora.",
+          desc: "Anda memegang hak milik dan hak cipta penuh atas seluruh tautan, catatan, dokumen, dan konten yang disimpan di Linkorian.",
         },
         {
           icon: UserCheck,
@@ -111,15 +111,15 @@ export default function TermsPage() {
     ? [
         {
           q: "Do I retain full rights to the documents and links I save?",
-          a: "Yes, absolutely. Linkora claims zero ownership over your personal links, document drafts, notes, or uploaded assets. You maintain 100% intellectual property ownership.",
+          a: "Yes, absolutely. Linkorian claims zero ownership over your personal links, document drafts, notes, or uploaded assets. You maintain 100% intellectual property ownership.",
         },
         {
-          q: "What happens if I decide to delete my Linkora account?",
+          q: "What happens if I decide to delete my Linkorian account?",
           a: "When you request account deletion from your profile settings, your account, authentication tokens, and personal stored links/notes are permanently erased from our primary databases.",
         },
         {
           q: "Are there any strict prohibitions I should be aware of?",
-          a: "You may not use Linkora to distribute malware, attempt SQL injection/cyber attacks, engage in automated bot scraping, or store content that violates applicable internet laws.",
+          a: "You may not use Linkorian to distribute malware, attempt SQL injection/cyber attacks, engage in automated bot scraping, or store content that violates applicable internet laws.",
         },
         {
           q: "How are updates to these Terms communicated?",
@@ -129,15 +129,15 @@ export default function TermsPage() {
     : [
         {
           q: "Apakah saya memegang hak cipta penuh atas dokumen dan tautan saya?",
-          a: "Ya, 100%. Linkora tidak pernah mengklaim kepemilikan atas tautan pribadi, dokumen, catatan, atau berkas yang Anda simpan. Seluruh hak cipta sepenuhnya milik Anda.",
+          a: "Ya, 100%. Linkorian tidak pernah mengklaim kepemilikan atas tautan pribadi, dokumen, catatan, atau berkas yang Anda simpan. Seluruh hak cipta sepenuhnya milik Anda.",
         },
         {
           q: "Apa yang terjadi jika saya memutuskan untuk menghapus akun?",
           a: "Jika Anda mengajukan penghapusan akun dari halaman profil, akun Anda beserta seluruh tautan dan catatan yang tersimpan akan dihapus secara permanen dari database utama kami.",
         },
         {
-          q: "Apa saja larangan utama dalam penggunaan layanan Linkora?",
-          a: "Anda dilarang menggunakan Linkora untuk menyebarkan malware, mencoba peretasan/eksploitasi sistem, melakukan bot scraping otomatis, atau menyimpan konten ilegal yang melanggar hukum.",
+          q: "Apa saja larangan utama dalam penggunaan layanan Linkorian?",
+          a: "Anda dilarang menggunakan Linkorian untuk menyebarkan malware, mencoba peretasan/eksploitasi sistem, melakukan bot scraping otomatis, atau menyimpan konten ilegal yang melanggar hukum.",
         },
         {
           q: "Bagaimana jika ada pembaruan pada Ketentuan Layanan ini?",
@@ -196,8 +196,8 @@ export default function TermsPage() {
 
             <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
               {isEn
-                ? "Transparent, fair, and user-first principles governing your access and usage of Linkora platform."
-                : "Aturan penggunaan yang adil, transparan, dan melindungi hak Anda sebagai pengguna platform Linkora."}
+                ? "Transparent, fair, and user-first principles governing your access and usage of Linkorian platform."
+                : "Aturan penggunaan yang adil, transparan, dan melindungi hak Anda sebagai pengguna platform Linkorian."}
             </p>
 
             <div className="mt-4 text-xs font-medium text-muted-foreground/80 flex items-center justify-center gap-2">
@@ -285,11 +285,11 @@ export default function TermsPage() {
                     <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-medium">
                       {isEn ? (
                         <>
-                          <strong className="text-foreground">In simple terms:</strong> Linkora is designed to be your trusted personal digital workspace. You own 100% of your data, you can delete your account anytime, and we promise never to lock your data behind unethical paywalls.
+                          <strong className="text-foreground">In simple terms:</strong> Linkorian is designed to be your trusted personal digital workspace. You own 100% of your data, you can delete your account anytime, and we promise never to lock your data behind unethical paywalls.
                         </>
                       ) : (
                         <>
-                          <strong className="text-foreground">Secara sederhana:</strong> Linkora dirancang sebagai ruang kerja digital pribadi Anda. Anda memegang 100% hak atas konten Anda, bebas mengekspor atau menghapus data kapan saja, tanpa jebakan biaya tersembunyi.
+                          <strong className="text-foreground">Secara sederhana:</strong> Linkorian dirancang sebagai ruang kerja digital pribadi Anda. Anda memegang 100% hak atas konten Anda, bebas mengekspor atau menghapus data kapan saja, tanpa jebakan biaya tersembunyi.
                         </>
                       )}
                     </div>
@@ -302,7 +302,7 @@ export default function TermsPage() {
                       {isEn ? "Account Creation & Eligibility" : "Ketentuan Akun & Pendaftaran"}
                     </h3>
                     <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground pl-8 list-disc font-medium leading-relaxed">
-                      <li>{isEn ? "You must be at least 13 years old (or equivalent legal age in your jurisdiction) to use Linkora." : "Pengguna berusia minimal 13 tahun (atau usia legal yang berlaku) untuk menggunakan platform Linkora."}</li>
+                      <li>{isEn ? "You must be at least 13 years old (or equivalent legal age in your jurisdiction) to use Linkorian." : "Pengguna berusia minimal 13 tahun (atau usia legal yang berlaku) untuk menggunakan platform Linkorian."}</li>
                       <li>{isEn ? "You are responsible for keeping your login credentials and Google OAuth session safe." : "Anda bertanggung jawab penuh atas keamanan kredensial akun dan sesi login Google OAuth Anda."}</li>
                     </ul>
                   </div>
@@ -315,7 +315,7 @@ export default function TermsPage() {
                     </h3>
                     <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground pl-8 list-disc font-medium leading-relaxed">
                       <li>{isEn ? "All links, documents, notes, and metadata you save belong exclusively to you." : "Seluruh tautan, dokumen, catatan, dan metadata yang Anda simpan adalah milik pribadi Anda 100%."}</li>
-                      <li>{isEn ? "Linkora never claims ownership or monetizes your personal content." : "Linkora tidak pernah mengambil alih hak cipta maupun menjual konten pribadi Anda kepada pihak mana pun."}</li>
+                      <li>{isEn ? "Linkorian never claims ownership or monetizes your personal content." : "Linkorian tidak pernah mengambil alih hak cipta maupun menjual konten pribadi Anda kepada pihak mana pun."}</li>
                     </ul>
                   </div>
 
@@ -328,7 +328,7 @@ export default function TermsPage() {
                     <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 space-y-2">
                       <div className="flex items-center gap-2 text-xs font-bold text-rose-500">
                         <XCircle className="h-4 w-4" />
-                        <span>{isEn ? "Strictly Forbidden on Linkora:" : "Dilarang Keras di Linkora:"}</span>
+                        <span>{isEn ? "Strictly Forbidden on Linkorian:" : "Dilarang Keras di Linkorian:"}</span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                         {isEn

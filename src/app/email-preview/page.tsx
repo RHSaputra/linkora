@@ -139,7 +139,7 @@ export default function EmailPreviewPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-base tracking-tight font-heading">
-                  Linkora
+                  Linkorian
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-semibold bg-primary/10 text-primary rounded-full border border-primary/20">
                   Email Studio QA
@@ -354,7 +354,7 @@ export default function EmailPreviewPage() {
               </span>
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Dari: <strong>Linkora &lt;onboarding@resend.dev&gt;</strong></span>
+              <span>Dari: <strong>Linkorian &lt;onboarding@resend.dev&gt;</strong></span>
               <span>Ke: <strong>user@linkora.id</strong></span>
             </div>
           </div>

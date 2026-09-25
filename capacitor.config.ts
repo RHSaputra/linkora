@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'id.linkora.app',
-  appName: 'Linkora',
+  appName: 'Linkorian',
   webDir: 'public',
   server: {
     // URL ini diatur untuk testing di Android Emulator
