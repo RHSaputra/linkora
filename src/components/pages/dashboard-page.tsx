@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { LinkCard3D } from "@/components/ui/link-card-3d";
+import { LinkCard } from "@/components/links/link-card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -438,7 +438,7 @@ export function DashboardPage({
               className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}
             >
               {s.favoriteLinks.map((link, i) => (
-                <LinkCard3D
+                <LinkCard
                   key={link.id}
                   link={link}
                   index={i}
@@ -526,7 +526,7 @@ export function DashboardPage({
                 className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}
               >
                 {filteredRecentLinks.map((link, i) => (
-                  <LinkCard3D
+                  <LinkCard
                     key={link.id}
                     link={link}
                     index={i}
