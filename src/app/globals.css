@@ -1038,3 +1038,45 @@
     display: none !important;
   }
 }
+
+/* ───────────────────────────────────────────────────────── */
+/* STRICT MOBILE (HP) RESPONSIVE OVERRIDES (max-width: 639px) */
+/* DESKTOP & TABLET ARE 100% LOCKED / PROTECTED               */
+/* ───────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Prevent horizontal overflow on mobile body & app shell */
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden !important;
+  }
+
+  /* All main containers fit mobile viewport naturally */
+  main {
+    min-width: 0 !important;
+    max-width: 100vw !important;
+  }
+
+  /* Buttons on mobile wrap content or shrink cleanly without clipping */
+  button, .btn, [role="button"] {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Card containers fit 100% width on HP without forcing desktop fixed widths */
+  .glass-panel, .card, [class*="rounded-2xl"], [class*="rounded-3xl"] {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Ensure text wrap on mobile */
+  p, h1, h2, h3, h4, h5, h6, span {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Modals on HP screens get safe margins and padding */
+  [role="dialog"] {
+    max-width: calc(100vw - 1rem) !important;
+    box-sizing: border-box;
+  }
+}
