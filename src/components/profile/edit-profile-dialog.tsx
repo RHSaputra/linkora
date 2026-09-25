@@ -123,18 +123,44 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   useEffect(() => {
     if (open) {
-      setChosenPresetUrl(null);
-      if (session?.user) {
-        setName(session.user.name || "");
-        setSelectedAvatar(session.user.image || "");
+      let cachedName = "";
+      let cachedImage = "";
+
+      if (typeof window !== "undefined") {
+        try {
+          const saved = localStorage.getItem("linkora_cached_profile");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.name) cachedName = parsed.name;
+            if (parsed.image) cachedImage = parsed.image;
+          }
+        } catch {}
       }
-      // Fetch fresh profile stats
+
+      const initialName = cachedName || session?.user?.name || "";
+      const initialImage = cachedImage || session?.user?.image || "";
+
+      setName(initialName);
+      setSelectedAvatar(initialImage);
+
+      const matchingPreset = AVATARS.find((a) => a.url === initialImage);
+      setChosenPresetUrl(matchingPreset ? matchingPreset.url : null);
+
+      // Fetch fresh profile stats & DB state
       fetch(`/api/user/profile?t=${Date.now()}`, { cache: "no-store" })
         .then((r) => r.json())
         .then((data) => {
           if (data && !data.error) {
-            setName(data.name || session?.user?.name || "");
-            setSelectedAvatar(data.image || "");
+            const freshName = data.name || session?.user?.name || "";
+            setName(freshName);
+            
+            // Prioritize fresh API image or keep current valid custom upload
+            const freshImage = data.image !== undefined && data.image !== null ? data.image : initialImage;
+            setSelectedAvatar(freshImage);
+
+            const freshPreset = AVATARS.find((a) => a.url === freshImage);
+            setChosenPresetUrl(freshPreset ? freshPreset.url : null);
+
             setProfileStats({
               totalLinks: data.stats?.totalLinks || 0,
               totalNotes: data.stats?.totalNotes || 0,
@@ -152,6 +178,25 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
       setChosenPresetUrl(null);
     }
   }, [open, session]);
+
+  useEffect(() => {
+    const handleProfileUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ name?: string; image?: string | null }>;
+      if (customEvent.detail) {
+        if (customEvent.detail.name) setName(customEvent.detail.name);
+        if (customEvent.detail.image !== undefined) {
+          const newImg = customEvent.detail.image || "";
+          setSelectedAvatar(newImg);
+          const preset = AVATARS.find((a) => a.url === newImg);
+          setChosenPresetUrl(preset ? preset.url : null);
+        }
+      }
+    };
+    window.addEventListener("linkora_profile_updated", handleProfileUpdated);
+    return () => {
+      window.removeEventListener("linkora_profile_updated", handleProfileUpdated);
+    };
+  }, []);
 
   // Handle local photo file upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,7 +331,14 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     }
   };
 
-  const activeAvatar = selectedAvatar || session?.user?.image;
+  const cachedProfileImage = typeof window !== "undefined" ? (() => {
+    try {
+      const saved = localStorage.getItem("linkora_cached_profile");
+      return saved ? JSON.parse(saved).image : null;
+    } catch { return null; }
+  })() : null;
+
+  const activeAvatar = selectedAvatar || cachedProfileImage || session?.user?.image;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -320,7 +372,14 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               {/* Active Avatar View */}
               <div className="relative w-18 h-18 rounded-2xl bg-background border-2 border-primary/40 shadow-md flex items-center justify-center overflow-hidden shrink-0 mx-auto sm:mx-0">
                 {activeAvatar ? (
-                  <img src={activeAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                  <img
+                    src={activeAvatar}
+                    alt={name || "Avatar"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name || "Linkorian")}`;
+                    }}
+                  />
                 ) : (
                   <User className="h-9 w-9 text-muted-foreground" />
                 )}
