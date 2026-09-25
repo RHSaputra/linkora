@@ -335,7 +335,11 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
         </div>
       ) : displayLinks.length > 0 ? (
         <>
-          <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}>
+          <motion.div
+            layout
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}
+          >
             <AnimatePresence mode="popLayout">
               {displayLinks.map((link, i) => (
                 <LinkCard
@@ -355,7 +359,7 @@ export function LinksPage({ refreshKey, triggerRefresh, openEditLink }: LinksPag
                 />
               ))}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           {/* Load More Button in View All Mode */}
           {displayMode === "all" && !isNL && hasMore && (

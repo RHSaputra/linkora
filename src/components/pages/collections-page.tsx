@@ -596,7 +596,11 @@ export function CollectionsPage({
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8"}>
+                    <motion.div
+                      layout
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8"}
+                    >
                       {collectionLinks.map((link, i) => (
                         <LinkCard
                           key={link.id}
@@ -614,7 +618,7 @@ export function CollectionsPage({
                           onEdit={openEditLink}
                         />
                       ))}
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               ) : (

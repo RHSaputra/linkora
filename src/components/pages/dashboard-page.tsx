@@ -432,7 +432,11 @@ export function DashboardPage({
             </div>
 
             {/* Grid of 3D Cards */}
-            <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
+            <motion.div
+              layout
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}
+            >
               {s.favoriteLinks.map((link, i) => (
                 <LinkCard3D
                   key={link.id}
@@ -447,7 +451,7 @@ export function DashboardPage({
                   onEdit={openEditLink}
                 />
               ))}
-            </div>
+            </motion.div>
           </motion.section>
         )}
 
@@ -516,7 +520,11 @@ export function DashboardPage({
                 ))}
               </div>
             ) : filteredRecentLinks.length > 0 ? (
-              <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}>
+              <motion.div
+                layout
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"}
+              >
                 {filteredRecentLinks.map((link, i) => (
                   <LinkCard3D
                     key={link.id}
@@ -530,7 +538,7 @@ export function DashboardPage({
                     onEdit={openEditLink}
                   />
                 ))}
-              </div>
+              </motion.div>
             ) : (
               <div className="glass-panel p-10 rounded-2xl border border-dashed border-border text-center">
                 <p className="text-muted-foreground text-sm font-medium">
