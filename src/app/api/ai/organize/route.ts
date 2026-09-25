@@ -165,18 +165,28 @@ Output murni JSON, tanpa formatting markdown (tanpa \`\`\`json).
 
     let updatedCount = 0;
     const changes: { title: string; category: string }[] = [];
-    for (const item of parsedResponse) {
-      if (item.id && item.category && typeof item.category === "string") {
-        const link = linksData.find((l) => l.id === item.id);
-        if (link) {
-          const cleanCategory = item.category.trim().slice(0, 50);
-          await prisma.link.update({
-            where: { id: item.id },
-            data: { category: cleanCategory },
-          });
-          changes.push({ title: link.title, category: cleanCategory });
-          updatedCount++;
+
+    const updateResults = await Promise.all(
+      parsedResponse.map(async (item) => {
+        if (item.id && item.category && typeof item.category === "string") {
+          const link = linksData.find((l) => l.id === item.id);
+          if (link) {
+            const cleanCategory = item.category.trim().slice(0, 50);
+            await prisma.link.update({
+              where: { id: item.id },
+              data: { category: cleanCategory },
+            });
+            return { title: link.title, category: cleanCategory };
+          }
         }
+        return null;
+      })
+    );
+
+    for (const res of updateResults) {
+      if (res) {
+        changes.push(res);
+        updatedCount++;
       }
     }
 

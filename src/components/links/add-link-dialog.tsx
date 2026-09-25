@@ -66,6 +66,8 @@ export function AddLinkDialog({
   const [saving, setSaving] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const notesRef = useRef<HTMLTextAreaElement | null>(null);
+  const urlCheckTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const urlCheckAbortRef = useRef<AbortController | null>(null);
 
   // Duplicate detection state
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
@@ -76,6 +78,8 @@ export function AddLinkDialog({
   } | null>(null);
 
   const resetForm = useCallback(() => {
+    if (urlCheckTimerRef.current) clearTimeout(urlCheckTimerRef.current);
+    if (urlCheckAbortRef.current) urlCheckAbortRef.current.abort();
     setUrl("");
     setTitle("");
     setDescription("");
@@ -168,19 +172,29 @@ export function AddLinkDialog({
     }
   };
 
-  const handleUrlPaste = async (value: string) => {
+  const handleUrlPaste = (value: string) => {
     setUrl(value);
     setDuplicateData(null);
     setShowDuplicateModal(false);
-    if (!editLink && value.startsWith("http")) {
+    if (urlCheckTimerRef.current) clearTimeout(urlCheckTimerRef.current);
+    if (urlCheckAbortRef.current) urlCheckAbortRef.current.abort();
+
+    const trimmed = value.trim();
+    if (!editLink && (trimmed.startsWith("http://") || trimmed.startsWith("https://")) && trimmed.length >= 10) {
       setFetchingMeta(true);
+      const controller = new AbortController();
+      urlCheckAbortRef.current = controller;
+
+      urlCheckTimerRef.current = setTimeout(async () => {
+
       try {
         const [meta, dupRes] = await Promise.all([
-          fetchMetadata(value),
+          fetchMetadata(trimmed).catch(() => null),
           fetch("/api/ai/check-duplicate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: value }),
+            body: JSON.stringify({ url: trimmed }),
+            signal: controller.signal,
           }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
 
@@ -195,7 +209,8 @@ export function AddLinkDialog({
               const titleCheck = await fetch("/api/ai/check-duplicate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: value, title: meta.title }),
+                body: JSON.stringify({ url: trimmed, title: meta.title }),
+                signal: controller.signal,
               }).then((r) => (r.ok ? r.json() : null));
               if (titleCheck && titleCheck.type !== "none") {
                 setDuplicateData(titleCheck);
@@ -210,8 +225,13 @@ export function AddLinkDialog({
           setShowDuplicateModal(true);
         }
       } finally {
-        setFetchingMeta(false);
+        if (!controller.signal.aborted) {
+          setFetchingMeta(false);
+        }
       }
+    }, 300);
+  } else {
+    setFetchingMeta(false);
     }
   };
 

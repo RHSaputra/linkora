@@ -3,6 +3,7 @@ import { executeGeminiStream, normalizeAiError } from "@/lib/gemini";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
+import { getAiCache, setAiCache } from "@/lib/ai-cache";
 import {
   extractUrlsFromTextMessage,
   analyzeUrlWithLinkIntelligence,
@@ -49,8 +50,15 @@ function sanitizeRoleSequence(contents: GeminiContent[]): GeminiContent[] {
 
 /**
  * Build a context summary of the user's link collection to inject into Liko's system prompt.
+ * Uses a short 15-second in-memory server cache to eliminate DB latency on rapid chat turns.
  */
 async function buildUserContext(userId: string, userName: string, isEn: boolean): Promise<string> {
+  const cacheKey = `chat_user_context:${userId}:${isEn ? "en" : "id"}`;
+  const cachedContext = getAiCache(cacheKey);
+  if (cachedContext) {
+    return cachedContext;
+  }
+
   const [
     totalLinks,
     favoriteCount,
@@ -103,7 +111,7 @@ async function buildUserContext(userId: string, userName: string, isEn: boolean)
   ]);
 
   if (totalLinks === 0) {
-    return isEn
+    const emptyContext = isEn
       ? `=== USER DATA CONTEXT ===
 Name: ${userName}
 Total links: 0
@@ -114,6 +122,8 @@ Nama: ${userName}
 Total tautan: 0
 Pengguna belum menyimpan tautan apapun di ruang kerja Linkorian.
 === AKHIR KONTEKS ===`;
+    setAiCache(cacheKey, emptyContext, 15000);
+    return emptyContext;
   }
 
   const categoryLines = categoryGroups
@@ -181,7 +191,7 @@ Pengguna belum menyimpan tautan apapun di ruang kerja Linkorian.
       ? "No roadmaps created yet."
       : "Belum ada roadmap.";
 
-  return isEn
+  const contextResult = isEn
     ? `=== USER DATA CONTEXT ===
 Name: ${userName}
 Total links: ${totalLinks} | Favorites: ${favoriteCount} | Collections: ${collectionCount} | Roadmaps: ${userRoadmaps.length}
@@ -212,6 +222,9 @@ ${reminderLines}
 Roadmap Pengguna:
 ${roadmapLines}
 === AKHIR KONTEKS ===`;
+
+  setAiCache(cacheKey, contextResult, 15000);
+  return contextResult;
 }
 
 export async function POST(req: NextRequest) {
@@ -266,12 +279,21 @@ export async function POST(req: NextRequest) {
     const urlAnalysisResults: LinkAnalysisResult[] = [];
     const urlAnalysisErrors: string[] = [];
 
-    for (const targetUrl of urlsToAnalyze) {
-      try {
-        const result = await analyzeUrlWithLinkIntelligence(targetUrl);
-        urlAnalysisResults.push(result);
-      } catch (err: any) {
-        urlAnalysisErrors.push(`Link ${targetUrl}: ${err?.message || "Tidak dapat diakses"}`);
+    // Analyze detected URLs in parallel using Promise.allSettled for maximum performance
+    if (urlsToAnalyze.length > 0) {
+      const outcomes = await Promise.allSettled(
+        urlsToAnalyze.map(async (targetUrl) => {
+          const res = await analyzeUrlWithLinkIntelligence(targetUrl);
+          return { targetUrl, res };
+        })
+      );
+
+      for (const outcome of outcomes) {
+        if (outcome.status === "fulfilled") {
+          urlAnalysisResults.push(outcome.value.res);
+        } else {
+          urlAnalysisErrors.push(`Link: ${outcome.reason?.message || "Tidak dapat diakses"}`);
+        }
       }
     }
 

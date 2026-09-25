@@ -43,6 +43,13 @@ export function LinkoraAIChat() {
   const [savedNoteMsgIds, setSavedNoteMsgIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const chatAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (chatAbortRef.current) chatAbortRef.current.abort();
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -221,6 +228,12 @@ export function LinkoraAIChat() {
     setMessage("");
     setIsTyping(true);
 
+    if (chatAbortRef.current) {
+      chatAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    chatAbortRef.current = controller;
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -228,7 +241,8 @@ export function LinkoraAIChat() {
         body: JSON.stringify({
           messages: [...messages.filter(m => m.id !== "1"), userMsg],
           locale: locale || "id",
-        })
+        }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -273,12 +287,14 @@ export function LinkoraAIChat() {
           );
         }
       }
-    } catch (_error) {
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(),
-        role: "ai", 
-        content: locale === "en" ? "Sorry, a technical issue occurred. Please try again." : "Maaf, terjadi kendala teknis. Silakan coba lagi."
-      }]);
+    } catch (err: any) {
+      if (err?.name !== "AbortError") {
+        setMessages(prev => [...prev, { 
+          id: (Date.now() + 1).toString(),
+          role: "ai", 
+          content: locale === "en" ? "Sorry, a technical issue occurred. Please try again." : "Maaf, terjadi kendala teknis. Silakan coba lagi."
+        }]);
+      }
     } finally {
       setIsTyping(false);
     }

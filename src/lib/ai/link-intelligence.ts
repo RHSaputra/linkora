@@ -1049,7 +1049,7 @@ export async function analyzeUrlWithLinkIntelligence(
   let html = "";
   try {
     const { text } = await safeFetchExternal(parsedUrl.toString(), {
-      timeoutMs: 12000,
+      timeoutMs: 7000,
       maxSizeBytes: 4 * 1024 * 1024,
       headers: {
         "User-Agent": getRandomUserAgent(),
@@ -1075,7 +1075,7 @@ export async function analyzeUrlWithLinkIntelligence(
   if (!html || html.trim().length < 50 || isCloudflareChallenge(html)) {
     try {
       const { text } = await safeFetchExternal(parsedUrl.toString(), {
-        timeoutMs: 10000,
+        timeoutMs: 6000,
         maxSizeBytes: 3 * 1024 * 1024,
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",

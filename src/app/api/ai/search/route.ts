@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { serializeLink } from "@/lib/types";
 import { rateLimit } from "@/lib/rate-limit";
+import { getAiCache, setAiCache } from "@/lib/ai-cache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,33 +33,41 @@ export async function POST(req: NextRequest) {
 
     const userId = session.user.id;
 
-    const [categoryGroups, allLinks] = await Promise.all([
-      prisma.link.groupBy({
-        by: ["category"],
-        where: { userId },
-        _count: { category: true },
-        orderBy: { _count: { category: "desc" } },
-      }),
-      prisma.link.findMany({
-        where: { userId },
-        select: { tags: true },
-      }),
-    ]);
+    const cacheKey = `ai_search_context:${userId}`;
+    let cachedContext = getAiCache(cacheKey);
 
-    const userCategories = categoryGroups.map((g) => g.category);
+    if (!cachedContext) {
+      const [categoryGroups, allLinks] = await Promise.all([
+        prisma.link.groupBy({
+          by: ["category"],
+          where: { userId },
+          _count: { category: true },
+          orderBy: { _count: { category: "desc" } },
+        }),
+        prisma.link.findMany({
+          where: { userId },
+          select: { tags: true },
+        }),
+      ]);
 
-    const tagSet = new Set<string>();
-    for (const link of allLinks) {
-      try {
-        const parsed = JSON.parse(link.tags || "[]");
-        if (Array.isArray(parsed)) {
-          parsed.forEach((t: string) => tagSet.add(t));
+      const userCategories = categoryGroups.map((g) => g.category);
+      const tagSet = new Set<string>();
+      for (const link of allLinks) {
+        try {
+          const parsed = JSON.parse(link.tags || "[]");
+          if (Array.isArray(parsed)) {
+            parsed.forEach((t: string) => tagSet.add(t));
+          }
+        } catch {
+          // skip malformed tags
         }
-      } catch {
-        // skip malformed tags
       }
+      const userTags = Array.from(tagSet).slice(0, 50);
+      cachedContext = { userCategories, userTags };
+      setAiCache(cacheKey, cachedContext, 15000);
     }
-    const userTags = Array.from(tagSet).slice(0, 50);
+
+    const { userCategories, userTags } = cachedContext;
     const today = new Date().toISOString().split("T")[0];
 
     const SYSTEM_PROMPT = `Anda adalah mesin pencari cerdas untuk aplikasi bookmark manager bernama Linkorian.
@@ -135,7 +144,7 @@ Output murni JSON, tanpa markdown.`;
 
     if (filters.category) {
       const matched = userCategories.find(
-        (c) => c.toLowerCase() === filters.category!.toLowerCase()
+        (c: string) => c.toLowerCase() === filters.category!.toLowerCase()
       );
       if (matched) {
         where.category = matched;

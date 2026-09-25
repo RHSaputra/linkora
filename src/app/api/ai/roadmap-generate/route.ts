@@ -217,43 +217,41 @@ Kembalikan respon DALAM FORMAT JSON MURNI TANPA MARKDOWN (tanpa backticks \`\`\`
       roadmapId = created.id;
     }
 
-    const createdNodeIds: string[] = [];
+    const createdNodeIds: string[] = await Promise.all(
+      validNodes.map((n, i) => {
+        const pos = layoutMap.get(i) || { x: 80 + (i % 3) * 340, y: 80 + Math.floor(i / 3) * 210 };
+        return prisma.roadmapNode.create({
+          data: {
+            roadmapId,
+            type: n.type,
+            title: n.title,
+            description: n.description,
+            status: "TODO",
+            positionX: pos.x,
+            positionY: pos.y,
+            linkId: n.linkId,
+          },
+        }).then((node) => node.id);
+      })
+    );
 
-    for (let i = 0; i < validNodes.length; i++) {
-      const n = validNodes[i];
-      const pos = layoutMap.get(i) || { x: 80 + (i % 3) * 340, y: 80 + Math.floor(i / 3) * 210 };
-
-      const node = await prisma.roadmapNode.create({
-        data: {
-          roadmapId,
-          type: n.type,
-          title: n.title,
-          description: n.description,
-          status: "TODO",
-          positionX: pos.x,
-          positionY: pos.y,
-          linkId: n.linkId,
-        },
-      });
-      createdNodeIds.push(node.id);
-    }
-
-    for (const e of validEdges) {
-      const sNodeId = createdNodeIds[e.sourceIndex];
-      const tNodeId = createdNodeIds[e.targetIndex];
-      if (sNodeId && tNodeId) {
-        try {
-          await prisma.roadmapEdge.create({
-            data: {
-              roadmapId,
-              sourceNodeId: sNodeId,
-              targetNodeId: tNodeId,
-            },
-          });
-        } catch (_err) {
-          // Ignore duplicate edge creation errors
-        }
-      }
+    if (validEdges.length > 0) {
+      await Promise.allSettled(
+        validEdges.map((e) => {
+          const sNodeId = createdNodeIds[e.sourceIndex];
+          const tNodeId = createdNodeIds[e.targetIndex];
+          if (sNodeId && tNodeId) {
+            return prisma.roadmapEdge.create({
+              data: {
+                roadmapId,
+                sourceNodeId: sNodeId,
+                targetNodeId: tNodeId,
+              },
+            });
+          }
+          return Promise.resolve();
+        })
+      );
     }
 
     const fullRoadmap = await prisma.roadmap.findUnique({
