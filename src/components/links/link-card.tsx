@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   ExternalLink,
   Star,
@@ -147,207 +146,37 @@ export function LinkCard({
   };
 
   const hasActiveReminder = Boolean(link.reminderAt && new Date(link.reminderAt) > new Date());
-  const isCompact = viewMode === "compact";
 
-  return (
-    <motion.div
-      layout
-      layoutId={`link-card-${link.id}`}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 28,
-        mass: 0.8,
-      }}
-      onClick={handleCardClick}
-      className={cn(
-        "glass-panel overflow-hidden cursor-pointer border border-border/80 bg-card/90 flex flex-col justify-between w-full relative group transition-colors duration-200 hover:border-border hover:shadow-lg",
-        isCompact ? "rounded-xl p-2.5 sm:p-3" : "rounded-2xl p-0 h-full"
-      )}
-    >
-      {/* Top Banner (Thumbnail Area) - Animated height collapse */}
-      <motion.div
-        layout
-        initial={false}
-        animate={{
-          height: isCompact ? 0 : "auto",
-          opacity: isCompact ? 0 : 1,
-        }}
-        transition={{
-          height: { type: "spring", stiffness: 300, damping: 28 },
-          opacity: { duration: 0.2 },
-        }}
-        className="relative w-full shrink-0 overflow-hidden"
-      >
-        <LinkoraCardThumbnail
-          url={link.url}
-          title={link.title}
-          category={link.category}
-          thumbnail={link.thumbnail}
-          favicon={link.favicon}
-          linkId={link.id}
-          onUpdate={onUpdate}
-        />
-
-        {/* Category Badge on Thumbnail (Detail Mode) */}
-        <div className="absolute top-3 left-3 z-10 pointer-events-none">
-          <span
-            className="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs inline-flex items-center select-none"
-            style={{ color: categoryColor }}
-          >
-            {link.category}
-          </span>
-        </div>
-
-        {/* Quick Reminder Popover on Thumbnail (Detail Mode) */}
+  if (viewMode === "compact") {
+    return (
+      <div className="group relative w-full">
         <div
-          className="absolute top-3 right-3 z-10 flex items-center gap-1"
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleCardClick}
+          className="glass-panel rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:border-border border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
         >
-          <QuickReminderPopover
-            targetId={link.id}
-            type="link"
-            title={link.title}
-            url={link.url}
-            currentReminderAt={link.reminderAt}
-            onReminderChange={() => onUpdate?.()}
-            showLabel={hasActiveReminder}
-            className={cn(
-              "h-7 px-2.5 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
-              hasActiveReminder
-                ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
-                : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
-            )}
-          />
-        </div>
-      </motion.div>
+          {/* Left: Favicon / Details */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-lg bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80">
+              {favicon ? (
+                <Image src={favicon} alt="" width={18} height={18} loading="lazy" decoding="async" unoptimized />
+              ) : (
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </div>
 
-      {/* Card Content Area - Seamless layout transition */}
-      <motion.div
-        layout
-        className={cn(
-          "w-full flex-1 flex transition-all",
-          isCompact ? "flex-row items-center justify-between gap-3" : "flex-col justify-between p-4 space-y-3"
-        )}
-      >
-        {/* Main Info Group */}
-        <motion.div
-          layout
-          className={cn(
-            "flex-1 min-w-0",
-            isCompact ? "flex items-center gap-2.5 sm:gap-3" : "space-y-2.5"
-          )}
-        >
-          {/* Favicon Icon Box */}
-          <motion.div
-            layout
-            layoutId={`card-favicon-${link.id}`}
-            className={cn(
-              "relative shrink-0 bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80",
-              isCompact ? "h-8 w-8 sm:h-9 sm:w-9 rounded-lg" : "h-9 w-9 rounded-xl mt-0.5"
-            )}
-          >
-            {favicon ? (
-              <Image src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" unoptimized />
-            ) : (
-              <ExternalLink className="h-4 w-4 text-muted-foreground" />
-            )}
-          </motion.div>
-
-          {/* Title & Metadata Box */}
-          <motion.div layout className="flex-1 min-w-0">
-            {/* Title Line */}
-            <div className="flex items-center justify-between gap-1.5">
-              <motion.h3
-                layout
-                className={cn(
-                  "font-semibold text-foreground group-hover:text-primary transition-colors",
-                  isCompact
-                    ? "text-xs sm:text-sm truncate"
-                    : "text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center"
-                )}
-              >
-                {link.title}
-              </motion.h3>
-
-              {/* Inline Category Badge in Compact Mode */}
-              {isCompact && (
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
+                <h3 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                  {link.title}
+                </h3>
                 <span
                   className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs shrink-0 hidden xs:inline-flex"
                   style={{ color: categoryColor }}
                 >
                   {link.category}
                 </span>
-              )}
+              </div>
 
-              {/* Action Icons in Detail Mode Top Header */}
-              {!isCompact && (
-                <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon-sm" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
-                    <Star className={cn("h-4 w-4", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon-sm" aria-label="Menu opsi tautan">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenuItem onClick={() => {
-                        if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
-                        onEdit?.(link);
-                      }}>{t("common.edit")}</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {
-                        if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
-                        setIsManageOpen(true);
-                      }}>{t("links.manageCollection")}</DropdownMenuItem>
-                      {existingNote ? (
-                        <>
-                          <DropdownMenuItem
-                            onClick={() => router.push(`/notes/${existingNote.id}`)}
-                            className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="flex-1">{t("links.openSavedNote")}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
-                              setIsNoteConverterOpen(true);
-                            }}
-                            className="text-muted-foreground text-xs gap-2 cursor-pointer"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>{t("links.createAnotherNote")}</span>
-                          </DropdownMenuItem>
-                        </>
-                      ) : (link.notes || link.aiSummary) ? (
-                        <DropdownMenuItem
-                          onClick={() => {
-                            if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
-                            setIsNoteConverterOpen(true);
-                          }}
-                          className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                          <span>{t("links.saveAsPersonalNote")}</span>
-                        </DropdownMenuItem>
-                      ) : null}
-                      {collectionId && (
-                        <DropdownMenuItem onClick={handleRemoveFromCollection}>
-                          {t("links.removeFromCollection")}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleDelete} className="text-destructive">{t("common.delete")}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )}
-            </div>
-
-            {/* Sub-meta line (Compact mode) */}
-            {isCompact && (
               <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground font-medium mt-0.5 truncate">
                 <span className="truncate font-mono font-medium text-foreground/70">
                   {domain || link.category}
@@ -369,12 +198,10 @@ export function LinkCard({
                   </>
                 )}
               </div>
-            )}
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
 
-        {/* Compact Right-Aligned Action Bar */}
-        {isCompact && (
+          {/* Right: Quick Action Controls */}
           <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
             <QuickReminderPopover
               targetId={link.id}
@@ -463,19 +290,195 @@ export function LinkCard({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        )}
+        </div>
 
-        {/* Detail Mode Extra Sections: Description, Tags, Bottom Footer */}
-        {!isCompact && (
-          <motion.div
-            layout
-            initial={false}
-            animate={{ height: isCompact ? 0 : "auto", opacity: isCompact ? 0 : 1 }}
-            transition={{ height: { type: "spring", stiffness: 300, damping: 28 }, opacity: { duration: 0.2 } }}
-            className="w-full space-y-3 pt-0.5"
+        {/* Modals & Dialogs */}
+        {isViewOpen && (
+          <ViewLinkDialog
+            link={link}
+            open={isViewOpen}
+            onOpenChange={setIsViewOpen}
+            onOpenExternal={handleExternalOpen}
+          />
+        )}
+        {isManageOpen && (
+          <ManageCollectionsDialog
+            link={link}
+            open={isManageOpen}
+            onOpenChange={setIsManageOpen}
+            onUpdate={onUpdate || (() => {})}
+          />
+        )}
+        {isDeleteDialogOpen && (
+          <ConfirmDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            title={t("links.deleteConfirmTitle")}
+            description={t("links.deleteConfirmDesc")}
+            onConfirm={executeDelete}
+          />
+        )}
+        {isRemoveFromCollectionOpen && (
+          <ConfirmDialog
+            open={isRemoveFromCollectionOpen}
+            onOpenChange={setIsRemoveFromCollectionOpen}
+            title={t("links.removeFromCollectionTitle")}
+            description={t("links.removeFromCollectionDesc")}
+            onConfirm={executeRemoveFromCollection}
+          />
+        )}
+        <LikoNoteConverterModal
+          isOpen={isNoteConverterOpen}
+          link={link}
+          onClose={() => setIsNoteConverterOpen(false)}
+          onSuccess={() => {
+            setIsNoteConverterOpen(false);
+            onUpdate?.();
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="group relative h-full flex flex-col w-full">
+      <div
+        onClick={handleCardClick}
+        className="glass-panel rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:border-border border border-border/80 bg-card/90 h-full flex flex-col justify-between"
+      >
+        {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
+        <div className="relative w-full shrink-0">
+          <LinkoraCardThumbnail
+            url={link.url}
+            title={link.title}
+            category={link.category}
+            thumbnail={link.thumbnail}
+            favicon={link.favicon}
+            linkId={link.id}
+            onUpdate={onUpdate}
+          />
+
+          {/* ── TOP-LEFT: CATEGORY BADGE ── */}
+          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+            <span
+              className="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase bg-background/90 dark:bg-background/95 text-foreground/90 backdrop-blur-md border border-border/70 shadow-xs inline-flex items-center select-none"
+              style={{ color: categoryColor }}
+            >
+              {link.category}
+            </span>
+          </div>
+
+          {/* ── TOP-RIGHT: QUICK REMINDER BUTTON / PILL ── */}
+          <div
+            className="absolute top-3 right-3 z-10 flex items-center gap-1"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Description / AI Summary */}
-            <div className="min-h-[2.25rem] flex items-center">
+            <QuickReminderPopover
+              targetId={link.id}
+              type="link"
+              title={link.title}
+              url={link.url}
+              currentReminderAt={link.reminderAt}
+              onReminderChange={() => onUpdate?.()}
+              showLabel={hasActiveReminder}
+              className={cn(
+                "h-7 px-2.5 rounded-lg text-[10px] font-bold flex items-center gap-1 backdrop-blur-md border shadow-xs transition-all cursor-pointer select-none",
+                hasActiveReminder
+                  ? "bg-amber-500 text-neutral-950 border-amber-400 font-bold shadow-amber-500/25 ring-2 ring-background hover:bg-amber-400"
+                  : "bg-background/85 dark:bg-background/90 text-muted-foreground hover:text-amber-500 hover:bg-background border-border/70 opacity-90 group-hover:opacity-100"
+              )}
+            />
+          </div>
+        </div>
+
+        {/* ── CARD BODY ── */}
+        <div className="p-4 flex-1 flex flex-col justify-between space-y-3 z-20">
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-3">
+              {/* Favicon Icon */}
+              <div className="relative h-9 w-9 shrink-0 rounded-xl bg-muted/80 flex items-center justify-center overflow-hidden ring-1 ring-border/80 mt-0.5">
+                {favicon ? (
+                  <Image src={favicon} alt="" width={20} height={20} loading="lazy" decoding="async" unoptimized />
+                ) : (
+                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+
+              {/* Title & Quick Actions */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-1.5">
+                  <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                    {link.title}
+                  </h3>
+                  <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon-sm" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+                      <Star className={cn("h-4 w-4 sm:h-4 sm:w-4", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon-sm" aria-label="Menu opsi tautan">
+                          <MoreHorizontal className="h-4 w-4 sm:h-4 sm:w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => {
+                          if (requireAuth(t("links.modalEditTitle"), t("auth.authRequiredDesc"))) return;
+                          onEdit?.(link);
+                        }}>{t("common.edit")}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          if (requireAuth(t("links.manageCollection"), t("auth.authRequiredDesc"))) return;
+                          setIsManageOpen(true);
+                        }}>{t("links.manageCollection")}</DropdownMenuItem>
+                        
+                        {existingNote ? (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => router.push(`/notes/${existingNote.id}`)}
+                              className="text-emerald-600 dark:text-emerald-400 font-semibold gap-2 cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                              <span className="flex-1">{t("links.openSavedNote")}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (requireAuth(t("links.createAnotherNote"), t("auth.authRequiredDesc"))) return;
+                                setIsNoteConverterOpen(true);
+                              }}
+                              className="text-muted-foreground text-xs gap-2 cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>{t("links.createAnotherNote")}</span>
+                            </DropdownMenuItem>
+                          </>
+                        ) : (link.notes || link.aiSummary) ? (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (requireAuth(t("links.saveAsPersonalNote"), t("auth.authRequiredDesc"))) return;
+                              setIsNoteConverterOpen(true);
+                            }}
+                            className="text-amber-600 dark:text-amber-400 font-medium gap-2 cursor-pointer"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                            <span>{t("links.saveAsPersonalNote")}</span>
+                          </DropdownMenuItem>
+                        ) : null}
+
+                        {collectionId && (
+                          <DropdownMenuItem onClick={handleRemoveFromCollection}>
+                            {t("links.removeFromCollection")}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleDelete} className="text-destructive">{t("common.delete")}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description / AI Summary Reserved Area */}
+            <div className="min-h-[2.25rem] flex items-center pt-0.5">
               {link.description ? (
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                   {link.description}
@@ -493,7 +496,7 @@ export function LinkCard({
 
             {/* Tags */}
             {link.tags && link.tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 min-h-[1.5rem]">
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 min-h-[1.5rem]">
                 {link.tags.slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal rounded-md">
                     #{tag}
@@ -506,65 +509,65 @@ export function LinkCard({
                 )}
               </div>
             )}
+          </div>
 
-            {/* Detail Mode Footer Buttons */}
-            <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium tracking-normal gap-1">
-                <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate pr-1">
-                  <span className="truncate font-mono font-medium text-foreground/70">
-                    {domain || link.category}
-                  </span>
-                  {existingNote && (
-                    <span 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/notes/${existingNote.id}`);
-                      }}
-                      className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
-                      title={`Catatan Terkait: "${existingNote.title}"`}
-                    >
-                      <BookOpen className="w-2.5 h-2.5" /> Catatan
-                    </span>
-                  )}
-                </div>
-                <span className="shrink-0 text-right">
-                  {formatRelativeTime(link.createdAt || link.lastOpenedAt)}
+          {/* ── CARD FOOTER & ACTIONS ANCHORED AT BOTTOM ── */}
+          <div className="mt-auto space-y-2 pt-2.5 border-t border-border/40">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted-foreground/80 font-medium tracking-normal gap-1">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate pr-1">
+                <span className="truncate font-mono font-medium text-foreground/70">
+                  {domain || link.category}
                 </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-1">
-                <div className="flex-1 min-w-0">
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl border border-border bg-slate-100 dark:bg-slate-800/80 hover:bg-muted text-foreground font-semibold shadow-xs transition-colors cursor-pointer flex items-center justify-center truncate"
-                    onClick={handleCardClick}
-                  >
-                    {t("links.overviewBtn")}
-                  </Button>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <Button 
-                    type="button"
-                    size="sm" 
-                    className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm border border-transparent transition-colors cursor-pointer flex items-center justify-center gap-1 truncate"
+                {existingNote && (
+                  <span 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExternalOpen();
+                      router.push(`/notes/${existingNote.id}`);
                     }}
+                    className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
+                    title={`Catatan Terkait: "${existingNote.title}"`}
                   >
-                    <span className="truncate">{t("links.openLinkBtn")}</span>
-                    <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/90 shrink-0" />
-                  </Button>
-                </div>
+                    <BookOpen className="w-2.5 h-2.5" /> Catatan
+                  </span>
+                )}
+              </div>
+              <span className="shrink-0 text-right">
+                {formatRelativeTime(link.createdAt || link.lastOpenedAt)}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="flex-1 min-w-0">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl border border-border bg-slate-100 dark:bg-slate-800/80 hover:bg-muted text-foreground font-semibold shadow-xs transition-colors cursor-pointer flex items-center justify-center truncate"
+                  onClick={handleCardClick}
+                >
+                  {t("links.overviewBtn")}
+                </Button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <Button 
+                  type="button"
+                  size="sm" 
+                  className="w-full text-[10px] sm:text-[11px] h-8 px-1.5 sm:px-2 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white font-semibold shadow-sm border border-transparent transition-colors cursor-pointer flex items-center justify-center gap-1 truncate"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleExternalOpen();
+                  }}
+                >
+                  <span className="truncate">{t("links.openLinkBtn")}</span>
+                  <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/90 shrink-0" />
+                </Button>
               </div>
             </div>
-          </motion.div>
-        )}
-      </motion.div>
+          </div>
+        </div>
+      </div>
 
       {/* Modals & Dialogs */}
       {isViewOpen && (
@@ -592,6 +595,7 @@ export function LinkCard({
           onConfirm={executeDelete}
         />
       )}
+      
       {isRemoveFromCollectionOpen && (
         <ConfirmDialog
           open={isRemoveFromCollectionOpen}
@@ -601,6 +605,7 @@ export function LinkCard({
           onConfirm={executeRemoveFromCollection}
         />
       )}
+
       <LikoNoteConverterModal
         isOpen={isNoteConverterOpen}
         link={link}
@@ -610,6 +615,6 @@ export function LinkCard({
           onUpdate?.();
         }}
       />
-    </motion.div>
+    </div>
   );
 }
