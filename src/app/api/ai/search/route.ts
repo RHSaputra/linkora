@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { serializeLink } from "@/lib/types";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAiCache, setAiCache } from "@/lib/ai-cache";
+import { normalizeSearchQuery, rankByRelevance } from "@/lib/search";
 
 export async function POST(req: NextRequest) {
   try {
@@ -115,25 +116,39 @@ Output murni JSON, tanpa markdown.`;
     }
 
     if (!filters) {
+      const normalizedQuery = normalizeSearchQuery(query);
+      const expandedTokens = normalizedQuery.expandedTokens;
+
       const fallbackLinks = await prisma.link.findMany({
         where: {
           userId,
-          OR: [
-            { title: { contains: query.toLowerCase() } },
-            { url: { contains: query.toLowerCase() } },
-            { description: { contains: query.toLowerCase() } },
-            { notes: { contains: query.toLowerCase() } },
-            { tags: { contains: query.toLowerCase() } },
-          ],
+          OR: expandedTokens.flatMap((token) => [
+            { title: { contains: token, mode: "insensitive" } },
+            { url: { contains: token, mode: "insensitive" } },
+            { description: { contains: token, mode: "insensitive" } },
+            { notes: { contains: token, mode: "insensitive" } },
+            { tags: { contains: token, mode: "insensitive" } },
+            { category: { contains: token, mode: "insensitive" } },
+          ]),
         },
         orderBy: { updatedAt: "desc" },
-        take: 20,
+        take: 30,
         include: { collections: { include: { collection: true } } },
       });
 
+      const serialized = fallbackLinks.map(serializeLink);
+      const ranked = rankByRelevance(serialized, query, (link) => ({
+        title: link.title,
+        category: link.category,
+        tags: link.tags,
+        description: link.description,
+        notes: link.notes,
+        url: link.url,
+      }));
+
       return NextResponse.json({
-        items: fallbackLinks.map(serializeLink),
-        total: fallbackLinks.length,
+        items: ranked,
+        total: ranked.length,
         explanation: null,
         aiPowered: false,
       });

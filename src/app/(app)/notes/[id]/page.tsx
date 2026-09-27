@@ -66,7 +66,7 @@ import {
   getNewerDraft,
   type NoteDraft,
 } from "@/hooks/use-note-draft";
-import { getCachedData, setCachedData, invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
+import { getCachedData, setCachedData, updateGlobalCacheNotes, invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
 const COLOR_OPTIONS = [
@@ -388,6 +388,7 @@ export default function NotePage({ params }: { params: Promise<{ id: string }> }
   const persistNoteAction = useCallback(async (updates: Record<string, unknown>) => {
     // Optimistic UI update
     setNote((prev: any) => (prev ? { ...prev, ...updates } : prev));
+    updateGlobalCacheNotes((items) => items.map((n) => n.id === id ? { ...n, ...updates } : n));
     try {
       const res = await fetch(`/api/notes/${id}`, {
         method: "PATCH",

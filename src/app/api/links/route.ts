@@ -5,6 +5,7 @@ import { createLinkSchema } from "@/lib/validations";
 import { stringifyTags } from "@/lib/utils";
 import { auth } from "@/auth";
 import { getCache, setCache, invalidateUserCache } from "@/lib/cache";
+import { normalizeSearchQuery, rankByRelevance } from "@/lib/search";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get("q")?.toLowerCase();
+    const q = searchParams.get("q") || "";
     const category = searchParams.get("category");
     const tag = searchParams.get("tag");
     const favorite = searchParams.get("favorite");
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const pageSize = pageSizeRaw ? Math.max(1, parseInt(pageSizeRaw, 10) || 1) : null;
 
     // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
-    const cacheKey = `cache:links:${userId}:${q || ""}:${category || ""}:${tag || ""}:${favorite || ""}:${collectionId || ""}:${sort}:${page}:${pageSize || ""}`;
+    const cacheKey = `cache:links:${userId}:${q}:${category || ""}:${tag || ""}:${favorite || ""}:${collectionId || ""}:${sort}:${page}:${pageSize || ""}`;
     const cachedData = await getCache<any>(cacheKey);
     if (cachedData) {
       return NextResponse.json(cachedData, {
@@ -43,30 +44,33 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const where = {
+    const normalizedQuery = normalizeSearchQuery(q);
+    const expandedTokens = normalizedQuery.expandedTokens;
+
+    const where: any = {
       userId,
       ...(favorite === "true" ? { isFavorite: true } : {}),
       ...(category && category !== "all" ? { category } : {}),
       ...(collectionId
         ? { collections: { some: { collectionId } } }
         : {}),
-      ...(q
-        ? {
-            OR: [
-              { title: { contains: q } },
-              { url: { contains: q } },
-              { description: { contains: q } },
-              { notes: { contains: q } },
-              { tags: { contains: q } },
-            ],
-          }
-        : {}),
       ...(tag
         ? {
-            tags: { contains: `"${tag}"` },
+            tags: { contains: `"${tag}"`, mode: "insensitive" },
           }
         : {}),
     };
+
+    if (expandedTokens.length > 0) {
+      where.OR = expandedTokens.flatMap((token) => [
+        { title: { contains: token, mode: "insensitive" } },
+        { url: { contains: token, mode: "insensitive" } },
+        { description: { contains: token, mode: "insensitive" } },
+        { notes: { contains: token, mode: "insensitive" } },
+        { tags: { contains: token, mode: "insensitive" } },
+        { category: { contains: token, mode: "insensitive" } },
+      ]);
+    }
 
     let orderBy: any = { createdAt: "desc" };
     if (sort === "edited" || sort === "updated") {
@@ -80,26 +84,55 @@ export async function GET(request: NextRequest) {
       orderBy = { createdAt: "desc" };
     }
 
-    const findManyArgs: any = {
-      where,
-      orderBy,
-      include: {
-        collections: { include: { collection: true } },
-      },
-    };
+    let items: any[] = [];
+    let total = 0;
 
-    if (pageSize) {
-      findManyArgs.skip = (page - 1) * pageSize;
-      findManyArgs.take = pageSize;
+    if (expandedTokens.length > 0) {
+      // When searching, fetch candidates, rank by relevance, then paginate
+      const rawLinks = await prisma.link.findMany({
+        where,
+        orderBy,
+        include: {
+          collections: { include: { collection: true } },
+        },
+      });
+
+      const serialized = rawLinks.map(serializeLink);
+      const ranked = rankByRelevance(serialized, q, (link) => ({
+        title: link.title,
+        category: link.category,
+        tags: link.tags,
+        description: link.description,
+        notes: link.notes,
+        url: link.url,
+      }));
+
+      total = ranked.length;
+      items = pageSize ? ranked.slice((page - 1) * pageSize, page * pageSize) : ranked;
+    } else {
+      // Normal paginated fetch
+      const findManyArgs: any = {
+        where,
+        orderBy,
+        include: {
+          collections: { include: { collection: true } },
+        },
+      };
+
+      if (pageSize) {
+        findManyArgs.skip = (page - 1) * pageSize;
+        findManyArgs.take = pageSize;
+      }
+
+      const [links, totalCount] = await Promise.all([
+        prisma.link.findMany(findManyArgs),
+        pageSize ? prisma.link.count({ where }) : Promise.resolve(null),
+      ]);
+
+      items = links.map(serializeLink);
+      total = totalCount ?? items.length;
     }
 
-    const [links, totalCount] = await Promise.all([
-      prisma.link.findMany(findManyArgs),
-      pageSize ? prisma.link.count({ where }) : Promise.resolve(null),
-    ]);
-
-    const items = links.map(serializeLink);
-    const total = totalCount ?? items.length;
     const hasMore = pageSize ? page * pageSize < total : false;
 
     const responsePayload = {

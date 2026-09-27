@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import {
@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData, deleteNote, deleteNotesBulk } from "@/hooks/use-data";
+import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData, deleteNote, deleteNotesBulk, toggleNoteFavorite } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { toast } from "@/components/ui/custom-toast";
 
@@ -151,24 +151,19 @@ export function NotesPage() {
     }
   };
 
+  const pendingFavoritesRef = useRef<Set<string>>(new Set());
+
   const toggleFavorite = async (e: React.MouseEvent, note: any) => {
     e.preventDefault();
     e.stopPropagation();
-    const nextVal = !note.isFavorite;
-    // Optimistic update
-    setNotes((prev) =>
-      prev.map((n) => (n.id === note.id ? { ...n, isFavorite: nextVal } : n))
-    );
+    if (pendingFavoritesRef.current.has(note.id)) return;
+    pendingFavoritesRef.current.add(note.id);
     try {
-      await fetch(`/api/notes/${note.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isFavorite: nextVal }),
-      });
-      dispatchRefresh(["notes", "noteFolders"], false);
-    } catch (error) {
-      console.error(error);
-      fetchNotes(true);
+      await toggleNoteFavorite(note);
+    } catch (_err) {
+      // Handled in toggleNoteFavorite with rollback and toast
+    } finally {
+      pendingFavoritesRef.current.delete(note.id);
     }
   };
 

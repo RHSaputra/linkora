@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { createRoadmapSchema } from "@/lib/validations";
 import { serializeRoadmap } from "@/lib/types";
+import { normalizeSearchQuery, rankByRelevance } from "@/lib/search";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,17 +14,20 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get("q")?.trim().toLowerCase();
+    const q = searchParams.get("q") || "";
 
     const where: any = {
       userId,
     };
 
-    if (q) {
-      where.OR = [
-        { title: { contains: q } },
-        { description: { contains: q } },
-      ];
+    const normalizedQuery = normalizeSearchQuery(q);
+    const expandedTokens = normalizedQuery.expandedTokens;
+
+    if (expandedTokens.length > 0) {
+      where.OR = expandedTokens.flatMap((token) => [
+        { title: { contains: token, mode: "insensitive" } },
+        { description: { contains: token, mode: "insensitive" } },
+      ]);
     }
 
     const roadmaps = await prisma.roadmap.findMany({
@@ -39,7 +43,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const items = roadmaps.map(serializeRoadmap);
+    let items = roadmaps.map(serializeRoadmap);
+    if (expandedTokens.length > 0) {
+      items = rankByRelevance(items, q, (r) => ({
+        title: r.title,
+        description: r.description,
+      }));
+    }
 
     return NextResponse.json({
       items,

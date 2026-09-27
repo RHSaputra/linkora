@@ -543,6 +543,19 @@ export async function toggleFavorite(link: SerializedLink): Promise<SerializedLi
   updateGlobalCacheLinks((items) =>
     items.map((item) => (item.id === link.id ? updatedLink : item))
   );
+  updateGlobalCacheDashboard((stats) => {
+    const currentFavCount = typeof stats.favoriteCount === "number" ? stats.favoriteCount : 0;
+    const currentFavs = stats.favoriteLinks || [];
+    const newFavCount = nextVal ? currentFavCount + 1 : Math.max(0, currentFavCount - 1);
+    const newFavs = nextVal
+      ? [updatedLink, ...currentFavs.filter((f) => f.id !== link.id)]
+      : currentFavs.filter((f) => f.id !== link.id);
+    return {
+      ...stats,
+      favoriteCount: newFavCount,
+      favoriteLinks: newFavs,
+    };
+  });
   setCachedData(`/api/links/${link.id}`, updatedLink);
 
   // 2. Dispatch soft refresh
@@ -555,20 +568,75 @@ export async function toggleFavorite(link: SerializedLink): Promise<SerializedLi
       setCachedData(`/api/links/${link.id}`, data);
       return data;
     }
-    throw new Error("Gagal mengubah status favorit");
-  } catch (err) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || "Gagal mengubah status favorit");
+  } catch (err: any) {
     // 3. Rollback on failure
     updateGlobalCacheLinks((items) =>
       items.map((item) => (item.id === link.id ? link : item))
     );
+    updateGlobalCacheDashboard((stats) => {
+      const currentFavCount = typeof stats.favoriteCount === "number" ? stats.favoriteCount : 0;
+      const currentFavs = stats.favoriteLinks || [];
+      const rollbackFavCount = link.isFavorite ? currentFavCount + 1 : Math.max(0, currentFavCount - 1);
+      const rollbackFavs = link.isFavorite
+        ? [link, ...currentFavs.filter((f) => f.id !== link.id)]
+        : currentFavs.filter((f) => f.id !== link.id);
+      return {
+        ...stats,
+        favoriteCount: rollbackFavCount,
+        favoriteLinks: rollbackFavs,
+      };
+    });
     dispatchRefresh(["links", "dashboard"], false);
 
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal mengubah status favorit", "Favorit");
+      toast.error(err.message || "Gagal mengubah status favorit", "Favorit");
     });
     throw err;
   }
 }
+
+export async function toggleNoteFavorite(note: any): Promise<any> {
+  const nextVal = !note.isFavorite;
+  const updatedNote = { ...note, isFavorite: nextVal };
+
+  // 1. Optimistically update global cache notes
+  updateGlobalCacheNotes((items) =>
+    items.map((n) => (n.id === note.id ? updatedNote : n))
+  );
+  setCachedData(`/api/notes/${note.id}`, updatedNote);
+
+  // 2. Dispatch soft refresh
+  dispatchRefresh(["notes", "noteFolders", "dashboard"], false);
+
+  try {
+    const res = await fetch(`/api/notes/${note.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isFavorite: nextVal }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setCachedData(`/api/notes/${note.id}`, data);
+      return data;
+    }
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || "Gagal mengubah status favorit catatan");
+  } catch (err: any) {
+    // 3. Rollback on failure
+    updateGlobalCacheNotes((items) =>
+      items.map((n) => (n.id === note.id ? note : n))
+    );
+    dispatchRefresh(["notes", "noteFolders", "dashboard"], false);
+
+    import("@/components/ui/custom-toast").then(({ toast }) => {
+      toast.error(err.message || "Gagal mengubah status favorit catatan", "Favorit");
+    });
+    throw err;
+  }
+}
+
 
 export async function deleteLink(id: string) {
   let removedLink: SerializedLink | null = null;

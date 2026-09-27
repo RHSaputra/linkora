@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { getCache, setCache, invalidateUserCache } from "@/lib/cache";
+import { normalizeSearchQuery, rankByRelevance } from "@/lib/search";
 
 export async function GET(req: Request) {
   try {
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     const folderId = searchParams.get("folderId");
     const filter = searchParams.get("filter");
     const statusParam = searchParams.get("status");
-    const q = searchParams.get("q");
+    const q = searchParams.get("q") || "";
 
     // ── 0. AUTO-CLEANUP TRASH NOTES OLDER THAN 24 HOURS ──
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -34,7 +35,7 @@ export async function GET(req: Request) {
     }
 
     // ── 1. CHECK SERVER-SIDE REDIS CACHE ──
-    const cacheKey = `cache:notes:${session.user.id}:${folderId || ""}:${filter || ""}:${statusParam || ""}:${q || ""}`;
+    const cacheKey = `cache:notes:${session.user.id}:${folderId || ""}:${filter || ""}:${statusParam || ""}:${q}`;
     const cachedNotes = await getCache<any>(cacheKey);
     if (cachedNotes) {
       return NextResponse.json(cachedNotes, {
@@ -62,14 +63,19 @@ export async function GET(req: Request) {
       where.isPinned = true;
     }
 
-    if (q && q.trim()) {
-      where.OR = [
-        { title: { contains: q } },
-        { content: { contains: q } },
-      ];
+    const normalizedQuery = normalizeSearchQuery(q);
+    const expandedTokens = normalizedQuery.expandedTokens;
+
+    if (expandedTokens.length > 0) {
+      where.OR = expandedTokens.flatMap((token) => [
+        { title: { contains: token, mode: "insensitive" } },
+        { content: { contains: token, mode: "insensitive" } },
+        { folder: { name: { contains: token, mode: "insensitive" } } },
+        { tags: { some: { name: { contains: token, mode: "insensitive" } } } },
+      ]);
     }
 
-    const notes = await prisma.note.findMany({
+    let notes = await prisma.note.findMany({
       where,
       orderBy: [
         { isPinned: "desc" },
@@ -80,6 +86,15 @@ export async function GET(req: Request) {
         tags: true,
       },
     });
+
+    if (expandedTokens.length > 0) {
+      notes = rankByRelevance(notes, q, (n) => ({
+        title: n.title,
+        content: n.content,
+        category: n.folder?.name,
+        tags: n.tags?.map((t: any) => t.name),
+      }));
+    }
 
     // ── 2. SAVE TO REDIS CACHE (5 Minutes TTL) ──
     await setCache(cacheKey, notes, 300);

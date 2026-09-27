@@ -96,16 +96,26 @@ export function LinkCard({
     onUpdate?.();
   };
 
+  const [isFavoritePending, setIsFavoritePending] = useState(false);
+
   const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isFavoritePending) return;
     if (requireAuth(
       locale === "en" ? "Favorite Link" : "Menyukai Tautan",
       locale === "en" ? "Sign in or register for free to bookmark your favorite links." : "Masuk atau daftar gratis untuk menandai tautan favorit Anda."
     )) {
       return;
     }
-    await toggleFavorite(link);
-    onUpdate?.();
+    setIsFavoritePending(true);
+    try {
+      await toggleFavorite(link);
+      onUpdate?.();
+    } catch (_err) {
+      // Handled in toggleFavorite with rollback and toast
+    } finally {
+      setIsFavoritePending(false);
+    }
   };
 
   const executeDelete = async () => {
