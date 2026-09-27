@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2, X, Globe, GitCommit, Search, Sparkles } from "lucide-react";
+import { Check, Loader2, Globe, GitCommit, Search } from "lucide-react";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { FormatBrandText } from "@/components/ui/linkora-text";
 
@@ -94,7 +95,7 @@ export function LikoMascotAvatar({
 }
 
 /* ========================================================================= */
-/* FITUR 2: AI LINK ANALYSIS MODAL (SCANNING + OBSERVING + UNDERSTANDING)    */
+/* FITUR 2: AI LINK ANALYSIS MODAL (STANDALONE PORTAL ON TOP OF BODY)        */
 /* ========================================================================= */
 
 export interface LikoAnalyzeModalProps {
@@ -114,11 +115,15 @@ const ANALYZE_STEPS = [
 export function LikoAnalyzeModal({
   open,
   url = "",
-  onClose,
   stepIndex = 0,
 }: LikoAnalyzeModalProps) {
   const { locale } = useTranslation();
   const isEn = locale === "en";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Domain extraction for clean display
   const getDisplayDomain = (targetUrl: string) => {
@@ -131,26 +136,28 @@ export function LikoAnalyzeModal({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-          {/* Backdrop Overlay */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden pointer-events-auto">
+          {/* Backdrop Overlay (Standalone, decoupled from any parent dialog card) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl"
+            className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl pointer-events-auto"
           />
 
-          {/* Clean Modern Modal Container */}
+          {/* Clean Modern Modal Container (Standalone Screen Card) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
           >
             {/* Header Mascot & Scanner Stage */}
             <div className="flex flex-col items-center text-center mt-2 mb-6">
@@ -235,12 +242,13 @@ export function LikoAnalyzeModal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 
 /* ========================================================================= */
-/* FITUR 3: AI ROADMAP MODAL (BUILDING + CONNECTING + STRUCTURING)           */
+/* FITUR 3: AI ROADMAP MODAL (STANDALONE PORTAL ON TOP OF BODY)               */
 /* ========================================================================= */
 
 export interface LikoRoadmapModalProps {
@@ -263,27 +271,34 @@ export function LikoRoadmapModal({
 }: LikoRoadmapModalProps) {
   const { locale } = useTranslation();
   const isEn = locale === "en";
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-          {/* Backdrop Overlay */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden pointer-events-auto">
+          {/* Backdrop Overlay (Always in front of roadmap form dialog z-[9999]) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl"
+            className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl pointer-events-auto"
           />
 
-          {/* Clean Modern Modal Container */}
+          {/* Clean Modern Modal Container (Standalone Screen Card) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
           >
             {/* Header Mascot & Stage */}
             <div className="flex flex-col items-center text-center mt-2 mb-5">
@@ -403,6 +418,7 @@ export function LikoRoadmapModal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

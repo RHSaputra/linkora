@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, X } from "lucide-react";
 import { dispatchRefresh } from "@/hooks/use-data";
@@ -50,7 +51,12 @@ export function LikoOrganizeModal() {
   const { t, locale } = useTranslation();
   const isEn = locale === "en";
 
+  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<ModalPhase>("idle");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [resultData, setResultData] = useState<{
     message?: string;
@@ -178,10 +184,12 @@ export function LikoOrganizeModal() {
 
   const isOpen = phase !== "idle";
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden pointer-events-auto">
           {/* ========================================================================= */}
           {/* BACKDROP BLUR OVERLAY (Fades smoothly opacity 0 -> 1)                     */}
           {/* ========================================================================= */}
@@ -405,6 +413,7 @@ export function LikoOrganizeModal() {
           )}
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
