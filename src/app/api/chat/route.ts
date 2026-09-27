@@ -49,6 +49,29 @@ function sanitizeRoleSequence(contents: GeminiContent[]): GeminiContent[] {
 }
 
 /**
+ * Fast intent-detector to check if the user query requires fetching workspace links/notes/roadmaps.
+ * Avoids executing DB context queries or inflating prompt tokens for general/conversational prompts.
+ */
+function isWorkspaceContextNeeded(messages: any[]): boolean {
+  if (!messages || messages.length === 0) return false;
+  const recentTexts = messages
+    .slice(-3)
+    .map((m) => (typeof m.content === "string" ? m.content.toLowerCase() : ""))
+    .join(" ");
+
+  if (/(https?:\/\/|www\.)/i.test(recentTexts)) return true;
+
+  const workspaceKeywords = [
+    "tautan", "link", "koleksi", "collection", "kategori", "category",
+    "tag", "favorit", "favorite", "roadmap", "reminder", "catatan", "note",
+    "simpan", "save", "saya", "my", "workspace", "ruang kerja", "punya", "milik",
+    "baca", "ringkas", "summary", "tersimpan", "bintang", "prioritas", "koleksiku"
+  ];
+
+  return workspaceKeywords.some((kw) => recentTexts.includes(kw));
+}
+
+/**
  * Build a context summary of the user's link collection to inject into Liko's system prompt.
  * Uses a short 15-second in-memory server cache to eliminate DB latency on rapid chat turns.
  */
@@ -257,7 +280,10 @@ export async function POST(req: NextRequest) {
     }
 
     const userName = session?.user?.name || (isEn ? "User" : "Pengguna");
-    const userContext = await buildUserContext(userId, userName, isEn);
+    const needsWorkspaceContext = isWorkspaceContextNeeded(messages);
+    const userContext = needsWorkspaceContext
+      ? await buildUserContext(userId, userName, isEn)
+      : (isEn ? `=== USER DATA CONTEXT ===\nName: ${userName}\n=== END OF CONTEXT ===` : `=== KONTEKS DATA PENGGUNA ===\nNama: ${userName}\n=== AKHIR KONTEKS ===`);
 
     // 1. Detect URLs in current user input & recent conversation history
     const allDetectedUrls: string[] = [];

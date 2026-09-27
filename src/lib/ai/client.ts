@@ -153,20 +153,9 @@ export async function executeGeminiStream(options: {
           },
         });
 
-        const iterator = typeof (responseStream as any)[Symbol.asyncIterator] === "function"
-          ? (responseStream as any)[Symbol.asyncIterator]()
-          : (responseStream as any);
-
-        const firstResult = await iterator.next();
-
         async function* wrappedStream() {
-          if (firstResult && firstResult.value) {
-            yield firstResult.value;
-          }
-          while (true) {
-            const nextRes = await iterator.next();
-            if (!nextRes || nextRes.done) break;
-            if (nextRes.value) yield nextRes.value;
+          for await (const chunk of responseStream) {
+            if (chunk) yield chunk;
           }
         }
 

@@ -277,14 +277,27 @@ export function LinkoraAIChat() {
       let aiResponseText = "";
 
       if (reader) {
+        let lastRenderTime = 0;
+        const updateUi = () => {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, content: aiResponseText } : m))
+          );
+        };
+
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            updateUi();
+            break;
+          }
           const chunkText = decoder.decode(value, { stream: true });
           aiResponseText += chunkText;
-          setMessages(prev =>
-            prev.map(m => (m.id === aiMsgId ? { ...m, content: aiResponseText } : m))
-          );
+
+          const now = Date.now();
+          if (now - lastRenderTime >= 30) {
+            lastRenderTime = now;
+            updateUi();
+          }
         }
       }
     } catch (err: any) {
