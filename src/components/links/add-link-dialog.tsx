@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, Plus, AlertTriangle, ExternalLink, Sparkles } from "lucide-react";
+import { Loader2, X, Plus, AlertTriangle, ExternalLink, Sparkles, Globe } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -71,17 +71,21 @@ export function AddLinkDialog({
   const urlCheckTimerRef = useRef<NodeJS.Timeout | null>(null);
   const urlCheckAbortRef = useRef<AbortController | null>(null);
 
+  const bypassedDuplicateRef = useRef(false);
+
   // Duplicate detection state
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicateData, setDuplicateData] = useState<{
-    type: "exact" | "similar_url" | "similar_title" | "none";
+    type: "exact" | "same_source" | "none";
+    domain?: string;
     message: string | null;
-    duplicates: { id: string; title: string; url: string }[];
+    duplicates: SerializedLink[];
   } | null>(null);
 
   const resetForm = useCallback(() => {
     if (urlCheckTimerRef.current) clearTimeout(urlCheckTimerRef.current);
     if (urlCheckAbortRef.current) urlCheckAbortRef.current.abort();
+    bypassedDuplicateRef.current = false;
     setUrl("");
     setTitle("");
     setDescription("");
@@ -206,7 +210,7 @@ export function AddLinkDialog({
           if (meta.favicon) setFavicon(meta.favicon);
           if (meta.thumbnail) setThumbnail(meta.thumbnail);
 
-          if (dupRes?.type === "none" && meta.title) {
+          if (false) {
             try {
               const titleCheck = await fetch("/api/ai/check-duplicate", {
                 method: "POST",
@@ -222,7 +226,7 @@ export function AddLinkDialog({
           }
         }
 
-        if (dupRes && dupRes.type !== "none") {
+        if (dupRes && (dupRes.type === "exact" || dupRes.type === "same_source")) {
           setDuplicateData(dupRes);
           setShowDuplicateModal(true);
         }
@@ -342,6 +346,20 @@ export function AddLinkDialog({
     }
   };
 
+  const handleConfirmDuplicateSave = () => {
+    bypassedDuplicateRef.current = true;
+    setShowDuplicateModal(false);
+    const syntheticEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(syntheticEvent);
+  };
+
+  const handleCancelDuplicateSave = () => {
+    bypassedDuplicateRef.current = false;
+    setShowDuplicateModal(false);
+    resetForm();
+    onOpenChange(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (requireAuth(t("links.saveLink"), t("auth.authRequiredDesc"))) {
@@ -349,8 +367,8 @@ export function AddLinkDialog({
     }
 
     // Block duplicate URL creation if duplicate is already confirmed
-    if (!editLink && url) {
-      if (duplicateData && duplicateData.type !== "none") {
+    if (!editLink && url && !bypassedDuplicateRef.current) {
+      if (duplicateData && (duplicateData.type === "exact" || duplicateData.type === "same_source")) {
         setShowDuplicateModal(true);
         return; // Prevent saving duplicate link
       }
@@ -945,7 +963,7 @@ export function AddLinkDialog({
           )}
         </AnimatePresence>
 
-        {/* Duplicate Link Detected Dialog Overlay */}
+        {/* Duplicate Link & Same-Source Detected Overlay */}
         <AnimatePresence>
           {showDuplicateModal && duplicateData && (
             <motion.div
@@ -972,15 +990,20 @@ export function AddLinkDialog({
                   </div>
                   <div className="space-y-1 min-w-0">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-bold uppercase tracking-wider">
-                      {locale === "en" ? "Duplicate URL Detected" : "Tautan Sudah Ada"}
+                      {duplicateData.type === "exact"
+                        ? (locale === "en" ? "Duplicate URL Detected" : "Duplikat Tautan")
+                        : (locale === "en" ? "Same Source Domain" : "Sumber Tautan Sudah Ada")}
                     </div>
                     <h3 className="text-lg font-bold text-foreground font-heading leading-tight">
-                      {locale === "en" ? "Cannot Add Duplicate Link" : "Tautan Tidak Dapat Ditambahkan"}
+                      {duplicateData.type === "exact"
+                        ? (locale === "en" ? "Link Already Saved" : "Tautan Sudah Tersimpan")
+                        : (locale === "en" ? "Same Source Link Exists" : "Sumber Tautan Sudah Ada")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {duplicateData.message || (locale === "en" 
-                        ? "This link is already in your collection. Duplicate links cannot be added."
-                        : "Tautan ini sudah tersimpan dalam koleksimu dan tidak dapat ditambahkan lagi.")}
+                        ? "Tautan ini sudah tersimpan dalam koleksimu."
+                        : `Tautan yang kamu masukkan berasal dari ${duplicateData.domain || "sumber yang sama"}, yang sudah memiliki tautan tersimpan. Halaman yang kamu masukkan berbeda dari tautan sebelumnya.`
+                        )}
                     </p>
                   </div>
                 </div>
@@ -999,6 +1022,24 @@ export function AddLinkDialog({
                         <p className="text-xs text-primary font-mono truncate">
                           {dup.url}
                         </p>
+                        <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-muted-foreground border-t border-border/40 mt-1">
+                          {dup.category && (
+                            <span className="font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                              {dup.category}
+                            </span>
+                          )}
+                          {dup.createdAt && (
+                            <span>
+                              {locale === "en" ? "Saved: " : "Disimpan: "}
+                              {new Date(dup.createdAt).toLocaleDateString(locale === "en" ? "en-US" : "id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </span>
+                          )}
+                        </div>
+
                       </div>
                     ))}
                   </div>
@@ -1009,27 +1050,28 @@ export function AddLinkDialog({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setShowDuplicateModal(false)}
+                    onClick={handleCancelDuplicateSave}
                     className="w-full sm:w-auto rounded-xl text-xs font-medium cursor-pointer"
                   >
-                    {locale === "en" ? "Close" : "Tutup"}
+                    {locale === "en" ? "Discard / Cancel" : "Hapus"}
                   </Button>
                   {duplicateData.duplicates && duplicateData.duplicates.length > 0 && (
                     <Button
                       type="button"
-                      onClick={() => {
-                        const targetUrl = duplicateData.duplicates[0]?.url || url;
-                        if (targetUrl) {
-                          window.open(targetUrl, "_blank", "noopener,noreferrer");
-                        }
-                        setShowDuplicateModal(false);
-                        resetForm();
-                        onOpenChange(false);
-                      }}
+                      onClick={handleConfirmDuplicateSave}
+
+
+
+
+
+
+
+
+
                       className="w-full sm:w-auto rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                     >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>{locale === "en" ? "Go to Existing Link" : "Buka Tautan Yang Sudah Ada"}</span>
+
+                      <span>{locale === "en" ? "Save Anyway" : "Tetap Simpan"}</span>
                     </Button>
                   )}
                 </div>
