@@ -9,6 +9,7 @@ import { LinkoraAIChat } from "@/components/layout/linkora-ai-chat";
 import { QuickNoteButton } from "@/components/notes/quick-note-button";
 import { invalidateAndRefresh, fetchWithCache, buildLinksUrl, dispatchRefresh } from "@/hooks/use-data";
 import { LikoSuggestionNotification } from "@/components/ui/liko-suggestion-notification";
+import { LikoOrganizeModal } from "@/components/ui/liko-organize-modal";
 import { LikoWelcomeDialog } from "@/components/onboarding/liko-welcome-dialog";
 import { OnboardingProvider } from "@/components/providers/onboarding-provider";
 import { ProductTour } from "@/components/onboarding/product-tour";
@@ -134,6 +135,7 @@ export function AppShell({ children }: AppShellProps) {
           <QuickNoteButton />
           <LinkoraAIChat />
           <LikoSuggestionNotification />
+          <LikoOrganizeModal />
           <LikoWelcomeDialog onOpenEditProfile={openEditProfile} />
           <ProductTour />
 

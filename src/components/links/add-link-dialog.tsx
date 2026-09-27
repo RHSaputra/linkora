@@ -34,6 +34,7 @@ import {
 } from "@/lib/notification-service";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
+import { LikoAnalyzeModal } from "@/components/ui/liko-ai-modal";
 
 interface AddLinkDialogProps {
   open: boolean;
@@ -63,6 +64,7 @@ export function AddLinkDialog({
   const [reminderAt, setReminderAt] = useState("");
   const [fetchingMeta, setFetchingMeta] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeStepIndex, setAnalyzeStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const notesRef = useRef<HTMLTextAreaElement | null>(null);
@@ -269,6 +271,10 @@ export function AddLinkDialog({
     }
 
     setIsAnalyzing(true);
+    setAnalyzeStepIndex(0);
+    const stepInterval = setInterval(() => {
+      setAnalyzeStepIndex((prev) => (prev < 3 ? prev + 1 : prev));
+    }, 1100);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -331,6 +337,7 @@ export function AddLinkDialog({
         locale === "en" ? "Analysis Error" : "Error Analisis"
       );
     } finally {
+      clearInterval(stepInterval);
       setIsAnalyzing(false);
     }
   };
@@ -1088,6 +1095,12 @@ export function AddLinkDialog({
             </motion.div>
           )}
         </AnimatePresence>
+        {/* Liko AI Link Analysis Modal Overlay */}
+        <LikoAnalyzeModal
+          open={isAnalyzing}
+          url={url}
+          stepIndex={analyzeStepIndex}
+        />
       </DialogContent>
     </Dialog>
   );

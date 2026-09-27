@@ -65,43 +65,14 @@ export function LikoSuggestionNotification() {
     if (!suggestion?.link?.id) return;
 
     clearTimer();
-    setSuggestion((prev) => (prev ? { ...prev, status: "organizing" } : null));
+    const linkId = suggestion.link.id;
+    setSuggestion(null);
 
-    window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: true } }));
-
-    try {
-      const res = await fetch("/api/ai/organize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ linkId: suggestion.link.id }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const assigned = data.changes?.[0]?.category || "Kategori Baru";
-
-        setSuggestion((prev) => (prev ? {
-          ...prev,
-          status: "success",
-          assignedCategory: assigned,
-          link: { ...prev.link, category: assigned }
-        } : null));
-
-        dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
-
-        autoDismissTimerRef.current = setTimeout(() => {
-          setSuggestion(null);
-        }, 4000);
-      } else {
-        setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-        autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
-      }
-    } catch {
-      setSuggestion((prev) => (prev ? { ...prev, status: "error" } : null));
-      autoDismissTimerRef.current = setTimeout(() => setSuggestion(null), 3500);
-    } finally {
-      window.dispatchEvent(new CustomEvent("liko-organize-state", { detail: { isOrganizing: false } }));
-    }
+    window.dispatchEvent(
+      new CustomEvent("liko-trigger-organize", {
+        detail: { linkId },
+      })
+    );
   };
 
   const handleDismiss = () => {

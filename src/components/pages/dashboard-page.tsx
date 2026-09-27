@@ -125,30 +125,12 @@ export function DashboardPage({
     )) {
       return;
     }
-    setIsOrganizing(true);
-    try {
-      const res = await fetch("/api/ai/organize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale: locale || "id" }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setOrganizeResult({
-          message: data.message,
-          processed: data.processed,
-          changes: data.changes
-        });
-        recentCacheRef.current = {};
-        dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
-      } else {
-        setOrganizeResult({ message: locale === "en" ? "Failed" : "Gagal", processed: 0, error: data.error });
-      }
-    } catch (e: any) {
-      setOrganizeResult({ message: "Error", processed: 0, error: e.message });
-    } finally {
-      setIsOrganizing(false);
-    }
+
+    window.dispatchEvent(
+      new CustomEvent("liko-trigger-organize", {
+        detail: { isAll: true },
+      })
+    );
   };
 
   if (!stats) {
