@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url } = await request.json();
+    const { url, locale = "id" } = await request.json();
 
     if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "URL wajib diisi" }, { status: 400 });
+      return NextResponse.json({ error: locale === "en" ? "URL is required" : "URL wajib diisi" }, { status: 400 });
     }
 
-    const analysisResult = await analyzeUrlWithLinkIntelligence(url);
+    const analysisResult = await analyzeUrlWithLinkIntelligence(url, { locale });
     return NextResponse.json(analysisResult);
   } catch (error: any) {
     console.error("Error in /api/analyze:", error);

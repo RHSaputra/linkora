@@ -2,12 +2,13 @@
 import { motion } from "framer-motion"
 import { FileText, Brain, Search, LayoutDashboard, Cloud, ShieldCheck, Upload, BarChart } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const features = [
+const featuresId = [
   {
     icon: FileText,
     title: "Ringkasan AI",
-    description: "Hasilkan ringkasan ringkas dari artikel, video, atau konten berdurasi panjang secara instan menggunakan AI canggih."
+    description: "Hasikan ringkasan ringkas dari artikel, video, atau konten berdurasi panjang secara instan menggunakan AI canggih."
   },
   {
     icon: Brain,
@@ -36,7 +37,44 @@ const features = [
   }
 ]
 
+const featuresEn = [
+  {
+    icon: FileText,
+    title: "AI Summaries",
+    description: "Instantly generate concise summaries from articles, videos, or long-form content using advanced AI."
+  },
+  {
+    icon: Brain,
+    title: "Smart Insights",
+    description: "Automatically extract key takeaways and actionable insights to save reading time."
+  },
+  {
+    icon: Search,
+    title: "Opportunity Finder",
+    description: "Discover hidden opportunities inside your saved links with our deep semantic search engine."
+  },
+  {
+    icon: ShieldCheck,
+    title: "AI Assistant",
+    description: "Chat with your knowledge base. Ask questions and get direct answers from your saved links."
+  },
+  {
+    icon: LayoutDashboard,
+    title: "Analytics Dashboard",
+    description: "Track your reading habits, link categories, and insight growth with beautiful interactive charts."
+  },
+  {
+    icon: Cloud,
+    title: "Cloud Sync",
+    description: "Access your entire knowledge base across all devices, seamlessly synchronized in real-time."
+  }
+]
+
 export function Features() {
+  const { locale } = useTranslation()
+  const isEn = locale === "en"
+  const featuresList = isEn ? featuresEn : featuresId
+
   return (
     <section id="features" className="py-24 relative">
       <div className="container mx-auto px-4">
@@ -47,8 +85,11 @@ export function Features() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold mb-6 text-foreground"
           >
-            Fitur canggih untuk <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">pekerja berpengetahuan modern</span>
+            {isEn ? (
+              <>Powerful features for <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">modern knowledge workers</span></>
+            ) : (
+              <>Fitur canggih untuk <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">pekerja berpengetahuan modern</span></>
+            )}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -57,12 +98,16 @@ export function Features() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-lg"
           >
-            <LinkoraText /> bukan sekadar pengelola markah buku. Ini adalah asisten riset AI pribadi Anda, dirancang untuk membantu Anda mengonsumsi, memahami, dan mengatur informasi dengan lebih cepat.
+            {isEn ? (
+              <><LinkoraText /> is not just a bookmark manager. It is your personal AI research assistant, built to help you digest, understand, and organize knowledge faster.</>
+            ) : (
+              <><LinkoraText /> bukan sekadar pengelola markah buku. Ini adalah asisten riset AI pribadi Anda, dirancang untuk membantu Anda mengonsumsi, memahami, dan mengatur informasi dengan lebih cepat.</>
+            )}
           </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
+          {featuresList.map((feature, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -84,7 +129,7 @@ export function Features() {
   )
 }
 
-const steps = [
+const stepsId = [
   {
     icon: Upload,
     title: "Simpan Tautan Apa Pun",
@@ -102,7 +147,29 @@ const steps = [
   }
 ]
 
+const stepsEn = [
+  {
+    icon: Upload,
+    title: "Save Any Link",
+    description: <>Paste URLs from any website, article, or video into <LinkoraText />.</>
+  },
+  {
+    icon: Brain,
+    title: "AI Analyzes Content",
+    description: "Our AI automatically reads, tags, and extracts key insights from your content."
+  },
+  {
+    icon: BarChart,
+    title: "Leverage Insights",
+    description: "Use generated summaries to learn faster and make better decisions."
+  }
+]
+
 export function HowItWorks() {
+  const { locale } = useTranslation()
+  const isEn = locale === "en"
+  const stepsList = isEn ? stepsEn : stepsId
+
   return (
     <section id="how-it-works" className="py-24 relative overflow-hidden">
       <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
@@ -116,8 +183,11 @@ export function HowItWorks() {
               viewport={{ once: false, amount: 0.2 }}
               className="text-3xl md:text-5xl font-bold mb-6 text-foreground"
             >
-              Bagaimana <LinkoraText /> <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">bekerja secara ajaib</span>
+              {isEn ? (
+                <>How <LinkoraText /> <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">works like magic</span></>
+              ) : (
+                <>Bagaimana <LinkoraText /> <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">bekerja secara ajaib</span></>
+              )}
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, x: -20 }}
@@ -126,11 +196,13 @@ export function HowItWorks() {
               transition={{ delay: 0.1 }}
               className="text-muted-foreground text-lg mb-12"
             >
-              Ubah kekacauan menjadi kejelasan hanya dalam tiga langkah sederhana. Berhenti kehilangan jejak informasi penting dan mulailah membangun otak kedua Anda.
+              {isEn
+                ? "Turn chaos into clarity in three simple steps. Stop losing track of important info and start building your second brain."
+                : "Ubah kekacauan menjadi kejelasan hanya dalam tiga langkah sederhana. Berhenti kehilangan jejak informasi penting dan mulailah membangun otak kedua Anda."}
             </motion.p>
 
             <div className="space-y-8">
-              {steps.map((step, i) => (
+              {stepsList.map((step, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -141,7 +213,7 @@ export function HowItWorks() {
                 >
                   <div className="flex-shrink-0 w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center relative">
                     <step.icon className="w-5 h-5 text-foreground" />
-                    {i !== steps.length - 1 && (
+                    {i !== stepsList.length - 1 && (
                       <div className="absolute top-12 bottom-[-2rem] left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-foreground/20 to-transparent" />
                     )}
                   </div>
@@ -172,10 +244,14 @@ export function HowItWorks() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent flex flex-col justify-end p-8">
                     <div className="bg-foreground/10 backdrop-blur-md border border-foreground/20 p-4 rounded-2xl">
                       <div className="mb-3">
-                        <span className="font-medium text-sm text-foreground">Ringkasan AI</span>
+                        <span className="font-medium text-sm text-foreground">{isEn ? "AI Summary" : "Ringkasan AI"}</span>
                       </div>
                       <p className="text-sm text-foreground/80 leading-relaxed">
-                        <LinkoraText /> secara otomatis mengekstrak poin utama dari artikel mana pun, menghemat waktu membaca Anda hingga 80%.
+                        {isEn ? (
+                          <><LinkoraText /> automatically extracts key takeaways from any article, saving up to 80% of your reading time.</>
+                        ) : (
+                          <><LinkoraText /> secara otomatis mengekstrak poin utama dari artikel mana pun, menghemat waktu membaca Anda hingga 80%.</>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -187,3 +263,4 @@ export function HowItWorks() {
     </section>
   )
 }
+

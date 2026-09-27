@@ -29,10 +29,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { topic, existingRoadmapId } = body;
+    const { topic, existingRoadmapId, locale = "id" } = body;
+    const isEn = locale === "en";
 
     if (!topic || typeof topic !== "string" || !topic.trim()) {
-      return NextResponse.json({ error: "Topik roadmap wajib diisi" }, { status: 400 });
+      return NextResponse.json(
+        { error: isEn ? "Roadmap topic is required" : "Topik roadmap wajib diisi" },
+        { status: 400 }
+      );
     }
 
     const userLinks = await prisma.link.findMany({
@@ -42,12 +46,50 @@ export async function POST(req: NextRequest) {
     });
 
     const linksContext = userLinks.length > 0
-      ? `DAFTAR LINK BOOKMARK USER SAAT INI (Hanya gunakan ID ini jika relevan):
-${userLinks.map((l) => `- ID: "${l.id}", Judul: "${l.title}", URL: "${l.url}"`).join("\n")}`
-      : "User belum memiliki link bookmark.";
+      ? (isEn
+          ? `USER'S CURRENT BOOKMARK LINKS (Only use these IDs if relevant):\n${userLinks.map((l) => `- ID: "${l.id}", Title: "${l.title}", URL: "${l.url}"`).join("\n")}`
+          : `DAFTAR LINK BOOKMARK USER SAAT INI (Hanya gunakan ID ini jika relevan):\n${userLinks.map((l) => `- ID: "${l.id}", Judul: "${l.title}", URL: "${l.url}"`).join("\n")}`)
+      : (isEn ? "User has no saved bookmarks." : "User belum memiliki link bookmark.");
 
-    const systemPrompt = `Anda adalah Liko AI, asisten spesialis pembuat Roadmap & Alur Kerja visual terstruktur di Linkorian.
+    const systemPrompt = isEn
+      ? `You are Liko AI, Linkorian's specialist assistant for creating structured visual Workflows & Roadmaps.
+Your task is to design a LOGICAL, SEQUENTIAL, AND STRUCTURED learning or project workflow roadmap based on the user's request.
+
+MANDATORY LANGUAGE INSTRUCTION:
+- You MUST output all title, description, and node contents 100% IN NATURAL, FLUENT, AND PROFESSIONAL ENGLISH.
+
+${linksContext}
+
+STRICT ANTI-HALLUCINATION RULES:
+1. Do NOT fabricate fake URLs, course prices, or fictional certificates.
+2. Only link nodes to type "LINK" if the linkId matches an actual user bookmark listed above.
+3. Create 4 to 8 logical sequential steps (nodes) from fundamentals to practice and completion.
+4. Keep node titles clean without decorative symbols like *, #, or raw markdown.
+
+OUTPUT FORMAT (PURE JSON):
+{
+  "title": "Concise & Clear Roadmap Title",
+  "description": "General overview of this workflow and expected outcome",
+  "nodes": [
+    {
+      "type": "TASK" | "NOTE" | "LINK",
+      "title": "Specific Step Title",
+      "description": "Detailed explanation or guide for this step",
+      "linkId": "USER_LINK_ID_OR_NULL"
+    }
+  ],
+  "edges": [
+    {
+      "sourceIndex": 0,
+      "targetIndex": 1
+    }
+  ]
+}`
+      : `Anda adalah Liko AI, asisten spesialis pembuat Roadmap & Alur Kerja visual terstruktur di Linkorian.
 Tugas Anda adalah merancang alur pengerjaan atau peta belajar yang LOGIS, RUNTUT, TERSTRUKTUR, dan BERDASARKAN DATA USER SESEUNGGUHNYA.
+
+INSTRUKSI BAHASA WAJIB:
+- Anda HARUS memberikan judul, deskripsi, dan isi node 100% DALAM BAHASA INDONESIA YANG NATURAL DAN PROFESIONAL.
 
 ${linksContext}
 

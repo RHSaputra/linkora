@@ -34,7 +34,7 @@ export function AIRoadmapGeneratorDialog({
 }: AIRoadmapGeneratorDialogProps) {
   const router = useRouter();
   const { requireAuth } = useRequireAuth();
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [roadmapStepIndex, setRoadmapStepIndex] = useState(0);
@@ -43,7 +43,12 @@ export function AIRoadmapGeneratorDialog({
     e.preventDefault();
     if (!topic.trim()) return;
 
-    if (requireAuth("Rancang Roadmap dengan AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur.")) {
+    if (requireAuth(
+        locale === "en" ? "Design Workflow with Liko AI" : "Rancang Roadmap dengan AI",
+        locale === "en"
+          ? "Sign in or register for free to use Liko AI in designing structured visual workflows."
+          : "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur."
+      )) {
       onOpenChange(false);
       return;
     }
@@ -61,6 +66,7 @@ export function AIRoadmapGeneratorDialog({
         body: JSON.stringify({
           topic: topic.trim(),
           existingRoadmapId,
+          locale,
         }),
       });
 
@@ -68,14 +74,20 @@ export function AIRoadmapGeneratorDialog({
         clearInterval(stepInterval);
         setIsGenerating(false);
         onOpenChange(false);
-        requireAuth("Rancang Roadmap dengan AI", "Sesi Anda telah berakhir. Silakan masuk kembali untuk menggunakan asisten Liko AI.");
+        requireAuth(
+          locale === "en" ? "Design Workflow with Liko AI" : "Rancang Roadmap dengan AI",
+          locale === "en" ? "Your session has expired. Please sign in again." : "Sesi Anda telah berakhir. Silakan masuk kembali untuk menggunakan asisten Liko AI."
+        );
         return;
       }
 
       if (res.ok) {
         const roadmapData = await res.json();
         setRoadmapStepIndex(3);
-        toast.success("Liko AI berhasil merancang alur roadmap Anda!", "Liko AI");
+        toast.success(
+          locale === "en" ? "Liko AI successfully generated your roadmap workflow!" : "Liko AI berhasil merancang alur roadmap Anda!",
+          "Liko AI"
+        );
         onOpenChange(false);
         setTopic("");
         if (onGenerated) {
@@ -85,10 +97,10 @@ export function AIRoadmapGeneratorDialog({
         }
       } else {
         const err = await res.json();
-        toast.error(err.error || "Gagal membuat alur dengan Liko AI", "Error");
+        toast.error(err.error || (locale === "en" ? "Failed to generate workflow with Liko AI" : "Gagal membuat alur dengan Liko AI"), "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", "Error");
     } finally {
       clearInterval(stepInterval);
       setIsGenerating(false);
@@ -110,10 +122,10 @@ export function AIRoadmapGeneratorDialog({
               </div>
               <div>
                 <DialogTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground flex items-center gap-2">
-                  <span>Rancang Alur Kerja dengan Liko AI</span>
+                  <span>{t("ai.designRoadmapTitle")}</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-0.5">
-                  Liko AI akan merancang urutan langkah visual, alur terstruktur, dan strategi pengerjaan untuk Anda.
+                  {t("ai.designRoadmapDesc")}
                 </DialogDescription>
               </div>
             </div>
@@ -123,14 +135,14 @@ export function AIRoadmapGeneratorDialog({
             {/* Main Large Chat Form Input */}
             <div className="space-y-2">
               <Label className="text-xs sm:text-sm font-semibold text-foreground flex items-center justify-between">
-                <span>Topik & Instruksi Alur <span className="text-destructive">*</span></span>
-                <span className="text-[11px] font-normal text-muted-foreground">Tulis secara detail & jelas</span>
+                <span>{t("ai.topicInstructionLabel")} <span className="text-destructive">*</span></span>
+                <span className="text-[11px] font-normal text-muted-foreground">{t("ai.detailHint")}</span>
               </Label>
               <div className="relative">
                 <Textarea
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Tuliskan topik atau alur yang ingin Anda buat di sini... Contoh: Belajar Docker & Kubernetes dari dasar hingga deployment production web app..."
+                  placeholder={t("ai.topicPlaceholder")}
                   required
                   disabled={isGenerating}
                   rows={5}
@@ -143,10 +155,10 @@ export function AIRoadmapGeneratorDialog({
             <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-semibold text-primary">
                 <Info className="w-4 h-4 shrink-0" />
-                <span>Instruksi Pengisian:</span>
+                <span>{t("ai.guideTitle")}</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Tuliskan tujuan belajar, alur pengerjaan proyek, atau langkah kerja yang ingin Anda susun pada kolom di atas. Liko AI akan secara otomatis menganalisis dan menyusunnya menjadi kanvas roadmap visual yang terstruktur, rapi, dan tidak saling menumpuk.
+                {t("ai.guideDesc")}
               </p>
             </div>
 
@@ -158,7 +170,7 @@ export function AIRoadmapGeneratorDialog({
                 disabled={isGenerating}
                 className="h-10 px-4 text-xs font-semibold cursor-pointer"
               >
-                Batal
+                {t("common.cancel")}
               </Button>
               
               <div className="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden cursor-pointer shadow-md transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
@@ -171,10 +183,10 @@ export function AIRoadmapGeneratorDialog({
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                      <span>Merancang Alur...</span>
+                      <span>{locale === "en" ? "Designing Workflow..." : "Merancang Alur..."}</span>
                     </>
                   ) : (
-                    <span>Hasilkan Alur Kerja</span>
+                    <span>{locale === "en" ? "Generate Workflow" : "Hasilkan Alur Kerja"}</span>
                   )}
                 </Button>
               </div>

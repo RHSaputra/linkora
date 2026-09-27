@@ -132,8 +132,8 @@ export function LikoOrganizeModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           detail.linkId
-            ? { linkId: detail.linkId }
-            : { organizeAll: true }
+            ? { linkId: detail.linkId, locale }
+            : { organizeAll: true, locale }
         ),
       });
 

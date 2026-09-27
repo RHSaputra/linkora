@@ -3,8 +3,9 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, Plus, Minus } from "lucide-react"
 import Link from "next/link"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
-const plans = [
+const plansId = [
   {
     name: "Gratis",
     price: "Rp 0",
@@ -46,7 +47,53 @@ const plans = [
   }
 ]
 
+const plansEn = [
+  {
+    name: "Free",
+    price: "$0",
+    description: "Perfect for casual readers and students.",
+    features: [
+      "Save up to 500 links",
+      "Basic search",
+      "Tags and folders",
+      "Cross-device sync"
+    ]
+  },
+  {
+    name: "Pro",
+    price: "$7",
+    period: "/mo",
+    description: "For knowledge workers who need full AI power.",
+    isPopular: true,
+    features: [
+      "Unlimited saved links",
+      "Unlimited AI summaries",
+      "Semantic Search",
+      "AI Assistant Chat",
+      "Deep Analytics",
+      "Priority Support"
+    ]
+  },
+  {
+    name: "Team",
+    price: "$20",
+    period: "/mo",
+    description: "Collaborative research for professional teams.",
+    features: [
+      "All Pro features",
+      "Shared workspaces",
+      "Team annotations",
+      "Admin dashboard",
+      "Custom integrations"
+    ]
+  }
+]
+
 export function Pricing() {
+  const { locale } = useTranslation()
+  const isEn = locale === "en"
+  const activePlans = isEn ? plansEn : plansId
+
   return (
     <section id="pricing" className="py-24 relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
@@ -59,7 +106,7 @@ export function Pricing() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold mb-6 text-foreground"
           >
-            Harga yang sederhana dan transparan
+            {isEn ? "Simple, transparent pricing" : "Harga yang sederhana dan transparan"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -68,12 +115,12 @@ export function Pricing() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-lg"
           >
-            Mulai secara gratis, tingkatkan paket saat Anda membutuhkan kekuatan penuh.
+            {isEn ? "Start for free, upgrade when you need maximum power." : "Mulai secara gratis, tingkatkan paket saat Anda membutuhkan kekuatan penuh."}
           </motion.p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, i) => (
+          {activePlans.map((plan, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -88,7 +135,7 @@ export function Pricing() {
             >
               {plan.isPopular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-bold tracking-wide uppercase shadow-lg">
-                  Paling Populer
+                  {isEn ? "Most Popular" : "Paling Populer"}
                 </div>
               )}
               
@@ -108,7 +155,7 @@ export function Pricing() {
                   : "bg-foreground/5 text-foreground hover:bg-foreground/10"
                 }`}
               >
-                Mulai Sekarang
+                {isEn ? "Get Started" : "Mulai Sekarang"}
               </Link>
               
               <div className="space-y-4">
@@ -127,7 +174,7 @@ export function Pricing() {
   )
 }
 
-const faqs = [
+const faqsId = [
   {
     question: "Bagaimana cara kerja Ringkasan AI?",
     answer: "Model bahasa canggih kami memindai konten dari URL yang Anda simpan, mengekstrak argumen inti, fakta kunci, dan kesimpulan utamanya secara instan. Ini meringkas artikel panjang menjadi paragraf yang mudah dicerna."
@@ -146,18 +193,40 @@ const faqs = [
   }
 ]
 
+const faqsEn = [
+  {
+    question: "How do AI Summaries work?",
+    answer: "Our advanced language model scans the content from your saved URLs, extracting core arguments, key facts, and main takeaways instantly."
+  },
+  {
+    question: "Is my data private and secure?",
+    answer: "Absolutely. Your data is encrypted at rest and in transit. We never sell your data or use your personal links to train public AI models."
+  },
+  {
+    question: "Can I import my existing bookmarks?",
+    answer: "Yes! You can easily import bookmarks from Chrome, Safari, Pocket, Raindrop, and other services using our standard HTML or CSV import tool."
+  },
+  {
+    question: "What happens if I cancel my Pro subscription?",
+    answer: "If you cancel, you will be downgraded to the Free plan. You will keep all your existing saved links, but premium features like AI summaries will be limited."
+  }
+]
+
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const { locale } = useTranslation()
+  const isEn = locale === "en"
+  const activeFaqs = isEn ? faqsEn : faqsId
 
   return (
     <section id="faq" className="py-24 relative bg-foreground/[0.02] border-t border-foreground/5">
       <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">Pertanyaan yang Sering Diajukan</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">{isEn ? "Frequently Asked Questions" : "Pertanyaan yang Sering Diajukan"}</h2>
         </div>
 
         <div className="space-y-4">
-          {faqs.map((faq, i) => (
+          {activeFaqs.map((faq, i) => (
             <motion.div 
               key={i}
               initial={{ opacity: 0, y: 10 }}
@@ -168,7 +237,7 @@ export function FAQ() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                className="w-full flex items-center justify-between p-6 text-left focus:outline-none cursor-pointer"
               >
                 <span className="font-medium text-foreground">{faq.question}</span>
                 {openIndex === i ? <Minus className="w-5 h-5 text-primary" /> : <Plus className="w-5 h-5 text-muted-foreground" />}
@@ -194,3 +263,4 @@ export function FAQ() {
     </section>
   )
 }
+

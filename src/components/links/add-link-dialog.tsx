@@ -1000,10 +1000,7 @@ export function AddLinkDialog({
                         : (locale === "en" ? "Same Source Link Exists" : "Sumber Tautan Sudah Ada")}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      {duplicateData.message || (locale === "en" 
-                        ? "Tautan ini sudah tersimpan dalam koleksimu."
-                        : `Tautan yang kamu masukkan berasal dari ${duplicateData.domain || "sumber yang sama"}, yang sudah memiliki tautan tersimpan. Halaman yang kamu masukkan berbeda dari tautan sebelumnya.`
-                        )}
+                      {locale === "en" ? (duplicateData.type === "exact" ? "This link is already saved in your collection." : `The link you entered is from ${duplicateData.domain || "the same source"}, which already has saved links in your collection.`) : (duplicateData.message || "Tautan sudah tersimpan dalam koleksimu.")}
                     </p>
                   </div>
                 </div>

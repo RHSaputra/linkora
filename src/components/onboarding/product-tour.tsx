@@ -9,6 +9,7 @@ import { OnboardingSkipConfirm } from "@/components/onboarding/skip-confirm";
 import { ONBOARDING_STEPS } from "@/lib/onboarding-state";
 import { getPrevStep } from "@/lib/onboarding-state";
 import { LinkoraText } from "@/components/ui/linkora-text";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface TargetRect {
   top: number;
@@ -98,6 +99,8 @@ function CompletionScreen({
 }: {
   onComplete: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <motion.div
@@ -116,10 +119,10 @@ function CompletionScreen({
             <CheckCircle2 className="h-8 w-8 text-emerald-400" />
           </div>
           <h2 className="text-xl font-bold text-foreground">
-            Kamu siap menjelajah!
+            {t("onboarding.completionTitle")}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            Selamat menggunakan <LinkoraText />. Simpan tautan, ubah menjadi catatan pribadi, rancang roadmap visual, dan biarkan Liko AI membantu alur kerjamu.
+            {t("onboarding.completionDesc")}
           </p>
         </div>
         <div className="px-8 pb-8">
@@ -127,7 +130,7 @@ function CompletionScreen({
             onClick={onComplete}
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all cursor-pointer"
           >
-            Mulai Menggunakan <LinkoraText />
+            {t("onboarding.startUsing")}
           </button>
         </div>
       </motion.div>
@@ -147,6 +150,8 @@ export function ProductTour() {
     requestSkip,
     completeTour,
   } = useOnboarding();
+
+  const { t, locale } = useTranslation();
 
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
   const [tooltipPos, setTooltipPos] = useState<TooltipPos | null>(null);
@@ -312,6 +317,15 @@ export function ProductTour() {
   const tooltipW =
     viewportSize.w < 640 ? TOOLTIP_WIDTH_MOBILE : TOOLTIP_WIDTH;
 
+  const stepTitle =
+    locale === "en" && currentStep.titleEn
+      ? currentStep.titleEn
+      : currentStep.title;
+  const stepDesc =
+    locale === "en" && currentStep.descriptionEn
+      ? currentStep.descriptionEn
+      : currentStep.description;
+
   return (
     <>
       {/* Overlay with spotlight cutout using SVG mask */}
@@ -374,7 +388,7 @@ export function ProductTour() {
             width: tooltipW,
           }}
           role="dialog"
-          aria-label={currentStep.title}
+          aria-label={stepTitle}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden max-h-[calc(100vh-24px)] overflow-y-auto">
@@ -394,13 +408,15 @@ export function ProductTour() {
               {/* Step counter */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-semibold text-muted-foreground">
-                  Langkah {currentStepPosition} dari {totalAvailableSteps}
+                  {locale === "en"
+                    ? `Step ${currentStepPosition} of ${totalAvailableSteps}`
+                    : `Langkah ${currentStepPosition} dari ${totalAvailableSteps}`}
                 </span>
                 <button
                   onClick={requestSkip}
                   className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                  aria-label="Lewati panduan"
-                  title="Lewati"
+                  aria-label={t("onboarding.skip")}
+                  title={t("onboarding.skip")}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -408,10 +424,10 @@ export function ProductTour() {
 
               {/* Content */}
               <h3 className="text-base font-bold text-foreground leading-tight">
-                {currentStep.title}
+                {stepTitle}
               </h3>
               <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                {currentStep.description}
+                {stepDesc}
               </p>
 
               {/* Step dots */}
@@ -437,10 +453,10 @@ export function ProductTour() {
                   onClick={prevStep}
                   disabled={!hasPrev}
                   className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-foreground border border-border hover:bg-muted/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                  aria-label="Langkah sebelumnya"
+                  aria-label={t("onboarding.prev")}
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
-                  Kembali
+                  {t("onboarding.prev")}
                 </button>
 
                 {currentStepPosition < totalAvailableSteps && (
@@ -449,7 +465,7 @@ export function ProductTour() {
                     onClick={requestSkip}
                     className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
                   >
-                    Lewati
+                    {t("onboarding.skip")}
                   </button>
                 )}
 
@@ -457,16 +473,16 @@ export function ProductTour() {
                   type="button"
                   onClick={nextStep}
                   className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
-                  aria-label={currentStepPosition === totalAvailableSteps ? "Selesai" : "Langkah berikutnya"}
+                  aria-label={currentStepPosition === totalAvailableSteps ? t("onboarding.finish") : t("onboarding.next")}
                 >
                   {currentStepPosition === totalAvailableSteps ? (
                     <>
-                      Selesai
+                      {t("onboarding.finish")}
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     </>
                   ) : (
                     <>
-                      Berikutnya
+                      {t("onboarding.next")}
                       <ChevronRight className="h-3.5 w-3.5" />
                     </>
                   )}
@@ -479,3 +495,4 @@ export function ProductTour() {
     </>
   );
 }
+

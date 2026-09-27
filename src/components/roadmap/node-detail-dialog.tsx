@@ -34,6 +34,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useTranslation } from "@/components/providers/i18n-provider";
+
 interface NodeDetailDialogProps {
   node: SerializedRoadmapNode | null;
   open: boolean;
@@ -51,6 +53,7 @@ export function NodeDetailDialog({
   onDeleteNode,
   targetNodes = [],
 }: NodeDetailDialogProps) {
+  const { t, locale } = useTranslation();
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<"TODO" | "IN_PROGRESS" | "COMPLETED">(
     node?.status || "TODO"
@@ -85,7 +88,7 @@ export function NodeDetailDialog({
                     variant="outline"
                     className="text-xs gap-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 px-3 py-1 font-semibold rounded-full"
                   >
-                    <Link2 className="w-3.5 h-3.5" /> Link Node
+                    <Link2 className="w-3.5 h-3.5" /> {locale === "en" ? "Link Node" : "Link Node"}
                   </Badge>
                 )}
                 {node.type === "TASK" && (
@@ -93,7 +96,7 @@ export function NodeDetailDialog({
                     variant="outline"
                     className="text-xs gap-1.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30 px-3 py-1 font-semibold rounded-full"
                   >
-                    <CheckSquare className="w-3.5 h-3.5" /> Task Node
+                    <CheckSquare className="w-3.5 h-3.5" /> {locale === "en" ? "Task Node" : "Task Node"}
                   </Badge>
                 )}
                 {node.type === "NOTE" && (
@@ -101,7 +104,7 @@ export function NodeDetailDialog({
                     variant="outline"
                     className="text-xs gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 px-3 py-1 font-semibold rounded-full"
                   >
-                    <StickyNote className="w-3.5 h-3.5" /> Note Node
+                    <StickyNote className="w-3.5 h-3.5" /> {locale === "en" ? "Note Node" : "Note Node"}
                   </Badge>
                 )}
               </div>
@@ -132,10 +135,10 @@ export function NodeDetailDialog({
                     />
                     <span>
                       {isCompleted
-                        ? "Selesai"
+                        ? t("roadmaps.statusCompleted")
                         : isInProgress
-                        ? "Dalam Proses"
-                        : "To Do"}
+                        ? t("roadmaps.statusInProgress")
+                        : t("roadmaps.statusTodo")}
                     </span>
                     <ChevronDown className="w-3.5 h-3.5 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180 ml-0.5" />
                   </button>
@@ -146,7 +149,7 @@ export function NodeDetailDialog({
                   className="w-48 p-1.5 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card shadow-xl space-y-1 z-50"
                 >
                   <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-2.5 py-1 font-mono">
-                    Ubah Status
+                    {locale === "en" ? "Change Status" : "Ubah Status"}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="my-1 bg-border/40" />
 
@@ -163,7 +166,7 @@ export function NodeDetailDialog({
                       <div className="w-6 h-6 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-500 shrink-0">
                         <Circle className="w-3.5 h-3.5" />
                       </div>
-                      <span>To Do</span>
+                      <span>{t("roadmaps.statusTodo")}</span>
                     </div>
                     {currentStatus === "TODO" && (
                       <Check className="w-4 h-4 text-primary stroke-[2.5]" />
@@ -183,7 +186,7 @@ export function NodeDetailDialog({
                       <div className="w-6 h-6 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-500 shrink-0">
                         <Clock className="w-3.5 h-3.5" />
                       </div>
-                      <span>Dalam Proses</span>
+                      <span>{t("roadmaps.statusInProgress")}</span>
                     </div>
                     {currentStatus === "IN_PROGRESS" && (
                       <Check className="w-4 h-4 text-amber-500 stroke-[2.5]" />
@@ -203,7 +206,7 @@ export function NodeDetailDialog({
                       <div className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-500 shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </div>
-                      <span>Selesai</span>
+                      <span>{t("roadmaps.statusCompleted")}</span>
                     </div>
                     {currentStatus === "COMPLETED" && (
                       <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
@@ -225,7 +228,7 @@ export function NodeDetailDialog({
             {node.description ? (
               <div className="space-y-1.5">
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
-                  Deskripsi Lengkap
+                  {locale === "en" ? "Full Description" : "Deskripsi Lengkap"}
                 </span>
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 text-sm text-foreground leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
                   {node.description}
@@ -233,7 +236,7 @@ export function NodeDetailDialog({
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-dashed border-slate-200/80 dark:border-slate-700/50 text-xs text-muted-foreground italic">
-                Tidak ada deskripsi tambahan untuk langkah ini.
+                {locale === "en" ? "No additional description for this step." : "Tidak ada deskripsi tambahan untuk langkah ini."}
               </div>
             )}
 
@@ -241,7 +244,7 @@ export function NodeDetailDialog({
             {node.type === "LINK" && node.link && (
               <div className="space-y-1.5">
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
-                  Tautan Terkait
+                  {locale === "en" ? "Related Link" : "Tautan Terkait"}
                 </span>
                 <div className="p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 overflow-hidden">
@@ -269,7 +272,7 @@ export function NodeDetailDialog({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary-hover transition-colors shrink-0"
                   >
-                    <span>Buka Link</span>
+                    <span>{t("links.openExternal")}</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
@@ -280,7 +283,7 @@ export function NodeDetailDialog({
             {targetNodes.length > 0 && (
               <div className="space-y-1.5 pt-1">
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground/80 font-medium">
-                  Langkah Selanjutnya
+                  {locale === "en" ? "Next Steps" : "Langkah Selanjutnya"}
                 </span>
                 <div className="flex items-center gap-2 flex-wrap">
                   {targetNodes.map((target) => (
@@ -306,7 +309,7 @@ export function NodeDetailDialog({
               className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5 rounded-xl h-9 px-3 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Hapus Langkah</span>
+              <span>{locale === "en" ? "Delete Step" : "Hapus Langkah"}</span>
             </Button>
 
             <Button
@@ -315,7 +318,7 @@ export function NodeDetailDialog({
               onClick={() => onOpenChange(false)}
               className="rounded-xl h-9 px-4 text-xs font-semibold cursor-pointer border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
-              Tutup
+              {t("common.close")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -325,10 +328,14 @@ export function NodeDetailDialog({
       <ConfirmDialog
         open={showConfirmDelete}
         onOpenChange={setShowConfirmDelete}
-        title="Hapus Langkah Roadmap"
-        description={`Apakah Anda yakin ingin menghapus langkah "${node.title}"? Seluruh koneksi pada langkah ini akan disesuaikan.`}
-        confirmText="Hapus"
-        cancelText="Batal"
+        title={locale === "en" ? "Delete Roadmap Step" : "Hapus Langkah Roadmap"}
+        description={
+          locale === "en"
+            ? `Are you sure you want to delete step "${node.title}"? All connections to this step will be adjusted.`
+            : `Apakah Anda yakin ingin menghapus langkah "${node.title}"? Seluruh koneksi pada langkah ini akan disesuaikan.`
+        }
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={() => {
           onDeleteNode(node.id);

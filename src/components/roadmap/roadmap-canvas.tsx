@@ -39,6 +39,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
+import { useTranslation } from "@/components/providers/i18n-provider";
+
 interface RoadmapCanvasProps {
   roadmapId: string;
   nodes: SerializedRoadmapNode[];
@@ -65,6 +67,7 @@ export function RoadmapCanvas({
   onDeleteEdge,
   onOpenAddNode,
 }: RoadmapCanvasProps) {
+  const { t, locale } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Canvas viewport state
@@ -514,10 +517,10 @@ export function RoadmapCanvas({
                         ? "bg-primary text-primary-foreground font-bold"
                         : "text-muted-foreground hover:text-primary hover:bg-primary/10"
                     )}
-                    title="Hubungkan ke node lain"
+                    title={locale === "en" ? "Connect to another node" : "Hubungkan ke node lain"}
                   >
                     <ConnectIcon className="w-3.5 h-3.5" />
-                    <span>{isConnectingSource ? "Menghubungkan..." : "Hubungkan"}</span>
+                    <span>{isConnectingSource ? (locale === "en" ? "Connecting..." : "Menghubungkan...") : (locale === "en" ? "Connect" : "Hubungkan")}</span>
                   </button>
 
                   <button
@@ -527,7 +530,7 @@ export function RoadmapCanvas({
                       setSelectedNodeForDetail(node);
                     }}
                     className="text-muted-foreground hover:text-primary p-1 rounded hover:bg-primary/10 transition-colors cursor-pointer"
-                    title="Lihat Detail Lengkap"
+                    title={locale === "en" ? "View Full Details" : "Lihat Detail Lengkap"}
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </button>
@@ -540,7 +543,7 @@ export function RoadmapCanvas({
                     setNodeToDelete(node);
                   }}
                   className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors cursor-pointer"
-                  title="Hapus Node"
+                  title={locale === "en" ? "Delete Node" : "Hapus Node"}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -554,14 +557,16 @@ export function RoadmapCanvas({
       <ConfirmDialog
         open={!!nodeToDelete}
         onOpenChange={(open) => !open && setNodeToDelete(null)}
-        title="Hapus Node Roadmap"
+        title={locale === "en" ? "Delete Roadmap Node" : "Hapus Node Roadmap"}
         description={
           nodeToDelete
-            ? `Apakah Anda yakin ingin menghapus node "${nodeToDelete.title}"? Seluruh koneksi pada node ini akan ikut terhapus.`
-            : "Apakah Anda yakin ingin menghapus node ini?"
+            ? (locale === "en"
+                ? `Are you sure you want to delete node "${nodeToDelete.title}"? All connections to this node will also be deleted.`
+                : `Apakah Anda yakin ingin menghapus node "${nodeToDelete.title}"? Seluruh koneksi pada node ini akan ikut terhapus.`)
+            : (locale === "en" ? "Are you sure you want to delete this node?" : "Apakah Anda yakin ingin menghapus node ini?")
         }
-        confirmText="Hapus"
-        cancelText="Batal"
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={() => {
           if (nodeToDelete) {
@@ -575,10 +580,10 @@ export function RoadmapCanvas({
       <ConfirmDialog
         open={!!edgeToDeleteId}
         onOpenChange={(open) => !open && setEdgeToDeleteId(null)}
-        title="Hapus Koneksi Alur"
-        description="Apakah Anda yakin ingin menghapus garis koneksi ini?"
-        confirmText="Hapus"
-        cancelText="Batal"
+        title={locale === "en" ? "Delete Connection Line" : "Hapus Koneksi Alur"}
+        description={locale === "en" ? "Are you sure you want to delete this connection line?" : "Apakah Anda yakin ingin menghapus garis koneksi ini?"}
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
         destructive={true}
         onConfirm={() => {
           if (edgeToDeleteId) {

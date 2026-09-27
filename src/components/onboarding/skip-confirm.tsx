@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 export function OnboardingSkipConfirm() {
   const { phase, cancelSkip, confirmSkip } = useOnboarding();
+  const { t } = useTranslation();
 
   if (phase !== "skip-confirm") return null;
 
@@ -26,10 +28,10 @@ export function OnboardingSkipConfirm() {
       >
         <div className="p-6">
           <h3 className="text-base font-bold text-foreground">
-            Lewati panduan?
+            {t("onboarding.skipConfirmTitle")}
           </h3>
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            Kamu dapat melihat panduan ini lagi nanti dari menu Bantuan.
+            {t("onboarding.skipConfirmDesc")}
           </p>
         </div>
 
@@ -39,17 +41,18 @@ export function OnboardingSkipConfirm() {
             onClick={cancelSkip}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted/50 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
-            Lanjutkan Panduan
+            {t("onboarding.continueTour")}
           </button>
           <button
             type="button"
             onClick={confirmSkip}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-muted text-foreground hover:bg-muted/80 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
-            Lewati
+            {t("onboarding.skip")}
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+

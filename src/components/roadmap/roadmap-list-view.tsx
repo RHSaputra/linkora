@@ -43,6 +43,8 @@ interface RoadmapListViewProps {
   onOpenAddNode: () => void;
 }
 
+import { useTranslation } from "@/components/providers/i18n-provider";
+
 export function RoadmapListView({
   nodes,
   edges,
@@ -52,6 +54,7 @@ export function RoadmapListView({
   onDeleteEdge,
   onOpenAddNode,
 }: RoadmapListViewProps) {
+  const { t, locale } = useTranslation();
   const [nodeToDelete, setNodeToDelete] = useState<SerializedRoadmapNode | null>(null);
   const [selectedNodeForDetail, setSelectedNodeForDetail] = useState<SerializedRoadmapNode | null>(null);
 
@@ -62,17 +65,17 @@ export function RoadmapListView({
           <CheckSquare className="w-8 h-8" />
         </div>
         <h3 className="text-base font-heading font-semibold text-foreground">
-          Belum ada langkah dalam roadmap ini
+          {locale === "en" ? "No steps in this roadmap yet" : "Belum ada langkah dalam roadmap ini"}
         </h3>
         <p className="text-xs text-muted-foreground max-w-sm">
-          Tambahkan langkah pertama Anda untuk mulai menyusun alur kerja.
+          {locale === "en" ? "Add your first step to start building your workflow." : "Tambahkan langkah pertama Anda untuk mulai menyusun alur kerja."}
         </p>
         <Button
           onClick={onOpenAddNode}
           className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold gap-2 mt-2"
         >
           <Plus className="w-4 h-4" />
-          <span>Tambah Langkah</span>
+          <span>{t("roadmaps.addNode")}</span>
         </Button>
       </div>
     );

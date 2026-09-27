@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { User, ArrowRight } from "lucide-react";
 import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface LikoWelcomeDialogProps {
   onOpenEditProfile: () => void;
@@ -17,6 +18,7 @@ interface LikoWelcomeDialogProps {
 export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps) {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const { t, locale } = useTranslation();
 
   useEffect(() => {
     // Only show if user is authenticated
@@ -110,7 +112,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
               {/* Active Assistant Live Badge */}
               <div className="absolute -bottom-3.5 z-20 inline-flex items-center px-4 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-primary/40 backdrop-blur-xl shadow-xl shadow-primary/30 select-none">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 font-extrabold text-xs font-heading">
-                  Asisten AI Liko
+                  {t("onboarding.assistantTag")}
                 </span>
               </div>
             </div>
@@ -123,11 +125,19 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
 
             <div className="relative p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-slate-800/70 border border-slate-200/80 dark:border-primary/30 backdrop-blur-xl shadow-xl text-center">
               <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug flex items-center justify-center gap-1.5 flex-wrap">
-                Halo <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span>
+                {locale === "en" ? (
+                  <>Hello <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
+                ) : (
+                  <>Halo <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
+                )}
               </h2>
 
               <p className="text-muted-foreground text-xs sm:text-sm mt-2.5 leading-relaxed">
-                Selamat datang di <strong className="text-foreground font-heading"><LinkoraText /></strong>! Aku <strong className="text-primary font-bold">Liko</strong>, asisten cerdas pribadimu yang siap membantumu menyimpan, menganalisis, dan merapikan aset digitalmu.
+                {locale === "en" ? (
+                  <>Welcome to <strong className="text-foreground font-heading"><LinkoraText /></strong>! I&apos;m <strong className="text-primary font-bold">Liko</strong>, your personal smart assistant ready to help you save, analyze, and organize your digital assets.</>
+                ) : (
+                  <>Selamat datang di <strong className="text-foreground font-heading"><LinkoraText /></strong>! Aku <strong className="text-primary font-bold">Liko</strong>, asisten cerdas pribadimu yang siap membantumu menyimpan, menganalisis, dan merapikan aset digitalmu.</>
+                )}
               </p>
             </div>
           </div>
@@ -141,7 +151,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
             className="flex-1 rounded-xl text-xs font-semibold py-3 flex items-center justify-center gap-2 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-primary/20 border border-slate-200 dark:border-primary/35 text-foreground dark:text-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer"
           >
             <User className="h-4 w-4 text-primary" />
-            Atur Profil Saya
+            {t("onboarding.editProfile")}
           </Button>
 
           <Button
@@ -149,10 +159,11 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
             type="button"
             className="flex-1 rounded-xl bg-gradient-to-r from-primary via-indigo-600 to-purple-600 hover:from-primary-hover hover:to-purple-700 text-primary-foreground font-bold text-xs py-3 shadow-lg shadow-primary/30 hover:shadow-primary/45 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
-            Mulai Jelajahi <ArrowRight className="h-4 w-4" />
+            {t("onboarding.exploreNow")} <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+

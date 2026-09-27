@@ -5,8 +5,11 @@ import { Compass } from "lucide-react";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
 import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 
+import { useTranslation } from "@/components/providers/i18n-provider";
+
 export function OnboardingWelcomeScreen() {
   const { phase, startTour, dismissWelcome } = useOnboarding();
+  const { t, locale } = useTranslation();
 
   if (phase !== "welcome") return null;
 
@@ -35,10 +38,14 @@ export function OnboardingWelcomeScreen() {
           </div>
 
           <h2 className="text-2xl font-bold text-foreground tracking-tight font-sans">
-            Halo <LinkorianText />, Selamat datang di <LinkoraText />
+            {locale === "en" ? (
+              <>Hello <LinkorianText />, Welcome to <LinkoraText /></>
+            ) : (
+              <>Halo <LinkorianText />, Selamat datang di <LinkoraText /></>
+            )}
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-            Mari jelajahi fitur-fitur canggih <LinkoraText />, termasuk analisis AI otomatis, pembuat catatan cerdas, roadmap visual, pengingat, dan Asisten Liko AI.
+            {t("onboarding.welcomeDesc")}
           </p>
         </div>
 
@@ -48,14 +55,14 @@ export function OnboardingWelcomeScreen() {
             onClick={startTour}
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover active:scale-95 transition-all duration-150 cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
-            Mulai Panduan
+            {t("onboarding.startTour")}
           </button>
           <button
             type="button"
             onClick={dismissWelcome}
             className="w-full py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
           >
-            Nanti saja
+            {t("onboarding.later")}
           </button>
         </div>
       </motion.div>

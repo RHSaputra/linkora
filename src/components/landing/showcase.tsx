@@ -3,8 +3,12 @@
 import { motion } from "framer-motion"
 import { Laptop, Smartphone, Bookmark, Search, Layers, FileText, CheckCircle2, ShieldCheck, ArrowUpRight } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"
+import { useTranslation } from "@/components/providers/i18n-provider"
 
 export function Showcase() {
+  const { locale } = useTranslation()
+  const isEn = locale === "en"
+
   return (
     <section className="py-14 md:py-18 relative overflow-hidden bg-background">
       {/* Ambient background glows */}
@@ -19,7 +23,11 @@ export function Showcase() {
             viewport={{ once: false, amount: 0.2 }}
             className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-foreground"
           >
-            Satu Dashboard untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Semua Kebutuhan</span>
+            {isEn ? (
+              <>One Dashboard for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">All Your Needs</span></>
+            ) : (
+              <>Satu Dashboard untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Semua Kebutuhan</span></>
+            )}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -28,7 +36,9 @@ export function Showcase() {
             transition={{ delay: 0.1 }}
             className="text-base md:text-lg text-muted-foreground"
           >
-            Desain antarmuka yang bersih, responsif, dan mudah digunakan di desktop maupun smartphone Anda.
+            {isEn
+              ? "Clean, responsive, and effortless interface across desktop and smartphone devices."
+              : "Desain antarmuka yang bersih, responsif, dan mudah digunakan di desktop maupun smartphone Anda."}
           </motion.p>
         </div>
 
@@ -45,7 +55,7 @@ export function Showcase() {
           >
             <div className="flex items-center gap-2 mb-3 text-muted-foreground justify-center lg:justify-start text-xs font-semibold uppercase tracking-wider">
               <Laptop className="w-4 h-4 text-primary"/> 
-              <span>Tampilan Desktop</span>
+              <span>{isEn ? "Desktop View" : "Tampilan Desktop"}</span>
             </div>
             
             {/* Laptop Frame */}
@@ -60,10 +70,10 @@ export function Showcase() {
                     </div>
                     <div className="space-y-1 pt-2">
                       <div className="text-[10px] px-2 py-1 rounded bg-primary/20 text-primary font-medium flex items-center gap-1">
-                        <Layers className="w-3 h-3" /> Semua Link
+                        <Layers className="w-3 h-3" /> {isEn ? "All Links" : "Semua Link"}
                       </div>
                       <div className="text-[10px] px-2 py-1 rounded hover:bg-white/5 text-gray-400 font-medium flex items-center gap-1">
-                        <FileText className="w-3 h-3" /> Catatan
+                        <FileText className="w-3 h-3" /> {isEn ? "Notes" : "Catatan"}
                       </div>
                       <div className="text-[10px] px-2 py-1 rounded hover:bg-white/5 text-gray-400 font-medium flex items-center gap-1">
                         <Bookmark className="w-3 h-3" /> AI Summary
@@ -81,22 +91,22 @@ export function Showcase() {
                   <div className="flex items-center justify-between gap-2 bg-gray-900/80 px-3 py-1.5 rounded-lg border border-white/5">
                     <div className="flex items-center gap-2 text-[11px] text-gray-400">
                       <Search className="w-3 h-3 text-primary" />
-                      <span>Cari tautan, beasiswa, catatan...</span>
+                      <span>{isEn ? "Search links, notes, opportunities..." : "Cari tautan, beasiswa, catatan..."}</span>
                     </div>
                   </div>
 
                   {/* Stat Cards */}
                   <div className="grid grid-cols-3 gap-2">
                     <div className="p-2 rounded-lg bg-gray-900/60 border border-white/5">
-                      <div className="text-[9px] text-gray-400">Total Tautan</div>
+                      <div className="text-[9px] text-gray-400">{isEn ? "Total Links" : "Total Tautan"}</div>
                       <div className="text-sm font-bold text-foreground mt-0.5">148</div>
                     </div>
                     <div className="p-2 rounded-lg bg-gray-900/60 border border-white/5">
-                      <div className="text-[9px] text-gray-400">Catatan AI</div>
+                      <div className="text-[9px] text-gray-400">{isEn ? "AI Notes" : "Catatan AI"}</div>
                       <div className="text-sm font-bold text-emerald-400 mt-0.5">36</div>
                     </div>
                     <div className="p-2 rounded-lg bg-gray-900/60 border border-white/5">
-                      <div className="text-[9px] text-gray-400">Peluang Aktif</div>
+                      <div className="text-[9px] text-gray-400">{isEn ? "Active Opportunities" : "Peluang Aktif"}</div>
                       <div className="text-sm font-bold text-purple-400 mt-0.5">12</div>
                     </div>
                   </div>
@@ -105,7 +115,7 @@ export function Showcase() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-2.5 rounded-xl bg-gray-900/80 border border-white/5 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-medium">Magang</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-medium">{isEn ? "Internship" : "Magang"}</span>
                         <ArrowUpRight className="w-3 h-3 text-gray-500" />
                       </div>
                       <div className="text-[11px] font-semibold truncate">Software Engineer Intern — GoTo</div>
@@ -114,11 +124,11 @@ export function Showcase() {
 
                     <div className="p-2.5 rounded-xl bg-gray-900/80 border border-white/5 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-medium">Beasiswa</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-medium">{isEn ? "Scholarship" : "Beasiswa"}</span>
                         <ArrowUpRight className="w-3 h-3 text-gray-500" />
                       </div>
                       <div className="text-[11px] font-semibold truncate">Beasiswa Unggulan Kemendikbud</div>
-                      <div className="text-[9px] text-gray-400 line-clamp-1">Dokumen: Esai, LOA, Toefl 550</div>
+                      <div className="text-[9px] text-gray-400 line-clamp-1">{isEn ? "Documents: Essay, LOA, TOEFL 550" : "Dokumen: Esai, LOA, Toefl 550"}</div>
                     </div>
                   </div>
                 </div>
@@ -140,7 +150,7 @@ export function Showcase() {
           >
             <div className="flex items-center gap-2 mb-3 text-muted-foreground justify-center text-xs font-semibold uppercase tracking-wider">
               <Smartphone className="w-4 h-4 text-accent"/> 
-              <span>Tampilan Mobile</span>
+              <span>{isEn ? "Mobile View" : "Tampilan Mobile"}</span>
             </div>
 
             {/* Mobile Phone Frame */}
@@ -161,23 +171,23 @@ export function Showcase() {
 
                 <div className="p-2 rounded-xl bg-gray-900 border border-white/5 text-[10px] text-gray-400 flex items-center gap-1.5">
                   <Search className="w-3 h-3 text-primary" />
-                  <span>Cari link...</span>
+                  <span>{isEn ? "Search links..." : "Cari link..."}</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="p-2 rounded-xl bg-gray-900 border border-white/5 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[8px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">Catatan</span>
+                      <span className="text-[8px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">{isEn ? "Notes" : "Catatan"}</span>
                       <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
                     </div>
-                    <div className="text-[10px] font-semibold text-gray-200 truncate">Ringkasan Riset Skripsi</div>
-                    <div className="text-[8px] text-gray-400">3 Poin Inti AI siap diulas</div>
+                    <div className="text-[10px] font-semibold text-gray-200 truncate">{isEn ? "Thesis Research Summary" : "Ringkasan Riset Skripsi"}</div>
+                    <div className="text-[8px] text-gray-400">{isEn ? "3 AI Key Points ready" : "3 Poin Inti AI siap diulas"}</div>
                   </div>
 
                   <div className="p-2 rounded-xl bg-gray-900 border border-white/5 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[8px] px-1 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">Magang</span>
-                      <span className="text-[8px] text-gray-500">2h lalu</span>
+                      <span className="text-[8px] px-1 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">{isEn ? "Internship" : "Magang"}</span>
+                      <span className="text-[8px] text-gray-500">{isEn ? "2h ago" : "2h lalu"}</span>
                     </div>
                     <div className="text-[10px] font-semibold text-gray-200 truncate">UI Designer — Tokopedia</div>
                   </div>
@@ -198,4 +208,5 @@ export function Showcase() {
     </section>
   )
 }
+
 

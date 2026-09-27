@@ -84,8 +84,17 @@ export async function POST(req: NextRequest) {
 
     const linksData = links.map((l) => ({ id: l.id, title: l.title, description: l.description, url: l.url }));
 
-    const SYSTEM_PROMPT = `
-Anda adalah AI Knowledge & Link Organizer cerdas dari Linkorian bernama Liko.
+    const SYSTEM_PROMPT = isEn
+      ? `You are Liko, Linkorian's intelligent AI Knowledge & Link Organizer.
+Task: Analyze the titles, descriptions, and URLs of the provided links, and determine the most accurate, clean, and concise category for each link.
+Example Categories: Tech, Design, Productivity, Business, Education, Entertainment, Tutorial, Article, Jobs, Scholarship, Finance, Tools, Career, News, Social Media, Health, Lifestyle.
+Capitalize category names (e.g. Tech, Design).
+Input is a JSON array of objects { id, title, description, url }.
+Output MUST be a JSON array of objects { id, category }.
+Ensure IDs match input exactly. Category names must be brief (1-2 words).
+Pure JSON output without markdown formatting.
+`
+      : `Anda adalah AI Knowledge & Link Organizer cerdas dari Linkorian bernama Liko.
 Tugas: Analisis judul, deskripsi, dan URL tautan berikut, lalu tentukan kategori yang paling tepat, spesifik, dan rapi untuk masing-masing tautan.
 Contoh Kategori: Tech, Design, Productivity, Business, Education, Entertainment, Tutorial, Artikel, Loker, Beasiswa, Finance, Tools, Career, News, Social Media, Health, Lifestyle.
 Gunakan huruf kapital di awal kata (contoh: Tech, Design).
