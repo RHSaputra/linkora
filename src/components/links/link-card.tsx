@@ -203,7 +203,7 @@ export function LinkCard({
                       }}
                       className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0"
                     >
-                      <BookOpen className="w-2.5 h-2.5" /> Catatan
+                      <BookOpen className="w-2.5 h-2.5" /> {locale === "en" ? "Note" : "Catatan"}
                     </span>
                   </>
                 )}
@@ -229,7 +229,7 @@ export function LinkCard({
               )}
             />
 
-            <Button variant="ghost" size="icon-xs" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+            <Button variant="ghost" size="icon-xs" onClick={handleFavorite} aria-label={link.isFavorite ? (locale === "en" ? "Remove from favorites" : "Hapus dari favorit") : (locale === "en" ? "Add to favorites" : "Tambah ke favorit")}>
               <Star className={cn("h-3.5 w-3.5", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
             </Button>
 
@@ -245,7 +245,7 @@ export function LinkCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon-xs" aria-label="Menu opsi tautan">
+                <Button variant="ghost" size="icon-xs" aria-label={locale === "en" ? "Link options menu" : "Menu opsi tautan"}>
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -421,12 +421,12 @@ export function LinkCard({
                     {link.title}
                   </h3>
                   <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon-sm" onClick={handleFavorite} aria-label={link.isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}>
+                    <Button variant="ghost" size="icon-sm" onClick={handleFavorite} aria-label={link.isFavorite ? (locale === "en" ? "Remove from favorites" : "Hapus dari favorit") : (locale === "en" ? "Add to favorites" : "Tambah ke favorit")}>
                       <Star className={cn("h-4 w-4 sm:h-4 sm:w-4", link.isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon-sm" aria-label="Menu opsi tautan">
+                        <Button variant="ghost" size="icon-sm" aria-label={locale === "en" ? "Link options menu" : "Menu opsi tautan"}>
                           <MoreHorizontal className="h-4 w-4 sm:h-4 sm:w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -499,7 +499,7 @@ export function LinkCard({
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground/50 line-clamp-1 italic">
-                  {domain ? `Tautan dari ${domain}` : "Informasi tautan tersimpan"}
+                  {domain ? (locale === "en" ? `Link from ${domain}` : `Tautan dari ${domain}`) : (locale === "en" ? "Saved link information" : "Informasi tautan tersimpan")}
                 </p>
               )}
             </div>
@@ -535,9 +535,9 @@ export function LinkCard({
                       router.push(`/notes/${existingNote.id}`);
                     }}
                     className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-emerald-500/20 transition-all shrink-0" 
-                    title={`Catatan Terkait: "${existingNote.title}"`}
+                    title={locale === "en" ? `Related Note: "${existingNote.title}"` : `Catatan Terkait: "${existingNote.title}"`}
                   >
-                    <BookOpen className="w-2.5 h-2.5" /> Catatan
+                    <BookOpen className="w-2.5 h-2.5" /> {locale === "en" ? "Note" : "Catatan"}
                   </span>
                 )}
               </div>

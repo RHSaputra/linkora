@@ -30,7 +30,7 @@ interface RoadmapEditorPageProps {
 
 export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { requireAuth } = useRequireAuth();
 
   const [roadmap, setRoadmap] = useState<SerializedRoadmap | null>(null);
@@ -49,15 +49,15 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         const data = await res.json();
         setRoadmap(data);
       } else {
-        toast.error("Roadmap tidak ditemukan", "Error");
+        toast.error(locale === "en" ? "Roadmap not found" : "Roadmap tidak ditemukan", locale === "en" ? "Error" : "Error");
         router.push("/roadmaps");
       }
     } catch (_err) {
-      toast.error("Gagal memuat detail roadmap", "Error");
+      toast.error(locale === "en" ? "Failed to load roadmap details" : "Gagal memuat detail roadmap", locale === "en" ? "Error" : "Error");
     } finally {
       setLoading(false);
     }
-  }, [roadmapId, router]);
+  }, [roadmapId, router, locale]);
 
   useEffect(() => {
     fetchRoadmap();
@@ -88,14 +88,14 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
       });
 
       if (res.ok) {
-        toast.success("Langkah baru berhasil ditambahkan", "Berhasil");
+        toast.success(locale === "en" ? "New step added successfully" : "Langkah baru berhasil ditambahkan", locale === "en" ? "Success" : "Berhasil");
         fetchRoadmap();
       } else {
         const err = await res.json();
-        toast.error(err.error || "Gagal menambah node", "Error");
+        toast.error(err.error || (locale === "en" ? "Failed to add node" : "Gagal menambah node"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     }
   };
 
@@ -159,13 +159,13 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         method: "DELETE",
       });
       if (res.ok) {
-        toast.success("Langkah berhasil dihapus", "Dihapus");
+        toast.success(locale === "en" ? "Step deleted successfully" : "Langkah berhasil dihapus", locale === "en" ? "Deleted" : "Dihapus");
         fetchRoadmap();
       } else {
-        toast.error("Gagal menghapus langkah", "Error");
+        toast.error(locale === "en" ? "Failed to delete step" : "Gagal menghapus langkah", locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     }
   };
 
@@ -179,14 +179,14 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         body: JSON.stringify({ sourceNodeId, targetNodeId }),
       });
       if (res.ok) {
-        toast.success("Koneksi berhasil dibuat", "Terhubung");
+        toast.success(locale === "en" ? "Connection created successfully" : "Koneksi berhasil dibuat", locale === "en" ? "Connected" : "Terhubung");
         fetchRoadmap();
       } else {
         const errData = await res.json();
-        toast.error(errData.error || "Gagal menghubungkan node", "Error");
+        toast.error(errData.error || (locale === "en" ? "Failed to connect nodes" : "Gagal menghubungkan node"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     }
   };
 
@@ -198,13 +198,13 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         method: "DELETE",
       });
       if (res.ok) {
-        toast.success("Koneksi terputus", "Berhasil");
+        toast.success(locale === "en" ? "Connection removed" : "Koneksi terputus", locale === "en" ? "Success" : "Berhasil");
         fetchRoadmap();
       } else {
-        toast.error("Gagal menghapus koneksi", "Error");
+        toast.error(locale === "en" ? "Failed to delete connection" : "Gagal menghapus koneksi", locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     }
   };
 
@@ -213,11 +213,11 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
     try {
       const res = await deleteRoadmap(roadmapId);
       if (res.ok) {
-        toast.success("Roadmap berhasil dihapus", "Dihapus");
+        toast.success(locale === "en" ? "Roadmap deleted successfully" : "Roadmap berhasil dihapus", locale === "en" ? "Deleted" : "Dihapus");
         router.push("/roadmaps");
       }
     } catch (_err) {
-      toast.error("Gagal menghapus roadmap", "Error");
+      toast.error(locale === "en" ? "Failed to delete roadmap" : "Gagal menghapus roadmap", locale === "en" ? "Error" : "Error");
     }
   };
 
@@ -225,7 +225,9 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <p className="text-sm text-muted-foreground">Memuat roadmap Anda...</p>
+        <p className="text-sm text-muted-foreground">
+          {locale === "en" ? "Loading your roadmap..." : "Memuat roadmap Anda..."}
+        </p>
       </div>
     );
   }
@@ -262,7 +264,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
           {/* Progress Indicator */}
           <div className="flex items-center gap-3 pt-1 text-xs">
             <span className="font-semibold text-foreground">
-              {roadmap.completedNodes} dari {roadmap.totalNodes} Langkah Selesai ({roadmap.progressPercent}%)
+              {roadmap.completedNodes} {locale === "en" ? "of" : "dari"} {roadmap.totalNodes} {locale === "en" ? "Steps Completed" : "Langkah Selesai"} ({roadmap.progressPercent}%)
             </span>
             <div className="h-2 w-36 rounded-full bg-muted overflow-hidden">
               <div
@@ -292,7 +294,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
               )}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Kanvas</span>
+              <span className="hidden sm:inline">{locale === "en" ? "Canvas" : "Kanvas"}</span>
             </button>
             <button
               onClick={() => setViewMode("LIST")}
@@ -304,7 +306,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
               )}
             >
               <List className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Daftar</span>
+              <span className="hidden sm:inline">{locale === "en" ? "List" : "Daftar"}</span>
             </button>
           </div>
 
@@ -312,12 +314,12 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
             <Button
               onClick={() => {
-                if (requireAuth("Saran Langkah AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
+                if (requireAuth(locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI", locale === "en" ? "Sign in or sign up for free to use Liko AI assistant in designing structured workflows." : "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
                 setAiDialogOpen(true);
               }}
               className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-9 px-4 rounded-full text-xs border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
             >
-              <span>Saran Langkah AI</span>
+              <span>{locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI"}</span>
             </Button>
           </div>
 
@@ -326,14 +328,14 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold gap-1.5 text-xs h-9 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Tambah Langkah</span>
+            <span>{locale === "en" ? "Add Step" : "Tambah Langkah"}</span>
           </Button>
 
           <Button
             variant="outline"
             size="icon"
             onClick={() => setDeleteDialogOpen(true)}
-            title="Hapus Roadmap"
+            title={locale === "en" ? "Delete Roadmap" : "Hapus Roadmap"}
             className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <Trash2 className="w-4 h-4" />

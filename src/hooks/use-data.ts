@@ -530,6 +530,14 @@ export function useNoteFolders() {
   return { folders, loading, refresh, setFolders };
 }
 
+function getCurrentLocale(): "id" | "en" {
+  if (typeof window !== "undefined") {
+    const loc = localStorage.getItem("linkora_user_locale");
+    if (loc === "en") return "en";
+  }
+  return "id";
+}
+
 export async function openLink(link: SerializedLink) {
   window.open(link.url, "_blank", "noopener,noreferrer");
   await fetch(`/api/links/${link.id}/open`, { method: "POST" });
@@ -569,7 +577,8 @@ export async function toggleFavorite(link: SerializedLink): Promise<SerializedLi
       return data;
     }
     const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || "Gagal mengubah status favorit");
+    const isEn = getCurrentLocale() === "en";
+    throw new Error(errData.error || (isEn ? "Failed to update favorite status" : "Gagal mengubah status favorit"));
   } catch (err: any) {
     // 3. Rollback on failure
     updateGlobalCacheLinks((items) =>
@@ -590,8 +599,9 @@ export async function toggleFavorite(link: SerializedLink): Promise<SerializedLi
     });
     dispatchRefresh(["links", "dashboard"], false);
 
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error(err.message || "Gagal mengubah status favorit", "Favorit");
+      toast.error(err.message || (isEn ? "Failed to update favorite status" : "Gagal mengubah status favorit"), isEn ? "Favorites" : "Favorit");
     });
     throw err;
   }
@@ -622,7 +632,8 @@ export async function toggleNoteFavorite(note: any): Promise<any> {
       return data;
     }
     const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || "Gagal mengubah status favorit catatan");
+    const isEn = getCurrentLocale() === "en";
+    throw new Error(errData.error || (isEn ? "Failed to update note favorite status" : "Gagal mengubah status favorit catatan"));
   } catch (err: any) {
     // 3. Rollback on failure
     updateGlobalCacheNotes((items) =>
@@ -630,8 +641,9 @@ export async function toggleNoteFavorite(note: any): Promise<any> {
     );
     dispatchRefresh(["notes", "noteFolders", "dashboard"], false);
 
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error(err.message || "Gagal mengubah status favorit catatan", "Favorit");
+      toast.error(err.message || (isEn ? "Failed to update note favorite status" : "Gagal mengubah status favorit catatan"), isEn ? "Favorites" : "Favorit");
     });
     throw err;
   }
@@ -665,7 +677,8 @@ export async function deleteLink(id: string) {
 
   try {
     const res = await fetch(`/api/links/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Gagal menghapus link");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete link" : "Gagal menghapus link");
     return res;
   } catch (err) {
     // 3. Rollback on failure
@@ -677,8 +690,9 @@ export async function deleteLink(id: string) {
       }));
       dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus link", "Hapus Link");
+      toast.error(isEn ? "Failed to delete link" : "Gagal menghapus link", isEn ? "Delete Link" : "Hapus Link");
     });
     throw err;
   }
@@ -729,7 +743,8 @@ export async function createLinkOptimistic(newLinkData: Partial<SerializedLink>)
       dispatchRefresh(["links", "dashboard", "tags"], false);
       return realLink;
     }
-    throw new Error("Gagal membuat link");
+    const isEn = getCurrentLocale() === "en";
+    throw new Error(isEn ? "Failed to add link" : "Gagal membuat link");
   } catch (err) {
     updateGlobalCacheLinks((items) => items.filter((item) => item.id !== tempId));
     updateGlobalCacheDashboard((stats) => ({
@@ -738,8 +753,9 @@ export async function createLinkOptimistic(newLinkData: Partial<SerializedLink>)
     }));
     dispatchRefresh(["links", "dashboard", "tags"], false);
 
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menambahkan link", "Tambah Link");
+      toast.error(isEn ? "Failed to add link" : "Gagal menambahkan link", isEn ? "Add Link" : "Tambah Link");
     });
     throw err;
   }
@@ -756,15 +772,17 @@ export async function deleteCollection(id: string) {
 
   try {
     const res = await fetch(`/api/collections/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Gagal menghapus koleksi");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete collection" : "Gagal menghapus koleksi");
     return res;
   } catch (err) {
     if (removedCol) {
       updateGlobalCacheCollections((items) => [...items, removedCol!]);
       dispatchRefresh(["collections", "dashboard", "links"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus koleksi", "Koleksi");
+      toast.error(isEn ? "Failed to delete collection" : "Gagal menghapus koleksi", isEn ? "Collection" : "Koleksi");
     });
     throw err;
   }
@@ -782,7 +800,8 @@ export async function deleteNoteFolder(id: string) {
 
   try {
     const res = await fetch(`/api/notes/folders/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Gagal menghapus folder catatan");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete note folder" : "Gagal menghapus folder catatan");
     return res;
   } catch (err) {
     if (removedFolder) {
@@ -793,8 +812,9 @@ export async function deleteNoteFolder(id: string) {
       }
       dispatchRefresh(["noteFolders", "notes"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus folder catatan", "Folder Catatan");
+      toast.error(isEn ? "Failed to delete note folder" : "Gagal menghapus folder catatan", isEn ? "Note Folder" : "Folder Catatan");
     });
     throw err;
   }
@@ -815,15 +835,17 @@ export async function deleteNote(id: string, isPermanent = false) {
     const res = await fetch(`/api/notes/${id}${isPermanent ? "?permanent=true" : ""}`, {
       method: "DELETE",
     });
-    if (!res.ok) throw new Error("Gagal menghapus catatan");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete note" : "Gagal menghapus catatan");
     return res;
   } catch (err) {
     if (removedNotes.length > 0) {
       updateGlobalCacheNotes((items) => [...removedNotes, ...items]);
       dispatchRefresh(["notes", "noteFolders"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus catatan", "Catatan");
+      toast.error(isEn ? "Failed to delete note" : "Gagal menghapus catatan", isEn ? "Note" : "Catatan");
     });
     throw err;
   }
@@ -847,15 +869,17 @@ export async function deleteNotesBulk(ids: string[], isPermanent = false) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids, permanent: isPermanent }),
     });
-    if (!res.ok) throw new Error("Gagal menghapus beberapa catatan");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete selected notes" : "Gagal menghapus beberapa catatan");
     return res;
   } catch (err) {
     if (removedNotes.length > 0) {
       updateGlobalCacheNotes((items) => [...removedNotes, ...items]);
       dispatchRefresh(["notes", "noteFolders"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus beberapa catatan", "Catatan");
+      toast.error(isEn ? "Failed to delete selected notes" : "Gagal menghapus beberapa catatan", isEn ? "Notes" : "Catatan");
     });
     throw err;
   }
@@ -929,15 +953,17 @@ export async function deleteRoadmap(id: string) {
 
   try {
     const res = await fetch(`/api/roadmaps/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Gagal menghapus roadmap");
+    const isEn = getCurrentLocale() === "en";
+    if (!res.ok) throw new Error(isEn ? "Failed to delete roadmap" : "Gagal menghapus roadmap");
     return res;
   } catch (err) {
     if (removedRoadmap) {
       updateGlobalCacheRoadmaps((items) => [...items, removedRoadmap]);
       dispatchRefresh(["roadmaps"], false);
     }
+    const isEn = getCurrentLocale() === "en";
     import("@/components/ui/custom-toast").then(({ toast }) => {
-      toast.error("Gagal menghapus roadmap", "Roadmap");
+      toast.error(isEn ? "Failed to delete roadmap" : "Gagal menghapus roadmap", isEn ? "Roadmap" : "Roadmap");
     });
     throw err;
   }

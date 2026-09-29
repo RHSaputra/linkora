@@ -279,7 +279,7 @@ export function DynamicImageCropperModal({
     try {
       const sourceImg = imgRef.current;
       if (!sourceImg) {
-        toast.error("Elemen gambar belum siap.", "Crop Gagal");
+        toast.error(locale === "en" ? "Image element is not ready." : "Elemen gambar belum siap.", locale === "en" ? "Crop Failed" : "Crop Gagal");
         setIsProcessing(false);
         return;
       }
@@ -294,7 +294,7 @@ export function DynamicImageCropperModal({
       const sh = Math.min(origH - sy, Math.round((cropBox.height / 100) * origH));
 
       if (sw <= 0 || sh <= 0) {
-        toast.error("Area crop terlalu kecil.", "Crop Gagal");
+        toast.error(locale === "en" ? "Crop area is too small." : "Area crop terlalu kecil.", locale === "en" ? "Crop Failed" : "Crop Gagal");
         setIsProcessing(false);
         return;
       }

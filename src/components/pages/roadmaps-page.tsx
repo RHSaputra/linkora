@@ -63,14 +63,14 @@ export function RoadmapsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenCreate = () => {
-    if (requireAuth("Buat Roadmap Baru", "Masuk atau daftar akun untuk membuat alur kerja roadmap Anda sendiri.")) return;
+    if (requireAuth(locale === "en" ? "Create New Roadmap" : "Buat Roadmap Baru", locale === "en" ? "Sign in or sign up to create your own visual workflow roadmap." : "Masuk atau daftar akun untuk membuat alur kerja roadmap Anda sendiri.")) return;
     setTitle("");
     setDescription("");
     setCreateDialogOpen(true);
   };
 
   const handleOpenAiDialog = () => {
-    if (requireAuth("Rancang dengan Liko AI", "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur.")) return;
+    if (requireAuth(locale === "en" ? "Design with Liko AI" : "Rancang dengan Liko AI", locale === "en" ? "Sign in or sign up for free to use Liko AI assistant in creating structured visual workflows." : "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja visual terstruktur.")) return;
     setAiDialogOpen(true);
   };
 
@@ -91,16 +91,16 @@ export function RoadmapsPage() {
 
       if (res.ok) {
         const newRoadmap = await res.json();
-        toast.success("Roadmap berhasil dibuat!", "Roadmap");
+        toast.success(locale === "en" ? "Roadmap created successfully!" : "Roadmap berhasil dibuat!", locale === "en" ? "Roadmap" : "Roadmap");
         setCreateDialogOpen(false);
         refresh(true);
         router.push(`/roadmaps/${newRoadmap.id}`);
       } else {
         const errorData = await res.json();
-        toast.error(errorData.error || "Gagal membuat roadmap", "Error");
+        toast.error(errorData.error || (locale === "en" ? "Failed to create roadmap" : "Gagal membuat roadmap"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     } finally {
       setIsSubmitting(false);
     }
@@ -129,14 +129,14 @@ export function RoadmapsPage() {
       });
 
       if (res.ok) {
-        toast.success("Roadmap berhasil diperbarui", "Sukses");
+        toast.success(locale === "en" ? "Roadmap updated successfully" : "Roadmap berhasil diperbarui", locale === "en" ? "Success" : "Sukses");
         setEditDialogOpen(false);
         refresh(true);
       } else {
-        toast.error("Gagal memperbarui roadmap", "Error");
+        toast.error(locale === "en" ? "Failed to update roadmap" : "Gagal memperbarui roadmap", locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
     } finally {
       setIsSubmitting(false);
     }
@@ -154,17 +154,17 @@ export function RoadmapsPage() {
     // Immediately close modal, optimistically remove card, and show toast
     setDeleteDialogOpen(false);
     setRoadmaps((prev) => prev.filter((item) => item.id !== targetId));
-    toast.success("Roadmap berhasil dihapus", "Dihapus");
+    toast.success(locale === "en" ? "Roadmap deleted successfully" : "Roadmap berhasil dihapus", locale === "en" ? "Deleted" : "Dihapus");
 
     try {
       setIsSubmitting(true);
       const res = await deleteRoadmap(targetId);
       if (!res.ok) {
-        toast.error("Gagal menghapus roadmap", "Error");
+        toast.error(locale === "en" ? "Failed to delete roadmap" : "Gagal menghapus roadmap", locale === "en" ? "Error" : "Error");
         refresh(true);
       }
     } catch (_err) {
-      toast.error("Terjadi kesalahan jaringan", "Error");
+      toast.error(locale === "en" ? "Network error occurred" : "Terjadi kesalahan jaringan", locale === "en" ? "Error" : "Error");
       refresh(true);
     } finally {
       setIsSubmitting(false);

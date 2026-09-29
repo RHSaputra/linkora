@@ -332,7 +332,7 @@ export function DashboardPage({
               </div>
 
               <div className="px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-mono font-bold text-amber-500">
-                {s.favoriteLinks.length} Item
+                {s.favoriteLinks.length} {locale === "en" ? (s.favoriteLinks.length === 1 ? "Item" : "Items") : "Item"}
               </div>
             </div>
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { RefreshCw, Globe } from "lucide-react";
 import { getCategoryColor, getFaviconUrl, cn } from "@/lib/utils";
 import { toast } from "@/components/ui/custom-toast";
+import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface LinkoraCardThumbnailProps {
   url: string;
@@ -29,6 +30,7 @@ export function LinkoraCardThumbnail({
   className,
   aspectRatio = "card",
 }: LinkoraCardThumbnailProps) {
+  const { locale } = useTranslation();
   // Normalize target URL
   const targetUrl = useMemo(() => {
     let target = (url || "").trim();
@@ -110,7 +112,7 @@ export function LinkoraCardThumbnail({
   const handleRetryAnalysis = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsRetrying(true);
-    toast.info("Liko AI sedang menganalisis ulang preview...", "Analisis Preview");
+    toast.info(locale === "en" ? "Liko AI is re-analyzing preview..." : "Liko AI sedang menganalisis ulang preview...", locale === "en" ? "Preview Analysis" : "Analisis Preview");
 
     try {
       const res = await fetch("/api/metadata", {
@@ -124,7 +126,7 @@ export function LinkoraCardThumbnail({
         if (meta.thumbnail) {
           setImgSrc(meta.thumbnail);
           setAttemptLevel("og");
-          toast.success("Gambar preview berhasil diperbarui!", "Sukses");
+          toast.success(locale === "en" ? "Preview image updated successfully!" : "Gambar preview berhasil diperbarui!", locale === "en" ? "Success" : "Sukses");
 
           if (linkId) {
             await fetch(`/api/links/${linkId}`, {
@@ -155,7 +157,7 @@ export function LinkoraCardThumbnail({
     } finally {
       setIsRetrying(false);
     }
-  }, [targetUrl, screenshotUrl, linkId, onUpdate]);
+  }, [targetUrl, screenshotUrl, linkId, onUpdate, locale]);
 
   const renderFallbackBanner = () => (
     <div className="relative w-full h-full overflow-hidden flex flex-col justify-between p-4 sm:p-5 select-none bg-slate-950 text-white">
@@ -183,11 +185,11 @@ export function LinkoraCardThumbnail({
           type="button"
           onClick={handleRetryAnalysis}
           disabled={isRetrying}
-          title="Coba analisis ulang metadata & gambar"
+          title={locale === "en" ? "Re-analyze metadata & images" : "Coba analisis ulang metadata & gambar"}
           className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-[10px] font-medium text-white/80 backdrop-blur-md border border-white/15 transition-all cursor-pointer select-none touch-manipulation disabled:opacity-50"
         >
           <RefreshCw className={cn("w-3 h-3 text-white/70", isRetrying && "animate-spin")} />
-          <span className="hidden xs:inline">{isRetrying ? "Proses..." : "Ulang"}</span>
+          <span className="hidden xs:inline">{isRetrying ? (locale === "en" ? "Analyzing..." : "Proses...") : (locale === "en" ? "Retry" : "Ulang")}</span>
         </button>
       </div>
 
