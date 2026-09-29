@@ -126,17 +126,17 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
             <div className="relative p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-slate-800/70 border border-slate-200/80 dark:border-primary/30 backdrop-blur-xl shadow-xl text-center">
               <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-sans tracking-tight leading-snug flex items-center justify-center gap-1.5 flex-wrap">
                 {locale === "en" ? (
-                  <>Hello <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
+                  <>Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
                 ) : (
-                  <>Halo <LinkorianText />, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
+                  <>Halo, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-cyan-500">{userName}</span></>
                 )}
               </h2>
 
               <p className="text-muted-foreground text-xs sm:text-sm mt-2.5 leading-relaxed">
                 {locale === "en" ? (
-                  <>Welcome to <strong className="text-foreground font-heading"><LinkoraText /></strong>! I&apos;m <strong className="text-primary font-bold">Liko</strong>, your personal smart assistant ready to help you save, analyze, and organize your digital assets.</>
+                  <>Welcome to <strong className="text-foreground font-heading"><LinkorianText /></strong>! I&apos;m <strong className="text-primary font-bold">Liko</strong>, your personal smart assistant ready to help you save, analyze, and organize your digital assets.</>
                 ) : (
-                  <>Selamat datang di <strong className="text-foreground font-heading"><LinkoraText /></strong>! Aku <strong className="text-primary font-bold">Liko</strong>, asisten cerdas pribadimu yang siap membantumu menyimpan, menganalisis, dan merapikan aset digitalmu.</>
+                  <>Selamat datang di <strong className="text-foreground font-heading"><LinkorianText /></strong>! Aku <strong className="text-primary font-bold">Liko</strong>, asisten cerdas pribadimu yang siap membantumu menyimpan, menganalisis, dan merapikan aset digitalmu.</>
                 )}
               </p>
             </div>

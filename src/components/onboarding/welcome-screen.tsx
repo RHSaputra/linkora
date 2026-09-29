@@ -39,9 +39,9 @@ export function OnboardingWelcomeScreen() {
 
           <h2 className="text-2xl font-bold text-foreground tracking-tight font-sans">
             {locale === "en" ? (
-              <>Hello <LinkorianText />, Welcome to <LinkoraText /></>
+              <>Hello, Welcome to <LinkorianText /></>
             ) : (
-              <>Halo <LinkorianText />, Selamat datang di <LinkoraText /></>
+              <>Halo, Selamat datang di <LinkorianText /></>
             )}
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
