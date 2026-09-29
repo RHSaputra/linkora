@@ -349,17 +349,17 @@ export function CollectionsPage({
         {activeTab === "links" ? (
           <Button
             onClick={handleOpenCreateLinkCollection}
-            className="self-start sm:self-auto gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-primary hover:bg-primary/90 text-primary-foreground h-8.5 sm:h-10 px-3 sm:px-4"
+            className="self-start sm:self-auto gap-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground h-8.5 px-3.5"
           >
-            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Plus className="h-3.5 w-3.5" />
             <span>{t("collections.createBtn")}</span>
           </Button>
         ) : (
           <Button
             onClick={() => handleOpenNoteFolderModal()}
-            className="self-start sm:self-auto gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-cyan-500 hover:bg-cyan-600 text-white h-8.5 sm:h-10 px-3 sm:px-4"
+            className="self-start sm:self-auto gap-1.5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs bg-cyan-500 hover:bg-cyan-600 text-white h-8.5 px-3.5"
           >
-            <FolderPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <FolderPlus className="h-3.5 w-3.5" />
             <span>{t("collections.createNoteCollectionBtn")}</span>
           </Button>
         )}
@@ -532,43 +532,50 @@ export function CollectionsPage({
             <div className="lg:col-span-2">
               {selectedLinkCollection ? (
                 <div className="space-y-4">
-                  {/* Selected Collection Banner */}
-                  <div
-                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden bg-card shadow-sm gap-4"
-                    style={{
-                      borderColor: `${selectedLinkCollection.color}80`,
-                    }}
-                  >
-                    <div className="relative z-10 flex items-center gap-4">
+                  {/* Selected Collection Clean Section Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-border/50">
+                    <div className="flex items-center gap-3">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-2xs"
                         style={{
                           backgroundColor: `${selectedLinkCollection.color}15`,
-                          borderColor: `${selectedLinkCollection.color}60`,
+                          borderColor: `${selectedLinkCollection.color}40`,
                           color: selectedLinkCollection.color,
                         }}
                       >
-                        <FolderOpen className="h-6 w-6" />
+                        <FolderOpen className="h-5 w-5" />
                       </div>
                       <div>
                         <h2
-                          className="font-black text-lg sm:text-2xl tracking-tight flex items-center gap-2 font-heading"
+                          className="font-bold text-base sm:text-xl tracking-tight flex items-center gap-2 font-heading text-foreground"
                           style={{ color: selectedLinkCollection.color }}
                         >
                           {selectedLinkCollection.name}
                         </h2>
-                        <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                        <p className="text-xs text-muted-foreground font-medium">
                           {t("collections.savedLinksCount", { count: collectionLinks.length })}
                         </p>
                       </div>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-2 self-end sm:self-auto">
+                    <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                       <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
-                      <Button variant="outline" size="sm" onClick={() => setManageLinksOpen(true)}>
-                        {t("collections.manageLinks")}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setManageLinksOpen(true)}
+                        className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
+                      >
+                        <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>{t("collections.manageLinks")}</span>
                       </Button>
-                      <Button variant="destructive-ghost" size="icon-sm" onClick={handleDeleteCollection} title={t("common.delete")}>
+                      <Button
+                        variant="destructive-ghost"
+                        size="icon-sm"
+                        onClick={handleDeleteCollection}
+                        title={t("common.delete")}
+                        className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -757,43 +764,38 @@ export function CollectionsPage({
             <div className="lg:col-span-2">
               {selectedNoteFolder ? (
                 <div className="space-y-4">
-                  {/* Selected Note Folder Banner */}
-                  <div
-                    className="relative flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-3xl border transition-all overflow-hidden bg-card shadow-sm gap-4"
-                    style={{
-                      borderColor: `${selectedNoteFolder.color || "#06b6d4"}80`,
-                    }}
-                  >
-                    <div className="relative z-10 flex items-center gap-4">
+                  {/* Selected Note Folder Clean Section Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-border/50">
+                    <div className="flex items-center gap-3">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-2xs"
                         style={{
                           backgroundColor: `${selectedNoteFolder.color || "#06b6d4"}15`,
-                          borderColor: `${selectedNoteFolder.color || "#06b6d4"}60`,
+                          borderColor: `${selectedNoteFolder.color || "#06b6d4"}40`,
                           color: selectedNoteFolder.color || "#06b6d4",
                         }}
                       >
-                        <FileText className="h-6 w-6" />
+                        <FileText className="h-5 w-5" />
                       </div>
                       <div>
                         <h2
-                          className="font-black text-lg sm:text-2xl tracking-tight flex items-center gap-2 font-heading"
+                          className="font-bold text-base sm:text-xl tracking-tight flex items-center gap-2 font-heading text-foreground"
                           style={{ color: selectedNoteFolder.color || "#06b6d4" }}
                         >
                           {selectedNoteFolder.name}
                         </h2>
-                        <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                        <p className="text-xs text-muted-foreground font-medium">
                           {t("collections.savedNotesCount", { count: folderNotes.length })}
                         </p>
                       </div>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-2 self-end sm:self-auto">
+                    <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                       <Button
                         onClick={handleCreateNoteInFolder}
                         disabled={creatingNoteInFolder}
                         size="sm"
-                        className="rounded-xl text-xs font-semibold gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer shadow-xs h-8 px-3"
+                        className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer shadow-2xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>{creatingNoteInFolder ? t("common.loading") : t("notes.newNoteBtn")}</span>
@@ -803,17 +805,18 @@ export function CollectionsPage({
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenNoteFolderModal(selectedNoteFolder)}
-                        className="rounded-xl text-xs h-8 cursor-pointer shadow-xs gap-1"
+                        className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Edit</span>
+                        <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>{locale === "en" ? "Edit" : "Ubah"}</span>
                       </Button>
 
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => setDeleteNoteFolderDialogOpen(true)}
-                        className="text-destructive hover:bg-destructive/10 rounded-xl h-8 w-8 cursor-pointer"
+                        title={t("common.delete")}
+                        className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
