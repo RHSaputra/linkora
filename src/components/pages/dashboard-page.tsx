@@ -10,8 +10,6 @@ import {
   AlertTriangle,
   Loader2,
   Shield,
-  ChevronRight,
-  PieChart,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
@@ -75,7 +73,6 @@ export function DashboardPage({
     changes?: any[];
     error?: string;
   } | null>(null);
-  const [clusterDialogOpen, setClusterDialogOpen] = useState(false);
 
   useEffect(() => {
     const handleOrganizeState = (e: Event) => {
@@ -156,39 +153,41 @@ export function DashboardPage({
       {/* ========================================================================= */}
       {/* SECTION 1: HERO COCKPIT (Layer Z-10) with Cyber Corners & Fractured Notch */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* SECTION 1: HERO COCKPIT & AI ASSISTANT (UNIFIED SINGLE CARD)             */}
+      {/* ========================================================================= */}
       <motion.section
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full"
       >
-        <div className="relative glass-panel rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 lg:p-12 overflow-hidden border border-border/80 shadow-xl shadow-primary/10 bg-gradient-to-br from-card/90 via-card/75 to-primary/[0.04]">
+        <div className="relative glass-panel rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 overflow-hidden border border-border/80 shadow-2xl shadow-primary/10 bg-gradient-to-br from-card/95 via-card/85 to-primary/[0.05]">
           {/* Cybernetic Angled Corner Accents */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/40 rounded-tl-2xl pointer-events-none" />
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent/40 rounded-tr-2xl pointer-events-none" />
 
-          {/* Ambient Right Sphere & Orbit Nodes */}
+          {/* Ambient Glowing Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
             <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-br from-accent/20 via-primary/15 to-purple-500/15 blur-2xl animate-pulse" />
             <div className="absolute right-12 top-8 w-20 h-20 rounded-full border border-accent/25 opacity-70 animate-[spin_20s_linear_infinite]" />
             <div className="absolute right-36 bottom-10 w-3 h-3 rounded-full bg-accent/40 blur-[1px]" />
-            <div className="absolute right-10 top-1/3 w-3.5 h-3.5 rounded-full bg-primary/60" />
+            <div className="absolute left-1/3 bottom-0 w-64 h-64 bg-primary/10 blur-[90px] rounded-full pointer-events-none" />
           </div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 w-full">
-            {/* Left Block: Status Pill, Welcome Header */}
-            <div className="space-y-1.5 text-left">
-
-              <h2 className="text-lg sm:text-xl font-medium tracking-tight text-muted-foreground font-sans flex items-center gap-1.5">
+          <div className="relative z-10 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-6 sm:gap-8 lg:gap-10 w-full">
+            {/* Left Block: Welcome Greeting & Security Info */}
+            <div className="space-y-2 text-left flex-1 min-w-0">
+              <h2 className="text-base sm:text-lg font-medium tracking-tight text-muted-foreground font-sans flex items-center gap-1.5">
                 {locale === "en" ? "Hello," : "Halo,"} <LinkorianText />
               </h2>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground font-heading leading-tight break-words">
                 {userName || "Linkorian"}
               </h1>
-              <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
+              <div className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
                 <span>{locale === "en" ? "Your workspace on" : "Ruang Anda"}</span> <LinkoraText />
               </div>
-              <div className="flex items-center gap-2.5 pt-1.5 text-xs sm:text-sm text-muted-foreground font-medium">
+              <div className="flex items-center gap-2.5 pt-2 text-xs sm:text-sm text-muted-foreground font-medium">
                 <div className="w-6 h-6 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-xs">
                   <Shield className="h-3.5 w-3.5" />
                 </div>
@@ -196,190 +195,114 @@ export function DashboardPage({
               </div>
             </div>
 
-            {/* Right Block: Redesigned Kluster Data Interactive Widget */}
-            {s.categoryStats.length > 0 && (
-              <motion.button
-                type="button"
-                onClick={() => setClusterDialogOpen(true)}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full lg:w-84 p-4 rounded-2xl glass-panel border border-border/80 hover:border-primary/50 bg-card/60 transition-all duration-300 space-y-3 cursor-pointer text-left group shrink-0"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <PieChart className="w-3.5 h-3.5 text-primary" /> {t("dashboard.dataCluster")}
-                  </span>
-                  <span className="text-[11px] font-semibold text-primary flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                    {t("dashboard.viewDetails")} <ChevronRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
+            {/* Right Block: Seamlessly Integrated AI Liko Assistant Pod */}
+            <div className="w-full xl:w-auto shrink-0 bg-background/50 dark:bg-card/60 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-primary/20 shadow-lg flex flex-col sm:flex-row items-center gap-5 sm:gap-6">
+              {/* Mascot Avatar with High-Tech Laser Rings */}
+              <div className="flex-shrink-0 relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
+                {/* Outer Ambient Glow Pulsing */}
+                <motion.div
+                  className="absolute -inset-3 rounded-full bg-gradient-to-tr from-cyan-500/30 via-primary/30 to-purple-500/30 blur-xl pointer-events-none transform-gpu"
+                  animate={{
+                    scale: isOrganizing ? [1, 1.2, 1] : [1, 1.05, 1],
+                    opacity: isOrganizing ? [0.6, 1, 0.6] : [0.3, 0.6, 0.3]
+                  }}
+                  transition={{
+                    duration: isOrganizing ? 1.5 : 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
 
-                {/* Progress Cluster Bar */}
-                <div className="h-3.5 w-full bg-muted/80 rounded-full overflow-hidden flex gap-0.5 p-0.5 shadow-inner">
-                  {s.categoryStats.map((cat, idx) => {
-                    const pct = Math.max(3, (cat.count / s.totalLinks) * 100);
-                    const color = getCategoryColor(cat.category);
-                    return (
-                      <div
-                        key={idx}
-                        style={{ width: `${pct}%`, backgroundColor: color }}
-                        className="h-full rounded-xs transition-all duration-300 hover:brightness-110"
-                        title={`${cat.category}: ${cat.count} tautan (${((cat.count / s.totalLinks) * 100).toFixed(1)}%)`}
-                      />
-                    );
-                  })}
-                </div>
+                {/* Outer Dashed Orbit Ring */}
+                <motion.div
+                  className="absolute -inset-1.5 rounded-full border border-dashed border-primary/40 pointer-events-none transform-gpu"
+                  animate={{ rotate: isOrganizing ? -360 : 360 }}
+                  transition={{ duration: isOrganizing ? 8 : 24, repeat: Infinity, ease: "linear" }}
+                />
 
-                {/* Minimalist Summary & Top Categories Legend */}
-                <div className="flex items-center justify-between gap-1.5 text-xs">
-                  <div className="flex items-center gap-2 flex-wrap max-w-[70%]">
-                    {s.categoryStats.slice(0, 3).map((cat) => (
-                      <span key={cat.category} className="inline-flex items-center text-[11px] font-medium text-muted-foreground">
-                        <span className="truncate max-w-[70px]">{cat.category}</span>
-                      </span>
-                    ))}
-                    {s.categoryStats.length > 3 && (
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        +{s.categoryStats.length - 3}
-                      </span>
+                {/* Main Laser Conic Ring */}
+                <motion.div
+                  className="absolute inset-0 rounded-full transform-gpu"
+                  animate={isOrganizing ? { rotate: 360 } : { rotate: 0 }}
+                  transition={
+                    isOrganizing
+                      ? { duration: 1.8, repeat: Infinity, ease: "linear" }
+                      : { duration: 0.3 }
+                  }
+                >
+                  <div
+                    className={`relative w-full h-full rounded-full p-[3px] transition-all duration-500 ${
+                      isOrganizing
+                        ? "bg-[conic-gradient(from_0deg,transparent_0_120deg,#06b6d4_220deg,#8b5cf6_290deg,#3b82f6_360deg)] shadow-[0_0_30px_rgba(59,130,246,0.8)]"
+                        : "bg-gradient-to-tr from-primary/50 via-cyan-400/40 to-purple-500/50"
+                    }`}
+                  >
+                    <div className="w-full h-full rounded-full bg-background" />
+                    {isOrganizing && (
+                      <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_12px_#38bdf8,0_0_20px_#818cf8]" />
                     )}
                   </div>
-                  <span className="font-mono bg-primary/15 text-primary border border-primary/20 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0">
-                    {s.totalLinks} {t("dashboard.totalLinks")}
-                  </span>
-                </div>
-              </motion.button>
-            )}
-          </div>
-        </div>
-      </motion.section>
+                </motion.div>
 
-      {/* ========================================================================= */}
-      {/* SECTION 2: AI LIKO INSIGHT ENGINE                                        */}
-      {/* ========================================================================= */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15 }}
-        className="relative z-20"
-      >
-        <div className="relative glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-8 border-2 border-primary/30 overflow-hidden bg-card/90 backdrop-blur-2xl shadow-2xl shadow-primary/15">
-          {/* Holographic Glowing Gradients & Stepped Shard Accents */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 opacity-70 pointer-events-none" />
-          <div className="absolute right-0 top-0 w-80 h-80 bg-primary/20 blur-[110px] rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/15 blur-[90px] rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none" />
-
-          {/* Overlapping Interior Card with Neon Rings & Dynamic Action */}
-          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 sm:gap-8">
-            {/* Mascot Avatar with High-Tech Laser Rings */}
-            <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
-              {/* Outer Ambient Glow Pulsing */}
-              <motion.div
-                className="absolute -inset-3 rounded-full bg-gradient-to-tr from-cyan-500/30 via-primary/30 to-purple-500/30 blur-xl pointer-events-none transform-gpu"
-                animate={{
-                  scale: isOrganizing ? [1, 1.2, 1] : [1, 1.05, 1],
-                  opacity: isOrganizing ? [0.6, 1, 0.6] : [0.3, 0.6, 0.3]
-                }}
-                transition={{
-                  duration: isOrganizing ? 1.5 : 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-
-              {/* Outer Dashed Orbit Ring */}
-              <motion.div
-                className="absolute -inset-1.5 rounded-full border border-dashed border-primary/40 pointer-events-none transform-gpu"
-                animate={{ rotate: isOrganizing ? -360 : 360 }}
-                transition={{ duration: isOrganizing ? 8 : 24, repeat: Infinity, ease: "linear" }}
-              />
-
-              {/* Main Laser Conic Ring */}
-              <motion.div
-                className="absolute inset-0 rounded-full transform-gpu"
-                animate={isOrganizing ? { rotate: 360 } : { rotate: 0 }}
-                transition={
-                  isOrganizing
-                    ? { duration: 1.8, repeat: Infinity, ease: "linear" }
-                    : { duration: 0.3 }
-                }
-              >
-                <div
-                  className={`relative w-full h-full rounded-full p-[3px] transition-all duration-500 ${
-                    isOrganizing
-                      ? "bg-[conic-gradient(from_0deg,transparent_0_120deg,#06b6d4_220deg,#8b5cf6_290deg,#3b82f6_360deg)] shadow-[0_0_30px_rgba(59,130,246,0.8)]"
-                      : "bg-gradient-to-tr from-primary/50 via-cyan-400/40 to-purple-500/50"
-                  }`}
+                {/* Mascot Image Container with Gentle Levitating Floating Motion */}
+                <motion.div
+                  className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-background shadow-2xl bg-background z-10 transform-gpu"
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <div className="w-full h-full rounded-full bg-background" />
-                  {isOrganizing && (
-                    <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-[0_0_12px_#38bdf8,0_0_20px_#818cf8]" />
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Mascot Image Container with Gentle Levitating Floating Motion */}
-              <motion.div
-                className="relative w-22 h-22 rounded-full overflow-hidden border-2 border-background shadow-2xl bg-background z-10 transform-gpu"
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <img
-                  src="/maskot.jpeg"
-                  alt="Liko Asisten AI"
-                  className="w-full h-full object-cover object-top"
-                />
-              </motion.div>
-            </div>
-
-            {/* AI Text Insight & Recommendation */}
-            <div className="flex-1 text-left space-y-2.5">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold">
-                {t("dashboard.aiAssistant")}
+                  <img
+                    src="/maskot.jpeg"
+                    alt="Liko Asisten AI"
+                    className="w-full h-full object-cover object-top"
+                  />
+                </motion.div>
               </div>
 
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground font-heading">
-                {s.totalLinks === 0
-                  ? t("dashboard.aiEmptyTitle")
-                  : uncatCount > 0
-                    ? t("dashboard.aiUncatTitle", { count: uncatCount })
-                    : t("dashboard.aiOrganizedTitle")}
-              </h3>
+              {/* AI Text Insight & Recommendation */}
+              <div className="flex-1 text-center sm:text-left space-y-2 max-w-sm">
+                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold">
+                  {t("dashboard.aiAssistant")}
+                </div>
 
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
-                {s.totalLinks === 0
-                  ? t("dashboard.aiEmptyDesc")
-                  : uncatCount > 0
-                    ? t("dashboard.aiUncatDesc", { count: uncatCount })
-                    : t("dashboard.aiOrganizedDesc")}
-              </p>
-            </div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground font-heading leading-tight">
+                  {s.totalLinks === 0
+                    ? t("dashboard.aiEmptyTitle")
+                    : uncatCount > 0
+                      ? t("dashboard.aiUncatTitle", { count: uncatCount })
+                      : t("dashboard.aiOrganizedTitle")}
+                </h3>
 
-            {/* AI Action CTA Button */}
-            <div className="flex-shrink-0 w-full lg:w-auto">
-              <Button
-                size="lg"
-                onClick={handleOrganize}
-                disabled={isOrganizing || s.totalLinks === 0}
-                className="w-full lg:w-auto h-8.5 sm:h-11 px-3.5 sm:px-6 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-1.5 sm:gap-2 shadow-md bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer"
-              >
-                {isOrganizing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                    <span>{t("dashboard.organizingBtn")}</span>
-                  </>
-                ) : s.totalLinks === 0 ? (
-                  <span>{t("dashboard.noLinksBtn")}</span>
-                ) : (
-                  <>
-                    <Zap className="h-4 w-4 shrink-0" />
-                    <span>{t("dashboard.aiOrganizeBtn")}</span>
-                  </>
-                )}
-              </Button>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed line-clamp-2">
+                  {s.totalLinks === 0
+                    ? t("dashboard.aiEmptyDesc")
+                    : uncatCount > 0
+                      ? t("dashboard.aiUncatDesc", { count: uncatCount })
+                      : t("dashboard.aiOrganizedDesc")}
+                </p>
+
+                <div className="pt-1">
+                  <Button
+                    size="lg"
+                    onClick={handleOrganize}
+                    disabled={isOrganizing || s.totalLinks === 0}
+                    className="w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-5 rounded-xl text-xs sm:text-sm font-semibold gap-2 shadow-md bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer active:scale-95 transition-transform"
+                  >
+                    {isOrganizing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                        <span>{t("dashboard.organizingBtn")}</span>
+                      </>
+                    ) : s.totalLinks === 0 ? (
+                      <span>{t("dashboard.noLinksBtn")}</span>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4 shrink-0" />
+                        <span>{t("dashboard.aiOrganizeBtn")}</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -601,103 +524,6 @@ export function DashboardPage({
             <button
               onClick={() => setOrganizeResult(null)}
               className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-95 shadow-md cursor-pointer"
-            >
-              {t("common.close")}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* DIALOG 2: DETAIL KLUSTER DATA MODAL                                       */}
-      {/* ========================================================================= */}
-      <Dialog open={clusterDialogOpen} onOpenChange={setClusterDialogOpen}>
-        <DialogContent className="border-primary/20 sm:max-w-2xl md:max-w-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl rounded-3xl max-h-[85vh] flex flex-col space-y-5">
-          <DialogHeader className="pb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-sm">
-                <PieChart className="h-5 w-5" />
-              </div>
-              <div className="text-left">
-                <DialogTitle className="text-xl sm:text-2xl font-black font-heading text-foreground">
-                  {t("dashboard.clusterModalTitle")}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  {t("dashboard.clusterModalDesc", { total: s.totalLinks, categories: s.categoryStats.length })}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          {/* Full Distribution Segment Bar */}
-          <div className="space-y-1.5 pt-2">
-            <div className="h-3.5 rounded-full bg-muted/70 overflow-hidden flex shadow-inner p-[1px] gap-0.5">
-              {s.categoryStats.map((cat) => {
-                const pct = s.totalLinks > 0 ? (cat.count / s.totalLinks) * 100 : 0;
-                const color = getCategoryColor(cat.category);
-                return (
-                  <div
-                    key={cat.category}
-                    className="h-full hover:opacity-90 transition-opacity rounded-xs cursor-pointer"
-                    style={{ width: `${pct}%`, backgroundColor: color }}
-                    title={`${cat.category}: ${cat.count} tautan (${pct.toFixed(1)}%)`}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Scrollable Category List */}
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[340px] mt-4">
-            {s.categoryStats.map((cat, i) => {
-              const pct = s.totalLinks > 0 ? (cat.count / s.totalLinks) * 100 : 0;
-              const color = getCategoryColor(cat.category);
-              return (
-                <Link
-                  key={cat.category}
-                  href={`/links?category=${encodeURIComponent(cat.category)}`}
-                  onClick={() => setClusterDialogOpen(false)}
-                  className="p-3.5 rounded-2xl bg-foreground/[0.03] hover:bg-foreground/[0.07] border border-border/50 hover:border-primary/40 transition-all space-y-2 group block shadow-xs"
-                >
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                      {cat.category}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-foreground">
-                        {cat.count} {locale === "en" ? (cat.count === 1 ? "link" : "links") : "tautan"}
-                      </span>
-                      <span className="text-[11px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-                        {pct.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="h-1.5 rounded-full bg-muted/80 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, delay: i * 0.04, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <DialogFooter className="pt-4 border-t border-border/40 flex sm:justify-between items-center gap-3">
-            <Link
-              href="/links"
-              onClick={() => setClusterDialogOpen(false)}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              {locale === "en" ? "Open All Links" : "Buka Semua Tautan"} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <button
-              onClick={() => setClusterDialogOpen(false)}
-              className="px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground font-bold text-xs transition-colors cursor-pointer"
             >
               {t("common.close")}
             </button>
