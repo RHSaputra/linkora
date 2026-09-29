@@ -1062,6 +1062,17 @@
     box-sizing: border-box;
   }
 
+  /* Comprehensive Mobile Button & Interactive Elements Scaling */
+  :is(button, .btn, [role="button"]):not(.no-mobile-shrink) {
+    letter-spacing: normal;
+  }
+
+  /* Modal & Dialog Footers on Mobile: Keep action buttons compact */
+  [role="dialog"] button,
+  [role="dialog"] [role="button"] {
+    font-size: 0.8125rem;
+  }
+
   /* Card containers fit 100% width on HP without forcing desktop fixed widths */
   .glass-panel, .card, [class*="rounded-2xl"], [class*="rounded-3xl"] {
     max-width: 100%;

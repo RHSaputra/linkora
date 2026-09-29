@@ -88,7 +88,7 @@ function LoginFormContent() {
         type="button"
         disabled={googleLoading || loading}
         onClick={handleGoogleSignIn}
-        className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border rounded-xl shadow-xs text-sm font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 active:scale-95 transition-all duration-150 mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+        className="w-full flex items-center justify-center gap-3 py-2.5 sm:py-3 px-4 border border-border rounded-xl shadow-xs text-xs sm:text-sm font-semibold text-foreground bg-foreground/5 hover:bg-foreground/10 active:scale-95 transition-all duration-150 mb-6 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -178,7 +178,7 @@ function LoginFormContent() {
         <button
           type="submit"
           disabled={loading || googleLoading}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
+          className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-xl shadow-md text-xs sm:text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (locale === "en" ? "Sign In" : "Masuk ke Akun")}
         </button>

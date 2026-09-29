@@ -168,7 +168,7 @@ export function AIRoadmapGeneratorDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isGenerating}
-                className="h-10 px-4 text-xs font-semibold cursor-pointer"
+                className="h-8.5 sm:h-10 px-3.5 sm:px-4 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl cursor-pointer"
               >
                 {t("common.cancel")}
               </Button>
@@ -178,11 +178,11 @@ export function AIRoadmapGeneratorDialog({
                 <Button
                   type="submit"
                   disabled={!topic.trim() || isGenerating}
-                  className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-10 px-6 rounded-full cursor-pointer shadow-xs text-xs sm:text-sm border-0 transition-colors flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
+                  className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-8.5 sm:h-10 px-4 sm:px-6 rounded-full cursor-pointer shadow-xs text-xs sm:text-sm border-0 transition-colors flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-1.5" />
                       <span>{locale === "en" ? "Designing Workflow..." : "Merancang Alur..."}</span>
                     </>
                   ) : (

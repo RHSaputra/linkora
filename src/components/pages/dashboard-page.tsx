@@ -364,7 +364,7 @@ export function DashboardPage({
                 size="lg"
                 onClick={handleOrganize}
                 disabled={isOrganizing || s.totalLinks === 0}
-                className="w-full lg:w-auto h-11 px-6 rounded-xl font-semibold gap-2 shadow-md bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer"
+                className="w-full lg:w-auto h-8.5 sm:h-11 px-3.5 sm:px-6 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-1.5 sm:gap-2 shadow-md bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer"
               >
                 {isOrganizing ? (
                   <>

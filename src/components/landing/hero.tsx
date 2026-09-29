@@ -252,15 +252,15 @@ export function Hero() {
                 {t("landing.heroDesc")}
               </p>
 
-              <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-4 pt-1 sm:pt-2 w-full xs:w-auto justify-center md:justify-start">
-                <Button size="lg" className="w-full xs:w-auto rounded-full h-11 sm:h-12 lg:h-14 px-6 sm:px-8 text-xs xs:text-sm sm:text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 cursor-pointer font-bold shrink-0 inline-flex items-center justify-center" asChild>
+              <div className="flex flex-col xs:flex-row gap-2 sm:gap-4 pt-1 sm:pt-2 w-full xs:w-auto justify-center md:justify-start">
+                <Button size="lg" className="w-full xs:w-auto rounded-full h-9.5 xs:h-10 sm:h-12 lg:h-14 px-4 xs:px-5 sm:px-8 text-xs sm:text-base bg-primary hover:bg-primary-hover text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 cursor-pointer font-bold shrink-0 inline-flex items-center justify-center" asChild>
                   <Link href="/dashboard">
-                    {t("landing.heroCta")} <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                    {t("landing.heroCta")} <ArrowRight className="ml-1.5 sm:ml-2 w-3.5 h-3.5 sm:w-5 sm:h-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full xs:w-auto rounded-full h-11 sm:h-12 lg:h-14 px-6 sm:px-8 text-xs xs:text-sm sm:text-base glass-panel hover:bg-white/5 transition-all cursor-pointer font-medium shrink-0 inline-flex items-center justify-center" asChild>
+                <Button size="lg" variant="outline" className="w-full xs:w-auto rounded-full h-9.5 xs:h-10 sm:h-12 lg:h-14 px-4 xs:px-5 sm:px-8 text-xs sm:text-base glass-panel hover:bg-white/5 transition-all cursor-pointer font-medium shrink-0 inline-flex items-center justify-center" asChild>
                   <Link href="#demo">
-                    <Play className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> {t("landing.heroDemo")}
+                    <Play className="mr-1.5 sm:mr-2 w-3.5 h-3.5 sm:w-5 sm:h-5" /> {t("landing.heroDemo")}
                   </Link>
                 </Button>
               </div>

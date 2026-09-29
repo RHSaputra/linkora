@@ -149,7 +149,7 @@ export function Pricing() {
               
               <Link 
                 href="/register" 
-                className={`w-full flex items-center justify-center rounded-full py-3 px-6 text-sm font-semibold transition-all duration-150 mb-8 active:scale-95 touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`w-full flex items-center justify-center rounded-full py-2 sm:py-3 px-4 sm:px-6 text-xs sm:text-sm font-semibold transition-all duration-150 mb-8 active:scale-95 touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   plan.isPopular 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:scale-105" 
                   : "bg-foreground/5 text-foreground hover:bg-foreground/10"

@@ -391,7 +391,7 @@ export function NotesPage() {
               placeholder={t("notes.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 pr-8 rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-base sm:text-sm h-11 w-full"
+              className="pl-10 pr-8 rounded-lg sm:rounded-xl glass-panel border-border/50 focus-visible:ring-primary/40 text-xs sm:text-sm h-8.5 sm:h-11 w-full"
             />
             {search && (
               <button
@@ -406,9 +406,9 @@ export function NotesPage() {
           <Button
             onClick={() => createNote()}
             disabled={creatingNote}
-            className="gap-2 rounded-xl shadow-md h-11 px-5 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0"
+            className="gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl shadow-md h-8.5 sm:h-11 px-3.5 sm:px-5 text-xs sm:text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{creatingNote ? t("common.loading") : t("notes.newNoteBtn")}</span>
           </Button>
         </div>

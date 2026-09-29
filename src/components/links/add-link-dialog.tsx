@@ -656,7 +656,7 @@ export function AddLinkDialog({
                     value={url}
                     onChange={(e) => handleUrlPaste(e.target.value)}
                     required
-                    className="h-10 sm:h-9 text-base sm:text-sm font-mono"
+                    className="h-8.5 sm:h-9 text-xs sm:text-sm font-mono"
                   />
                   {fetchingMeta && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -669,7 +669,7 @@ export function AddLinkDialog({
                     type="button"
                     disabled={!url || isAnalyzing || fetchingMeta || isDuplicate}
                     onClick={handleAnalyze}
-                    className={`w-full sm:w-auto h-10 sm:h-9 relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
+                    className={`w-full sm:w-auto h-8.5 sm:h-9 text-xs sm:text-sm relative font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed ${
                       url && !isAnalyzing && !fetchingMeta && !isDuplicate
                         ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md active:scale-95"
                         : "bg-secondary text-secondary-foreground opacity-60"

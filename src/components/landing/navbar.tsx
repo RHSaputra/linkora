@@ -183,15 +183,15 @@ export function Navbar() {
               <ThemeToggle />
             </div>
             {session ? (
-              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20">
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-xs sm:text-sm shadow-md shadow-primary/20">
                 {t("landing.openDashboard")}
               </Link>
             ) : (
               <div className="flex flex-col gap-2">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 rounded-full border border-border text-foreground font-semibold">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2 rounded-full border border-border text-foreground font-semibold text-xs sm:text-sm">
                   {t("nav.login")}
                 </Link>
-                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20">
+                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-xs sm:text-sm shadow-md shadow-primary/20">
                   {t("landing.openDashboard")}
                 </Link>
               </div>

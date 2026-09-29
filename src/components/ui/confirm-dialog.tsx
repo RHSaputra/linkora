@@ -54,7 +54,7 @@ export function ConfirmDialog({
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto rounded-xl font-semibold text-xs h-9.5 px-4 cursor-pointer"
+            className="w-full sm:w-auto rounded-lg sm:rounded-xl font-semibold text-xs h-8.5 sm:h-9.5 px-3.5 sm:px-4 cursor-pointer"
           >
             {cancelText}
           </Button>
@@ -66,7 +66,7 @@ export function ConfirmDialog({
               onConfirm();
               onOpenChange(false);
             }}
-            className="w-full sm:w-auto rounded-xl font-semibold text-xs h-9.5 px-5 shadow-sm cursor-pointer"
+            className="w-full sm:w-auto rounded-lg sm:rounded-xl font-semibold text-xs h-8.5 sm:h-9.5 px-4 sm:px-5 shadow-sm cursor-pointer"
           >
             {confirmText}
           </Button>

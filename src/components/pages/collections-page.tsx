@@ -349,17 +349,17 @@ export function CollectionsPage({
         {activeTab === "links" ? (
           <Button
             onClick={handleOpenCreateLinkCollection}
-            className="self-start sm:self-auto gap-2 rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-4"
+            className="self-start sm:self-auto gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-primary hover:bg-primary/90 text-primary-foreground h-8.5 sm:h-10 px-3 sm:px-4"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>{t("collections.createBtn")}</span>
           </Button>
         ) : (
           <Button
             onClick={() => handleOpenNoteFolderModal()}
-            className="self-start sm:self-auto gap-2 rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-cyan-500 hover:bg-cyan-600 text-white h-10 px-4"
+            className="self-start sm:self-auto gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl text-xs font-semibold cursor-pointer shadow-md bg-cyan-500 hover:bg-cyan-600 text-white h-8.5 sm:h-10 px-3 sm:px-4"
           >
-            <FolderPlus className="h-4 w-4" />
+            <FolderPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>{t("collections.createNoteCollectionBtn")}</span>
           </Button>
         )}
