@@ -26,8 +26,18 @@ interface TooltipPos {
 
 const SPOTLIGHT_PADDING = 8;
 const TOOLTIP_GAP = 12;
-const TOOLTIP_WIDTH = 320;
-const TOOLTIP_WIDTH_MOBILE = 280;
+const TOOLTIP_WIDTH = 340;
+const TOOLTIP_WIDTH_MOBILE = 290;
+
+const SIDEBAR_TARGETS = new Set([
+  "dashboard",
+  "links",
+  "collections",
+  "notes",
+  "roadmaps",
+  "reminders",
+  "profile",
+]);
 
 function getTooltipPosition(
   rect: TargetRect,
@@ -36,62 +46,66 @@ function getTooltipPosition(
   viewportHeight: number,
   targetId?: string
 ): TooltipPos {
-  const tooltipW =
-    viewportWidth < 640 ? TOOLTIP_WIDTH_MOBILE : TOOLTIP_WIDTH;
-  const tooltipEstH = 300;
+  const tooltipW = viewportWidth < 640 ? TOOLTIP_WIDTH_MOBILE : TOOLTIP_WIDTH;
+  const tooltipEstH = 230; // Realistic height of tour card
 
-  // Extra top offset for bottom-anchored targets like liko-chat so card is raised high above logo
-  const extraTopOffset = targetId === "liko-chat" ? 56 : 0;
-
-  // Try preferred placement first, then fallback
-  const placements: Array<"top" | "bottom" | "left" | "right"> = [
-    preferredPlacement,
-    preferredPlacement === "top" ? "right" : "top",
-    preferredPlacement === "bottom" ? "top" : "bottom",
-    "left",
-  ];
-
-  for (const p of placements) {
-    let top = 0;
-    let left = 0;
-
-    switch (p) {
-      case "right":
-        top = rect.top + rect.height / 2 - tooltipEstH / 2;
-        left = rect.left + rect.width + SPOTLIGHT_PADDING + TOOLTIP_GAP;
-        break;
-      case "left":
-        top = rect.top + rect.height / 2 - tooltipEstH / 2;
-        left = rect.left - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipW;
-        break;
-      case "bottom":
-        top = rect.top + rect.height + SPOTLIGHT_PADDING + TOOLTIP_GAP;
-        left = rect.left + rect.width / 2 - tooltipW / 2;
-        break;
-      case "top":
-        top = rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH - extraTopOffset;
-        left = rect.left + rect.width / 2 - tooltipW / 2;
-        break;
-    }
-
-    // Clamp left to viewport
-    left = Math.max(12, Math.min(left, viewportWidth - tooltipW - 12));
-
-    // Clamp top to viewport (for liko-chat, enforce top stays above target with clearance)
-    if (p === "top" && targetId === "liko-chat") {
-      top = Math.max(12, rect.top - tooltipEstH - SPOTLIGHT_PADDING - TOOLTIP_GAP - extraTopOffset);
-    } else {
-      top = Math.max(12, Math.min(top, viewportHeight - tooltipEstH - 12));
-    }
-
-    return { top, left, placement: p };
+  // On small mobile screens (< 640px), prefer top/bottom over right/left to avoid side truncation
+  let placement = preferredPlacement;
+  if (viewportWidth < 640 && (placement === "right" || placement === "left")) {
+    placement = rect.top > viewportHeight / 2 ? "top" : "bottom";
   }
 
-  return {
-    top: Math.max(12, rect.top - tooltipEstH - 12),
-    left: Math.max(12, Math.min(rect.left + rect.width / 2 - tooltipW / 2, viewportWidth - tooltipW - 12)),
-    placement: preferredPlacement,
-  };
+  let top = 0;
+  let left = 0;
+
+  switch (placement) {
+    case "right":
+      top = rect.top - 8;
+      left = rect.left + rect.width + SPOTLIGHT_PADDING + TOOLTIP_GAP;
+      // If right placement overflows right boundary, fallback to top/bottom
+      if (left + tooltipW > viewportWidth - 16) {
+        placement = rect.top > viewportHeight / 2 ? "top" : "bottom";
+        top = placement === "top"
+          ? rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH
+          : rect.top + rect.height + SPOTLIGHT_PADDING + TOOLTIP_GAP;
+        left = rect.left + rect.width / 2 - tooltipW / 2;
+      }
+      break;
+
+    case "left":
+      top = rect.top - 8;
+      left = rect.left - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipW;
+      if (left < 16) {
+        placement = rect.top > viewportHeight / 2 ? "top" : "bottom";
+        top = placement === "top"
+          ? rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH
+          : rect.top + rect.height + SPOTLIGHT_PADDING + TOOLTIP_GAP;
+        left = rect.left + rect.width / 2 - tooltipW / 2;
+      }
+      break;
+
+    case "bottom":
+      top = rect.top + rect.height + SPOTLIGHT_PADDING + TOOLTIP_GAP;
+      left = rect.left + rect.width / 2 - tooltipW / 2;
+      break;
+
+    case "top":
+      const extraTopOffset = (targetId === "liko-chat" || targetId === "profile") ? 64 : 20;
+      top = rect.top - SPOTLIGHT_PADDING - TOOLTIP_GAP - tooltipEstH - extraTopOffset;
+      left = rect.left + rect.width / 2 - tooltipW / 2;
+      break;
+  }
+
+  // Clamp safely within viewport bounds
+  left = Math.max(16, Math.min(left, viewportWidth - tooltipW - 16));
+  // For top placement, only clamp against going off the top edge, never push down over target
+  if (placement === "top") {
+    top = Math.max(16, top);
+  } else {
+    top = Math.max(16, Math.min(top, viewportHeight - tooltipEstH - 16));
+  }
+
+  return { top, left, placement };
 }
 
 function CompletionScreen({
@@ -218,12 +232,40 @@ export function ProductTour() {
     }
   }, [currentStep, phase]);
 
+  // Mobile sidebar auto-open effect for sidebar targets
+  useEffect(() => {
+    if (phase !== "touring" || !currentStep) {
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        window.dispatchEvent(
+          new CustomEvent("linkora_open_mobile_sidebar", { detail: { open: false } })
+        );
+      }
+      return;
+    }
+
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+    const isSidebarStep = SIDEBAR_TARGETS.has(currentStep.targetId);
+
+    if (isMobile) {
+      if (isSidebarStep) {
+        window.dispatchEvent(
+          new CustomEvent("linkora_open_mobile_sidebar", { detail: { open: true } })
+        );
+      } else {
+        window.dispatchEvent(
+          new CustomEvent("linkora_open_mobile_sidebar", { detail: { open: false } })
+        );
+      }
+    }
+  }, [phase, currentStep]);
+
   // Measure on step change and window resize
   useEffect(() => {
     if (phase !== "touring") return;
 
-    // Small delay to let any navigation settle
-    const timer = setTimeout(measureTarget, 150);
+    // Small delay to let any navigation/drawer slide animation settle
+    const timer = setTimeout(measureTarget, 200);
+    const timer2 = setTimeout(measureTarget, 350);
 
     const handleResize = () => measureTarget();
     window.addEventListener("resize", handleResize);
@@ -241,6 +283,7 @@ export function ProductTour() {
 
     return () => {
       clearTimeout(timer);
+      clearTimeout(timer2);
       window.removeEventListener("resize", handleResize);
       observerRef.current?.disconnect();
     };
@@ -447,46 +490,55 @@ export function ProductTour() {
               </div>
 
               {/* Navigation buttons */}
-              <div className="flex items-center gap-2">
-                <button
+              <div className="flex items-center justify-between gap-2 pt-3 mt-4 border-t border-border/40">
+                <motion.button
                   type="button"
                   onClick={prevStep}
                   disabled={!hasPrev}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-foreground border border-border hover:bg-muted/50 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                  whileHover={hasPrev ? { scale: 1.02 } : {}}
+                  whileTap={hasPrev ? { scale: 0.97 } : {}}
+                  transition={{ duration: 0.15 }}
+                  className="group flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-foreground bg-muted/70 hover:bg-muted border border-border/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer select-none shrink-0"
                   aria-label={t("onboarding.prev")}
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  {t("onboarding.prev")}
-                </button>
+                  <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+                  <span>{t("onboarding.prev")}</span>
+                </motion.button>
 
                 {currentStepPosition < totalAvailableSteps && (
-                  <button
+                  <motion.button
                     type="button"
                     onClick={requestSkip}
-                    className="px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="px-2.5 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer select-none shrink-0"
                   >
                     {t("onboarding.skip")}
-                  </button>
+                  </motion.button>
                 )}
 
-                <button
+                <motion.button
                   type="button"
                   onClick={nextStep}
-                  className="ml-auto flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation select-none"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="group flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-primary via-indigo-600 to-cyan-600 hover:from-primary/90 hover:to-cyan-500 text-white shadow-md shadow-primary/20 hover:shadow-primary/35 transition-all cursor-pointer select-none shrink-0 whitespace-nowrap"
                   aria-label={currentStepPosition === totalAvailableSteps ? t("onboarding.finish") : t("onboarding.next")}
                 >
                   {currentStepPosition === totalAvailableSteps ? (
                     <>
-                      {t("onboarding.finish")}
-                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>{t("onboarding.finish")}</span>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300 shrink-0 transition-transform duration-200 group-hover:scale-110" />
                     </>
                   ) : (
                     <>
-                      {t("onboarding.next")}
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <span>{t("onboarding.next")}</span>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </>
                   )}
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>

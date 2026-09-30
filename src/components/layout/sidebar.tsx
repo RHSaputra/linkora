@@ -552,6 +552,19 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
   const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
 
+  useEffect(() => {
+    const handleToggleMobileSidebar = (e: Event) => {
+      const detail = (e as CustomEvent<{ open: boolean }>).detail;
+      if (detail && typeof detail.open === "boolean") {
+        setMobileOpen(detail.open);
+      }
+    };
+    window.addEventListener("linkora_open_mobile_sidebar", handleToggleMobileSidebar);
+    return () => {
+      window.removeEventListener("linkora_open_mobile_sidebar", handleToggleMobileSidebar);
+    };
+  }, []);
+
   const [profileData, setProfileData] = useState<{ name?: string; image?: string | null } | null>(() => {
     if (typeof window !== "undefined") {
       try {
