@@ -437,7 +437,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               <Label className="text-xs font-semibold text-muted-foreground">
                 {t("profile.avatarTabPreset")}
               </Label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 pt-1">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 p-2 -m-1">
                 {AVATARS.map((preset) => {
                   const isSelected = chosenPresetUrl === preset.url;
                   return (
@@ -448,10 +448,10 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                         setSelectedAvatar(preset.url);
                         setChosenPresetUrl(preset.url);
                       }}
-                      className={`group relative rounded-2xl overflow-hidden border-2 transition-all p-1 flex flex-col items-center gap-1 bg-white dark:bg-slate-800/90 hover:bg-primary/5 cursor-pointer shadow-2xs ${
+                      className={`group relative rounded-2xl border-2 transition-all p-1 flex flex-col items-center gap-1 bg-white dark:bg-slate-800/90 hover:bg-primary/5 cursor-pointer shadow-2xs ${
                         isSelected
-                          ? "border-primary scale-105 shadow-md ring-2 ring-primary/25"
-                          : "border-border/60 hover:border-primary/50"
+                          ? "border-primary scale-105 shadow-md ring-2 ring-primary/30 z-10 relative"
+                          : "border-border/60 hover:border-primary/50 z-0 relative hover:scale-[1.02]"
                       }`}
                       title={preset.name}
                     >

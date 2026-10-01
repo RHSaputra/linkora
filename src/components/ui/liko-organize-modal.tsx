@@ -141,8 +141,8 @@ export function LikoOrganizeModal() {
 
       if (res.ok) {
         const data = await res.json();
-        const processed = data.processed || data.changes?.length || 1;
-        const assignedCategory = data.changes?.[0]?.category || "General";
+        const processed = typeof data.processed === "number" ? data.processed : (data.changes?.length || 0);
+        const assignedCategory = data.changes?.[0]?.category || null;
 
         setResultData({
           message: data.message || (isEn ? "Organized Successfully!" : "Berhasil Dirapikan!"),
@@ -157,7 +157,9 @@ export function LikoOrganizeModal() {
         // PHASE 8: Victory State Transition
         setTimeout(() => {
           setPhase("success");
-          dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
+          if (processed > 0) {
+            dispatchRefresh(["links", "dashboard", "collections", "tags"], false);
+          }
         }, 700);
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -293,10 +295,17 @@ export function LikoOrganizeModal() {
                 <div className="mt-4 space-y-1">
                   <h3 className="text-xl sm:text-2xl font-bold font-heading text-white tracking-tight flex items-center justify-center gap-2">
                     {phase === "success" ? (
-                      <span className="flex items-center gap-2 text-emerald-400">
-                        <Check className="w-6 h-6 stroke-[3]" />
-                        <span>{isEn ? "Workspace Organized" : "Berhasil Dirapikan"}</span>
-                      </span>
+                      resultData?.processed && resultData.processed > 0 ? (
+                        <span className="flex items-center gap-2 text-emerald-400">
+                          <Check className="w-6 h-6 stroke-[3]" />
+                          <span>{isEn ? "Workspace Organized" : "Berhasil Dirapikan"}</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2 text-amber-400">
+                          <Check className="w-6 h-6 stroke-[3]" />
+                          <span>{isEn ? "Already Organized" : "Semua Tautan Sudah Rapi"}</span>
+                        </span>
+                      )
                     ) : phase === "error" ? (
                       <span className="text-rose-400">{isEn ? "Organize Failed" : "Gagal Merapikan"}</span>
                     ) : (
@@ -309,7 +318,9 @@ export function LikoOrganizeModal() {
 
                   <p className="text-xs sm:text-sm text-slate-300 max-w-xs mx-auto font-normal leading-relaxed">
                     {phase === "success"
-                      ? resultData?.message || (isEn ? "Links grouped into optimal categories." : "Tautan dikelompokkan ke kategori terbaik.")
+                      ? resultData?.processed && resultData.processed > 0
+                        ? resultData?.message || (isEn ? "Links grouped into optimal categories." : "Tautan dikelompokkan ke kategori terbaik.")
+                        : (isEn ? "No links need organizing at this moment." : "Tidak ada tautan yang perlu dirapikan saat ini.")
                       : phase === "error"
                         ? resultData?.error || (isEn ? "Please try again later." : "Silakan coba beberapa saat lagi.")
                         : (isEn ? "Organizing and categorizing your links..." : "Menganalisis dan mengelompokkan tautan Anda...")}
@@ -359,7 +370,7 @@ export function LikoOrganizeModal() {
               )}
 
               {/* ========================================================================= */}
-              {/* PHASE 8: CLEAN VICTORY STATE & RESULTS BUTTON                             */}
+              {/* PHASE 8: CLEAN VICTORY / EMPTY STATE & RESULTS ACTION                     */}
               {/* ========================================================================= */}
               {phase === "success" && (
                 <motion.div
@@ -368,32 +379,82 @@ export function LikoOrganizeModal() {
                   transition={{ duration: 0.5 }}
                   className="space-y-4 mb-1"
                 >
-                  <div className="bg-slate-950/90 border border-slate-800 p-4 rounded-2xl text-left space-y-2.5 shadow-inner">
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-slate-300">
-                      <span>{isEn ? "Total links organized:" : "Total tautan dirapikan:"}</span>
-                      <span className="text-sm font-bold text-white font-mono bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-700">
-                        {resultData?.processed || 1} {isEn ? "links" : "tautan"}
-                      </span>
-                    </div>
+                  {resultData?.processed && resultData.processed > 0 ? (
+                    <>
+                      <div className="bg-slate-950/90 border border-slate-800 p-4 rounded-2xl text-left space-y-3 shadow-inner">
+                        <div className="flex items-center justify-between text-xs sm:text-sm text-slate-300">
+                          <span>{isEn ? "Total links organized:" : "Total tautan dirapikan:"}</span>
+                          <span className="text-sm font-bold text-emerald-400 font-mono bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-700">
+                            {resultData.processed} {isEn ? "links" : "tautan"}
+                          </span>
+                        </div>
 
-                    {resultData?.assignedCategory && (
-                      <div className="flex items-center justify-between text-xs sm:text-sm text-slate-300 pt-2 border-t border-slate-800/80">
-                        <span>{isEn ? "Main Category:" : "Kategori Utama:"}</span>
-                        <span className="font-bold text-primary bg-primary/10 border border-primary/30 px-3 py-0.5 rounded-full">
-                          {resultData.assignedCategory}
-                        </span>
+                        {resultData?.assignedCategory && (
+                          <div className="flex items-center justify-between text-xs sm:text-sm text-slate-300 pt-2 border-t border-slate-800/80">
+                            <span>{isEn ? "Main Category:" : "Kategori Utama:"}</span>
+                            <span className="font-bold text-primary bg-primary/10 border border-primary/30 px-3 py-0.5 rounded-full">
+                              {resultData.assignedCategory}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* LIST OF ACTUAL LINKS ORGANIZED */}
+                        {resultData?.changes && resultData.changes.length > 0 && (
+                          <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                            <span className="text-xs font-semibold text-slate-400 block">
+                              {isEn ? "Organized Links Details:" : "Detail Tautan Dirapikan:"}
+                            </span>
+                            <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 text-left custom-scrollbar">
+                              {resultData.changes.map((item: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs"
+                                >
+                                  <span className="font-medium text-slate-200 truncate flex-1" title={item.title}>
+                                    {item.title || (isEn ? "Untitled Link" : "Tautan Tanpa Judul")}
+                                  </span>
+                                  <span className="text-[10px] font-bold text-primary bg-primary/15 border border-primary/30 px-2 py-0.5 rounded-md shrink-0">
+                                    {item.category}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {/* SHARP CLEAN ACTION BUTTON */}
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="w-full h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span>{isEn ? "Awesome, Show Results!" : "Hebat, Lihat Hasilnya!"}</span>
-                  </button>
+                      {/* SHARP CLEAN ACTION BUTTON */}
+                      <button
+                        type="button"
+                        onClick={handleClose}
+                        className="w-full h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span>{isEn ? "Awesome, Show Results!" : "Hebat, Lihat Hasilnya!"}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* NO LINKS NEED ORGANIZING STATE */}
+                      <div className="bg-slate-950/90 border border-slate-800 p-4.5 rounded-2xl text-center space-y-2 shadow-inner">
+                        <p className="text-xs sm:text-sm text-slate-200 font-semibold">
+                          {isEn ? "No links need organizing right now." : "Tidak ada tautan yang perlu dirapikan saat ini."}
+                        </p>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          {isEn
+                            ? "All your links already have specific categories."
+                            : "Semua tautan Anda sudah memiliki kategori spesifik."}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleClose}
+                        className="w-full h-11 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-slate-200 font-bold text-sm flex items-center justify-center transition-all duration-150 cursor-pointer"
+                      >
+                        <span>{isEn ? "Got It" : "Mengerti"}</span>
+                      </button>
+                    </>
+                  )}
                 </motion.div>
               )}
 

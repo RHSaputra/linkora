@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         message: isEn ? "No links need organizing right now." : "Tidak ada tautan yang perlu dirapikan saat ini.",
         processed: 0,
+        changes: [],
       });
     }
 
