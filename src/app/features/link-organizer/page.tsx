@@ -101,7 +101,7 @@ export default function LinkOrganizerFeaturePage() {
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all cursor-pointer"
           >
-            <span>Mulai Gunakan <LinkorianText /></span>
+            <span>Mulai Gunakan <LinkorianText onButton /></span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

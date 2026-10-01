@@ -310,18 +310,18 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
             </button>
           </div>
 
-          <div className="relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden cursor-pointer shadow-xs transition-all duration-300 hover:shadow-primary/25 active:scale-95 shrink-0">
-            <div className="absolute inset-[-300%] aspect-square m-auto bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0%,#38bdf8_25%,#a855f7_50%,#ec4899_75%,#2563eb_100%)] animate-[spin_3s_linear_infinite]" />
-            <Button
-              onClick={() => {
-                if (requireAuth(locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI", locale === "en" ? "Sign in or sign up for free to use Liko AI assistant in designing structured workflows." : "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
-                setAiDialogOpen(true);
-              }}
-              className="relative z-10 bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-9 px-4 rounded-full text-xs border-0 transition-colors cursor-pointer flex items-center justify-center whitespace-nowrap focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none select-none"
-            >
-              <span>{locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI"}</span>
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (requireAuth(locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI", locale === "en" ? "Sign in or sign up for free to use Liko AI assistant in designing structured workflows." : "Masuk atau daftar gratis untuk menggunakan asisten Liko AI dalam merancang alur kerja terstruktur.")) return;
+              setAiDialogOpen(true);
+            }}
+            className="p-[2px] rounded-full bg-gradient-to-r from-[#00d8ff] via-[#6366f1] via-[#9333ea] to-[#f43f5e] inline-flex items-center justify-center shrink-0 active:scale-95 transition-transform duration-150 cursor-pointer focus:outline-none group shadow-xs"
+          >
+            <span className="bg-card hover:bg-card/90 active:bg-card text-foreground font-semibold h-9 px-4 rounded-full text-xs transition-colors flex items-center justify-center whitespace-nowrap select-none">
+              {locale === "en" ? "AI Step Suggestions" : "Saran Langkah AI"}
+            </span>
+          </button>
 
           <Button
             onClick={() => setAddNodeDialogOpen(true)}

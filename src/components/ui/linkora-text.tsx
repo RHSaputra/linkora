@@ -4,6 +4,7 @@ export function LinkoraText(props: {
   className?: string; 
   spin?: boolean; 
   spinDuration?: string; 
+  onButton?: boolean;
 }) {
   return <LinkorianText {...props} />;
 }
@@ -11,11 +12,13 @@ export function LinkoraText(props: {
 export function LinkorianText({ 
   className = "", 
   spin = true, 
-  spinDuration = "8s" 
+  spinDuration = "8s",
+  onButton = false
 }: { 
   className?: string; 
   spin?: boolean; 
   spinDuration?: string; 
+  onButton?: boolean;
 }) {
   const gradLeftId = "linkorian-grad-left";
   const gradRightId = "linkorian-grad-right";
@@ -46,8 +49,8 @@ export function LinkorianText({
             </linearGradient>
           </defs>
           
-          {/* White background circle & contrast ring to guarantee high visibility on colored/purple buttons */}
-          <circle cx="50" cy="50" r="46" fill="#ffffff" />
+          {/* White background circle rendered ONLY on colored buttons when onButton={true} */}
+          {onButton && <circle cx="50" cy="50" r="46" fill="#ffffff" />}
           
           <path d="M 30.94 79.35 A 35 35 0 0 1 65.89 18.81" fill="none" stroke={`url(#${gradLeftId})`} strokeWidth="22" strokeLinecap="butt" />
           <path d="M 69.06 20.65 A 35 35 0 0 1 81.19 65.89" fill="none" stroke={`url(#${gradRightId})`} strokeWidth="22" strokeLinecap="butt" />
@@ -59,7 +62,7 @@ export function LinkorianText({
   );
 }
 
-export function FormatBrandText({ text, className = "" }: { text: string; className?: string }) {
+export function FormatBrandText({ text, className = "", onButton = false }: { text: string; className?: string; onButton?: boolean }) {
   if (!text) return null;
 
   const regex = /(Linkorian|Linkora)/gi;
@@ -70,7 +73,7 @@ export function FormatBrandText({ text, className = "" }: { text: string; classN
       {parts.map((part, index) => {
         const lower = part.toLowerCase();
         if (lower === 'linkorian' || lower === 'linkora') {
-          return <LinkorianText key={index} className={className} />;
+          return <LinkorianText key={index} className={className} onButton={onButton} />;
         }
         return part;
       })}
