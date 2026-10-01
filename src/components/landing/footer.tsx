@@ -94,7 +94,7 @@ export function Footer() {
             {/* Interactive Animated Instagram Follow Button */}
             <div className="pt-1 flex justify-center md:justify-start">
               <motion.a
-                href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+                href="https://www.instagram.com/linkorian_new?stkn=OG1lZ2MwaGpybWxm"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.03, y: -1 }}
@@ -111,7 +111,7 @@ export function Footer() {
                   {locale === "en" ? "Follow Us on Instagram" : "Ikuti Kami di Instagram"}
                 </span>
                 <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-pink-500/20 group-hover:bg-white/20 text-pink-500 dark:text-pink-300 group-hover:text-white transition-colors leading-none">
-                  @linkora_new
+                  @linkorian_new
                 </span>
               </motion.a>
             </div>
@@ -245,10 +245,10 @@ export function Footer() {
           </div>
           <div className="flex items-center gap-3">
             <a
-              href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+              href="https://www.instagram.com/linkorian_new?stkn=OG1lZ2MwaGpybWxm"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram @linkora_new"
+              aria-label="Instagram @linkorian_new"
               className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-foreground/5 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:border-transparent active:scale-90 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shadow-xs"
             >
               <Instagram className="w-4 h-4" />

@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Lock, Mail, User, MapPin, KeyRound, ArrowLeft, RefreshCw, CheckCircle2 } from "lucide-react"
 import { useTranslation } from "@/components/providers/i18n-provider"
 import { RecaptchaCheckbox, RecaptchaCheckboxRef } from "@/components/ui/recaptcha-checkbox"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface Region {
   id: string;
@@ -20,6 +21,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
+  const [termsError, setTermsError] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const recaptchaRef = useRef<RecaptchaCheckboxRef>(null)
 
@@ -96,8 +99,15 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!agreeTerms) {
+      setError(locale === "en" ? "You must agree to the Privacy Policy and Terms of Service to proceed." : "Anda harus menyetujui Kebijakan Privasi dan Ketentuan Layanan untuk melanjutkan.")
+      setTermsError(true)
+      return
+    }
+
     setLoading(true)
     setError("")
+    setTermsError(false)
     setResendNotice("")
 
     const formData = new FormData(e.currentTarget)
@@ -210,9 +220,16 @@ export default function RegisterPage() {
   }
 
   const handleGoogleSignIn = async () => {
+    if (!agreeTerms) {
+      setError(locale === "en" ? "You must agree to the Privacy Policy and Terms of Service to proceed." : "Anda harus menyetujui Kebijakan Privasi dan Ketentuan Layanan untuk melanjutkan.")
+      setTermsError(true)
+      return
+    }
+
     try {
       setGoogleLoading(true)
       setError("")
+      setTermsError(false)
       // Clear greeting flag so Liko welcome dialog shows after login
       sessionStorage.removeItem("linkora_session_greeted")
       await signIn("google", { callbackUrl: "/dashboard" })
@@ -288,11 +305,57 @@ export default function RegisterPage() {
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <div className="text-center mb-8">
+                  <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold text-foreground mb-2">
                       {locale === "en" ? "Create a New Account" : "Buat Akun Baru"}
                     </h2>
                     <p className="text-sm text-muted-foreground">{locale === "en" ? "Complete the form below to start your personal digital workspace." : "Lengkapi data di bawah ini untuk memulai ruang kerja digital Anda."}</p>
+                  </div>
+
+                  {/* Terms of Service & Privacy Policy Agreement Checkbox */}
+                  <div className="flex items-start gap-2.5 mb-5 px-1">
+                    <Checkbox
+                      id="agree-terms-top"
+                      checked={agreeTerms}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true
+                        setAgreeTerms(isChecked)
+                        if (isChecked) {
+                          setTermsError(false)
+                          if (error.includes("Kebijakan Privasi") || error.includes("Privacy Policy")) {
+                            setError("")
+                          }
+                        }
+                      }}
+                      className="mt-0.5 rounded-full"
+                    />
+                    <label htmlFor="agree-terms-top" className={`text-xs sm:text-sm leading-relaxed cursor-pointer select-none ${termsError && !agreeTerms ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+                      {locale === "en" ? (
+                        <>
+                          I agree to the{" "}
+                          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                            Terms of Service
+                          </Link>{" "}
+                          and{" "}
+                          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                            Privacy Policy
+                          </Link>
+                          .
+                        </>
+                      ) : (
+                        <>
+                          Saya menyetujui{" "}
+                          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                            Ketentuan Layanan
+                          </Link>{" "}
+                          dan{" "}
+                          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                            Kebijakan Privasi
+                          </Link>
+                          .
+                        </>
+                      )}
+                    </label>
                   </div>
 
                   <button
@@ -492,10 +555,56 @@ export default function RegisterPage() {
                       theme="dark"
                     />
 
+                    {/* Terms & Privacy Agreement Checkbox for Manual Form */}
+                    <div className="flex items-start gap-2.5 mt-4 mb-2 px-1">
+                      <Checkbox
+                        id="agree-terms-bottom"
+                        checked={agreeTerms}
+                        onCheckedChange={(checked) => {
+                          const isChecked = checked === true
+                          setAgreeTerms(isChecked)
+                          if (isChecked) {
+                            setTermsError(false)
+                            if (error.includes("Kebijakan Privasi") || error.includes("Privacy Policy")) {
+                              setError("")
+                            }
+                          }
+                        }}
+                        className="mt-0.5 rounded-full"
+                      />
+                      <label htmlFor="agree-terms-bottom" className={`text-xs sm:text-sm leading-relaxed cursor-pointer select-none ${termsError && !agreeTerms ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+                        {locale === "en" ? (
+                          <>
+                            I agree to the{" "}
+                            <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                              Terms of Service
+                            </Link>{" "}
+                            and{" "}
+                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                              Privacy Policy
+                            </Link>
+                            .
+                          </>
+                        ) : (
+                          <>
+                            Saya menyetujui{" "}
+                            <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                              Ketentuan Layanan
+                            </Link>{" "}
+                            dan{" "}
+                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                              Kebijakan Privasi
+                            </Link>
+                            .
+                          </>
+                        )}
+                      </label>
+                    </div>
+
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full flex justify-center items-center gap-2 py-2.5 sm:py-3.5 px-4 border border-transparent rounded-xl shadow-md text-xs sm:text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-8 cursor-pointer touch-manipulation select-none"
+                      className="w-full flex justify-center items-center gap-2 py-2.5 sm:py-3.5 px-4 border border-transparent rounded-xl shadow-md text-xs sm:text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-4 cursor-pointer touch-manipulation select-none"
                     >
                       {loading ? (
                         <>

@@ -13,31 +13,31 @@ const getProblems = (locale: string) => [
     text: locale === "en" ? "Internship links lost in WhatsApp & personal chats." : "Link magang tersimpan di WhatsApp & chat personal.", 
     icon: MessageCircle, 
     color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30",
-    activeClass: "border-2 border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-950/40 ring-2 ring-blue-500/20 shadow-sm",
+    activeClass: "border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-950/40 ring-2 ring-blue-500/20 shadow-md",
   },
   { 
     text: locale === "en" ? "Scholarship portals buried in browser bookmarks." : "Link beasiswa tersimpan di Telegram / bookmark browser.", 
     icon: Send, 
     color: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/30",
-    activeClass: "border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 ring-2 ring-indigo-500/20 shadow-sm",
+    activeClass: "border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 ring-2 ring-indigo-500/20 shadow-md",
   },
   { 
     text: locale === "en" ? "Competition announcements piled up across hundreds of tabs." : "Link lomba & kompetisi tertumpuk di tab tak terbaca.", 
     icon: Bookmark, 
     color: "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/15 border border-violet-200 dark:border-violet-500/30",
-    activeClass: "border-2 border-violet-500 dark:border-violet-400 bg-violet-50/80 dark:bg-violet-950/40 ring-2 ring-violet-500/20 shadow-sm",
+    activeClass: "border-violet-500 dark:border-violet-400 bg-violet-50/80 dark:bg-violet-950/40 ring-2 ring-violet-500/20 shadow-md",
   },
   { 
     text: locale === "en" ? "Research notes & draft outlines scattered across different apps." : "Catatan tugas & materi riset terpencar di banyak aplikasi.", 
     icon: FileText, 
     color: "text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/15 border border-cyan-200 dark:border-cyan-500/30",
-    activeClass: "border-2 border-cyan-500 dark:border-cyan-400 bg-cyan-50/80 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20 shadow-sm",
+    activeClass: "border-cyan-500 dark:border-cyan-400 bg-cyan-50/80 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20 shadow-md",
   },
   { 
     text: locale === "en" ? "When urgently needed, everything is lost and hard to find." : "Saat dibutuhkan segera, semua hilang dan sulit dicari.", 
     icon: AlertCircle, 
     color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-500/30", 
-    activeClass: "border-2 border-purple-500 dark:border-purple-400 bg-purple-50/80 dark:bg-purple-950/40 ring-2 ring-purple-500/20 shadow-sm",
+    activeClass: "border-purple-500 dark:border-purple-400 bg-purple-50/80 dark:bg-purple-950/40 ring-2 ring-purple-500/20 shadow-md",
   },
 ]
 
@@ -221,25 +221,16 @@ export function PainPoints() {
                 const isActive = activeCardIndex === idx
 
                 return (
-                  <motion.div
+                  <div
                     key={idx}
-                    animate={{
-                      scale: isActive ? 1.035 : 1.0,
-                      y: isActive ? -2 : 0,
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 380,
-                      damping: 26,
-                    }}
-                    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4 border transition-all duration-300 overflow-hidden ${
+                    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4 border transition-colors duration-200 overflow-hidden ${
                       isActive
                         ? problem.activeClass
                         : "border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-sm opacity-90 hover:opacity-100"
                     }`}
                   >
                     {/* Badge Ikon */}
-                    <div className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20 transition-transform duration-300 ${isActive ? "scale-110" : "scale-100"}`}>
+                    <div className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl ${problem.color} flex items-center justify-center shrink-0 shadow-xs z-20`}>
                       <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
@@ -264,7 +255,7 @@ export function PainPoints() {
                     >
                       <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 dark:text-rose-400" />
                     </motion.div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </motion.div>

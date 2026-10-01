@@ -651,13 +651,13 @@ export default function PrivacyPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a
-                  href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+                  href="https://www.instagram.com/linkorian_new?stkn=OG1lZ2MwaGpybWxm"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 text-xs sm:text-sm font-semibold text-foreground transition-all"
                 >
                   <Instagram className="w-4 h-4 text-pink-500" />
-                  <span>Instagram: @linkora_new</span>
+                  <span>Instagram: @linkorian_new</span>
                 </a>
                 <a
                   href="mailto:supportlinkorian@gmail.com"
@@ -735,13 +735,13 @@ export default function PrivacyPage() {
             </Link>
             <span>•</span>
             <a
-              href="https://www.instagram.com/linkora_new?stkn=OG1lZ2MwaGpybWxm"
+              href="https://www.instagram.com/linkorian_new?stkn=OG1lZ2MwaGpybWxm"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-primary transition-colors font-medium flex items-center gap-1"
             >
               <Instagram className="w-3.5 h-3.5 text-pink-500" />
-              <span>@linkora_new</span>
+              <span>@linkorian_new</span>
             </a>
           </div>
         </div>

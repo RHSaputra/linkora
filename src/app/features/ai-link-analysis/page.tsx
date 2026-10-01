@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Cpu, FileText, ArrowRight, BrainCircuit, Search } from "lucide-react";
+import { FileText, ArrowRight, BrainCircuit, Search } from "lucide-react";
 import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
@@ -50,10 +50,6 @@ export default function AiLinkAnalysisFeaturePage() {
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-32 pb-20 w-full">
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
-            <Cpu className="w-4 h-4" />
-            <span>AI URL Analyzer & Link Intelligence</span>
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
             Analisis Konten Web & Artikel Secara Instan dengan AI <LinkorianText />
           </h1>

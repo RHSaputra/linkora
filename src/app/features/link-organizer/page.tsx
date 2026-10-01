@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { Link2, CheckCircle2, ArrowRight, Tag, LayoutGrid } from "lucide-react";
+import { CheckCircle2, ArrowRight, Tag, LayoutGrid } from "lucide-react";
 import { LinkorianText } from "@/components/ui/linkora-text";
 
 export const metadata: Metadata = {
@@ -50,10 +50,6 @@ export default function LinkOrganizerFeaturePage() {
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-32 pb-20 w-full">
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
-            <Link2 className="w-4 h-4" />
-            <span>Smart Link Organizer</span>
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight mb-6 leading-tight">
             Pengorganisasi Tautan Terbaik untuk Menyimpan & Mengelompokkan URL di <LinkorianText />
           </h1>
