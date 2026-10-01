@@ -116,7 +116,7 @@ const getSearchExamples = (locale: string) => [
     categoryColor: "bg-pink-500/10 text-pink-500 border-pink-500/20",
     links: [
       {
-        title: locale === "en" ? "Linkora UI Design System & Component Library" : "Figma Design System Kit & Component Library 2026",
+        title: locale === "en" ? "Linkorian UI Design System & Component Library" : "Figma Design System Kit & Component Library 2026",
         domain: "figma.com",
         category: locale === "en" ? "Design" : "Design",
         categoryBg: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30",

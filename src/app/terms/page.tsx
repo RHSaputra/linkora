@@ -414,11 +414,11 @@ export default function TermsPage() {
                     <p>
                       {isEn ? (
                         <>
-                          You retain 100% full intellectual property ownership over all content, links, notes, and document drafts created or uploaded to <LinkoraText />. Linkora claims zero ownership or exclusive licensing over your user content.
+                          You retain 100% full intellectual property ownership over all content, links, notes, and document drafts created or uploaded to <LinkoraText />. <LinkoraText /> claims zero ownership or exclusive licensing over your user content.
                         </>
                       ) : (
                         <>
-                          Anda memegang 100% hak cipta dan hak milik intelektual atas seluruh konten, tautan, dokumen, dan catatan yang Anda buat atau simpan di <LinkoraText />. Linkora tidak pernah mengklaim hak kepemilikan atas konten Anda.
+                          Anda memegang 100% hak cipta dan hak milik intelektual atas seluruh konten, tautan, dokumen, dan catatan yang Anda buat atau simpan di <LinkoraText />. <LinkoraText /> tidak pernah mengklaim hak kepemilikan atas konten Anda.
                         </>
                       )}
                     </p>

@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     case "reset":
       result = renderPasswordResetEmail({
         userName: "Pengguna Linkorian",
-        resetUrl: `${appUrl}/reset-password?token=sample_token_64chars_demo_linkora_resend_security&email=user%40linkora.id`,
+        resetUrl: `${appUrl}/reset-password?token=sample_token_64chars_demo_linkora_resend_security&email=user%40linkorian.online`,
         expiryMinutes: 15,
         appUrl,
       });
