@@ -12,9 +12,11 @@ export function renderBaseLayout({
   appUrl = process.env.APP_URL || "https://linkorian.online",
   currentYear = new Date().getFullYear(),
 }: LayoutOptions): string {
-  const cleanAppUrl = appUrl.replace(/\/$/, "");
-  const logoBannerUrl = `${cleanAppUrl}/linkorian.jpeg`;
-  const iconUrl = `${cleanAppUrl}/icon.jpg`;
+  const rawAppUrl = appUrl || process.env.APP_URL || "https://linkorian.online";
+  const cleanAppUrl = rawAppUrl.replace(/\/$/, "");
+  const secureAppUrl = cleanAppUrl.includes("localhost") ? cleanAppUrl : cleanAppUrl.replace(/^http:\/\//i, "https://");
+  const logoBannerUrl = `${secureAppUrl}/linkorian.jpeg`;
+  const iconUrl = `${secureAppUrl}/icon.jpg`;
 
   return `<!DOCTYPE html>
 <html lang="id" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -23,6 +25,8 @@ export function renderBaseLayout({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>${escapeHtml(title)}</title>
   <!--[if mso]>
   <noscript>
