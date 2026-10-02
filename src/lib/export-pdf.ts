@@ -14,7 +14,6 @@ import { saveAs } from "file-saver";
 import {
   type DocumentSettings,
   DEFAULT_DOCUMENT_SETTINGS,
-  getPaperSize,
   getEffectivePageDimensions,
   mmToPx,
 } from "./document-settings";
@@ -230,8 +229,8 @@ export async function exportToPdf(
     pageHeightMm,
     contentWidthMm,
     bodyHeightMm,
-    headerHeightMm,
-    footerHeightMm,
+    headerHeightMm: _headerHeightMm,
+    footerHeightMm: _footerHeightMm,
   } = dims;
 
   // Create jsPDF instance

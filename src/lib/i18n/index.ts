@@ -1,4 +1,4 @@
-import { SupportedLocale, DEFAULT_LOCALE, FALLBACK_LOCALE, SUPPORTED_LOCALES } from "./types";
+import { SupportedLocale, FALLBACK_LOCALE } from "./types";
 import { dictionaries } from "./dictionaries";
 
 /**

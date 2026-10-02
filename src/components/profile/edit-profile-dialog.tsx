@@ -24,13 +24,11 @@ import {
   Loader2,
   Check,
   Upload,
-  Image as ImageIcon,
   RotateCcw,
   Compass,
-  BookOpen,
   ArrowUpRight,
 } from "lucide-react";
-import { invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
+import { dispatchRefresh } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 

@@ -403,6 +403,7 @@ export function useLinks(
     });
 
     return subscribeRefresh((force) => refresh(force), "links");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey]);
 
   return { links: safeLinks, loading, refresh, loadMore, goToPage, page, hasMore, total, setLinks };
@@ -821,7 +822,7 @@ export async function deleteNoteFolder(id: string) {
 }
 
 export async function deleteNote(id: string, isPermanent = false) {
-  let removedNotes: any[] = [];
+  const removedNotes: any[] = [];
 
   // 1. Optimistically remove from global cache
   updateGlobalCacheNotes((items) => {
@@ -852,7 +853,7 @@ export async function deleteNote(id: string, isPermanent = false) {
 }
 
 export async function deleteNotesBulk(ids: string[], isPermanent = false) {
-  let removedNotes: any[] = [];
+  const removedNotes: any[] = [];
   const idSet = new Set(ids);
 
   // 1. Optimistically remove from global cache

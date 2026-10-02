@@ -9,20 +9,12 @@ import {
   StickyNote,
   ExternalLink,
   Trash2,
-  CheckCircle2,
-  Clock,
-  Circle,
-  Plus,
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Unlink,
   Link as ConnectIcon,
   Globe,
-  MoreVertical,
   LayoutGrid,
-  ChevronDown,
-  Check,
   Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,14 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { NodeDetailDialog } from "./node-detail-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 
 import { useTranslation } from "@/components/providers/i18n-provider";
 
@@ -57,7 +41,7 @@ const NODE_WIDTH = 260;
 const NODE_HEIGHT = 140;
 
 export function RoadmapCanvas({
-  roadmapId,
+  roadmapId: _roadmapId,
   nodes,
   edges,
   onNodePositionChange,
@@ -65,7 +49,7 @@ export function RoadmapCanvas({
   onDeleteNode,
   onAddEdge,
   onDeleteEdge,
-  onOpenAddNode,
+  onOpenAddNode: _onOpenAddNode,
 }: RoadmapCanvasProps) {
   const { t, locale } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -196,7 +180,7 @@ export function RoadmapCanvas({
     });
   };
 
-  const handleCanvasPointerUp = (e: React.PointerEvent) => {
+  const handleCanvasPointerUp = (_e: React.PointerEvent) => {
     if (isPanning) {
       setIsPanning(false);
     }
@@ -233,15 +217,7 @@ export function RoadmapCanvas({
   };
 
   // Status Cycle Handler
-  const cycleStatus = (node: SerializedRoadmapNode, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const nextMap: Record<string, "TODO" | "IN_PROGRESS" | "COMPLETED"> = {
-      TODO: "IN_PROGRESS",
-      IN_PROGRESS: "COMPLETED",
-      COMPLETED: "TODO",
-    };
-    onStatusChange(node.id, nextMap[node.status] || "TODO");
-  };
+
 
   // Compute Bezier Curved Edge Path
   const computeBezierPath = (sourcePos: { x: number; y: number }, targetPos: { x: number; y: number }) => {

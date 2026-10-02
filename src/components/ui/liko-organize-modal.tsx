@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2, X } from "lucide-react";
@@ -114,6 +112,7 @@ export function LikoOrganizeModal() {
       }, 300);
       return () => clearTimeout(settledTimer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const runAiOrganization = async (detail: OrganizeDetail) => {
@@ -267,7 +266,7 @@ export function LikoOrganizeModal() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl z-10 overflow-hidden"
+              className="relative w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl z-10 overflow-hidden"
             >
               {/* Close Button (Enabled when finished) */}
               {(phase === "success" || phase === "error") && (
@@ -316,7 +315,7 @@ export function LikoOrganizeModal() {
                     )}
                   </h3>
 
-                  <p className="text-xs sm:text-sm text-slate-300 max-w-xs mx-auto font-normal leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-300 max-w-xs sm:max-w-md mx-auto font-normal leading-relaxed">
                     {phase === "success"
                       ? resultData?.processed && resultData.processed > 0
                         ? resultData?.message || (isEn ? "Links grouped into optimal categories." : "Tautan dikelompokkan ke kategori terbaik.")

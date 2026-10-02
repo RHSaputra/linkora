@@ -15,7 +15,6 @@ import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
 import { RoadmapListView } from "@/components/roadmap/roadmap-list-view";
 import { AddNodeDialog } from "@/components/roadmap/add-node-dialog";
 import { AIRoadmapGeneratorDialog } from "@/components/roadmap/ai-roadmap-generator-dialog";
-import { Bot } from "lucide-react";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

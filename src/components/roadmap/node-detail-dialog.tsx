@@ -63,7 +63,7 @@ export function NodeDetailDialog({
     if (node) {
       setCurrentStatus(node.status);
     }
-  }, [node?.id, node?.status]);
+  }, [node]);
 
   if (!node) return null;
 

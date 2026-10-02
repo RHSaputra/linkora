@@ -32,7 +32,6 @@ import {
   deleteCollection,
   useNoteFolders,
   deleteNoteFolder,
-  invalidateAndRefresh,
   updateGlobalCacheCollections,
   dispatchRefresh,
 } from "@/hooks/use-data";
@@ -45,7 +44,6 @@ import { useTranslation } from "@/components/providers/i18n-provider";
 import { useViewMode } from "@/hooks/use-view-mode";
 import { ViewModeSwitcher } from "@/components/ui/view-mode-switcher";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/custom-toast";
 
@@ -129,26 +127,57 @@ export function CollectionsPage({
 
   // Fetch Links for selected Link Collection
   useEffect(() => {
+    let ignore = false;
     if (selectedId) {
       setLoadingLinks(true);
+      setCollectionLinks([]); // Clear stale data immediately to prevent hallucination across folders
       fetch(`/api/collections/${selectedId}`)
         .then((r) => r.json())
-        .then((data) => setCollectionLinks(data.links || []))
-        .finally(() => setLoadingLinks(false));
+        .then((data) => {
+          if (!ignore) {
+            setCollectionLinks(data.links || []);
+          }
+        })
+        .catch(() => {
+          if (!ignore) setCollectionLinks([]);
+        })
+        .finally(() => {
+          if (!ignore) setLoadingLinks(false);
+        });
+    } else {
+      setCollectionLinks([]);
     }
+    return () => {
+      ignore = true;
+    };
   }, [selectedId, refreshKey]);
 
   // Fetch Notes for selected Note Folder
   useEffect(() => {
+    let ignore = false;
     if (selectedNoteFolderId) {
       setLoadingFolderNotes(true);
+      setFolderNotes([]); // Clear stale data immediately to prevent hallucination across folders
       fetch(`/api/notes?folderId=${selectedNoteFolderId}`)
         .then((r) => r.json())
         .then((data) => {
-          if (Array.isArray(data)) setFolderNotes(data);
+          if (!ignore) {
+            if (Array.isArray(data)) setFolderNotes(data);
+            else setFolderNotes([]);
+          }
         })
-        .finally(() => setLoadingFolderNotes(false));
+        .catch(() => {
+          if (!ignore) setFolderNotes([]);
+        })
+        .finally(() => {
+          if (!ignore) setLoadingFolderNotes(false);
+        });
+    } else {
+      setFolderNotes([]);
     }
+    return () => {
+      ignore = true;
+    };
   }, [selectedNoteFolderId, refreshKey]);
 
   // Link Collection Actions
@@ -582,8 +611,8 @@ export function CollectionsPage({
                   </div>
 
                   {loadingLinks ? (
-                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
-                      {[...Array(2)].map((_, i) => (
+                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6"}>
+                      {[...Array(3)].map((_, i) => (
                         <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-2xl animate-pulse" : "h-48 bg-muted rounded-2xl animate-pulse"} />
                       ))}
                     </div>
@@ -603,7 +632,7 @@ export function CollectionsPage({
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8"}>
+                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6"}>
                       {collectionLinks.map((link, i) => (
                         <LinkCard
                           key={link.id}
@@ -825,9 +854,9 @@ export function CollectionsPage({
 
                   {/* Notes List Grid */}
                   {loadingFolderNotes ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[...Array(2)].map((_, i) => (
-                        <div key={i} className="h-40 bg-muted/60 rounded-3xl animate-pulse" />
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-44 bg-muted/60 rounded-3xl animate-pulse" />
                       ))}
                     </div>
                   ) : folderNotes.length === 0 ? (
@@ -845,16 +874,16 @@ export function CollectionsPage({
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6">
                       {folderNotes.map((note) => (
                         <div
                           key={note.id}
                           onClick={() => router.push(`/notes/${note.id}`)}
-                          className="group p-5 rounded-3xl glass-panel border border-border/60 hover:border-cyan-500/40 transition-all duration-200 hover:shadow-lg cursor-pointer flex flex-col justify-between h-44 relative overflow-hidden bg-card/70"
+                          className="group p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl glass-panel border border-border/60 hover:border-cyan-500/40 transition-all duration-200 hover:shadow-lg cursor-pointer flex flex-col justify-between h-44 relative overflow-hidden bg-card/70"
                         >
                           <div>
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className="font-bold text-foreground font-heading line-clamp-1 text-base group-hover:text-cyan-500 transition-colors">
+                            <div className="flex items-start justify-between gap-1.5 mb-1.5 sm:mb-2">
+                              <h3 className="font-bold text-foreground font-heading line-clamp-1 text-sm sm:text-base group-hover:text-cyan-500 transition-colors">
                                 {note.title || t("notes.untitledNote")}
                               </h3>
                               <div className="flex items-center gap-1 shrink-0">
@@ -862,12 +891,12 @@ export function CollectionsPage({
                                 {note.isFavorite && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
                               </div>
                             </div>
-                            <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed">
                               {getCleanSnippet(note.content)}
                             </p>
                           </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-border/40 text-[11px] text-muted-foreground">
+                          <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-border/40 text-[10px] sm:text-[11px] text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3 opacity-70" />
                               {new Date(note.updatedAt).toLocaleDateString(locale === "en" ? "en-US" : "id-ID", {
@@ -875,8 +904,8 @@ export function CollectionsPage({
                                 day: "numeric",
                               })}
                             </span>
-                            <span className="flex items-center gap-1 text-cyan-500 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                              <span>Buka</span>
+                            <span className="flex items-center gap-1 text-cyan-500 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                              <span>{locale === "en" ? "Open" : "Buka"}</span>
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           </div>

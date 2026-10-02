@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Link2, Loader2, CheckCircle, FileText, BookOpen } from "lucide-react";
-import { invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
+import { X, Send, Link2, Loader2, CheckCircle, BookOpen } from "lucide-react";
+import { dispatchRefresh } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
@@ -26,7 +26,7 @@ export type Message = {
 };
 
 export function LinkoraAIChat() {
-  const { isAuthenticated, requireAuth } = useRequireAuth();
+  const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");

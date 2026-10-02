@@ -16,7 +16,7 @@ export function renderBaseLayout({
   const cleanAppUrl = rawAppUrl.replace(/\/$/, "");
   const secureAppUrl = cleanAppUrl.includes("localhost") ? cleanAppUrl : cleanAppUrl.replace(/^http:\/\//i, "https://");
   const logoBannerUrl = `${secureAppUrl}/linkorian.jpeg`;
-  const iconUrl = `${secureAppUrl}/icon.jpg`;
+  const _iconUrl = `${secureAppUrl}/icon.jpg`;
 
   return `<!DOCTYPE html>
 <html lang="id" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">

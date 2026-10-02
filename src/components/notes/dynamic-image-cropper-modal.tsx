@@ -542,7 +542,7 @@ export function DynamicImageCropperModal({
             className="relative inline-block max-w-full max-h-full"
           >
             {/* Base Image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               ref={imgRef}
               src={imageSrc}

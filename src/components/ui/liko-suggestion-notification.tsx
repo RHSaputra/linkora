@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X, CheckCircle, Loader2 } from "lucide-react";
 import { SerializedLink } from "@/lib/types";
-import { dispatchRefresh } from "@/hooks/use-data";
 
 export function LikoSuggestionNotification() {
   const [suggestion, setSuggestion] = useState<{

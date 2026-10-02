@@ -12,11 +12,9 @@ import {
   Pin,
   Trash2,
   Folder as FolderIcon,
-  FolderPlus,
   MoreVertical,
   RotateCcw,
   Check,
-  Edit2,
   X,
   Layers,
 } from "lucide-react";
@@ -43,7 +41,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNotesList, useNoteFolders, invalidateAndRefresh, dispatchRefresh, setCachedData, deleteNote, deleteNotesBulk, toggleNoteFavorite } from "@/hooks/use-data";
+import { useNotesList, useNoteFolders, dispatchRefresh, setCachedData, deleteNote, deleteNotesBulk, toggleNoteFavorite } from "@/hooks/use-data";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { toast } from "@/components/ui/custom-toast";
 
@@ -120,7 +118,7 @@ export function NotesPage() {
   }), [debouncedSearch, activeFilter, activeFolderId]);
 
   const { notes, loading, refresh: fetchNotes, setNotes } = useNotesList(queryParams);
-  const { folders, refresh: fetchFolders } = useNoteFolders();
+  const { folders, refresh: _fetchFolders } = useNoteFolders();
 
   const createNote = async (initialFolderId?: string | null) => {
     if (requireAuth(t("notes.newNoteBtn"), t("auth.authRequiredDesc"))) {
@@ -296,7 +294,7 @@ export function NotesPage() {
     }
   };
 
-  const handleOpenFolderDialog = (folder?: any) => {
+  const _handleOpenFolderDialog = (folder?: any) => {
     if (requireAuth(
       locale === "en" ? "Manage Note Folders" : "Mengelola Folder Catatan",
       locale === "en" ? "Sign in or register for free to create and manage note folders." : "Masuk atau daftar gratis untuk membuat dan mengatur folder catatan Anda."

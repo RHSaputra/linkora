@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Star,
   FolderOpen,
@@ -24,8 +24,8 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useDashboard, subscribeRefresh, invalidateAndRefresh, dispatchRefresh } from "@/hooks/use-data";
-import { CATEGORY_COLORS, getCategoryColor } from "@/lib/utils";
+import { useDashboard, subscribeRefresh } from "@/hooks/use-data";
+import { CATEGORY_COLORS } from "@/lib/utils";
 import { SerializedLink } from "@/lib/types";
 import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
 import { useSession } from "next-auth/react";
@@ -46,12 +46,12 @@ export function DashboardPage({
   openEditLink
 }: DashboardPageProps) {
   const { data: session } = useSession();
-  const { isAuthenticated, requireAuth } = useRequireAuth();
+  const { requireAuth } = useRequireAuth();
   const { t, locale } = useTranslation();
   const [viewMode, setViewMode] = useViewMode();
   const userName = session?.user?.name || "Linkorian";
 
-  const { stats, loading, refresh } = useDashboard();
+  const { stats, refresh } = useDashboard();
 
   useEffect(() => {
     if (refreshKey > 0) {
@@ -99,9 +99,7 @@ export function DashboardPage({
       } else if (recentCacheRef.current[recentFilter]) {
         setFilteredRecentLinks(recentCacheRef.current[recentFilter]);
       } else {
-        if (filteredRecentLinks.length === 0) {
-          setLoadingRecent(true);
-        }
+        setLoadingRecent(true);
         fetch(`/api/dashboard/recent?filter=${recentFilter}`)
           .then((r) => r.json())
           .then((data) => {

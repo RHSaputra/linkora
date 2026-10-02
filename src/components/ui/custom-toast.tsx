@@ -2,7 +2,6 @@
 
 import React, {
   createContext,
-  useContext,
   useState,
   useCallback,
   useEffect,
@@ -121,7 +120,7 @@ function ToastCard({
   item: ToastItem;
   onDismiss: () => void;
 }) {
-  const duration = item.duration ?? 4000;
+  const _duration = item.duration ?? 4000;
   const isEn =
     typeof document !== "undefined" &&
     (document.documentElement.lang === "en" ||

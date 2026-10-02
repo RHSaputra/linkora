@@ -157,7 +157,7 @@ export function LikoAnalyzeModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
           >
             {/* Header Mascot & Scanner Stage */}
             <div className="flex flex-col items-center text-center mt-2 mb-6">
@@ -175,7 +175,7 @@ export function LikoAnalyzeModal({
                   <span>{isEn ? "Analyzing Link" : "Menganalisis Tautan"}</span>
                 </h3>
 
-                <p className="text-xs sm:text-sm text-slate-300 max-w-xs mx-auto font-normal leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-300 max-w-xs sm:max-w-md mx-auto font-normal leading-relaxed">
                   {isEn
                     ? "Reading page structure and discovering category metadata..."
                     : "Membaca struktur halaman dan mengekstrak informasi penting..."}
@@ -191,7 +191,7 @@ export function LikoAnalyzeModal({
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <p className="text-xs font-semibold text-slate-200 truncate">{url || "Target URL"}</p>
-                  <p className="text-[11px] text-slate-400">{isEn ? "AI Link Inspection" : "Inspeksi AI Linkoria"}</p>
+                  <p className="text-[11px] text-slate-400">{isEn ? "AI Link Inspection" : "Inspeksi AI Linkorian"}</p>
                 </div>
               </div>
 

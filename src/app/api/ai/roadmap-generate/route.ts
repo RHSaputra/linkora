@@ -8,7 +8,7 @@ import { calculateAutoLayout } from "@/lib/roadmap-layout";
 
 function cleanNodeTitle(title: string | null | undefined, fallbackIndex: number): string {
   if (!title) return `Langkah ${fallbackIndex + 1}`;
-  let cleaned = title.trim()
+  const cleaned = title.trim()
     .replace(/^[\*\_\#\`\~\!\[\]\-\+\>\s\:\;]+/, "")
     .replace(/[\*\_\#\`\~\!\[\]]+$/, "")
     .trim();

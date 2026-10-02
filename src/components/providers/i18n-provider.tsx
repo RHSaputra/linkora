@@ -29,7 +29,6 @@ const STORAGE_KEY = "linkora_user_locale";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<SupportedLocale>(DEFAULT_LOCALE);
-  const [isHydrated, setIsHydrated] = useState(false);
 
   // Initialize from localStorage or navigator preference on mount
   useEffect(() => {
@@ -46,8 +45,6 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {
       // Ignore localStorage errors
-    } finally {
-      setIsHydrated(true);
     }
   }, []);
 

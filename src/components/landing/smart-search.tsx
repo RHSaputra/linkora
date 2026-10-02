@@ -12,7 +12,6 @@ import {
   CheckCircle2, 
   ArrowRight,
   FolderOpen,
-  Tag,
   Globe
 } from "lucide-react"
 import { LinkoraText } from "@/components/ui/linkora-text"

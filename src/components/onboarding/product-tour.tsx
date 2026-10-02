@@ -6,9 +6,7 @@ import { ChevronLeft, ChevronRight, X, CheckCircle2 } from "lucide-react";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
 import { OnboardingWelcomeScreen } from "@/components/onboarding/welcome-screen";
 import { OnboardingSkipConfirm } from "@/components/onboarding/skip-confirm";
-import { ONBOARDING_STEPS } from "@/lib/onboarding-state";
 import { getPrevStep } from "@/lib/onboarding-state";
-import { LinkoraText } from "@/components/ui/linkora-text";
 import { useTranslation } from "@/components/providers/i18n-provider";
 
 interface TargetRect {

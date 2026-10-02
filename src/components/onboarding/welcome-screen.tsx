@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { useOnboarding } from "@/components/providers/onboarding-provider";
-import { LinkoraText, LinkorianText } from "@/components/ui/linkora-text";
+import { LinkorianText } from "@/components/ui/linkora-text";
 
 import { useTranslation } from "@/components/providers/i18n-provider";
 

@@ -882,7 +882,7 @@ INFORMASI YANG TIDAK DITEMUKAN:
 /**
  * Smart Content Extraction
  */
-export function extractComprehensiveContent($: cheerio.CheerioAPI, baseUrl: string) {
+export function extractComprehensiveContent($: cheerio.CheerioAPI, _baseUrl: string) {
   const structuredData = extractStructuredJsonLd($);
 
   const title =

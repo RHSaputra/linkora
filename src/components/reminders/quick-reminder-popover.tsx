@@ -43,8 +43,8 @@ export function QuickReminderPopover({
   onReminderChange,
   className,
   showLabel = false,
-  buttonVariant = "ghost",
-  buttonSize = "icon",
+  buttonVariant: _buttonVariant = "ghost",
+  buttonSize: _buttonSize = "icon",
 }: QuickReminderPopoverProps) {
   const { t, locale } = useTranslation();
   const [open, setOpen] = useState(false);

@@ -8,28 +8,16 @@ import {
   StickyNote,
   ExternalLink,
   Trash2,
-  CheckCircle2,
-  Clock,
-  Circle,
   ArrowDown,
   Globe,
   Plus,
   ArrowRight,
   Check,
-  ChevronDown,
   Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { NodeDetailDialog } from "./node-detail-dialog";
 
@@ -50,8 +38,8 @@ export function RoadmapListView({
   edges,
   onStatusChange,
   onDeleteNode,
-  onAddEdge,
-  onDeleteEdge,
+  onAddEdge: _onAddEdge,
+  onDeleteEdge: _onDeleteEdge,
   onOpenAddNode,
 }: RoadmapListViewProps) {
   const { t, locale } = useTranslation();
