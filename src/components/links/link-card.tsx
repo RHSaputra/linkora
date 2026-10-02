@@ -416,8 +416,8 @@ export function LinkCard({
 
               {/* Title & Quick Actions */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-1.5">
-                  <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-[2.5rem] flex items-center text-foreground group-hover:text-primary transition-colors">
+                <div className="flex items-start justify-between gap-1">
+                  <h3 className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] flex-1 min-w-0 text-foreground group-hover:text-primary transition-colors break-words">
                     {link.title}
                   </h3>
                   <div className="flex items-center gap-0.5 shrink-0 opacity-100 sm:opacity-75 sm:group-hover:opacity-100 transition-opacity">

@@ -558,7 +558,13 @@ export function AddLinkDialog({
           onSuccess(savedData);
         } else {
           const errorData = await res.json().catch(() => ({}));
-          toast.error(errorData.error || "Gagal memperbarui link.", "Gagal");
+          const errorMsg =
+            typeof errorData.error === "string"
+              ? errorData.error
+              : errorData.error && typeof errorData.error === "object"
+              ? Object.values(errorData.error).flat().join(", ")
+              : "Gagal memperbarui link.";
+          toast.error(errorMsg, "Gagal");
         }
       } catch (err: any) {
         toast.error(err?.message || "Terjadi kesalahan saat memperbarui link.", "Error");

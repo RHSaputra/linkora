@@ -4,14 +4,14 @@ import { DEFAULT_CATEGORIES } from "./utils";
 export const createLinkSchema = z.object({
   url: z.string().url("URL tidak valid"),
   title: z.string().min(1, "Judul wajib diisi"),
-  description: z.string().optional(),
-  category: z.enum(DEFAULT_CATEGORIES as unknown as [string, ...string[]]),
+  description: z.string().optional().nullable(),
+  category: z.string().default("Custom"),
   tags: z.array(z.string()).default([]),
-  notes: z.string().optional(),
-  favicon: z.string().optional(),
-  thumbnail: z.string().optional(),
+  notes: z.string().optional().nullable(),
+  favicon: z.string().optional().nullable(),
+  thumbnail: z.string().optional().nullable(),
   isFavorite: z.boolean().default(false),
-  reminderAt: z.string().datetime().optional().nullable(),
+  reminderAt: z.string().optional().nullable(),
 });
 
 export const updateLinkSchema = createLinkSchema.partial().extend({
