@@ -298,7 +298,7 @@ export function LikoRoadmapModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-2xl sm:rounded-3xl p-6 sm:p-8 bg-slate-900/95 text-slate-100 border border-slate-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl z-10 overflow-hidden"
           >
             {/* Header Mascot & Stage */}
             <div className="flex flex-col items-center text-center mt-2 mb-5">
@@ -316,7 +316,7 @@ export function LikoRoadmapModal({
                 </h3>
 
                 {topic && (
-                  <p className="text-xs text-slate-300 max-w-xs mx-auto line-clamp-2 italic bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                  <p className="text-xs text-slate-300 max-w-xs sm:max-w-md mx-auto line-clamp-2 italic bg-slate-950/60 p-2 rounded-xl border border-slate-800">
                     "{topic}"
                   </p>
                 )}

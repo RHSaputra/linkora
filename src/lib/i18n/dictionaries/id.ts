@@ -530,7 +530,7 @@ export const id = {
     designRoadmapDesc: "Liko AI akan merancang urutan langkah visual, alur terstruktur, dan strategi pengerjaan untuk Anda.",
     topicInstructionLabel: "Topik & Instruksi Alur",
     detailHint: "Tulis secara detail & jelas",
-    topicPlaceholder: "Tuliskan topik atau alur yang ingin Anda buat di sini... Contoh: Belajar Docker & Kubernetes dari dasar hingga deployment production web app...",
+    topicPlaceholder: "Tuliskan topik atau alur yang ingin Anda buat di sini...",
     guideTitle: "Instruksi Pengisian:",
     guideDesc: "Tuliskan tujuan belajar, alur pengerjaan proyek, atau langkah kerja yang ingin Anda susun pada kolom di atas. Liko AI akan secara otomatis menganalisis dan menyusunnya menjadi kanvas roadmap visual yang terstruktur, rapi, dan tidak saling menumpuk.",
   },

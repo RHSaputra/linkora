@@ -530,7 +530,7 @@ export const en = {
     designRoadmapDesc: "Liko AI will design visual steps, structured flow, and execution strategy for you.",
     topicInstructionLabel: "Topic & Workflow Instructions",
     detailHint: "Write clearly & in detail",
-    topicPlaceholder: "Write the topic or workflow you want to create here... Example: Learn Docker & Kubernetes from basics to production web app deployment...",
+    topicPlaceholder: "Write the topic or workflow you want to create here...",
     guideTitle: "Filling Instructions:",
     guideDesc: "Write your learning goal, project workflow, or work steps in the field above. Liko AI will automatically analyze and organize them into a structured visual roadmap canvas.",
   },
