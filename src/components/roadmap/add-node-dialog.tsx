@@ -252,19 +252,20 @@ export function AddNodeDialog({ open, onOpenChange, onSubmit }: AddNodeDialogPro
             />
           </div>
 
-          <DialogFooter className="pt-2 gap-2 sm:gap-0">
+          <DialogFooter className="pt-2 gap-2.5 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="rounded-xl font-semibold cursor-pointer"
             >
               {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={!title.trim() || isSubmitting}
-              className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground font-semibold rounded-xl cursor-pointer"
             >
               {isSubmitting ? t("common.saving") : t("common.add")}
             </Button>
