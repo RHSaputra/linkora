@@ -39,6 +39,7 @@ export const en = {
     collections: "Collections",
     notes: "Personal Notes",
     roadmaps: "Roadmaps",
+    scopus: "Scopus Research",
     guide: "Guide",
     reminders: "Notifications & Reminders",
     profile: "Profile Settings",

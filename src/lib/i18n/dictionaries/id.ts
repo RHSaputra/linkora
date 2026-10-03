@@ -39,6 +39,7 @@ export const id = {
     collections: "Koleksi",
     notes: "Catatan Pribadi",
     roadmaps: "Roadmap Alur",
+    scopus: "Riset Scopus",
     guide: "Panduan",
     reminders: "Pusat Notifikasi & Pengingat",
     profile: "Pengaturan Profil",
