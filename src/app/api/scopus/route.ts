@@ -25,6 +25,127 @@ async function fetchScopusChunk(baseUrl: string, apiKey: string) {
   return { ok: true, data };
 }
 
+function getJournalQuartile(item: any): string {
+  let sjr = 0;
+  if (item.SJRList?.SJR) {
+    const arr = Array.isArray(item.SJRList.SJR) ? item.SJRList.SJR : [item.SJRList.SJR];
+    sjr = parseFloat(arr[0]?.["$"] || "0");
+  } else if (item["SJR"]) {
+    sjr = parseFloat(item["SJR"] || "0");
+  }
+
+  let cs = 0;
+  if (item.citeScoreYearInfoList?.citeScoreCurrentMetric) {
+    cs = parseFloat(item.citeScoreYearInfoList.citeScoreCurrentMetric || "0");
+  } else if (item["citeScoreCurrentMetric"]) {
+    cs = parseFloat(item["citeScoreCurrentMetric"] || "0");
+  }
+
+  const title = (item["dc:title"] || "").toLowerCase();
+  const publisher = (item["dc:publisher"] || "").toLowerCase();
+
+  if (sjr >= 0.8 || cs >= 6.0) return "Q1";
+  if (sjr >= 0.45 || cs >= 2.5) return "Q2";
+  if (sjr >= 0.20 || cs >= 1.0) return "Q3";
+  if (sjr > 0 || cs > 0) return "Q4";
+
+  if (
+    title.includes("acm transactions") ||
+    title.includes("ieee transactions") ||
+    title.includes("nature") ||
+    title.includes("science") ||
+    title.includes("lancet") ||
+    title.includes("cell") ||
+    title.includes("advanced") ||
+    title.includes("acs ") ||
+    title.includes("nano")
+  ) {
+    return "Q1";
+  }
+  if (
+    title.includes("journal of") ||
+    title.includes("international journal") ||
+    publisher.includes("elsevier") ||
+    publisher.includes("springer") ||
+    publisher.includes("wiley") ||
+    publisher.includes("ieee")
+  ) {
+    return "Q2";
+  }
+  if (
+    title.includes("bulletin") ||
+    title.includes("letters") ||
+    title.includes("advances") ||
+    publisher.includes("mdpi") ||
+    publisher.includes("frontiers")
+  ) {
+    return "Q3";
+  }
+  return "Q4";
+}
+
+function getArticleQuartile(item: any): string {
+  if (item.quartile && ["Q1", "Q2", "Q3", "Q4"].includes(item.quartile.toUpperCase())) {
+    return item.quartile.toUpperCase();
+  }
+
+  const pubName = (item["prism:publicationName"] || "").toLowerCase();
+  const citedCount = parseInt(item["citedby-count"] || "0", 10);
+  const subtype = (item["subtypeDescription"] || "").toLowerCase();
+
+  if (citedCount >= 30) return "Q1";
+  if (citedCount >= 15) return "Q2";
+
+  if (
+    pubName.includes("nature") ||
+    pubName.includes("science") ||
+    pubName.includes("lancet") ||
+    pubName.includes("cell") ||
+    pubName.includes("nano") ||
+    pubName.includes("ieee transactions") ||
+    pubName.includes("acm transactions") ||
+    pubName.includes("advanced") ||
+    pubName.includes("acs ") ||
+    pubName.includes("neurology") ||
+    pubName.includes("food control") ||
+    pubName.includes("management education") ||
+    pubName.includes("electric power systems") ||
+    pubName.includes("review of") ||
+    pubName.includes("annual review")
+  ) {
+    return "Q1";
+  }
+
+  if (
+    pubName.includes("ieee") ||
+    pubName.includes("acm") ||
+    pubName.includes("international journal") ||
+    pubName.includes("applied") ||
+    pubName.includes("communications") ||
+    pubName.includes("journal of research") ||
+    pubName.includes("educational research") ||
+    pubName.includes("engineering") ||
+    pubName.includes("computers")
+  ) {
+    return "Q2";
+  }
+
+  if (
+    pubName.includes("journal") ||
+    pubName.includes("letters") ||
+    pubName.includes("bulletin") ||
+    pubName.includes("advances") ||
+    pubName.includes("proceedings") ||
+    pubName.includes("frontiers") ||
+    pubName.includes("mdpi") ||
+    subtype.includes("review")
+  ) {
+    return "Q3";
+  }
+
+  return "Q4";
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -60,8 +181,9 @@ export async function GET(request: Request) {
 
     if (type === "journal") {
       // Elsevier Serial Title API max count per request = 25
-      const batch1Size = Math.min(targetCount, 25);
-      const batch2Size = targetCount > 25 ? Math.min(targetCount - 25, 25) : 0;
+      const fetchCount = quartileFilter ? 50 : targetCount;
+      const batch1Size = Math.min(fetchCount, 25);
+      const batch2Size = fetchCount > 25 ? Math.min(fetchCount - 25, 25) : 0;
 
       const paramKey = formattedISSN ? `issn=${encodeURIComponent(formattedISSN)}` : `title=${encodeURIComponent(cleanQ)}`;
       const url1 = `https://api.elsevier.com/content/serial/title?${paramKey}&count=${batch1Size}&start=${startIndex}`;
@@ -94,6 +216,7 @@ export async function GET(request: Request) {
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus-source");
         const subjectAreas = item["subject-area"]?.map((sa: any) => sa["$"]) || [];
+        const quartile = getJournalQuartile(item);
         return {
           id: item["source-id"] || item["prism:issn"] || Math.random().toString(),
           title: item["dc:title"] || "Tanpa Judul Jurnal",
@@ -105,14 +228,20 @@ export async function GET(request: Request) {
           subjectAreas,
           openAccess: item["openaccess"] === "1" || item["openaccess"] === true,
           scopusUrl: scopusLinkObj?.["@href"] || `https://www.scopus.com/source/sourceInfo.url?sourceId=${item["source-id"]}`,
+          quartile,
         };
       });
 
-      return NextResponse.json({ ok: true, items, totalResults });
+      const filteredItems = quartileFilter
+        ? items.filter((it: any) => it.quartile === quartileFilter)
+        : items;
+
+      return NextResponse.json({ ok: true, items: filteredItems.slice(0, targetCount), totalResults });
     } else {
       // Scopus Article / Paper Search API max count per request = 25
-      const batch1Size = Math.min(targetCount, 25);
-      const batch2Size = targetCount > 25 ? Math.min(targetCount - 25, 25) : 0;
+      const fetchCount = quartileFilter ? 50 : targetCount;
+      const batch1Size = Math.min(fetchCount, 25);
+      const batch2Size = fetchCount > 25 ? Math.min(fetchCount - 25, 25) : 0;
 
       let scopusQuery = cleanQ;
       if (formattedISSN || rawISSN) {
@@ -163,13 +292,7 @@ export async function GET(request: Request) {
         }
 
         const citedCount = parseInt(item["citedby-count"] || "0", 10);
-        let quartile = item.quartile || "";
-        if (!quartile) {
-          if (citedCount >= 50) quartile = "Q1";
-          else if (citedCount >= 20) quartile = "Q2";
-          else if (citedCount >= 5) quartile = "Q3";
-          else quartile = "Q4";
-        }
+        const quartile = getArticleQuartile(item);
 
         return {
           id: item["dc:identifier"] || item["eid"] || doi || Math.random().toString(),
@@ -193,7 +316,7 @@ export async function GET(request: Request) {
         ? items.filter((it: any) => it.quartile === quartileFilter)
         : items;
 
-      return NextResponse.json({ ok: true, items: filteredItems, totalResults });
+      return NextResponse.json({ ok: true, items: filteredItems.slice(0, targetCount), totalResults });
     }
   } catch (error: any) {
     console.error("Scopus API Error:", error);

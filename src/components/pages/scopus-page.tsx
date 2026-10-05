@@ -55,6 +55,7 @@ interface ScopusItem {
   coverageEndYear?: string;
   subjectAreas?: string[];
   aggregationType?: string;
+  quartile?: string;
 }
 
 interface SintaItem {
@@ -576,30 +577,28 @@ export function ScopusPage() {
             )}
           </div>
 
-          {scopusSubTab === "article" && (
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-                Indeks Scopus:
-              </span>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
+              Indeks Scopus:
+            </span>
+            <button
+              type="button"
+              onClick={() => { setScopusQuartile(""); setScopusPage(1); }}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === "" ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+            >
+              Semua Quartile
+            </button>
+            {["Q1", "Q2", "Q3", "Q4"].map((q) => (
               <button
+                key={q}
                 type="button"
-                onClick={() => { setScopusQuartile(""); setScopusPage(1); }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === "" ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+                onClick={() => { setScopusQuartile(q); setScopusPage(1); }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === q ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
               >
-                Semua Quartile
+                {q}
               </button>
-              {["Q1", "Q2", "Q3", "Q4"].map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => { setScopusQuartile(q); setScopusPage(1); }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === q ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
 
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
@@ -654,9 +653,16 @@ export function ScopusPage() {
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-orange-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-orange-500/50 transition-all duration-200">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[11px] font-bold uppercase tracking-wider font-mono">
-                            {item.subtypeDescription || item.aggregationType || "Scopus Indexed"}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[11px] font-bold uppercase tracking-wider font-mono">
+                              {item.subtypeDescription || item.aggregationType || "Scopus Indexed"}
+                            </span>
+                            {item.quartile && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black tracking-wide font-mono">
+                                {item.quartile}
+                              </span>
+                            )}
+                          </div>
                           {item.openAccess && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
                               <Globe className="w-3 h-3" />
