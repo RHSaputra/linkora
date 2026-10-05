@@ -249,10 +249,6 @@ export function ScopusPage() {
 
   // ── SINTA Scraper Fetcher (30 items per page with strict level filtering) ──
   const fetchSintaData = useCallback(async (q: string, activeTab: "article" | "journal", level: string, pageNum: number) => {
-    if (!q.trim() && !level) {
-      setSintaItems([]);
-      return;
-    }
     setSintaLoading(true);
     setSintaErrorMsg(null);
     try {
@@ -332,7 +328,7 @@ export function ScopusPage() {
   useEffect(() => {
     if (provider === "scopus" && activeScopusQuery.trim()) {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusQuartile, scopusPage);
-    } else if (provider === "sinta" && (activeSintaQuery.trim() || sintaLevel)) {
+    } else if (provider === "sinta") {
       fetchSintaData(activeSintaQuery, sintaSubTab, sintaLevel, sintaPage);
     } else if (provider === "garuda" && activeGarudaQuery.trim()) {
       fetchGarudaData(activeGarudaQuery, garudaSubTab, garudaPage);
@@ -851,16 +847,6 @@ export function ScopusPage() {
 
           {sintaLoading ? (
             <Liko3DSearchLoading providerName="SINTA Kemdiktisaintek" brandColor="teal" />
-          ) : !activeSintaQuery.trim() && !sintaLevel ? (
-            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Search className="w-12 h-12 mx-auto text-teal-500/40" />
-              <h3 className="text-base font-bold text-foreground">Ketik kata kunci atau pilih filter SINTA untuk memulai</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                {sintaSubTab === "journal"
-                  ? "Cari jurnal terakreditasi SINTA (S1–S6) berdasarkan nama jurnal, universitas, atau bidang ilmu."
-                  : "Cari publikasi artikel ilmiah yang terindeks SINTA."}
-              </p>
-            </div>
           ) : sintaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <ShieldCheck className="w-12 h-12 mx-auto text-teal-500/40" />
