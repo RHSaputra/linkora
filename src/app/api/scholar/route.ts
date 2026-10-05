@@ -118,24 +118,30 @@ export async function GET(request: Request) {
     const effectiveQuery = cleanQ || (type === "journal" ? "jurnal" : "penelitian");
 
     const scholarQueryStr = type === "journal" ? `source:"${effectiveQuery}"` : `allintitle:${effectiveQuery}`;
-    const startOffset = (pageNum - 1) * 10;
-    const targetUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(
-      scholarQueryStr
-    )}&start=${startOffset}&hl=id`;
+    const baseOffset = (pageNum - 1) * 30;
 
-    // 1. Primary Attempt: Google Scholar
-    const scholarItems = await fetchGoogleScholarSinglePage(targetUrl);
+    // 1. Primary Attempt: Google Scholar (fetch 3 sub-pages in parallel to get 30 items)
+    const pagePromises = [0, 10, 20].map((offset) => {
+      const currentOffset = baseOffset + offset;
+      const targetUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(
+        scholarQueryStr
+      )}&start=${currentOffset}&hl=id`;
+      return fetchGoogleScholarSinglePage(targetUrl);
+    });
+
+    const pageResults = await Promise.all(pagePromises);
+    const scholarItems = pageResults.flat();
 
     if (scholarItems.length > 0) {
       return NextResponse.json({
         ok: true,
-        items: scholarItems,
+        items: scholarItems.slice(0, 30),
         hasMore: scholarItems.length >= 10,
         currentPage: pageNum,
       });
     }
 
-    // 2. Fallback Attempt: OpenAlex Academic Database API (250M+ indexed works)
+    // 2. Fallback Attempt: OpenAlex Academic Database API (250M+ indexed works, 30 per page)
     const openAlexItems = await fetchOpenAlexFallback(effectiveQuery, pageNum);
 
     return NextResponse.json({

@@ -1382,7 +1382,7 @@ export function ScopusPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={scholarLoading || scholarItems.length < 30}
+                  disabled={scholarLoading || scholarItems.length === 0}
                   onClick={() => setScholarPage((prev) => prev + 1)}
                   className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
                 >
