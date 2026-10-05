@@ -679,14 +679,8 @@ export function ScopusPage() {
               </div>
             )}
             {provider === "semantic" && (
-              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 p-6 border border-indigo-500/30 shadow-sm flex flex-col items-center justify-center text-center space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 p-3 flex items-center justify-center text-indigo-400 shadow-inner">
-                  <Brain className="w-10 h-10" />
-                </div>
-                <div className="space-y-1">
-                  <span className="font-extrabold text-white text-base tracking-tight block">Semantic Scholar</span>
-                  <span className="text-[10px] text-indigo-300 font-mono block">AI-Powered Research Engine</span>
-                </div>
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-indigo-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/Semantic scholar.png" alt="Semantic Scholar" className="w-full h-full object-contain" />
               </div>
             )}
           </div>
@@ -1868,8 +1862,8 @@ export function ScopusPage() {
                             rel="noopener noreferrer"
                             className="hover:underline flex items-start gap-2"
                           >
-                            <div className="w-6 h-6 rounded-md bg-indigo-600 border border-indigo-500/30 p-1 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-white">
-                              <Brain className="w-full h-full object-contain" />
+                            <div className="w-6 h-6 rounded-md bg-white border border-indigo-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                              <img src="/Semantic scholar.png" alt="Semantic Scholar Logo" className="w-full h-full object-contain" />
                             </div>
                             <span className="flex-1">{cleanTitle}</span>
                             <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-indigo-600" />
