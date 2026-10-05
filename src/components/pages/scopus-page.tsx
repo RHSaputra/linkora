@@ -1108,16 +1108,16 @@ export function ScopusPage() {
                     <SelectValue placeholder="Pilih Kategori" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl p-1.5 z-50">
-                    <SelectItem value="title" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
+                    <SelectItem value="title" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       Judul
                     </SelectItem>
-                    <SelectItem value="abstract" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
+                    <SelectItem value="abstract" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       Abstrak
                     </SelectItem>
-                    <SelectItem value="author" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
+                    <SelectItem value="author" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       Pengarang
                     </SelectItem>
-                    <SelectItem value="doi" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
+                    <SelectItem value="doi" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       DOI
                     </SelectItem>
                   </SelectContent>
@@ -1560,14 +1560,14 @@ export function ScopusPage() {
                 <SelectValue placeholder="-- Simpan Tanpa Koleksi (Utama) --" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl p-1.5 z-50">
-                <SelectItem value="default" className="py-2 px-3 text-xs font-medium rounded-xl cursor-pointer">
+                <SelectItem value="default" className="py-2 pl-8 pr-3 text-xs font-medium rounded-xl cursor-pointer">
                   <div className="flex items-center gap-2">
                     <BookmarkPlus className="w-3.5 h-3.5 text-slate-400" />
                     <span>-- Simpan Tanpa Koleksi (Utama) --</span>
                   </div>
                 </SelectItem>
                 {collections?.map((col: any) => (
-                  <SelectItem key={col.id} value={col.id} className="py-2 px-3 text-xs font-medium rounded-xl cursor-pointer">
+                  <SelectItem key={col.id} value={col.id} className="py-2 pl-8 pr-3 text-xs font-medium rounded-xl cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Folder className="w-3.5 h-3.5 text-primary" />
                       <span>{col.name}</span>
