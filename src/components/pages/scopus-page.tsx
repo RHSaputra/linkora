@@ -199,14 +199,14 @@ export function ScopusPage() {
 
   // GARUDA State (Default query empty "")
   const [garudaSubTab, setGarudaSubTab] = useState<"article" | "journal">("article");
-  const [garudaSelect, setGarudaSelect] = useState<"title" | "abstract" | "author" | "doi">("title");
+  const [garudaSelect, setGarudaSelect] = useState<"title" | "author" | "doi">("title");
   const [garudaQuery, setGarudaQuery] = useState("");
   const [garudaPublisher, setGarudaPublisher] = useState("");
   const [garudaYearFrom, setGarudaYearFrom] = useState("");
   const [garudaYearTo, setGarudaYearTo] = useState("");
 
   const [activeGarudaQuery, setActiveGarudaQuery] = useState("");
-  const [activeGarudaSelect, setActiveGarudaSelect] = useState<"title" | "abstract" | "author" | "doi">("title");
+  const [activeGarudaSelect, setActiveGarudaSelect] = useState<"title" | "author" | "doi">("title");
   const [activeGarudaPublisher, setActiveGarudaPublisher] = useState("");
   const [activeGarudaYearFrom, setActiveGarudaYearFrom] = useState("");
   const [activeGarudaYearTo, setActiveGarudaYearTo] = useState("");
@@ -1111,9 +1111,6 @@ export function ScopusPage() {
                     <SelectItem value="title" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       Judul
                     </SelectItem>
-                    <SelectItem value="abstract" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
-                      Abstrak
-                    </SelectItem>
                     <SelectItem value="author" className="py-2.5 pl-8 pr-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400 data-[state=checked]:bg-red-500/10 data-[state=checked]:text-red-600 dark:data-[state=checked]:text-red-400 font-sans">
                       Pengarang
                     </SelectItem>
@@ -1270,11 +1267,20 @@ export function ScopusPage() {
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-red-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-red-500/50 transition-all">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[11px] font-bold uppercase font-mono">
-                            GARUDA Rujukan
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[11px] font-bold uppercase font-mono">
+                              GARUDA Rujukan
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                              activeGarudaSelect === "author" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" :
+                              activeGarudaSelect === "doi" ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20" :
+                              "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                            }`}>
+                              Filter: {activeGarudaSelect === "author" ? "Pengarang" : activeGarudaSelect === "doi" ? "DOI" : "Judul"}
+                            </span>
+                          </div>
                           {item.downloadUrl && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[10px] font-bold shrink-0">
                               <Download className="w-3 h-3" />
                               <span>PDF Direct</span>
                             </span>
@@ -1291,7 +1297,43 @@ export function ScopusPage() {
                           </a>
                         </h3>
 
-                        {item.author && (
+                        {/* Dynamic Field Highlight based on Active Filter */}
+                        {activeGarudaSelect === "author" && item.author && (
+                          <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                              <User className="w-3 h-3 shrink-0" />
+                              <span>Hasil Pencarian Pengarang:</span>
+                            </div>
+                            <p className="text-xs font-bold text-foreground leading-snug line-clamp-2">
+                              {item.author.replace(/\*/g, "")}
+                            </p>
+                          </div>
+                        )}
+
+                        {activeGarudaSelect === "doi" && (
+                          <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                              <Hash className="w-3 h-3 shrink-0" />
+                              <span>Hasil Pencarian DOI:</span>
+                            </div>
+                            {item.doiUrl ? (
+                              <a
+                                href={item.doiUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline break-all block"
+                              >
+                                {item.doiUrl}
+                              </a>
+                            ) : (
+                              <p className="text-xs font-mono font-medium text-foreground truncate">
+                                DOI: {item.doi || "Terdaftar di GARUDA Portal"}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {activeGarudaSelect !== "author" && item.author && (
                           <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
                             <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
                             <span className="line-clamp-2">{item.author.replace(/\*/g, "")}</span>
