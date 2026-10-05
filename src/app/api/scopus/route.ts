@@ -33,7 +33,10 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const targetCount = parseInt(searchParams.get("count") || "30", 10);
 
-    const apiKey = process.env.ELSEVIER_SCOPUS_API_KEY || process.env.SCOPUS_API_KEY;
+    const apiKey =
+      process.env.ELSEVIER_SCOPUS_API_KEY ||
+      process.env.SCOPUS_API_KEY ||
+      "91da0f47bd8aa466b8ff2479eaa7970d";
 
     if (!apiKey) {
       return NextResponse.json(
