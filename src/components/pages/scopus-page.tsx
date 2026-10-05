@@ -13,15 +13,13 @@ import {
   Award,
   FileText,
   Globe,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Info,
   Library,
   Quote,
   ShieldCheck,
-  BrainCircuit,
   Download,
+  Info,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,20 +83,6 @@ interface GarudaItem {
   abstractText: string;
 }
 
-interface SemanticItem {
-  id: string;
-  title: string;
-  authors: string;
-  year: string;
-  venue: string;
-  abstractText: string;
-  citationCount: number;
-  isOpenAccess: boolean;
-  openAccessPdfUrl: string;
-  semanticUrl: string;
-  doiUrl: string;
-}
-
 interface ScholarItem {
   id: string;
   title: string;
@@ -109,61 +93,108 @@ interface ScholarItem {
   citationsCount: number;
 }
 
+function Liko3DSearchLoading({ providerName, brandColor = "orange" }: { providerName: string; brandColor?: string }) {
+  const colorMap: Record<string, { ring1: string; ring2: string; glow: string; text: string }> = {
+    orange: {
+      ring1: "border-orange-500/60",
+      ring2: "border-amber-400/40",
+      glow: "from-orange-500/40 via-amber-500/40 to-yellow-500/40",
+      text: "text-orange-600 dark:text-orange-400",
+    },
+    teal: {
+      ring1: "border-teal-600/60",
+      ring2: "border-emerald-400/40",
+      glow: "from-teal-600/40 via-emerald-500/40 to-cyan-500/40",
+      text: "text-teal-700 dark:text-teal-400",
+    },
+    red: {
+      ring1: "border-red-600/60",
+      ring2: "border-rose-400/40",
+      glow: "from-red-600/40 via-rose-500/40 to-orange-500/40",
+      text: "text-red-600 dark:text-red-400",
+    },
+    blue: {
+      ring1: "border-blue-600/60",
+      ring2: "border-sky-400/40",
+      glow: "from-blue-600/40 via-sky-500/40 to-indigo-500/40",
+      text: "text-blue-600 dark:text-blue-400",
+    },
+  };
+
+  const currentTheme = colorMap[brandColor] || colorMap.orange;
+
+  return (
+    <div className="py-14 md:py-20 flex flex-col items-center justify-center space-y-6 bg-white/70 dark:bg-slate-900/70 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 md:p-12 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-24 h-24 md:w-44 md:h-44 lg:w-52 lg:h-52 flex items-center justify-center">
+        <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${currentTheme.glow} blur-xl md:blur-3xl animate-pulse`} />
+        <div className={`absolute -inset-2 md:-inset-4 rounded-full border-2 md:border-3 border-dashed ${currentTheme.ring1} animate-[spin_6s_linear_infinite]`} />
+        <div className={`absolute -inset-4 md:-inset-8 rounded-full border md:border-2 ${currentTheme.ring2} animate-[spin_10s_linear_infinite_reverse]`} />
+        <div className="relative w-16 h-16 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full p-1.5 md:p-2 bg-white dark:bg-slate-800 shadow-2xl shadow-black/30 animate-[bounce_2s_infinite]">
+          <div className="w-full h-full rounded-full overflow-hidden border-2 md:border-3 border-white dark:border-slate-900 bg-white">
+            <img
+              src="/maskot.jpeg"
+              alt="Liko AI Searching"
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center space-y-1.5 pt-2 md:pt-4">
+        <div className="flex items-center justify-center gap-2.5 font-extrabold text-sm md:text-lg text-foreground">
+          <Loader2 className={`w-4 h-4 md:w-5 md:h-5 animate-spin ${currentTheme.text}`} />
+          <span>Liko sedang mencari data {providerName}...</span>
+        </div>
+        <p className="text-xs md:text-sm text-muted-foreground font-medium max-w-md mx-auto">
+          Eksplorasi referensi ilmiah presisi &amp; metadata akademis terverifikasi
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function ScopusPage() {
-  const { t, locale } = useTranslation();
+  const { locale } = useTranslation();
   const isEn = locale === "en";
   const { requireAuth } = useRequireAuth();
   const { collections } = useCollections();
 
-  // Provider Tab: "scopus" | "sinta" | "garuda" | "semantic" | "scholar"
-  const [provider, setProvider] = useState<
-    "scopus" | "sinta" | "garuda" | "semantic" | "scholar"
-  >("scopus");
+  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar"
+  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar">("scopus");
 
-  // Scopus State
+  // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
-  const [scopusQuery, setScopusQuery] = useState("machine learning");
-  const [activeScopusQuery, setActiveScopusQuery] = useState("machine learning");
+  const [scopusQuery, setScopusQuery] = useState("");
+  const [activeScopusQuery, setActiveScopusQuery] = useState("");
   const [scopusPage, setScopusPage] = useState(1);
   const [scopusLoading, setScopusLoading] = useState(false);
   const [scopusItems, setScopusItems] = useState<ScopusItem[]>([]);
   const [scopusTotalResults, setScopusTotalResults] = useState(0);
   const [scopusErrorMsg, setScopusErrorMsg] = useState<string | null>(null);
 
-  // SINTA State
-  const [sintaQuery, setSintaQuery] = useState("teknologi");
-  const [activeSintaQuery, setActiveSintaQuery] = useState("teknologi");
+  // SINTA State (Default query empty "")
+  const [sintaQuery, setSintaQuery] = useState("");
+  const [activeSintaQuery, setActiveSintaQuery] = useState("");
   const [sintaLevel, setSintaLevel] = useState<string>("");
   const [sintaPage, setSintaPage] = useState(1);
   const [sintaLoading, setSintaLoading] = useState(false);
-  const [sintaHasMore, setSintaHasMore] = useState(true);
   const [sintaItems, setSintaItems] = useState<SintaItem[]>([]);
   const [sintaErrorMsg, setSintaErrorMsg] = useState<string | null>(null);
 
-  // GARUDA State
-  const [garudaQuery, setGarudaQuery] = useState("teknologi");
-  const [activeGarudaQuery, setActiveGarudaQuery] = useState("teknologi");
+  // GARUDA State (Default query empty "")
+  const [garudaQuery, setGarudaQuery] = useState("");
+  const [activeGarudaQuery, setActiveGarudaQuery] = useState("");
   const [garudaPage, setGarudaPage] = useState(1);
   const [garudaLoading, setGarudaLoading] = useState(false);
-  const [garudaHasMore, setGarudaHasMore] = useState(true);
   const [garudaItems, setGarudaItems] = useState<GarudaItem[]>([]);
+  const [garudaTotalResults, setGarudaTotalResults] = useState(0);
   const [garudaErrorMsg, setGarudaErrorMsg] = useState<string | null>(null);
 
-  // Semantic Scholar State
-  const [semanticQuery, setSemanticQuery] = useState("artificial intelligence");
-  const [activeSemanticQuery, setActiveSemanticQuery] = useState("artificial intelligence");
-  const [semanticPage, setSemanticPage] = useState(1);
-  const [semanticLoading, setSemanticLoading] = useState(false);
-  const [semanticItems, setSemanticItems] = useState<SemanticItem[]>([]);
-  const [semanticTotalResults, setSemanticTotalResults] = useState(0);
-  const [semanticErrorMsg, setSemanticErrorMsg] = useState<string | null>(null);
-
-  // Google Scholar State
-  const [scholarQuery, setScholarQuery] = useState("sistem informasi");
-  const [activeScholarQuery, setActiveScholarQuery] = useState("sistem informasi");
+  // Google Scholar State (Default query empty "")
+  const [scholarQuery, setScholarQuery] = useState("");
+  const [activeScholarQuery, setActiveScholarQuery] = useState("");
   const [scholarPage, setScholarPage] = useState(1);
   const [scholarLoading, setScholarLoading] = useState(false);
-  const [scholarHasMore, setScholarHasMore] = useState(true);
   const [scholarItems, setScholarItems] = useState<ScholarItem[]>([]);
   const [scholarErrorMsg, setScholarErrorMsg] = useState<string | null>(null);
 
@@ -179,27 +210,31 @@ export function ScopusPage() {
   const [savingLink, setSavingLink] = useState(false);
   const [savedLinkIds, setSavedLinkIds] = useState<Record<string, boolean>>({});
 
-  // ── Scopus Data Fetcher ──
+  // ── Scopus Data Fetcher (30 items per page) ──
   const fetchScopusData = useCallback(
     async (q: string, activeTab: "article" | "journal", pageNum: number) => {
-      if (!q.trim()) return;
+      if (!q.trim()) {
+        setScopusItems([]);
+        setScopusTotalResults(0);
+        return;
+      }
       setScopusLoading(true);
       setScopusErrorMsg(null);
       try {
         const res = await fetch(
-          `/api/scopus?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}&count=12`
+          `/api/scopus?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}&count=30`
         );
         const data = await res.json();
         if (res.ok && data.ok) {
           setScopusItems(data.items || []);
           setScopusTotalResults(data.totalResults || 0);
         } else {
-          setScopusErrorMsg(data.error || "Gagal mengambil data dari Scopus API");
+          setScopusErrorMsg(data.error || "Gagal mengambil data dari Elsevier Scopus API");
           setScopusItems([]);
         }
       } catch (err: any) {
         console.error(err);
-        setScopusErrorMsg("Gagal terhubung ke layanan Scopus API");
+        setScopusErrorMsg("Gagal terhubung ke layanan Elsevier Scopus API");
       } finally {
         setScopusLoading(false);
       }
@@ -207,8 +242,12 @@ export function ScopusPage() {
     []
   );
 
-  // ── SINTA Scraper Fetcher ──
+  // ── SINTA Scraper Fetcher (30 items per page with strict level filtering) ──
   const fetchSintaData = useCallback(async (q: string, level: string, pageNum: number) => {
+    if (!q.trim() && !level) {
+      setSintaItems([]);
+      return;
+    }
     setSintaLoading(true);
     setSintaErrorMsg(null);
     try {
@@ -218,21 +257,24 @@ export function ScopusPage() {
       const data = await res.json();
       if (res.ok && data.ok) {
         setSintaItems(data.items || []);
-        setSintaHasMore(data.hasMore ?? (data.items?.length >= 10));
       } else {
         setSintaErrorMsg(data.error || "Gagal mengambil data jurnal SINTA");
       }
     } catch (err: any) {
       console.error(err);
-      setSintaErrorMsg("Gagal terhubung ke server scraper SINTA");
+      setSintaErrorMsg("Gagal terhubung ke server SINTA Kemdiktisaintek");
     } finally {
       setSintaLoading(false);
     }
   }, []);
 
-  // ── GARUDA Scraper Fetcher ──
+  // ── GARUDA Scraper Fetcher (30 items per page) ──
   const fetchGarudaData = useCallback(async (q: string, pageNum: number) => {
-    if (!q.trim()) return;
+    if (!q.trim()) {
+      setGarudaItems([]);
+      setGarudaTotalResults(0);
+      return;
+    }
     setGarudaLoading(true);
     setGarudaErrorMsg(null);
     try {
@@ -242,9 +284,11 @@ export function ScopusPage() {
       const data = await res.json();
       if (res.ok && data.ok) {
         setGarudaItems(data.items || []);
-        setGarudaHasMore(data.hasMore ?? (data.items?.length >= 10));
+        setGarudaTotalResults(data.totalResults || 0);
       } else {
         setGarudaErrorMsg(data.error || "Gagal mengambil data dari GARUDA");
+        setGarudaItems([]);
+        setGarudaTotalResults(0);
       }
     } catch (err: any) {
       console.error(err);
@@ -254,33 +298,12 @@ export function ScopusPage() {
     }
   }, []);
 
-  // ── Semantic Scholar Fetcher ──
-  const fetchSemanticData = useCallback(async (q: string, pageNum: number) => {
-    if (!q.trim()) return;
-    setSemanticLoading(true);
-    setSemanticErrorMsg(null);
-    try {
-      const res = await fetch(
-        `/api/semantic?q=${encodeURIComponent(q.trim())}&page=${pageNum}&count=12`
-      );
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        setSemanticItems(data.items || []);
-        setSemanticTotalResults(data.totalResults || 0);
-      } else {
-        setSemanticErrorMsg(data.error || "Gagal mengambil data dari Semantic Scholar API");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setSemanticErrorMsg("Gagal terhubung ke Semantic Scholar API");
-    } finally {
-      setSemanticLoading(false);
-    }
-  }, []);
-
-  // ── Google Scholar Fetcher ──
+  // ── Google Scholar Fetcher (30 items per page) ──
   const fetchScholarData = useCallback(async (q: string, pageNum: number) => {
-    if (!q.trim()) return;
+    if (!q.trim()) {
+      setScholarItems([]);
+      return;
+    }
     setScholarLoading(true);
     setScholarErrorMsg(null);
     try {
@@ -290,7 +313,6 @@ export function ScopusPage() {
       const data = await res.json();
       if (res.ok && data.ok) {
         setScholarItems(data.items || []);
-        setScholarHasMore(data.hasMore ?? (data.items?.length >= 10));
       } else {
         setScholarErrorMsg(data.error || "Gagal mengambil pencarian Google Scholar");
       }
@@ -303,15 +325,13 @@ export function ScopusPage() {
   }, []);
 
   useEffect(() => {
-    if (provider === "scopus") {
+    if (provider === "scopus" && activeScopusQuery.trim()) {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusPage);
-    } else if (provider === "sinta") {
+    } else if (provider === "sinta" && (activeSintaQuery.trim() || sintaLevel)) {
       fetchSintaData(activeSintaQuery, sintaLevel, sintaPage);
-    } else if (provider === "garuda") {
+    } else if (provider === "garuda" && activeGarudaQuery.trim()) {
       fetchGarudaData(activeGarudaQuery, garudaPage);
-    } else if (provider === "semantic") {
-      fetchSemanticData(activeSemanticQuery, semanticPage);
-    } else if (provider === "scholar") {
+    } else if (provider === "scholar" && activeScholarQuery.trim()) {
       fetchScholarData(activeScholarQuery, scholarPage);
     }
   }, [
@@ -324,14 +344,11 @@ export function ScopusPage() {
     sintaPage,
     activeGarudaQuery,
     garudaPage,
-    activeSemanticQuery,
-    semanticPage,
     activeScholarQuery,
     scholarPage,
     fetchScopusData,
     fetchSintaData,
     fetchGarudaData,
-    fetchSemanticData,
     fetchScholarData,
   ]);
 
@@ -345,12 +362,11 @@ export function ScopusPage() {
       setSintaPage(1);
       setActiveSintaQuery(sintaQuery.trim());
     } else if (provider === "garuda") {
+      if (!garudaQuery.trim()) return;
       setGarudaPage(1);
       setActiveGarudaQuery(garudaQuery.trim());
-    } else if (provider === "semantic") {
-      setSemanticPage(1);
-      setActiveSemanticQuery(semanticQuery.trim());
     } else if (provider === "scholar") {
+      if (!scholarQuery.trim()) return;
       setScholarPage(1);
       setActiveScholarQuery(scholarQuery.trim());
     }
@@ -382,8 +398,8 @@ export function ScopusPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: targetItem.url,
-          title: targetItem.title,
-          description: targetItem.desc,
+          title: targetItem.title.replace(/\*/g, ""),
+          description: targetItem.desc.replace(/\*/g, ""),
           category: "Riset & Jurnal",
           collectionId: selectedCollectionId || undefined,
         }),
@@ -400,7 +416,7 @@ export function ScopusPage() {
         );
         setSaveModalOpen(false);
       } else {
-        toast.error(data.error || (isEn ? "Failed to save link" : "Gagal menyimpan link"), "Error");
+        toast.error(data.error || (isEn ? "Gagal menyimpan link" : "Gagal menyimpan link"), "Error");
       }
     } catch (err) {
       console.error(err);
@@ -410,101 +426,97 @@ export function ScopusPage() {
     }
   };
 
-  const presets = [
-    "Artificial Intelligence",
-    "Machine Learning",
-    "Renewable Energy",
-    "Biotechnology",
-    "Data Science",
-    "Cybersecurity",
-  ];
-
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 px-1 sm:px-0">
       {/* Hero Header Section */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-10 border border-primary/20 bg-gradient-to-br from-primary/10 via-slate-50 to-primary/5 dark:from-primary/20 dark:via-slate-900 dark:to-slate-900/60 shadow-xl backdrop-blur-2xl">
+      <div className="relative overflow-hidden rounded-3xl p-5 sm:p-8 border border-primary/20 bg-gradient-to-br from-primary/10 via-slate-50 to-primary/5 dark:from-primary/20 dark:via-slate-900 dark:to-slate-900/60 shadow-xl backdrop-blur-2xl">
         <div className="absolute -right-12 -top-12 w-64 h-64 bg-primary/20 dark:bg-primary/30 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-4 max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-semibold shadow-xs">
-            <GraduationCap className="w-4 h-4" />
-            <span>Pusat Riset Ilmiah Multi-Sumber • Academic Research Hub</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Left Column: Title, description, 4 tab buttons */}
+          <div className="space-y-4 flex-1">
+            <h1 className="text-xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight leading-tight">
+              Pusat Penelusuran Riset Ilmiah
+            </h1>
+
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              Eksplorasi referensi ilmiah dari empat sumber utama: Elsevier Scopus API, SINTA Kemdiktisaintek, GARUDA Rujukan, dan Google Scholar secara profesional dan transparan.
+            </p>
+
+            {/* 4 Provider Selector Buttons: Clean Text-Only Tabs (Extracted Logo Palettes) */}
+            <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => setProvider("scopus")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "scopus"
+                    ? "bg-orange-600 text-white border-orange-600 shadow-md ring-2 ring-orange-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>Elsevier Scopus</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("sinta")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "sinta"
+                    ? "bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-600/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>SINTA Indonesia</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("garuda")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "garuda"
+                    ? "bg-red-600 text-white border-red-600 shadow-md ring-2 ring-red-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>GARUDA Portal</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("scholar")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "scholar"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>Google Scholar</span>
+              </button>
+            </div>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight leading-tight">
-            Pusat Riset Ilmiah (Scopus, SINTA, GARUDA & Scholar)
-          </h1>
-
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Eksplorasi artikel ilmiah, jurnal bereputasi internasional (Scopus & Semantic Scholar), jurnal terakreditasi nasional (SINTA S1–S6), portal garba rujukan (GARUDA Kemdiktisaintek), dan Google Scholar dalam satu tempat.
-          </p>
-
-          {/* Top Provider Selector Tabs (5 Providers) */}
-          <div className="pt-2 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setProvider("scopus")}
-              className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border ${
-                provider === "scopus"
-                  ? "bg-primary text-primary-foreground border-primary shadow-md scale-102"
-                  : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>🎓 Scopus API</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setProvider("sinta")}
-              className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border ${
-                provider === "sinta"
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-md scale-102"
-                  : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>🇮🇩 SINTA (S1-S6)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setProvider("garuda")}
-              className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border ${
-                provider === "garuda"
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md scale-102"
-                  : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Library className="w-4 h-4" />
-              <span>📚 GARUDA</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setProvider("semantic")}
-              className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border ${
-                provider === "semantic"
-                  ? "bg-purple-600 text-white border-purple-600 shadow-md scale-102"
-                  : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <BrainCircuit className="w-4 h-4" />
-              <span>🧠 Semantic Scholar</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setProvider("scholar")}
-              className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border ${
-                provider === "scholar"
-                  ? "bg-amber-600 text-white border-amber-600 shadow-md scale-102"
-                  : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>📖 Google Scholar</span>
-            </button>
+          {/* Right Column: Big Display Logo Badge in right empty space (Full Image, No Text) */}
+          <div className="hidden md:flex items-center justify-center p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xl backdrop-blur-xl shrink-0 md:w-64 md:h-64 lg:w-72 lg:h-72 transition-all duration-300">
+            {provider === "scopus" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-orange-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/scopus.jpeg" alt="Elsevier Scopus" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "sinta" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-teal-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/sinta.jpeg" alt="SINTA Kemdiktisaintek" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "garuda" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-red-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/garuda01.jpeg" alt="GARUDA Kemdiktisaintek" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "scholar" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-blue-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/google scholar.jpeg" alt="Google Scholar" className="w-full h-full object-contain" />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -512,30 +524,6 @@ export function ScopusPage() {
       {/* ── 1. SCOPUS SECTION ── */}
       {provider === "scopus" && (
         <div className="space-y-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-              Topik Scopus:
-            </span>
-            {presets.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  setScopusQuery(preset);
-                  setScopusPage(1);
-                  setActiveScopusQuery(preset);
-                }}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
-                  activeScopusQuery.toLowerCase() === preset.toLowerCase()
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-foreground hover:border-primary/50"
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
               <button
@@ -546,12 +534,12 @@ export function ScopusPage() {
                 }}
                 className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   scopusSubTab === "article"
-                    ? "bg-white dark:bg-slate-900 text-primary shadow-sm"
+                    ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span>Artikel & Paper</span>
+                <span>Pencarian Artikel</span>
               </button>
               <button
                 type="button"
@@ -561,7 +549,7 @@ export function ScopusPage() {
                 }}
                 className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   scopusSubTab === "journal"
-                    ? "bg-white dark:bg-slate-900 text-primary shadow-sm"
+                    ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -572,8 +560,8 @@ export function ScopusPage() {
 
             {scopusTotalResults > 0 && (
               <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
-                <BookOpen className="w-3.5 h-3.5 text-primary" />
-                <span>Ditemukan {scopusTotalResults.toLocaleString()} hasil Scopus</span>
+                <BookOpen className="w-3.5 h-3.5 text-orange-600" />
+                <span>Total Metadata: {scopusTotalResults.toLocaleString()} Publikasi Scopus</span>
               </div>
             )}
           </div>
@@ -585,15 +573,15 @@ export function ScopusPage() {
               onChange={(e) => setScopusQuery(e.target.value)}
               placeholder={
                 scopusSubTab === "article"
-                  ? "Cari artikel Scopus berdasarkan judul, DOI, atau penulis..."
-                  : "Cari jurnal Scopus berdasarkan nama atau penerbit..."
+                  ? "Ketik judul artikel, DOI, atau topik penelitian Scopus..."
+                  : "Ketik nama jurnal atau penerbit bereputasi Scopus..."
               }
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-primary/20 shadow-md focus:border-primary transition-all"
+              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-orange-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-orange-500 focus:border-orange-500 transition-all"
             />
             <Button
               type="submit"
               disabled={scopusLoading}
-              className="absolute right-1.5 h-9.5 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+              className="absolute right-1.5 h-9.5 px-5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
             >
               {scopusLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari Scopus"}
             </Button>
@@ -607,82 +595,125 @@ export function ScopusPage() {
           )}
 
           {scopusLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200 dark:border-slate-700/60" />
-              ))}
+            <Liko3DSearchLoading providerName="Scopus" brandColor="orange" />
+          ) : !activeScopusQuery.trim() ? (
+            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
+              <Search className="w-12 h-12 mx-auto text-orange-500/40" />
+              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk memulai pencarian Scopus</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Masukkan topik penelitian, judul artikel, atau nama jurnal pada kolom di atas untuk menampilkan hasil.
+              </p>
             </div>
           ) : scopusItems.length === 0 && !scopusErrorMsg ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Library className="w-12 h-12 mx-auto text-muted-foreground/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada data Scopus ditemukan</h3>
+              <Library className="w-12 h-12 mx-auto text-orange-500/40" />
+              <h3 className="text-base font-bold text-foreground">Tidak ada data Scopus ditemukan untuk "{activeScopusQuery}"</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-              {scopusItems.map((item) => {
-                const isSaved = savedLinkIds[item.id];
-                return (
-                  <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-primary/40 transition-all duration-200">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider font-mono">
-                          {item.subtypeDescription || item.aggregationType || "Scopus Indexed"}
-                        </span>
-                        {item.openAccess && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
-                            <Globe className="w-3 h-3" />
-                            <span>Open Access</span>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                {scopusItems.map((item) => {
+                  const isSaved = savedLinkIds[item.id];
+                  const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+                  return (
+                    <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-orange-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-orange-500/50 transition-all duration-200">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[11px] font-bold uppercase tracking-wider font-mono">
+                            {item.subtypeDescription || item.aggregationType || "Scopus Indexed"}
                           </span>
-                        )}
+                          {item.openAccess && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                              <Globe className="w-3 h-3" />
+                              <span>Open Access</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-orange-600 transition-colors">
+                          <a href={item.doiUrl || item.scopusUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white border border-orange-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                              <img src="/scopus.jpeg" alt="Scopus Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="flex-1">{cleanTitle}</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-orange-600" />
+                          </a>
+                        </h3>
+
+                        <div className="space-y-1.5 text-xs text-muted-foreground pt-1">
+                          {item.creator && (
+                            <p className="flex items-center gap-1.5 font-medium truncate">
+                              <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.creator.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+                          {item.publicationName && (
+                            <p className="flex items-center gap-1.5 font-medium truncate text-foreground/80">
+                              <BookOpen className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.publicationName.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+                          {item.publisher && (
+                            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                              <Building2 className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.publisher.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-primary transition-colors">
-                        <a href={item.doiUrl || item.scopusUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-1.5">
-                          <span>{item.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-primary" />
-                        </a>
-                      </h3>
+                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                          {item.citedByCount !== undefined && (
+                            <span className="flex items-center gap-1 text-orange-600 font-bold bg-orange-500/10 px-2 py-1 rounded-md text-[11px]">
+                              <Award className="w-3.5 h-3.5" />
+                              <span>{item.citedByCount} Citations</span>
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="space-y-1.5 text-xs text-muted-foreground pt-1">
-                        {item.creator && (
-                          <p className="flex items-center gap-1.5 font-medium truncate">
-                            <Quote className="w-3.5 h-3.5 text-primary/70 shrink-0" />
-                            <span className="truncate">{item.creator}</span>
-                          </p>
-                        )}
-                        {item.publicationName && (
-                          <p className="flex items-center gap-1.5 font-medium truncate text-foreground/80">
-                            <BookOpen className="w-3.5 h-3.5 text-primary/70 shrink-0" />
-                            <span className="truncate">{item.publicationName}</span>
-                          </p>
-                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSaved ? "outline" : "default"}
+                          disabled={isSaved}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.doiUrl || item.scopusUrl, `[Scopus] ${item.publicationName || ''}`)}
+                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white"}`}
+                        >
+                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                        </Button>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
-                        {item.citedByCount !== undefined && (
-                          <span className="flex items-center gap-1 text-primary font-bold bg-primary/10 px-2 py-1 rounded-md text-[11px]">
-                            <Award className="w-3.5 h-3.5" />
-                            <span>{item.citedByCount} Citations</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isSaved ? "outline" : "default"}
-                        disabled={isSaved}
-                        onClick={() => openSaveModal(item.id, item.title, item.doiUrl || item.scopusUrl, `[Scopus] ${item.publicationName || ''}`)}
-                        className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" : "bg-primary text-primary-foreground"}`}
-                      >
-                        {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Scopus Pagination Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={scopusPage <= 1 || scopusLoading}
+                  onClick={() => setScopusPage((prev) => Math.max(1, prev - 1))}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Halaman Sebelumnya</span>
+                </Button>
+                <span className="text-xs font-semibold text-muted-foreground font-mono">
+                  Halaman {scopusPage} {scopusTotalResults > 0 ? `dari ${Math.ceil(scopusTotalResults / 30).toLocaleString()}` : ""}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={scopusLoading || scopusItems.length < 30}
+                  onClick={() => setScopusPage((prev) => prev + 1)}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Halaman Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -691,27 +722,36 @@ export function ScopusPage() {
       {/* ── 2. SINTA SECTION ── */}
       {provider === "sinta" && (
         <div className="space-y-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-              Filter Peringkat SINTA:
-            </span>
-            <button
-              type="button"
-              onClick={() => { setSintaLevel(""); setSintaPage(1); }}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === "" ? "bg-emerald-600 text-white border-emerald-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-            >
-              Semua SINTA
-            </button>
-            {["1", "2", "3", "4", "5", "6"].map((lvl) => (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
+                Filter Peringkat SINTA:
+              </span>
               <button
-                key={lvl}
                 type="button"
-                onClick={() => { setSintaLevel(lvl); setSintaPage(1); }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === lvl ? "bg-emerald-600 text-white border-emerald-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+                onClick={() => { setSintaLevel(""); setSintaPage(1); }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === "" ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
               >
-                SINTA {lvl} (S{lvl})
+                Semua Peringkat
               </button>
-            ))}
+              {["1", "2", "3", "4", "5", "6"].map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => { setSintaLevel(lvl); setSintaPage(1); }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === lvl ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+                >
+                  SINTA {lvl}
+                </button>
+              ))}
+            </div>
+
+            {sintaItems.length > 0 && (
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+                <span>Total Metadata: {sintaLevel === "1" ? "1.260" : sintaLevel === "2" ? "2.590" : sintaLevel === "3" ? "2.750" : sintaLevel === "4" ? "2.400" : sintaLevel === "5" ? "1.500" : sintaLevel === "6" ? "1.350" : "16.772"} Jurnal SINTA</span>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
@@ -719,81 +759,119 @@ export function ScopusPage() {
             <Input
               value={sintaQuery}
               onChange={(e) => setSintaQuery(e.target.value)}
-              placeholder="Cari jurnal SINTA berdasarkan nama jurnal, universitas, atau kata kunci..."
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-emerald-500/30 shadow-md focus:border-emerald-500 transition-all"
+              placeholder="Ketik nama jurnal SINTA, universitas, atau kata kunci..."
+              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-teal-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-teal-600 focus:border-teal-600 transition-all"
             />
-            <Button type="submit" disabled={sintaLoading} className="absolute right-1.5 h-9.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl cursor-pointer">
+            <Button type="submit" disabled={sintaLoading} className="absolute right-1.5 h-9.5 px-5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl cursor-pointer">
               {sintaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari SINTA"}
             </Button>
           </form>
 
           {sintaLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200 dark:border-slate-700/60" />)}
+            <Liko3DSearchLoading providerName="SINTA Kemdiktisaintek" brandColor="teal" />
+          ) : !activeSintaQuery.trim() && !sintaLevel ? (
+            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
+              <Search className="w-12 h-12 mx-auto text-teal-500/40" />
+              <h3 className="text-base font-bold text-foreground">Ketik kata kunci atau pilih filter SINTA untuk memulai</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Cari jurnal terakreditasi SINTA (S1–S6) berdasarkan nama jurnal, universitas, atau bidang ilmu.
+              </p>
             </div>
           ) : sintaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <ShieldCheck className="w-12 h-12 mx-auto text-emerald-500/40" />
+              <ShieldCheck className="w-12 h-12 mx-auto text-teal-500/40" />
               <h3 className="text-base font-bold text-foreground">Tidak ada jurnal SINTA ditemukan</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-              {sintaItems.map((item) => {
-                const isSaved = savedLinkIds[item.id];
-                return (
-                  <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-emerald-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-emerald-500/50 transition-all">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs tracking-wider border border-emerald-500/30">
-                          <ShieldCheck className="w-4 h-4" />
-                          <span>{item.sintaRating} Accredited</span>
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono truncate">{item.issnText}</span>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                {sintaItems.map((item) => {
+                  const isSaved = savedLinkIds[item.id];
+                  const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+                  return (
+                    <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-teal-700 dark:text-teal-400 font-extrabold text-xs whitespace-nowrap shrink-0">
+                            {item.sintaRating} Accredited
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono truncate">{item.issnText}</span>
+                        </div>
+
+                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-teal-700 transition-colors">
+                          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white border border-teal-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                              <img src="/sinta.jpeg" alt="SINTA Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="flex-1">{cleanTitle}</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-teal-700" />
+                          </a>
+                        </h3>
+
+                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
+                          <Building2 className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                          <span className="truncate">{item.institution.replace(/\*/g, "")}</span>
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] font-semibold">
+                          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                            <span className="text-muted-foreground text-[10px] block font-mono">Impact Score</span>
+                            <span className="text-teal-700 dark:text-teal-400 font-bold">{item.impact}</span>
+                          </div>
+                          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                            <span className="text-muted-foreground text-[10px] block font-mono">H5-Index</span>
+                            <span className="text-foreground font-bold">{item.h5Index}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-emerald-600 transition-colors">
-                        <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-1.5">
-                          <span>{item.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-emerald-600" />
+                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        <a href={item.sintaProfileUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-teal-700 font-bold hover:underline flex items-center gap-1">
+                          <span>Profil SINTA</span>
+                          <ExternalLink className="w-3 h-3" />
                         </a>
-                      </h3>
-
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
-                        <Building2 className="w-3.5 h-3.5 text-emerald-600/70 shrink-0" />
-                        <span className="truncate">{item.institution}</span>
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] font-semibold">
-                        <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                          <span className="text-muted-foreground text-[10px] block font-mono">Impact Score</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">{item.impact}</span>
-                        </div>
-                        <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                          <span className="text-muted-foreground text-[10px] block font-mono">H5-Index</span>
-                          <span className="text-foreground font-bold">{item.h5Index}</span>
-                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSaved ? "outline" : "default"}
+                          disabled={isSaved}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.websiteUrl || item.sintaProfileUrl, `[Akreditasi ${item.sintaRating}] ${item.institution}`)}
+                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white"}`}
+                        >
+                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                        </Button>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      <a href={item.sintaProfileUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-emerald-600 font-bold hover:underline flex items-center gap-1">
-                        <span>Profil SINTA</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isSaved ? "outline" : "default"}
-                        disabled={isSaved}
-                        onClick={() => openSaveModal(item.id, item.title, item.websiteUrl || item.sintaProfileUrl, `[Akreditasi ${item.sintaRating}] ${item.institution}`)}
-                        className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" : "bg-emerald-600 text-white"}`}
-                      >
-                        {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* SINTA Pagination Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={sintaPage <= 1 || sintaLoading}
+                  onClick={() => setSintaPage((prev) => Math.max(1, prev - 1))}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Halaman Sebelumnya</span>
+                </Button>
+                <span className="text-xs font-semibold text-muted-foreground font-mono">
+                  Halaman {sintaPage} dari {sintaLevel === "1" ? "42" : sintaLevel === "2" ? "86" : sintaLevel === "3" ? "92" : sintaLevel === "4" ? "80" : sintaLevel === "5" ? "50" : sintaLevel === "6" ? "45" : "559"}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={sintaLoading || sintaItems.length < 30}
+                  onClick={() => setSintaPage((prev) => prev + 1)}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Halaman Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -802,247 +880,274 @@ export function ScopusPage() {
       {/* ── 3. GARUDA SECTION ── */}
       {provider === "garuda" && (
         <div className="space-y-5">
+          {garudaTotalResults > 0 && (
+            <div className="flex items-center justify-end">
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
+                <BookOpen className="w-3.5 h-3.5 text-red-600" />
+                <span>Total Metadata: {garudaTotalResults.toLocaleString()} Artikel & Jurnal GARUDA</span>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
             <Input
               value={garudaQuery}
               onChange={(e) => setGarudaQuery(e.target.value)}
-              placeholder="Cari artikel ilmiah di Garba Rujukan Digital (GARUDA Kemdiktisaintek)..."
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-blue-500/30 shadow-md focus:border-blue-500 transition-all"
+              placeholder="Ketik kata kunci artikel di Garba Rujukan Digital (GARUDA Kemdiktisaintek)..."
+              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-red-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-red-600 focus:border-red-600 transition-all"
             />
-            <Button type="submit" disabled={garudaLoading} className="absolute right-1.5 h-9.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer">
+            <Button type="submit" disabled={garudaLoading} className="absolute right-1.5 h-9.5 px-5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl cursor-pointer">
               {garudaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari GARUDA"}
             </Button>
           </form>
 
           {garudaLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200 dark:border-slate-700/60" />)}
+            <Liko3DSearchLoading providerName="GARUDA Portal" brandColor="red" />
+          ) : !activeGarudaQuery.trim() ? (
+            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
+              <Search className="w-12 h-12 mx-auto text-red-500/40" />
+              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari artikel GARUDA</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Cari publikasi artikel ilmiah Indonesia dari Garba Rujukan Digital Kemdiktisaintek.
+              </p>
             </div>
           ) : garudaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Library className="w-12 h-12 mx-auto text-blue-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada artikel GARUDA ditemukan</h3>
+              <Library className="w-12 h-12 mx-auto text-red-500/40" />
+              <h3 className="text-base font-bold text-foreground">Tidak ada artikel GARUDA ditemukan untuk "{activeGarudaQuery}"</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-              {garudaItems.map((item) => {
-                const isSaved = savedLinkIds[item.id];
-                return (
-                  <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-blue-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-blue-500/50 transition-all">
-                    <div className="space-y-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] font-bold uppercase font-mono">
-                        GARUDA Rujukan
-                      </span>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                {garudaItems.map((item) => {
+                  const isSaved = savedLinkIds[item.id];
+                  const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+                  return (
+                    <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-red-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-red-500/50 transition-all">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[11px] font-bold uppercase font-mono">
+                            GARUDA Rujukan
+                          </span>
+                          {item.downloadUrl && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[10px] font-bold">
+                              <Download className="w-3 h-3" />
+                              <span>PDF Direct</span>
+                            </span>
+                          )}
+                        </div>
 
-                      <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-blue-600 transition-colors">
-                        <a href={item.doiUrl || item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-1.5">
-                          <span>{item.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-blue-600" />
-                        </a>
-                      </h3>
+                        {/* GARUDA Cards: Only Title, Authors, Journal Info & Publisher */}
+                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-red-600 transition-colors">
+                          <a href={item.doiUrl || item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white border border-red-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                              <img src="/garuda01.jpeg" alt="GARUDA Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="flex-1">{cleanTitle}</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-red-600" />
+                          </a>
+                        </h3>
 
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
-                        <Quote className="w-3.5 h-3.5 text-blue-600/70 shrink-0" />
-                        <span className="truncate">{item.author}</span>
-                      </p>
-
-                      {item.journalInfo && (
-                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                          <BookOpen className="w-3.5 h-3.5 shrink-0 text-blue-600/70" />
-                          <span className="truncate">{item.journalInfo}</span>
+                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
+                          <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                          <span className="line-clamp-2">{item.author.replace(/\*/g, "")}</span>
                         </p>
-                      )}
-                    </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      {item.downloadUrl ? (
-                        <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-                          <Download className="w-3.5 h-3.5" />
-                          <span>PDF Original</span>
-                        </a>
-                      ) : <span />}
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isSaved ? "outline" : "default"}
-                        disabled={isSaved}
-                        onClick={() => openSaveModal(item.id, item.title, item.doiUrl || item.garudaUrl, `[GARUDA] ${item.author} • ${item.journalInfo}`)}
-                        className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" : "bg-blue-600 text-white"}`}
-                      >
-                        {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── 4. SEMANTIC SCHOLAR SECTION ── */}
-      {provider === "semantic" && (
-        <div className="space-y-5">
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-            <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
-            <Input
-              value={semanticQuery}
-              onChange={(e) => setSemanticQuery(e.target.value)}
-              placeholder="Cari riset global di Semantic Scholar (AI Powered Academic Graph)..."
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-purple-500/30 shadow-md focus:border-purple-500 transition-all"
-            />
-            <Button type="submit" disabled={semanticLoading} className="absolute right-1.5 h-9.5 px-5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl cursor-pointer">
-              {semanticLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari Semantic"}
-            </Button>
-          </form>
-
-          {semanticLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200 dark:border-slate-700/60" />)}
-            </div>
-          ) : semanticItems.length === 0 ? (
-            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <BrainCircuit className="w-12 h-12 mx-auto text-purple-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada paper Semantic Scholar ditemukan</h3>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-              {semanticItems.map((item) => {
-                const isSaved = savedLinkIds[item.id];
-                return (
-                  <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-purple-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-purple-500/50 transition-all">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[11px] font-bold uppercase font-mono">
-                          Semantic Graph
-                        </span>
-                        {item.year && <span className="text-[11px] font-mono text-muted-foreground">{item.year}</span>}
+                        {item.journalInfo && (
+                          <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                            <BookOpen className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                            <span className="truncate">{item.journalInfo.replace(/\*/g, "")}</span>
+                          </p>
+                        )}
+                        {item.publisher && (
+                          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                            <Building2 className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                            <span className="truncate">{item.publisher.replace(/\*/g, "")}</span>
+                          </p>
+                        )}
                       </div>
 
-                      <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-purple-600 transition-colors">
-                        <a href={item.doiUrl || item.semanticUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-1.5">
-                          <span>{item.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-purple-600" />
-                        </a>
-                      </h3>
+                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        {item.downloadUrl ? (
+                          <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1">
+                            <Download className="w-3.5 h-3.5" />
+                            <span>PDF Original</span>
+                          </a>
+                        ) : <span className="text-[11px] text-muted-foreground font-mono">Tautan Resmi</span>}
 
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
-                        <Quote className="w-3.5 h-3.5 text-purple-600/70 shrink-0" />
-                        <span className="truncate">{item.authors}</span>
-                      </p>
-
-                      {item.venue && (
-                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                          <BookOpen className="w-3.5 h-3.5 shrink-0 text-purple-600/70" />
-                          <span className="truncate">{item.venue}</span>
-                        </p>
-                      )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSaved ? "outline" : "default"}
+                          disabled={isSaved}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.doiUrl || item.garudaUrl, `[GARUDA] ${item.author} • ${item.journalInfo}`)}
+                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-red-600 hover:bg-red-700 active:bg-red-800 text-white"}`}
+                        >
+                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                        </Button>
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-1 text-purple-600 font-bold bg-purple-500/10 px-2 py-1 rounded-md text-[11px]">
-                        <Award className="w-3.5 h-3.5" />
-                        <span>{item.citationCount} Citations</span>
-                      </span>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isSaved ? "outline" : "default"}
-                        disabled={isSaved}
-                        onClick={() => openSaveModal(item.id, item.title, item.doiUrl || item.semanticUrl, `[Semantic Scholar] ${item.authors} (${item.year})`)}
-                        className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" : "bg-purple-600 text-white"}`}
-                      >
-                        {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* GARUDA Pagination Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={garudaPage <= 1 || garudaLoading}
+                  onClick={() => setGarudaPage((prev) => Math.max(1, prev - 1))}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Halaman Sebelumnya</span>
+                </Button>
+                <span className="text-xs font-semibold text-muted-foreground font-mono">
+                  Halaman {garudaPage} {garudaTotalResults > 0 ? `dari ${Math.ceil(garudaTotalResults / 30).toLocaleString()}` : ""}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={garudaLoading || garudaItems.length < 30}
+                  onClick={() => setGarudaPage((prev) => prev + 1)}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Halaman Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* ── 5. GOOGLE SCHOLAR SECTION ── */}
+      {/* ── 4. GOOGLE SCHOLAR SECTION ── */}
       {provider === "scholar" && (
         <div className="space-y-5">
+          {scholarItems.length > 0 && (
+            <div className="flex items-center justify-end">
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                <span>Total Metadata: &gt;100.000.000 Karya Ilmiah Global</span>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
             <Input
               value={scholarQuery}
               onChange={(e) => setScholarQuery(e.target.value)}
-              placeholder="Cari referensi akademik di Google Scholar..."
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-amber-500/30 shadow-md focus:border-amber-500 transition-all"
+              placeholder="Ketik kata kunci referensi akademik di Google Scholar..."
+              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-blue-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-500 focus:border-blue-500 transition-all"
             />
-            <Button type="submit" disabled={scholarLoading} className="absolute right-1.5 h-9.5 px-5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl cursor-pointer">
+            <Button type="submit" disabled={scholarLoading} className="absolute right-1.5 h-9.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer">
               {scholarLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari Scholar"}
             </Button>
           </form>
 
           {scholarLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200 dark:border-slate-700/60" />)}
+            <Liko3DSearchLoading providerName="Google Scholar" brandColor="blue" />
+          ) : !activeScholarQuery.trim() ? (
+            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
+              <Search className="w-12 h-12 mx-auto text-blue-500/40" />
+              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari Google Scholar</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Cari referensi karya ilmiah, buku, dan artikel terindeks Google Scholar.
+              </p>
             </div>
           ) : scholarItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <BookOpen className="w-12 h-12 mx-auto text-amber-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada hasil Google Scholar ditemukan</h3>
+              <BookOpen className="w-12 h-12 mx-auto text-blue-500/40" />
+              <h3 className="text-base font-bold text-foreground">Tidak ada hasil Google Scholar ditemukan untuk "{activeScholarQuery}"</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
-              {scholarItems.map((item) => {
-                const isSaved = savedLinkIds[item.id];
-                return (
-                  <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-amber-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-amber-500/50 transition-all">
-                    <div className="space-y-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-bold uppercase font-mono">
-                        Google Scholar
-                      </span>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                {scholarItems.map((item) => {
+                  const isSaved = savedLinkIds[item.id];
+                  const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+                  return (
+                    <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-blue-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-blue-500/50 transition-all">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] font-bold uppercase font-mono">
+                            Google Scholar
+                          </span>
+                        </div>
 
-                      <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-amber-600 transition-colors">
-                        <a href={item.scholarUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-1.5">
-                          <span>{item.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-amber-600" />
-                        </a>
-                      </h3>
+                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-blue-600 transition-colors">
+                          <a href={item.scholarUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-md bg-white border border-blue-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                              <img src="/google scholar.jpeg" alt="Google Scholar Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="flex-1">{cleanTitle}</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-blue-600" />
+                          </a>
+                        </h3>
 
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
-                        <Quote className="w-3.5 h-3.5 text-amber-600/70 shrink-0" />
-                        <span>{item.authorJournalText}</span>
-                      </p>
-
-                      {item.snippetText && (
-                        <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed">
-                          {item.snippetText}
+                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
+                          <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                          <span>{item.authorJournalText.replace(/\*/g, "")}</span>
                         </p>
-                      )}
-                    </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                      {item.citationsCount > 0 ? (
-                        <span className="flex items-center gap-1 text-amber-600 font-bold bg-amber-500/10 px-2 py-1 rounded-md text-[11px]">
-                          <Award className="w-3.5 h-3.5" />
-                          <span>Dirujuk {item.citationsCount}×</span>
-                        </span>
-                      ) : <span />}
+                        {item.snippetText && (
+                          <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed">
+                            {item.snippetText.replace(/\*/g, "")}
+                          </p>
+                        )}
+                      </div>
 
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isSaved ? "outline" : "default"}
-                        disabled={isSaved}
-                        onClick={() => openSaveModal(item.id, item.title, item.scholarUrl, `[Google Scholar] ${item.authorJournalText}`)}
-                        className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" : "bg-amber-600 text-white"}`}
-                      >
-                        {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                      </Button>
+                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        {item.citationsCount > 0 ? (
+                          <span className="flex items-center gap-1 text-blue-600 font-bold bg-blue-500/10 px-2 py-1 rounded-md text-[11px]">
+                            <Award className="w-3.5 h-3.5" />
+                            <span>Dirujuk {item.citationsCount}×</span>
+                          </span>
+                        ) : <span className="text-[11px] text-muted-foreground font-mono">Google Index</span>}
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSaved ? "outline" : "default"}
+                          disabled={isSaved}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.scholarUrl, `[Google Scholar] ${item.authorJournalText}`)}
+                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white"}`}
+                        >
+                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* Scholar Pagination Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={scholarPage <= 1 || scholarLoading}
+                  onClick={() => setScholarPage((prev) => Math.max(1, prev - 1))}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Halaman Sebelumnya</span>
+                </Button>
+                <span className="text-xs font-semibold text-muted-foreground font-mono">
+                  Halaman {scholarPage} dari &gt;3.300.000
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={scholarLoading || scholarItems.length < 30}
+                  onClick={() => setScholarPage((prev) => prev + 1)}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Halaman Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>

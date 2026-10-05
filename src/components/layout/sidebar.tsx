@@ -253,7 +253,7 @@ function NavContent({
     { href: "/collections", label: t("nav.collections"), icon: FolderOpen, tourId: "collections" },
     { href: "/notes", label: t("nav.notes"), icon: PenBox, tourId: "notes" },
     { href: "/roadmaps", label: t("nav.roadmaps") || "Roadmaps", icon: GitFork, tourId: "roadmaps" },
-    { href: "/scopus", label: t("nav.scopus") || "Riset Scopus", icon: GraduationCap, tourId: "scopus" },
+    { href: "/scopus", label: locale === "en" ? "Research" : "Riset", icon: GraduationCap, tourId: "scopus" },
   ];
 
   const now = new Date();

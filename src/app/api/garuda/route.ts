@@ -1,23 +1,11 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
-export async function GET(request: Request) {
+async function fetchGarudaSinglePage(targetUrl: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
   try {
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q") || "";
-    const page = searchParams.get("page") || "1";
-
-    if (!query.trim()) {
-      return NextResponse.json({ items: [], totalResults: 0 });
-    }
-
-    const targetUrl = `https://garuda.kemdiktisaintek.go.id/documents?page=${page}&q=${encodeURIComponent(
-      query.trim()
-    )}`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-
     const res = await fetch(targetUrl, {
       signal: controller.signal,
       headers: {
@@ -27,17 +15,13 @@ export async function GET(request: Request) {
       },
     }).finally(() => clearTimeout(timeoutId));
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Gagal mengambil data dari portal GARUDA Kemdiktisaintek" },
-        { status: res.status }
-      );
-    }
+    if (!res.ok) return { items: [], totalResults: 0 };
 
     const html = await res.text();
     const $ = cheerio.load(html);
 
     const items: any[] = [];
+    let totalResults = 0;
 
     $(".article-item").each((_, el) => {
       const titleEl = $(el).find("a.title-article").first();
@@ -50,9 +34,16 @@ export async function GET(request: Request) {
         ? detailPath
         : `https://garuda.kemdiktisaintek.go.id${detailPath}`;
 
-      const author = $(el).find("a.author-article").text().replace(/[\n\r\t]+/g, " ").trim();
+      const authorsList: string[] = [];
+      $(el)
+        .find("a.author-article")
+        .each((_, aEl) => {
+          const aText = $(aEl).text().replace(/[\n\r\t]+/g, " ").trim();
+          if (aText) authorsList.push(aText);
+        });
+      const author = authorsList.join(", ");
       const journalInfo = $(el).find("xmp.subtitle-article").first().text().replace(/[\n\r\t]+/g, " ").trim();
-      
+
       const publisherEl = $(el).find("i.subtitle-article:contains('Publisher')").next("xmp.subtitle-article");
       const publisher = publisherEl.text().replace(/[\n\r\t]+/g, " ").trim();
 
@@ -76,23 +67,68 @@ export async function GET(request: Request) {
       });
     });
 
-    // Check pagination total
     const paginationText = $(".pagination-info").text().trim();
     const totalMatch = paginationText.match(/Total Record\s*:\s*(\d+)/i);
-    const totalResults = totalMatch ? parseInt(totalMatch[1], 10) : items.length;
-    const hasMore = items.length >= 10;
+    if (totalMatch) {
+      totalResults = parseInt(totalMatch[1], 10);
+    }
+
+    return { items, totalResults };
+  } catch (err) {
+    return { items: [], totalResults: 0 };
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("q") || "";
+    const pageNum = parseInt(searchParams.get("page") || "1", 10);
+
+    if (!query.trim()) {
+      return NextResponse.json({ items: [], totalResults: 0 });
+    }
+
+    const startGarudaPage = (pageNum - 1) * 3 + 1;
+
+    // Fetch 3 pages in parallel for 3x speedup
+    const pagePromises = [0, 1, 2].map((i) => {
+      const currentGarudaPage = startGarudaPage + i;
+      const targetUrl = `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(
+        query.trim()
+      )}`;
+      return fetchGarudaSinglePage(targetUrl);
+    });
+
+    const pageResults = await Promise.all(pagePromises);
+
+    const items: any[] = [];
+    const seenIds = new Set<string>();
+    let totalResults = 0;
+
+    for (const res of pageResults) {
+      if (res.totalResults > totalResults) {
+        totalResults = res.totalResults;
+      }
+      for (const item of res.items) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          items.push(item);
+        }
+      }
+    }
 
     return NextResponse.json({
       ok: true,
       items,
-      totalResults,
-      hasMore,
-      currentPage: parseInt(page, 10),
+      totalResults: totalResults || items.length,
+      hasMore: items.length >= 30,
+      currentPage: pageNum,
     });
   } catch (error: any) {
     if (error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Koneksi ke portal GARUDA mengalami batas waktu (Timeout 8s)." },
+        { error: "Koneksi ke portal GARUDA mengalami batas waktu (Timeout). Silakan coba lagi." },
         { status: 504 }
       );
     }

@@ -1,24 +1,31 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
-export async function GET(request: Request) {
+const SINTA_LEVEL_PAGE_OFFSETS: Record<string, number> = {
+  "1": 1,
+  "2": 126,
+  "3": 385,
+  "4": 660,
+  "5": 900,
+  "6": 1050,
+};
+
+const ACRONYM_EXPANSIONS: Record<string, string[]> = {
+  jpti: ["Jurnal Pendidikan Teknologi Informasi", "Jurnal PTI", "Pendidikan Teknologi Informasi"],
+  jti: ["Jurnal Teknologi Informasi", "Teknologi Informasi"],
+  jtiik: ["Jurnal Teknologi Informasi dan Ilmu Komputer"],
+  jktp: ["Jurnal Kajian Teknologi Pendidikan"],
+  jtik: ["Jurnal Teknologi Informasi dan Komunikasi"],
+  jppi: ["Jurnal Penelitian Pendidikan Indonesia"],
+  jpik: ["Jurnal Pendidikan dan Ilmu Komputer"],
+  jpm: ["Jurnal Pendidikan Matematika"],
+  jpipa: ["Jurnal Pendidikan IPA"],
+};
+
+async function fetchSintaSinglePage(targetUrl: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
   try {
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q") || "";
-    const sintaFilter = searchParams.get("sinta") || ""; // "1" | "2" | "3" | "4" | "5" | "6" | ""
-    const page = searchParams.get("page") || "1";
-
-    let targetUrl = `https://sinta.kemdiktisaintek.go.id/journals?page=${page}`;
-    if (query.trim()) {
-      targetUrl += `&q=${encodeURIComponent(query.trim())}`;
-    }
-    if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
-      targetUrl += `&sinta=${sintaFilter}`;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-
     const res = await fetch(targetUrl, {
       signal: controller.signal,
       headers: {
@@ -28,19 +35,11 @@ export async function GET(request: Request) {
       },
     }).finally(() => clearTimeout(timeoutId));
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Gagal mengambil data dari portal SINTA Kemdiktisaintek" },
-        { status: res.status }
-      );
-    }
-
+    if (!res.ok) return [];
     const html = await res.text();
     const $ = cheerio.load(html);
 
     const items: any[] = [];
-
-    // Extract journal cards from SINTA HTML structure
     $("div.col-md").each((_, el) => {
       const titleLinkEl = $(el).find(".affil-name a").first();
       const title = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
@@ -50,8 +49,7 @@ export async function GET(request: Request) {
 
       const websiteUrl = $(el).find('.affil-abbrev a[href*="http"]').first().attr("href") || "";
       const institution = $(el).find(".affil-loc a").text().replace(/[\n\r\t]+/g, " ").trim();
-      
-      // Clean ISSN text: remove Subject Area suffix and sanitize spaces
+
       const rawIssnText = $(el).find(".profile-id").text() || "";
       const cleanedIssnText = rawIssnText
         .replace(/Subject Area.*/gi, "")
@@ -59,12 +57,10 @@ export async function GET(request: Request) {
         .replace(/\s+/g, " ")
         .trim();
 
-      // Extract SINTA accreditation rating e.g. S1, S2, S3...
       const accreditedText = $(el).find(".stat-prev .accredited").text().replace(/\s+/g, " ").trim();
       const sintaMatch = accreditedText.match(/S[1-6]/i);
       const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : "SINTA";
 
-      // Extract stats metrics (Impact, H5-index, Citations 5yr, Citations total)
       const nums: string[] = [];
       $(el)
         .find(".journal-list-stat .pr-num")
@@ -95,21 +91,94 @@ export async function GET(request: Request) {
       });
     });
 
-    // Check if next page link exists in pagination
-    const hasNextPageLink = $("ul.pagination a[rel='next'], ul.pagination .next a, ul.pagination a:contains('»')").length > 0;
-    const hasMore = hasNextPageLink || items.length >= 10;
+    return items;
+  } catch (err) {
+    return [];
+  }
+}
+
+async function fetchSintaQuery(searchQuery: string, sintaFilter: string, startPage: number) {
+  const pagePromises = [0, 1, 2].map((i) => {
+    const pageNum = startPage + i;
+    let targetUrl = `https://sinta.kemdiktisaintek.go.id/journals?page=${pageNum}`;
+    if (searchQuery.trim()) {
+      targetUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
+    }
+    if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+      targetUrl += `&sinta=${encodeURIComponent(sintaFilter)}`;
+    }
+    return fetchSintaSinglePage(targetUrl);
+  });
+
+  const pageResults = await Promise.all(pagePromises);
+  return pageResults.flat();
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("q") || "";
+    const sintaFilter = searchParams.get("sinta") || ""; // "1" | "2" | "3" | "4" | "5" | "6" | ""
+    const pageNum = parseInt(searchParams.get("page") || "1", 10);
+    const targetCount = 30;
+
+    const baseOffset =
+      !query.trim() && sintaFilter && SINTA_LEVEL_PAGE_OFFSETS[sintaFilter]
+        ? SINTA_LEVEL_PAGE_OFFSETS[sintaFilter]
+        : 1;
+
+    const startSintaPage = baseOffset + (pageNum - 1) * 3;
+
+    // 1. Build list of candidate search queries
+    const cleanQ = query.trim();
+    const queryCandidates: string[] = [cleanQ];
+
+    if (cleanQ) {
+      // If ISSN with dash (e.g., 2502-0714 -> 25020714)
+      const rawISSN = cleanQ.replace(/-/g, "");
+      if (rawISSN !== cleanQ && /^\d+$/.test(rawISSN)) {
+        queryCandidates.push(rawISSN);
+      }
+
+      // If known acronym (e.g. JPTI)
+      const lowerQ = cleanQ.toLowerCase();
+      if (ACRONYM_EXPANSIONS[lowerQ]) {
+        queryCandidates.push(...ACRONYM_EXPANSIONS[lowerQ]);
+      }
+    }
+
+    const items: any[] = [];
+    const seenIds = new Set<string>();
+
+    for (const qCandidate of queryCandidates) {
+      const results = await fetchSintaQuery(qCandidate, sintaFilter, startSintaPage);
+      for (const item of results) {
+        // Enforce level filter if specified
+        if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+          if (item.sintaRating !== `S${sintaFilter}`) {
+            continue;
+          }
+        }
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          items.push(item);
+        }
+      }
+
+      if (items.length >= 10) break; // Found sufficient accurate results
+    }
 
     return NextResponse.json({
       ok: true,
       items,
-      hasMore,
+      hasMore: items.length >= targetCount,
       count: items.length,
-      currentPage: parseInt(page, 10),
+      currentPage: pageNum,
     });
   } catch (error: any) {
     if (error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Koneksi ke server SINTA mengalami batas waktu (Timeout 8s). Silakan coba lagi." },
+        { error: "Koneksi ke server SINTA mengalami batas waktu (Timeout). Silakan coba lagi." },
         { status: 504 }
       );
     }

@@ -1,12 +1,37 @@
 import { NextResponse } from "next/server";
 
+async function fetchScopusChunk(baseUrl: string, apiKey: string) {
+  const res = await fetch(baseUrl, {
+    headers: {
+      "X-ELS-APIKey": apiKey,
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) {
+    if (res.status === 429) {
+      return { ok: false, status: 429, error: "Batas kuota pencarian API Elsevier Scopus telah terlampaui (HTTP 429 Rate Limit)." };
+    }
+    if (res.status === 401 || res.status === 403) {
+      return { ok: false, status: res.status, error: "Kunci API Elsevier Scopus tidak valid atau tidak diizinkan (HTTP 401/403)." };
+    }
+    const errData = await res.json().catch(() => ({}));
+    return {
+      ok: false,
+      status: res.status,
+      error: errData["service-error"]?.status?.statusText || "Gagal mengambil data dari Elsevier Scopus API",
+    };
+  }
+  const data = await res.json();
+  return { ok: true, data };
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
     const type = searchParams.get("type") || "article"; // "article" | "journal"
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const count = parseInt(searchParams.get("count") || "12", 10);
+    const targetCount = parseInt(searchParams.get("count") || "30", 10);
 
     const apiKey = process.env.ELSEVIER_SCOPUS_API_KEY || process.env.SCOPUS_API_KEY;
 
@@ -17,49 +42,50 @@ export async function GET(request: Request) {
       );
     }
 
-    if (!query.trim()) {
+    const cleanQ = query.trim();
+    if (!cleanQ) {
       return NextResponse.json({ items: [], totalResults: 0 });
     }
 
-    const startIndex = (page - 1) * count;
+    const startIndex = (page - 1) * targetCount;
+
+    // Check if query is an ISSN (e.g. 2502-0714 or 25020714)
+    const issnMatch = cleanQ.match(/^(\d{4})-?(\d{3}[\dX])$/i);
+    const formattedISSN = issnMatch ? `${issnMatch[1]}-${issnMatch[2]}` : null;
+    const rawISSN = issnMatch ? `${issnMatch[1]}${issnMatch[2]}` : null;
 
     if (type === "journal") {
-      // Scopus Serial Title API (Journal Metrics & Info)
-      const url = `https://api.elsevier.com/content/serial/title?title=${encodeURIComponent(
-        query.trim()
-      )}&count=${count}&start=${startIndex}`;
+      // Elsevier Serial Title API max count per request = 25
+      const batch1Size = Math.min(targetCount, 25);
+      const batch2Size = targetCount > 25 ? Math.min(targetCount - 25, 25) : 0;
 
-      const res = await fetch(url, {
-        headers: {
-          "X-ELS-APIKey": apiKey,
-          Accept: "application/json",
-        },
-      });
+      const paramKey = formattedISSN ? `issn=${encodeURIComponent(formattedISSN)}` : `title=${encodeURIComponent(cleanQ)}`;
+      const url1 = `https://api.elsevier.com/content/serial/title?${paramKey}&count=${batch1Size}&start=${startIndex}`;
 
-      if (!res.ok) {
-        if (res.status === 429) {
-          return NextResponse.json(
-            { error: "Batas kuota pencarian API Elsevier Scopus telah terlampaui (HTTP 429 Rate Limit)." },
-            { status: 429 }
-          );
-        }
-        if (res.status === 401 || res.status === 403) {
-          return NextResponse.json(
-            { error: "Kunci API Elsevier Scopus tidak valid atau tidak diizinkan (HTTP 401/403)." },
-            { status: res.status }
-          );
-        }
-        const errData = await res.json().catch(() => ({}));
-        return NextResponse.json(
-          { error: errData["service-error"]?.status?.statusText || "Gagal mengambil data dari Elsevier Scopus API" },
-          { status: res.status }
-        );
+      const promises: Promise<any>[] = [fetchScopusChunk(url1, apiKey)];
+      if (batch2Size > 0) {
+        const url2 = `https://api.elsevier.com/content/serial/title?${paramKey}&count=${batch2Size}&start=${startIndex + 25}`;
+        promises.push(fetchScopusChunk(url2, apiKey));
       }
 
-      const data = await res.json();
-      const serialResponse = data["serial-metadata-response"] || {};
-      const totalResults = parseInt(serialResponse["opensearch:totalResults"] || "0", 10);
-      const rawEntries = serialResponse["entry"] || [];
+      const results = await Promise.all(promises);
+      const res1 = results[0];
+
+      if (!res1.ok) {
+        return NextResponse.json({ error: res1.error }, { status: res1.status });
+      }
+
+      const serialResponse1 = res1.data["serial-metadata-response"] || {};
+      let rawEntries = serialResponse1["entry"] || [];
+      const parsedTotal = parseInt(
+        serialResponse1["opensearch:totalResults"] || serialResponse1["@totalResults"] || "0",
+        10
+      );
+      const totalResults = parsedTotal > 0 ? parsedTotal : rawEntries.length;
+
+      if (results[1]?.ok && results[1].data["serial-metadata-response"]?.["entry"]) {
+        rawEntries = [...rawEntries, ...results[1].data["serial-metadata-response"]["entry"]];
+      }
 
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus-source");
@@ -80,42 +106,41 @@ export async function GET(request: Request) {
 
       return NextResponse.json({ ok: true, items, totalResults });
     } else {
-      // Scopus Article / Paper Search API
-      const searchUrl = `https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(
-        query.trim()
-      )}&count=${count}&start=${startIndex}`;
+      // Scopus Article / Paper Search API max count per request = 25
+      const batch1Size = Math.min(targetCount, 25);
+      const batch2Size = targetCount > 25 ? Math.min(targetCount - 25, 25) : 0;
 
-      const res = await fetch(searchUrl, {
-        headers: {
-          "X-ELS-APIKey": apiKey,
-          Accept: "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        if (res.status === 429) {
-          return NextResponse.json(
-            { error: "Batas kuota pencarian API Elsevier Scopus telah terlampaui (HTTP 429 Rate Limit)." },
-            { status: 429 }
-          );
-        }
-        if (res.status === 401 || res.status === 403) {
-          return NextResponse.json(
-            { error: "Kunci API Elsevier Scopus tidak valid atau tidak diizinkan (HTTP 401/403)." },
-            { status: res.status }
-          );
-        }
-        const errData = await res.json().catch(() => ({}));
-        return NextResponse.json(
-          { error: errData["service-error"]?.status?.statusText || "Gagal mencari artikel dari Elsevier Scopus API" },
-          { status: res.status }
-        );
+      let scopusQuery = cleanQ;
+      if (formattedISSN || rawISSN) {
+        scopusQuery = `ISSN(${formattedISSN || rawISSN})`;
       }
 
-      const data = await res.json();
-      const searchResults = data["search-results"] || {};
-      const totalResults = parseInt(searchResults["opensearch:totalResults"] || "0", 10);
-      const rawEntries = searchResults["entry"] || [];
+      const searchUrl1 = `https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(
+        scopusQuery
+      )}&count=${batch1Size}&start=${startIndex}`;
+
+      const promises: Promise<any>[] = [fetchScopusChunk(searchUrl1, apiKey)];
+      if (batch2Size > 0) {
+        const searchUrl2 = `https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(
+          scopusQuery
+        )}&count=${batch2Size}&start=${startIndex + 25}`;
+        promises.push(fetchScopusChunk(searchUrl2, apiKey));
+      }
+
+      const results = await Promise.all(promises);
+      const res1 = results[0];
+
+      if (!res1.ok) {
+        return NextResponse.json({ error: res1.error }, { status: res1.status });
+      }
+
+      const searchResults1 = res1.data["search-results"] || {};
+      const totalResults = parseInt(searchResults1["opensearch:totalResults"] || "0", 10);
+      let rawEntries = searchResults1["entry"] || [];
+
+      if (results[1]?.ok && results[1].data["search-results"]?.["entry"]) {
+        rawEntries = [...rawEntries, ...results[1].data["search-results"]["entry"]];
+      }
 
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus");

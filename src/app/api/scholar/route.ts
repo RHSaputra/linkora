@@ -1,25 +1,10 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
-export async function GET(request: Request) {
+async function fetchGoogleScholarSinglePage(targetUrl: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
   try {
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q") || "";
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 10;
-    const start = (page - 1) * limit;
-
-    if (!query.trim()) {
-      return NextResponse.json({ items: [], totalResults: 0 });
-    }
-
-    const targetUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(
-      query.trim()
-    )}&start=${start}&hl=id`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
-
     const res = await fetch(targetUrl, {
       signal: controller.signal,
       headers: {
@@ -30,89 +15,135 @@ export async function GET(request: Request) {
       },
     }).finally(() => clearTimeout(timeoutId));
 
-    if (res.ok) {
-      const html = await res.text();
-      const $ = cheerio.load(html);
+    if (!res.ok) return [];
 
-      const items: any[] = [];
+    const html = await res.text();
+    const $ = cheerio.load(html);
+    const items: any[] = [];
 
-      $(".gs_r.gs_or.gs_scl").each((_, el) => {
-        const titleEl = $(el).find(".gs_rt a").first();
-        const title = titleEl.text().replace(/[\n\r\t]+/g, " ").trim();
-        const scholarUrl = titleEl.attr("href") || "";
+    $(".gs_r.gs_or.gs_scl").each((_, el) => {
+      const titleEl = $(el).find(".gs_rt a").first();
+      const title = titleEl.text().replace(/[\n\r\t]+/g, " ").trim();
+      const scholarUrl = titleEl.attr("href") || "";
 
-        if (!title) return;
+      if (!title) return;
 
-        const authorJournalText = $(el).find(".gs_a").text().replace(/[\n\r\t]+/g, " ").trim();
-        const snippetText = $(el).find(".gs_rs").text().replace(/[\n\r\t]+/g, " ").trim();
-        const citedByText = $(el).find(".gs_or_cited").text().trim();
-        const pdfUrl = $(el).find(".gs_or_ggsm a").attr("href") || "";
+      const authorJournalText = $(el).find(".gs_a").text().replace(/[\n\r\t]+/g, " ").trim();
+      const snippetText = $(el).find(".gs_rs").text().replace(/[\n\r\t]+/g, " ").trim();
+      const citedByText = $(el).find(".gs_or_cited").text().trim();
+      const pdfUrl = $(el).find(".gs_or_ggsm a").attr("href") || "";
 
-        // Extract citation count e.g. "Dirujuk 263 kali" -> 263
-        const citeMatch = citedByText.match(/\d+/);
-        const citationsCount = citeMatch ? parseInt(citeMatch[0], 10) : 0;
+      const citeMatch = citedByText.match(/\d+/);
+      const citationsCount = citeMatch ? parseInt(citeMatch[0], 10) : 0;
 
-        items.push({
-          id: Math.random().toString(),
-          title,
-          authorJournalText: authorJournalText || "Google Scholar Entry",
-          snippetText,
-          scholarUrl,
-          pdfUrl,
-          citationsCount,
-        });
+      items.push({
+        id: Math.random().toString(),
+        title,
+        authorJournalText: authorJournalText || "Google Scholar Entry",
+        snippetText,
+        scholarUrl,
+        pdfUrl,
+        citationsCount,
       });
-
-      if (items.length > 0) {
-        return NextResponse.json({
-          ok: true,
-          items,
-          hasMore: items.length >= 10,
-          currentPage: page,
-        });
-      }
-    }
-
-    // Fallback: If Google Scholar blocks with CAPTCHA or returns 0 items, query Semantic Scholar API
-    const fallbackUrl = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(
-      query.trim()
-    )}&offset=${start}&limit=${limit}&fields=title,authors,year,abstract,citationCount,isOpenAccess,openAccessPdf,url,venue,journal,externalIds`;
-
-    const fallbackRes = await fetch(fallbackUrl, {
-      headers: { Accept: "application/json" },
     });
 
-    if (fallbackRes.ok) {
-      const fallbackData = await fallbackRes.json();
-      const rawData = fallbackData.data || [];
+    return items;
+  } catch (err) {
+    return [];
+  }
+}
 
-      const items = rawData.map((item: any) => {
-        const authors = item.authors?.map((a: any) => a.name).join(", ") || "Scholar Author";
-        const venue = item.venue || item.journal?.name || "";
-        const year = item.year || "";
-        const authorJournalText = `${authors} ${venue ? `- ${venue}` : ""} ${year ? `(${year})` : ""}`;
+async function fetchOpenAlexFallback(query: string, pageNum: number) {
+  const url = `https://api.openalex.org/works?search=${encodeURIComponent(
+    query
+  )}&per-page=30&page=${pageNum}`;
 
-        return {
-          id: item.paperId || Math.random().toString(),
-          title: item.title || "Scholar Entry",
-          authorJournalText,
-          snippetText: item.abstract || "",
-          scholarUrl: item.url || (item.externalIds?.DOI ? `https://doi.org/${item.externalIds.DOI}` : "https://scholar.google.com"),
-          pdfUrl: item.openAccessPdf?.url || "",
-          citationsCount: item.citationCount || 0,
-        };
-      });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
 
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "LinkoraScholar/1.0 (mailto:support@linkorian.online)",
+      },
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const rawData = data.results || [];
+
+    return rawData.map((item: any) => {
+      const authors =
+        item.authorships
+          ?.map((a: any) => a.author?.display_name)
+          .filter(Boolean)
+          .join(", ") || "Scholar Author";
+
+      const venue = item.primary_location?.source?.display_name || item.location?.source?.display_name || "";
+      const year = item.publication_year || "";
+      const authorJournalText = `${authors}${venue ? ` - ${venue}` : ""}${year ? ` (${year})` : ""}`;
+
+      const pdfUrl = item.open_access?.oa_url || item.primary_location?.pdf_url || "";
+      const landingUrl =
+        item.primary_location?.landing_page_url ||
+        item.doi ||
+        (item.ids?.doi ? `https://doi.org/${item.ids.doi}` : `https://openalex.org/${item.id}`);
+
+      return {
+        id: item.id || Math.random().toString(),
+        title: item.title || "Scholar Entry",
+        authorJournalText,
+        snippetText: item.abstract_inverted_index ? "Abstrak artikel tersedia di rujukan resmi." : "",
+        scholarUrl: landingUrl,
+        pdfUrl,
+        citationsCount: item.cited_by_count || 0,
+      };
+    });
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("q") || "";
+    const pageNum = parseInt(searchParams.get("page") || "1", 10);
+
+    if (!query.trim()) {
+      return NextResponse.json({ items: [], totalResults: 0 });
+    }
+
+    const startOffset = (pageNum - 1) * 10;
+    const targetUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(
+      query.trim()
+    )}&start=${startOffset}&hl=id`;
+
+    // 1. Primary Attempt: Google Scholar
+    const scholarItems = await fetchGoogleScholarSinglePage(targetUrl);
+
+    if (scholarItems.length > 0) {
       return NextResponse.json({
         ok: true,
-        items,
-        hasMore: items.length >= 10,
-        currentPage: page,
-        fallbackUsed: true,
+        items: scholarItems,
+        hasMore: scholarItems.length >= 10,
+        currentPage: pageNum,
       });
     }
 
-    return NextResponse.json({ ok: true, items: [], hasMore: false, currentPage: page });
+    // 2. Fallback Attempt: OpenAlex Academic Database API (250M+ indexed works)
+    const openAlexItems = await fetchOpenAlexFallback(query.trim(), pageNum);
+
+    return NextResponse.json({
+      ok: true,
+      items: openAlexItems,
+      hasMore: openAlexItems.length >= 30,
+      currentPage: pageNum,
+      fallbackUsed: true,
+    });
   } catch (error: any) {
     console.error("Google Scholar Scraper Error:", error);
     return NextResponse.json(
