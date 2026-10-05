@@ -507,6 +507,36 @@ export function ScopusPage() {
     setSaveModalOpen(true);
   };
 
+  const handleSafeOpenUrl = (e: React.MouseEvent, targetUrl: string | undefined, title: string) => {
+    e.preventDefault();
+    const url = (targetUrl || "").trim();
+    if (!url || url === "#" || url === "undefined" || url === "null") {
+      toast.error(
+        isEn
+          ? `Publisher website for "${title.slice(0, 35)}..." is not accessible.`
+          : `Web penerbit "${title.slice(0, 35)}..." tidak dapat diakses atau tautan DOI tidak ditemukan.`
+      );
+      return;
+    }
+
+    try {
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        toast.error(
+          isEn
+            ? "Pop-up blocked by browser. Failed to open publisher website."
+            : "Browser memblokir jendela baru. Gagal membuka web penerbit."
+        );
+      }
+    } catch (err) {
+      toast.error(
+        isEn
+          ? "Publisher website cannot be accessed currently."
+          : "Web penerbit tidak dapat diakses saat ini."
+      );
+    }
+  };
+
   const handleSaveToLinkora = async () => {
     if (!targetItem) return;
 
@@ -797,7 +827,13 @@ export function ScopusPage() {
                         </div>
 
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-orange-600 transition-colors">
-                          <a href={item.doiUrl || item.scopusUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                          <a
+                            href={item.doiUrl || item.scopusUrl}
+                            onClick={(e) => handleSafeOpenUrl(e, item.doiUrl || item.scopusUrl, cleanTitle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-start gap-2"
+                          >
                             <div className="w-6 h-6 rounded-md bg-white border border-orange-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                               <img src="/scopus.jpeg" alt="Scopus Logo" className="w-full h-full object-contain" />
                             </div>
@@ -1003,7 +1039,13 @@ export function ScopusPage() {
                           </div>
 
                           <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-teal-700 transition-colors">
-                            <a href={item.scopusUrl || item.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <a
+                              href={item.scopusUrl || item.websiteUrl}
+                              onClick={(e) => handleSafeOpenUrl(e, item.scopusUrl || item.websiteUrl, cleanTitle)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline flex items-start gap-2"
+                            >
                               <div className="w-6 h-6 rounded-md bg-white border border-teal-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                                 <img src="/sinta.jpeg" alt="SINTA Logo" className="w-full h-full object-contain" />
                               </div>
@@ -1064,7 +1106,13 @@ export function ScopusPage() {
                         </div>
 
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-teal-700 transition-colors">
-                          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                          <a
+                            href={item.websiteUrl}
+                            onClick={(e) => handleSafeOpenUrl(e, item.websiteUrl, cleanTitle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-start gap-2"
+                          >
                             <div className="w-6 h-6 rounded-md bg-white border border-teal-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                               <img src="/sinta.jpeg" alt="SINTA Logo" className="w-full h-full object-contain" />
                             </div>
@@ -1311,7 +1359,13 @@ export function ScopusPage() {
                           </div>
 
                           <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-red-600 transition-colors">
-                            <a href={item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <a
+                              href={item.garudaUrl}
+                              onClick={(e) => handleSafeOpenUrl(e, item.garudaUrl, cleanTitle)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline flex items-start gap-2"
+                            >
                               <div className="w-6 h-6 rounded-md bg-white border border-red-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                                 <img src="/garuda01.jpeg" alt="GARUDA Logo" className="w-full h-full object-contain" />
                               </div>
@@ -1385,7 +1439,13 @@ export function ScopusPage() {
                         </div>
 
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-red-600 transition-colors">
-                          <a href={item.doiUrl || item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                          <a
+                            href={item.doiUrl || item.garudaUrl}
+                            onClick={(e) => handleSafeOpenUrl(e, item.doiUrl || item.garudaUrl, cleanTitle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-start gap-2"
+                          >
                             <div className="w-6 h-6 rounded-md bg-white border border-red-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                               <img src="/garuda01.jpeg" alt="GARUDA Logo" className="w-full h-full object-contain" />
                             </div>
@@ -1593,7 +1653,13 @@ export function ScopusPage() {
                         </div>
 
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-blue-600 transition-colors">
-                          <a href={item.scholarUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                          <a
+                            href={item.pdfUrl || item.scholarUrl}
+                            onClick={(e) => handleSafeOpenUrl(e, item.pdfUrl || item.scholarUrl, cleanTitle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-start gap-2"
+                          >
                             <div className="w-6 h-6 rounded-md bg-white border border-blue-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                               <img src="/google scholar.jpeg" alt="Google Scholar Logo" className="w-full h-full object-contain" />
                             </div>
@@ -1795,7 +1861,13 @@ export function ScopusPage() {
                         </div>
 
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-indigo-600 transition-colors">
-                          <a href={item.semanticScholarUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                          <a
+                            href={item.doi || item.semanticScholarUrl}
+                            onClick={(e) => handleSafeOpenUrl(e, item.doi || item.semanticScholarUrl, cleanTitle)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline flex items-start gap-2"
+                          >
                             <div className="w-6 h-6 rounded-md bg-indigo-600 border border-indigo-500/30 p-1 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-white">
                               <Brain className="w-full h-full object-contain" />
                             </div>
