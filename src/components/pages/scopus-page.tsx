@@ -26,6 +26,8 @@ import {
   Calendar,
   SlidersHorizontal,
   Folder,
+  Brain,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,8 +175,8 @@ export function ScopusPage() {
   const { requireAuth } = useRequireAuth();
   const { collections } = useCollections();
 
-  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar"
-  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar">("scopus");
+  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic"
+  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic">("scopus");
 
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
@@ -225,6 +227,23 @@ export function ScopusPage() {
   const [scholarLoading, setScholarLoading] = useState(false);
   const [scholarItems, setScholarItems] = useState<ScholarItem[]>([]);
   const [scholarErrorMsg, setScholarErrorMsg] = useState<string | null>(null);
+
+  // Semantic Scholar State (Default query empty "")
+  const [semanticQuery, setSemanticQuery] = useState("");
+  const [semanticYearFrom, setSemanticYearFrom] = useState("");
+  const [semanticYearTo, setSemanticYearTo] = useState("");
+  const [semanticOpenAccess, setSemanticOpenAccess] = useState(false);
+
+  const [activeSemanticQuery, setActiveSemanticQuery] = useState("");
+  const [activeSemanticYearFrom, setActiveSemanticYearFrom] = useState("");
+  const [activeSemanticYearTo, setActiveSemanticYearTo] = useState("");
+  const [activeSemanticOpenAccess, setActiveSemanticOpenAccess] = useState(false);
+
+  const [semanticPage, setSemanticPage] = useState(1);
+  const [semanticLoading, setSemanticLoading] = useState(false);
+  const [semanticItems, setSemanticItems] = useState<any[]>([]);
+  const [semanticTotalResults, setSemanticTotalResults] = useState(0);
+  const [semanticErrorMsg, setSemanticErrorMsg] = useState<string | null>(null);
 
   // Save Modal State
   const [saveModalOpen, setSaveModalOpen] = useState(false);
@@ -352,6 +371,41 @@ export function ScopusPage() {
     }
   }, []);
 
+  // ── Semantic Scholar Data Fetcher (30 items per page) ──
+  const fetchSemanticData = useCallback(
+    async (q: string, yearFrom: string, yearTo: string, openAccess: boolean, pageNum: number) => {
+      setSemanticLoading(true);
+      setSemanticErrorMsg(null);
+      try {
+        const params = new URLSearchParams({
+          q: q.trim(),
+          year_from: yearFrom.trim(),
+          year_to: yearTo.trim(),
+          open_access: openAccess ? "true" : "false",
+          page: pageNum.toString(),
+        });
+        const res = await fetch(`/api/semantic-scholar?${params.toString()}`);
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          setSemanticItems(data.items || []);
+          setSemanticTotalResults(data.totalResults || 0);
+        } else {
+          setSemanticItems([]);
+          setSemanticTotalResults(0);
+          setSemanticErrorMsg(data.error || "Gagal mengambil data Semantic Scholar");
+        }
+      } catch (err: any) {
+        console.error(err);
+        setSemanticItems([]);
+        setSemanticTotalResults(0);
+        setSemanticErrorMsg("Terjadi kesalahan jaringan saat menghubungi Semantic Scholar.");
+      } finally {
+        setSemanticLoading(false);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     if (provider === "scopus") {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusQuartile, scopusPage);
@@ -369,6 +423,14 @@ export function ScopusPage() {
       );
     } else if (provider === "scholar") {
       fetchScholarData(activeScholarQuery, scholarSubTab, scholarPage);
+    } else if (provider === "semantic") {
+      fetchSemanticData(
+        activeSemanticQuery,
+        activeSemanticYearFrom,
+        activeSemanticYearTo,
+        activeSemanticOpenAccess,
+        semanticPage
+      );
     }
   }, [
     provider,
@@ -390,10 +452,16 @@ export function ScopusPage() {
     activeScholarQuery,
     scholarSubTab,
     scholarPage,
+    activeSemanticQuery,
+    activeSemanticYearFrom,
+    activeSemanticYearTo,
+    activeSemanticOpenAccess,
+    semanticPage,
     fetchScopusData,
     fetchSintaData,
     fetchGarudaData,
     fetchScholarData,
+    fetchSemanticData,
   ]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -414,6 +482,12 @@ export function ScopusPage() {
     } else if (provider === "scholar") {
       setScholarPage(1);
       setActiveScholarQuery(scholarQuery.trim());
+    } else if (provider === "semantic") {
+      setSemanticPage(1);
+      setActiveSemanticQuery(semanticQuery.trim());
+      setActiveSemanticYearFrom(semanticYearFrom.trim());
+      setActiveSemanticYearTo(semanticYearTo.trim());
+      setActiveSemanticOpenAccess(semanticOpenAccess);
     }
   };
 
@@ -537,6 +611,18 @@ export function ScopusPage() {
               >
                 <span>Google Scholar</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("semantic")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "semantic"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>Semantic Scholar</span>
+              </button>
             </div>
           </div>
 
@@ -560,6 +646,17 @@ export function ScopusPage() {
             {provider === "scholar" && (
               <div className="w-full h-full rounded-2xl bg-white p-3 border border-blue-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
                 <img src="/google scholar.jpeg" alt="Google Scholar" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "semantic" && (
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 p-6 border border-indigo-500/30 shadow-sm flex flex-col items-center justify-center text-center space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 p-3 flex items-center justify-center text-indigo-400 shadow-inner">
+                  <Brain className="w-10 h-10" />
+                </div>
+                <div className="space-y-1">
+                  <span className="font-extrabold text-white text-base tracking-tight block">Semantic Scholar</span>
+                  <span className="text-[10px] text-indigo-300 font-mono block">AI-Powered Research Engine</span>
+                </div>
               </div>
             )}
           </div>
@@ -1561,6 +1658,224 @@ export function ScopusPage() {
                   variant="outline"
                   disabled={scholarLoading || scholarItems.length === 0}
                   onClick={() => setScholarPage((prev) => prev + 1)}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Halaman Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── 5. SEMANTIC SCHOLAR SECTION ── */}
+      {provider === "semantic" && (
+        <div className="space-y-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+              <div className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 shadow-sm flex items-center gap-2">
+                <Brain className="w-4 h-4 text-indigo-600" />
+                <span>Publikasi & Paper Riset Global</span>
+              </div>
+            </div>
+
+            {semanticTotalResults > 0 && (
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Total Metadata: {semanticTotalResults.toLocaleString()} Paper AI Engine</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">Menampilkan {semanticItems.length} card</span>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSearchSubmit} className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-indigo-500/20 shadow-xl shadow-indigo-500/5 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+              {/* Kata kunci */}
+              <div className="lg:col-span-6 space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Search className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Kata kunci Pencarian AI</span>
+                </label>
+                <Input
+                  value={semanticQuery}
+                  onChange={(e) => setSemanticQuery(e.target.value)}
+                  placeholder="Ketik topik riset atau kata kunci (contoh: machine learning in healthcare)"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-600 transition-all font-medium"
+                />
+              </div>
+
+              {/* Filter Tahun */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Filter Tahun Publikasi</span>
+                </label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={semanticYearFrom}
+                    onChange={(e) => setSemanticYearFrom(e.target.value)}
+                    placeholder="Awal (2020)"
+                    className="h-10 text-xs rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 px-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-600 transition-all font-mono"
+                  />
+                  <span className="text-xs text-muted-foreground font-bold">-</span>
+                  <Input
+                    type="number"
+                    value={semanticYearTo}
+                    onChange={(e) => setSemanticYearTo(e.target.value)}
+                    placeholder="Akhir (2025)"
+                    className="h-10 text-xs rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 px-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-600 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Direct PDF Access Option */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Download className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Filter PDF Direct</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSemanticOpenAccess(!semanticOpenAccess)}
+                  className={`w-full h-10 px-3 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all ${
+                    semanticOpenAccess
+                      ? "bg-indigo-500/10 text-indigo-600 border-indigo-500/40 dark:text-indigo-400"
+                      : "bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 text-muted-foreground"
+                  }`}
+                >
+                  <span>Hanya Paper PDF Gratis</span>
+                  <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${semanticOpenAccess ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-400"}`}>
+                    {semanticOpenAccess && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-1">
+              <Button
+                type="submit"
+                disabled={semanticLoading}
+                className="h-10 px-7 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-95 text-white font-bold text-xs rounded-2xl shadow-lg shadow-indigo-500/25 transition-all cursor-pointer flex items-center gap-2"
+              >
+                {semanticLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                <span>Cari Semantic Scholar</span>
+              </Button>
+            </div>
+          </form>
+
+          {semanticLoading ? (
+            <Liko3DSearchLoading providerName="Semantic Scholar Engine" brandColor="blue" />
+          ) : semanticItems.length === 0 ? (
+            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
+              <Brain className="w-12 h-12 mx-auto text-indigo-500/40" />
+              <h3 className="text-base font-bold text-foreground">Tidak ada hasil Semantic Scholar ditemukan untuk "{activeSemanticQuery}"</h3>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                {semanticItems.map((item) => {
+                  const isSaved = savedLinkIds[item.id];
+                  const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+                  return (
+                    <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-indigo-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-indigo-500/50 transition-all">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold uppercase font-mono">
+                            Semantic Scholar
+                          </span>
+                          {item.pdfUrl && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                              <Download className="w-3 h-3" />
+                              <span>PDF Direct</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-indigo-600 transition-colors">
+                          <a href={item.semanticScholarUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                            <div className="w-6 h-6 rounded-md bg-indigo-600 border border-indigo-500/30 p-1 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-white">
+                              <Brain className="w-full h-full object-contain" />
+                            </div>
+                            <span className="flex-1">{cleanTitle}</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-indigo-600" />
+                          </a>
+                        </h3>
+
+                        {item.authors && (
+                          <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
+                            <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                            <span className="line-clamp-2">{item.authors.replace(/\*/g, "")}</span>
+                          </p>
+                        )}
+
+                        {(item.venue || item.year) && (
+                          <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                            <BookOpen className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                            <span className="truncate">{item.venue} {item.year ? `(${item.year})` : ""}</span>
+                          </p>
+                        )}
+
+                        {item.abstract && (
+                          <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed">
+                            {item.abstract.replace(/\*/g, "")}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                        {item.citationCount > 0 ? (
+                          <span className="flex items-center gap-1 text-indigo-600 font-bold bg-indigo-500/10 px-2 py-1 rounded-md text-[11px]">
+                            <Award className="w-3.5 h-3.5" />
+                            <span>{item.citationCount.toLocaleString()} Sitasi</span>
+                          </span>
+                        ) : item.pdfUrl ? (
+                          <a href={item.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                            <Download className="w-3.5 h-3.5" />
+                            <span>PDF Original</span>
+                          </a>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground font-mono">Semantic Index</span>
+                        )}
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSaved ? "outline" : "default"}
+                          disabled={isSaved}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.semanticScholarUrl, `[Semantic Scholar] ${item.authors || ""} • ${item.venue || ""}`)}
+                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white"}`}
+                        >
+                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Semantic Scholar Pagination Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={semanticPage <= 1 || semanticLoading}
+                  onClick={() => setSemanticPage((prev) => Math.max(1, prev - 1))}
+                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Halaman Sebelumnya</span>
+                </Button>
+                <span className="text-xs font-semibold text-muted-foreground font-mono">
+                  Halaman {semanticPage} {semanticTotalResults > 0 ? `dari ${Math.ceil(semanticTotalResults / 30).toLocaleString()}` : ""}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={semanticLoading || semanticItems.length < 30}
+                  onClick={() => setSemanticPage((prev) => prev + 1)}
                   className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>Halaman Selanjutnya</span>
