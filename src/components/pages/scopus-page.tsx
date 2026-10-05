@@ -173,24 +173,27 @@ export function ScopusPage() {
   const [scopusErrorMsg, setScopusErrorMsg] = useState<string | null>(null);
 
   // SINTA State (Default query empty "")
+  const [sintaSubTab, setSintaSubTab] = useState<"article" | "journal">("journal");
   const [sintaQuery, setSintaQuery] = useState("");
   const [activeSintaQuery, setActiveSintaQuery] = useState("");
   const [sintaLevel, setSintaLevel] = useState<string>("");
   const [sintaPage, setSintaPage] = useState(1);
   const [sintaLoading, setSintaLoading] = useState(false);
-  const [sintaItems, setSintaItems] = useState<SintaItem[]>([]);
+  const [sintaItems, setSintaItems] = useState<any[]>([]);
   const [sintaErrorMsg, setSintaErrorMsg] = useState<string | null>(null);
 
   // GARUDA State (Default query empty "")
+  const [garudaSubTab, setGarudaSubTab] = useState<"article" | "journal">("article");
   const [garudaQuery, setGarudaQuery] = useState("");
   const [activeGarudaQuery, setActiveGarudaQuery] = useState("");
   const [garudaPage, setGarudaPage] = useState(1);
   const [garudaLoading, setGarudaLoading] = useState(false);
-  const [garudaItems, setGarudaItems] = useState<GarudaItem[]>([]);
+  const [garudaItems, setGarudaItems] = useState<any[]>([]);
   const [garudaTotalResults, setGarudaTotalResults] = useState(0);
   const [garudaErrorMsg, setGarudaErrorMsg] = useState<string | null>(null);
 
   // Google Scholar State (Default query empty "")
+  const [scholarSubTab, setScholarSubTab] = useState<"article" | "journal">("article");
   const [scholarQuery, setScholarQuery] = useState("");
   const [activeScholarQuery, setActiveScholarQuery] = useState("");
   const [scholarPage, setScholarPage] = useState(1);
@@ -243,7 +246,7 @@ export function ScopusPage() {
   );
 
   // ── SINTA Scraper Fetcher (30 items per page with strict level filtering) ──
-  const fetchSintaData = useCallback(async (q: string, level: string, pageNum: number) => {
+  const fetchSintaData = useCallback(async (q: string, activeTab: "article" | "journal", level: string, pageNum: number) => {
     if (!q.trim() && !level) {
       setSintaItems([]);
       return;
@@ -252,7 +255,7 @@ export function ScopusPage() {
     setSintaErrorMsg(null);
     try {
       const res = await fetch(
-        `/api/sinta?q=${encodeURIComponent(q.trim())}&sinta=${level}&page=${pageNum}`
+        `/api/sinta?q=${encodeURIComponent(q.trim())}&type=${activeTab}&sinta=${level}&page=${pageNum}`
       );
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -269,7 +272,7 @@ export function ScopusPage() {
   }, []);
 
   // ── GARUDA Scraper Fetcher (30 items per page) ──
-  const fetchGarudaData = useCallback(async (q: string, pageNum: number) => {
+  const fetchGarudaData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
     if (!q.trim()) {
       setGarudaItems([]);
       setGarudaTotalResults(0);
@@ -279,7 +282,7 @@ export function ScopusPage() {
     setGarudaErrorMsg(null);
     try {
       const res = await fetch(
-        `/api/garuda?q=${encodeURIComponent(q.trim())}&page=${pageNum}`
+        `/api/garuda?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}`
       );
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -299,7 +302,7 @@ export function ScopusPage() {
   }, []);
 
   // ── Google Scholar Fetcher (30 items per page) ──
-  const fetchScholarData = useCallback(async (q: string, pageNum: number) => {
+  const fetchScholarData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
     if (!q.trim()) {
       setScholarItems([]);
       return;
@@ -308,7 +311,7 @@ export function ScopusPage() {
     setScholarErrorMsg(null);
     try {
       const res = await fetch(
-        `/api/scholar?q=${encodeURIComponent(q.trim())}&page=${pageNum}`
+        `/api/scholar?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}`
       );
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -328,11 +331,11 @@ export function ScopusPage() {
     if (provider === "scopus" && activeScopusQuery.trim()) {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusPage);
     } else if (provider === "sinta" && (activeSintaQuery.trim() || sintaLevel)) {
-      fetchSintaData(activeSintaQuery, sintaLevel, sintaPage);
+      fetchSintaData(activeSintaQuery, sintaSubTab, sintaLevel, sintaPage);
     } else if (provider === "garuda" && activeGarudaQuery.trim()) {
-      fetchGarudaData(activeGarudaQuery, garudaPage);
+      fetchGarudaData(activeGarudaQuery, garudaSubTab, garudaPage);
     } else if (provider === "scholar" && activeScholarQuery.trim()) {
-      fetchScholarData(activeScholarQuery, scholarPage);
+      fetchScholarData(activeScholarQuery, scholarSubTab, scholarPage);
     }
   }, [
     provider,
@@ -340,11 +343,14 @@ export function ScopusPage() {
     scopusSubTab,
     scopusPage,
     activeSintaQuery,
+    sintaSubTab,
     sintaLevel,
     sintaPage,
     activeGarudaQuery,
+    garudaSubTab,
     garudaPage,
     activeScholarQuery,
+    scholarSubTab,
     scholarPage,
     fetchScopusData,
     fetchSintaData,
@@ -559,9 +565,11 @@ export function ScopusPage() {
             </div>
 
             {scopusTotalResults > 0 && (
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
                 <BookOpen className="w-3.5 h-3.5 text-orange-600" />
                 <span>Total Metadata: {scopusTotalResults.toLocaleString()} Publikasi Scopus</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-bold text-orange-600 dark:text-orange-400">Menampilkan {scopusItems.length} card</span>
               </div>
             )}
           </div>
@@ -722,8 +730,54 @@ export function ScopusPage() {
       {/* ── 2. SINTA SECTION ── */}
       {provider === "sinta" && (
         <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setSintaSubTab("journal");
+                  setSintaPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  sintaSubTab === "journal"
+                    ? "bg-white dark:bg-slate-900 text-teal-700 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Nama Jurnal</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSintaSubTab("article");
+                  setSintaPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  sintaSubTab === "article"
+                    ? "bg-white dark:bg-slate-900 text-teal-700 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Judul Artikel</span>
+              </button>
+            </div>
+
+            {sintaItems.length > 0 && (
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+                <span>
+                  Total Metadata: {sintaLevel === "1" ? "1.260" : sintaLevel === "2" ? "2.590" : sintaLevel === "3" ? "2.750" : sintaLevel === "4" ? "2.400" : sintaLevel === "5" ? "1.500" : sintaLevel === "6" ? "1.350" : "16.772"} {sintaSubTab === "journal" ? "Jurnal SINTA" : "Artikel Terindeks SINTA"}
+                </span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-bold text-teal-700 dark:text-teal-400">Menampilkan {sintaItems.length} card</span>
+              </div>
+            )}
+          </div>
+
+          {sintaSubTab === "journal" && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
                 Filter Peringkat SINTA:
               </span>
@@ -745,21 +799,18 @@ export function ScopusPage() {
                 </button>
               ))}
             </div>
-
-            {sintaItems.length > 0 && (
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
-                <span>Total Metadata: {sintaLevel === "1" ? "1.260" : sintaLevel === "2" ? "2.590" : sintaLevel === "3" ? "2.750" : sintaLevel === "4" ? "2.400" : sintaLevel === "5" ? "1.500" : sintaLevel === "6" ? "1.350" : "16.772"} Jurnal SINTA</span>
-              </div>
-            )}
-          </div>
+          )}
 
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
             <Input
               value={sintaQuery}
               onChange={(e) => setSintaQuery(e.target.value)}
-              placeholder="Ketik nama jurnal SINTA, universitas, atau kata kunci..."
+              placeholder={
+                sintaSubTab === "journal"
+                  ? "Ketik nama jurnal SINTA, universitas, atau kata kunci terbitan..."
+                  : "Ketik judul artikel ilmiah terindeks SINTA..."
+              }
               className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-teal-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-teal-600 focus:border-teal-600 transition-all"
             />
             <Button type="submit" disabled={sintaLoading} className="absolute right-1.5 h-9.5 px-5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl cursor-pointer">
@@ -774,13 +825,15 @@ export function ScopusPage() {
               <Search className="w-12 h-12 mx-auto text-teal-500/40" />
               <h3 className="text-base font-bold text-foreground">Ketik kata kunci atau pilih filter SINTA untuk memulai</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Cari jurnal terakreditasi SINTA (S1–S6) berdasarkan nama jurnal, universitas, atau bidang ilmu.
+                {sintaSubTab === "journal"
+                  ? "Cari jurnal terakreditasi SINTA (S1–S6) berdasarkan nama jurnal, universitas, atau bidang ilmu."
+                  : "Cari publikasi artikel ilmiah yang terindeks SINTA."}
               </p>
             </div>
           ) : sintaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <ShieldCheck className="w-12 h-12 mx-auto text-teal-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada jurnal SINTA ditemukan</h3>
+              <h3 className="text-base font-bold text-foreground">Tidak ada {sintaSubTab === "journal" ? "jurnal" : "artikel"} SINTA ditemukan</h3>
             </div>
           ) : (
             <div className="space-y-6">
@@ -788,6 +841,72 @@ export function ScopusPage() {
                 {sintaItems.map((item) => {
                   const isSaved = savedLinkIds[item.id];
                   const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+
+                  // Render Article Card
+                  if (item.isArticle || sintaSubTab === "article") {
+                    return (
+                      <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 text-[11px] font-bold uppercase font-mono">
+                              {item.quartile || "SINTA Indexed"}
+                            </span>
+                            {item.coverDate && (
+                              <span className="text-[10px] text-muted-foreground font-mono">{item.coverDate}</span>
+                            )}
+                          </div>
+
+                          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-teal-700 transition-colors">
+                            <a href={item.scopusUrl || item.websiteUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                              <div className="w-6 h-6 rounded-md bg-white border border-teal-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                <img src="/sinta.jpeg" alt="SINTA Logo" className="w-full h-full object-contain" />
+                              </div>
+                              <span className="flex-1">{cleanTitle}</span>
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-teal-700" />
+                            </a>
+                          </h3>
+
+                          {item.creator && (
+                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
+                              <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.creator.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+
+                          {item.publicationName && (
+                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                              <BookOpen className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.publicationName.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                            {item.citedByCount !== undefined && (
+                              <span className="flex items-center gap-1 text-teal-700 dark:text-teal-400 font-bold bg-teal-500/10 px-2 py-1 rounded-md text-[11px]">
+                                <Award className="w-3.5 h-3.5" />
+                                <span>{item.citedByCount} Sitasi</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={isSaved ? "outline" : "default"}
+                            disabled={isSaved}
+                            onClick={() => openSaveModal(item.id, cleanTitle, item.scopusUrl || item.websiteUrl, `[SINTA] ${item.publicationName || ''}`)}
+                            className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white"}`}
+                          >
+                            {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Render Journal Card
                   return (
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
                       <div className="space-y-3">
@@ -810,17 +929,17 @@ export function ScopusPage() {
 
                         <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
                           <Building2 className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
-                          <span className="truncate">{item.institution.replace(/\*/g, "")}</span>
+                          <span className="truncate">{item.institution?.replace(/\*/g, "") || "Institusi Pendidikan"}</span>
                         </p>
 
                         <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] font-semibold">
                           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
                             <span className="text-muted-foreground text-[10px] block font-mono">Impact Score</span>
-                            <span className="text-teal-700 dark:text-teal-400 font-bold">{item.impact}</span>
+                            <span className="text-teal-700 dark:text-teal-400 font-bold">{item.impact || "-"}</span>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
                             <span className="text-muted-foreground text-[10px] block font-mono">H5-Index</span>
-                            <span className="text-foreground font-bold">{item.h5Index}</span>
+                            <span className="text-foreground font-bold">{item.h5Index || "-"}</span>
                           </div>
                         </div>
                       </div>
@@ -880,20 +999,60 @@ export function ScopusPage() {
       {/* ── 3. GARUDA SECTION ── */}
       {provider === "garuda" && (
         <div className="space-y-5">
-          {garudaTotalResults > 0 && (
-            <div className="flex items-center justify-end">
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
-                <BookOpen className="w-3.5 h-3.5 text-red-600" />
-                <span>Total Metadata: {garudaTotalResults.toLocaleString()} Artikel & Jurnal GARUDA</span>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setGarudaSubTab("article");
+                  setGarudaPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  garudaSubTab === "article"
+                    ? "bg-white dark:bg-slate-900 text-red-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Judul Artikel</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setGarudaSubTab("journal");
+                  setGarudaPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  garudaSubTab === "journal"
+                    ? "bg-white dark:bg-slate-900 text-red-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Nama Jurnal</span>
+              </button>
             </div>
-          )}
+
+            {garudaTotalResults > 0 && (
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
+                <BookOpen className="w-3.5 h-3.5 text-red-600" />
+                <span>Total Metadata: {garudaTotalResults.toLocaleString()} {garudaSubTab === "journal" ? "Jurnal GARUDA" : "Artikel GARUDA"}</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-bold text-red-600 dark:text-red-400">Menampilkan {garudaItems.length} card</span>
+              </div>
+            )}
+          </div>
+
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
             <Input
               value={garudaQuery}
               onChange={(e) => setGarudaQuery(e.target.value)}
-              placeholder="Ketik kata kunci artikel di Garba Rujukan Digital (GARUDA Kemdiktisaintek)..."
+              placeholder={
+                garudaSubTab === "article"
+                  ? "Ketik kata kunci artikel di Garba Rujukan Digital (GARUDA)..."
+                  : "Ketik nama jurnal atau penerbit di Garba Rujukan Digital (GARUDA)..."
+              }
               className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-red-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-red-600 focus:border-red-600 transition-all"
             />
             <Button type="submit" disabled={garudaLoading} className="absolute right-1.5 h-9.5 px-5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl cursor-pointer">
@@ -906,15 +1065,15 @@ export function ScopusPage() {
           ) : !activeGarudaQuery.trim() ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <Search className="w-12 h-12 mx-auto text-red-500/40" />
-              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari artikel GARUDA</h3>
+              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari {garudaSubTab === "journal" ? "jurnal" : "artikel"} GARUDA</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Cari publikasi artikel ilmiah Indonesia dari Garba Rujukan Digital Kemdiktisaintek.
+                Cari publikasi ilmiah Indonesia dari Garba Rujukan Digital Kemdiktisaintek.
               </p>
             </div>
           ) : garudaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <Library className="w-12 h-12 mx-auto text-red-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada artikel GARUDA ditemukan untuk "{activeGarudaQuery}"</h3>
+              <h3 className="text-base font-bold text-foreground">Tidak ada {garudaSubTab === "journal" ? "jurnal" : "artikel"} GARUDA ditemukan untuk "{activeGarudaQuery}"</h3>
             </div>
           ) : (
             <div className="space-y-6">
@@ -922,6 +1081,69 @@ export function ScopusPage() {
                 {garudaItems.map((item) => {
                   const isSaved = savedLinkIds[item.id];
                   const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
+
+                  // Render GARUDA Journal Card
+                  if (item.isJournal || garudaSubTab === "journal") {
+                    return (
+                      <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-red-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-red-500/50 transition-all">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[11px] font-bold uppercase font-mono">
+                              GARUDA Journal
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-mono truncate">{item.issnText}</span>
+                          </div>
+
+                          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-red-600 transition-colors">
+                            <a href={item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
+                              <div className="w-6 h-6 rounded-md bg-white border border-red-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                <img src="/garuda01.jpeg" alt="GARUDA Logo" className="w-full h-full object-contain" />
+                              </div>
+                              <span className="flex-1">{cleanTitle}</span>
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-red-600" />
+                            </a>
+                          </h3>
+
+                          {item.publisher && (
+                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
+                              <Building2 className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                              <span className="truncate">{item.publisher.replace(/\*/g, "")}</span>
+                            </p>
+                          )}
+
+                          {item.subjectAreas && item.subjectAreas.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {item.subjectAreas.map((sa: string, idx: number) => (
+                                <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-muted-foreground font-medium truncate">
+                                  {sa}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                          <a href={item.garudaUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1">
+                            <span>Detail Jurnal</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={isSaved ? "outline" : "default"}
+                            disabled={isSaved}
+                            onClick={() => openSaveModal(item.id, cleanTitle, item.garudaUrl, `[GARUDA Journal] ${item.publisher}`)}
+                            className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-red-600 hover:bg-red-700 active:bg-red-800 text-white"}`}
+                          >
+                            {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Render GARUDA Article Card
                   return (
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-red-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-red-500/50 transition-all">
                       <div className="space-y-3">
@@ -937,7 +1159,6 @@ export function ScopusPage() {
                           )}
                         </div>
 
-                        {/* GARUDA Cards: Only Title, Authors, Journal Info & Publisher */}
                         <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-red-600 transition-colors">
                           <a href={item.doiUrl || item.garudaUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-start gap-2">
                             <div className="w-6 h-6 rounded-md bg-white border border-red-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
@@ -948,10 +1169,12 @@ export function ScopusPage() {
                           </a>
                         </h3>
 
-                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
-                          <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
-                          <span className="line-clamp-2">{item.author.replace(/\*/g, "")}</span>
-                        </p>
+                        {item.author && (
+                          <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium line-clamp-2">
+                            <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
+                            <span className="line-clamp-2">{item.author.replace(/\*/g, "")}</span>
+                          </p>
+                        )}
 
                         {item.journalInfo && (
                           <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
@@ -980,7 +1203,7 @@ export function ScopusPage() {
                           size="sm"
                           variant={isSaved ? "outline" : "default"}
                           disabled={isSaved}
-                          onClick={() => openSaveModal(item.id, cleanTitle, item.doiUrl || item.garudaUrl, `[GARUDA] ${item.author} • ${item.journalInfo}`)}
+                          onClick={() => openSaveModal(item.id, cleanTitle, item.doiUrl || item.garudaUrl, `[GARUDA] ${item.author || ''} • ${item.journalInfo || ''}`)}
                           className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-red-600 hover:bg-red-700 active:bg-red-800 text-white"}`}
                         >
                           {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
@@ -1025,20 +1248,60 @@ export function ScopusPage() {
       {/* ── 4. GOOGLE SCHOLAR SECTION ── */}
       {provider === "scholar" && (
         <div className="space-y-5">
-          {scholarItems.length > 0 && (
-            <div className="flex items-center justify-end">
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setScholarSubTab("article");
+                  setScholarPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  scholarSubTab === "article"
+                    ? "bg-white dark:bg-slate-900 text-blue-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Judul Artikel</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setScholarSubTab("journal");
+                  setScholarPage(1);
+                }}
+                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  scholarSubTab === "journal"
+                    ? "bg-white dark:bg-slate-900 text-blue-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Nama Jurnal</span>
+              </button>
+            </div>
+
+            {scholarItems.length > 0 && (
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
                 <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
                 <span>Total Metadata: &gt;100.000.000 Karya Ilmiah Global</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400">Menampilkan {scholarItems.length} card</span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
             <Input
               value={scholarQuery}
               onChange={(e) => setScholarQuery(e.target.value)}
-              placeholder="Ketik kata kunci referensi akademik di Google Scholar..."
+              placeholder={
+                scholarSubTab === "article"
+                  ? "Ketik judul artikel ilmiah di Google Scholar..."
+                  : "Ketik nama jurnal atau terbitan ilmiah di Google Scholar..."
+              }
               className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-blue-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-500 focus:border-blue-500 transition-all"
             />
             <Button type="submit" disabled={scholarLoading} className="absolute right-1.5 h-9.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer">

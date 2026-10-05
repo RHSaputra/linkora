@@ -97,17 +97,78 @@ async function fetchSintaSinglePage(targetUrl: string) {
   }
 }
 
-async function fetchSintaQuery(searchQuery: string, sintaFilter: string, startPage: number) {
+async function fetchSintaSingleArticlePage(targetUrl: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(targetUrl, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      },
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (!res.ok) return [];
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const items: any[] = [];
+    $(".ar-list-item").each((_, el) => {
+      const titleLinkEl = $(el).find(".ar-title a").first();
+      const title = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
+      const articleUrl = titleLinkEl.attr("href") || "";
+
+      if (!title) return;
+
+      const creator = $(el).find(".ar-meta").first().text().replace(/[\n\r\t]+/g, " ").trim();
+      const publicationName = $(el).find(".ar-pub").text().replace(/[\n\r\t]+/g, " ").trim();
+      const year = $(el).find(".ar-year").text().replace(/[\n\r\t]+/g, " ").trim();
+      const cited = $(el).find(".ar-cited").text().replace(/[\n\r\t]+/g, " ").trim();
+      const quartile = $(el).find(".ar-quartile").text().replace(/[\n\r\t]+/g, " ").trim();
+
+      const idMatch = articleUrl.match(/eid=([^&]+)/) || articleUrl.match(/\/(\d+)/);
+      const id = idMatch ? idMatch[1] : Math.random().toString();
+
+      items.push({
+        id,
+        title,
+        creator: creator.replace(/^Creator\s*:\s*/i, "") || "Penulis SINTA",
+        publicationName: publicationName || "Artikel Terindeks SINTA",
+        coverDate: year || "-",
+        citedByCount: parseInt(cited.replace(/\D/g, "") || "0", 10),
+        scopusUrl: articleUrl || "https://sinta.kemdiktisaintek.go.id",
+        quartile: quartile || "SINTA Indexed",
+        isArticle: true,
+      });
+    });
+
+    return items;
+  } catch (err) {
+    return [];
+  }
+}
+
+async function fetchSintaQuery(searchQuery: string, sintaFilter: string, startPage: number, type: string = "journal") {
   const pagePromises = [0, 1, 2].map((i) => {
     const pageNum = startPage + i;
-    let targetUrl = `https://sinta.kemdiktisaintek.go.id/journals?page=${pageNum}`;
-    if (searchQuery.trim()) {
-      targetUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
+    if (type === "article") {
+      let targetUrl = `https://sinta.kemdiktisaintek.go.id/scopus?page=${pageNum}`;
+      if (searchQuery.trim()) {
+        targetUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
+      }
+      return fetchSintaSingleArticlePage(targetUrl);
+    } else {
+      let targetUrl = `https://sinta.kemdiktisaintek.go.id/journals?page=${pageNum}`;
+      if (searchQuery.trim()) {
+        targetUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
+      }
+      if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+        targetUrl += `&sinta=${encodeURIComponent(sintaFilter)}`;
+      }
+      return fetchSintaSinglePage(targetUrl);
     }
-    if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
-      targetUrl += `&sinta=${encodeURIComponent(sintaFilter)}`;
-    }
-    return fetchSintaSinglePage(targetUrl);
   });
 
   const pageResults = await Promise.all(pagePromises);
@@ -118,12 +179,13 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
+    const type = searchParams.get("type") || "journal"; // "journal" | "article"
     const sintaFilter = searchParams.get("sinta") || ""; // "1" | "2" | "3" | "4" | "5" | "6" | ""
     const pageNum = parseInt(searchParams.get("page") || "1", 10);
     const targetCount = 30;
 
     const baseOffset =
-      !query.trim() && sintaFilter && SINTA_LEVEL_PAGE_OFFSETS[sintaFilter]
+      type === "journal" && !query.trim() && sintaFilter && SINTA_LEVEL_PAGE_OFFSETS[sintaFilter]
         ? SINTA_LEVEL_PAGE_OFFSETS[sintaFilter]
         : 1;
 
@@ -151,10 +213,10 @@ export async function GET(request: Request) {
     const seenIds = new Set<string>();
 
     for (const qCandidate of queryCandidates) {
-      const results = await fetchSintaQuery(qCandidate, sintaFilter, startSintaPage);
+      const results = await fetchSintaQuery(qCandidate, sintaFilter, startSintaPage, type);
       for (const item of results) {
-        // Enforce level filter if specified
-        if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+        // Enforce level filter if specified for journals
+        if (type === "journal" && sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
           if (item.sintaRating !== `S${sintaFilter}`) {
             continue;
           }

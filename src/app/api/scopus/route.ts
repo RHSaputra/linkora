@@ -116,6 +116,9 @@ export async function GET(request: Request) {
       let scopusQuery = cleanQ;
       if (formattedISSN || rawISSN) {
         scopusQuery = `ISSN(${formattedISSN || rawISSN})`;
+      } else {
+        // Enforce article title focus if type === "article"
+        scopusQuery = `TITLE(${cleanQ})`;
       }
 
       const searchUrl1 = `https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(

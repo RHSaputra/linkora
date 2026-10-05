@@ -79,10 +79,84 @@ async function fetchGarudaSinglePage(targetUrl: string) {
   }
 }
 
+async function fetchGarudaJournalSinglePage(targetUrl: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    const res = await fetch(targetUrl, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (!res.ok) return { items: [], totalResults: 0 };
+
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const items: any[] = [];
+    let totalResults = 0;
+
+    $("table tr").each((_, el) => {
+      const titleEl = $(el).find("a.title-journal").first();
+      const title = titleEl.find("xmp").text().trim() || titleEl.text().replace(/[\n\r\t]+/g, " ").trim();
+      const detailPath = titleEl.attr("href") || "";
+
+      if (!title) return;
+
+      const garudaUrl = detailPath.startsWith("http")
+        ? detailPath
+        : `https://garuda.kemdiktisaintek.go.id${detailPath}`;
+
+      const publisherEl = $(el).find("a.subtitle-journal").first();
+      const publisher = publisherEl.find("xmp").text().trim() || publisherEl.text().replace(/[\n\r\t]+/g, " ").trim();
+
+      const rawText = $(el).text().replace(/[\n\r\t]+/g, " ");
+      const issnMatch = rawText.match(/ISSN\s*:\s*([0-9X-]+)/i);
+      const eissnMatch = rawText.match(/EISSN\s*:\s*([0-9X-]+)/i);
+      const issnText = `ISSN: ${issnMatch ? issnMatch[1] : "-"} | E-ISSN: ${eissnMatch ? eissnMatch[1] : "-"}`;
+
+      const subjectAreas: string[] = [];
+      $(el).find("a.label-journal").each((_, sEl) => {
+        const sText = $(sEl).find("xmp").text().trim() || $(sEl).text().trim();
+        if (sText) subjectAreas.push(sText);
+      });
+
+      const idMatch = detailPath.match(/\/journal\/view\/(\d+)/);
+      const id = idMatch ? idMatch[1] : Math.random().toString();
+
+      items.push({
+        id,
+        title,
+        publisher: publisher || "Penerbit Jurnal Indonesia",
+        issnText,
+        garudaUrl,
+        subjectAreas: subjectAreas.length > 0 ? subjectAreas : ["Jurnal Indonesia"],
+        isJournal: true,
+      });
+    });
+
+    const paginationText = $(".pagination-info").text().trim();
+    const totalMatch = paginationText.match(/Total Record\s*:\s*(\d+)/i);
+    if (totalMatch) {
+      totalResults = parseInt(totalMatch[1], 10);
+    }
+
+    return { items, totalResults };
+  } catch (err) {
+    return { items: [], totalResults: 0 };
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
+    const type = searchParams.get("type") || "article"; // "article" | "journal"
     const pageNum = parseInt(searchParams.get("page") || "1", 10);
 
     if (!query.trim()) {
@@ -94,10 +168,13 @@ export async function GET(request: Request) {
     // Fetch 3 pages in parallel for 3x speedup
     const pagePromises = [0, 1, 2].map((i) => {
       const currentGarudaPage = startGarudaPage + i;
-      const targetUrl = `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(
-        query.trim()
-      )}`;
-      return fetchGarudaSinglePage(targetUrl);
+      const targetUrl = type === "journal"
+        ? `https://garuda.kemdiktisaintek.go.id/journal?page=${currentGarudaPage}&q=${encodeURIComponent(query.trim())}`
+        : `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(query.trim())}`;
+      
+      return type === "journal"
+        ? fetchGarudaJournalSinglePage(targetUrl)
+        : fetchGarudaSinglePage(targetUrl);
     });
 
     const pageResults = await Promise.all(pagePromises);
