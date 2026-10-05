@@ -186,8 +186,18 @@ export function ScopusPage() {
 
   // GARUDA State (Default query empty "")
   const [garudaSubTab, setGarudaSubTab] = useState<"article" | "journal">("article");
+  const [garudaSelect, setGarudaSelect] = useState<"title" | "abstract" | "author" | "doi">("title");
   const [garudaQuery, setGarudaQuery] = useState("");
+  const [garudaPublisher, setGarudaPublisher] = useState("");
+  const [garudaYearFrom, setGarudaYearFrom] = useState("");
+  const [garudaYearTo, setGarudaYearTo] = useState("");
+
   const [activeGarudaQuery, setActiveGarudaQuery] = useState("");
+  const [activeGarudaSelect, setActiveGarudaSelect] = useState<"title" | "abstract" | "author" | "doi">("title");
+  const [activeGarudaPublisher, setActiveGarudaPublisher] = useState("");
+  const [activeGarudaYearFrom, setActiveGarudaYearFrom] = useState("");
+  const [activeGarudaYearTo, setActiveGarudaYearTo] = useState("");
+
   const [garudaPage, setGarudaPage] = useState(1);
   const [garudaLoading, setGarudaLoading] = useState(false);
   const [garudaItems, setGarudaItems] = useState<any[]>([]);
@@ -265,29 +275,47 @@ export function ScopusPage() {
   }, []);
 
   // ── GARUDA Scraper Fetcher (30 items per page) ──
-  const fetchGarudaData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
-    setGarudaLoading(true);
-    setGarudaErrorMsg(null);
-    try {
-      const res = await fetch(
-        `/api/garuda?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}`
-      );
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        setGarudaItems(data.items || []);
-        setGarudaTotalResults(data.totalResults || 0);
-      } else {
-        setGarudaErrorMsg(data.error || "Gagal mengambil data dari GARUDA");
-        setGarudaItems([]);
-        setGarudaTotalResults(0);
+  const fetchGarudaData = useCallback(
+    async (
+      q: string,
+      activeTab: "article" | "journal",
+      select: string,
+      publisher: string,
+      yearFrom: string,
+      yearTo: string,
+      pageNum: number
+    ) => {
+      setGarudaLoading(true);
+      setGarudaErrorMsg(null);
+      try {
+        const params = new URLSearchParams({
+          q: q.trim(),
+          type: activeTab,
+          select,
+          publisher: publisher.trim(),
+          year_from: yearFrom.trim(),
+          year_to: yearTo.trim(),
+          page: pageNum.toString(),
+        });
+        const res = await fetch(`/api/garuda?${params.toString()}`);
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          setGarudaItems(data.items || []);
+          setGarudaTotalResults(data.totalResults || 0);
+        } else {
+          setGarudaErrorMsg(data.error || "Gagal mengambil data dari GARUDA");
+          setGarudaItems([]);
+          setGarudaTotalResults(0);
+        }
+      } catch (err: any) {
+        console.error(err);
+        setGarudaErrorMsg("Gagal terhubung ke portal GARUDA Kemdiktisaintek");
+      } finally {
+        setGarudaLoading(false);
       }
-    } catch (err: any) {
-      console.error(err);
-      setGarudaErrorMsg("Gagal terhubung ke portal GARUDA Kemdiktisaintek");
-    } finally {
-      setGarudaLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // ── Google Scholar Fetcher (30 items per page) ──
   const fetchScholarData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
@@ -317,7 +345,15 @@ export function ScopusPage() {
     } else if (provider === "sinta") {
       fetchSintaData(activeSintaQuery, sintaSubTab, sintaLevel, sintaPage);
     } else if (provider === "garuda") {
-      fetchGarudaData(activeGarudaQuery, garudaSubTab, garudaPage);
+      fetchGarudaData(
+        activeGarudaQuery,
+        garudaSubTab,
+        activeGarudaSelect,
+        activeGarudaPublisher,
+        activeGarudaYearFrom,
+        activeGarudaYearTo,
+        garudaPage
+      );
     } else if (provider === "scholar") {
       fetchScholarData(activeScholarQuery, scholarSubTab, scholarPage);
     }
@@ -333,6 +369,10 @@ export function ScopusPage() {
     sintaPage,
     activeGarudaQuery,
     garudaSubTab,
+    activeGarudaSelect,
+    activeGarudaPublisher,
+    activeGarudaYearFrom,
+    activeGarudaYearTo,
     garudaPage,
     activeScholarQuery,
     scholarSubTab,
@@ -346,18 +386,19 @@ export function ScopusPage() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (provider === "scopus") {
-      if (!scopusQuery.trim()) return;
       setScopusPage(1);
       setActiveScopusQuery(scopusQuery.trim());
     } else if (provider === "sinta") {
       setSintaPage(1);
       setActiveSintaQuery(sintaQuery.trim());
     } else if (provider === "garuda") {
-      if (!garudaQuery.trim()) return;
       setGarudaPage(1);
       setActiveGarudaQuery(garudaQuery.trim());
+      setActiveGarudaSelect(garudaSelect);
+      setActiveGarudaPublisher(garudaPublisher.trim());
+      setActiveGarudaYearFrom(garudaYearFrom.trim());
+      setActiveGarudaYearTo(garudaYearTo.trim());
     } else if (provider === "scholar") {
-      if (!scholarQuery.trim()) return;
       setScholarPage(1);
       setActiveScholarQuery(scholarQuery.trim());
     }
@@ -1038,21 +1079,86 @@ export function ScopusPage() {
             )}
           </div>
 
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-            <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
-            <Input
-              value={garudaQuery}
-              onChange={(e) => setGarudaQuery(e.target.value)}
-              placeholder={
-                garudaSubTab === "article"
-                  ? "Ketik kata kunci artikel di Garba Rujukan Digital (GARUDA)..."
-                  : "Ketik nama jurnal atau penerbit di Garba Rujukan Digital (GARUDA)..."
-              }
-              className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-red-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-red-600 focus:border-red-600 transition-all"
-            />
-            <Button type="submit" disabled={garudaLoading} className="absolute right-1.5 h-9.5 px-5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl cursor-pointer">
-              {garudaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cari GARUDA"}
-            </Button>
+          <form onSubmit={handleSearchSubmit} className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-red-500/20 shadow-md space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+              {/* Cari Berdasarkan */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                  <span>Cari Berdasarkan</span>
+                </label>
+                <select
+                  value={garudaSelect}
+                  onChange={(e) => setGarudaSelect(e.target.value as any)}
+                  className="w-full h-10 px-3 py-2 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-foreground font-semibold focus:outline-hidden focus:border-red-600 cursor-pointer"
+                >
+                  <option value="title">Judul</option>
+                  <option value="abstract">Abstrak</option>
+                  <option value="author">Pengarang</option>
+                  <option value="doi">DOI</option>
+                </select>
+              </div>
+
+              {/* Kata kunci */}
+              <div className="lg:col-span-4 space-y-1.5">
+                <label className="text-xs font-bold text-foreground">
+                  <span>Kata kunci</span>
+                </label>
+                <Input
+                  value={garudaQuery}
+                  onChange={(e) => setGarudaQuery(e.target.value)}
+                  placeholder="sistem informasi"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-0 focus-visible:border-red-600"
+                />
+              </div>
+
+              {/* Penerbit */}
+              <div className="lg:col-span-3 space-y-1.5">
+                <label className="text-xs font-bold text-foreground">
+                  <span>Penerbit</span>
+                </label>
+                <Input
+                  value={garudaPublisher}
+                  onChange={(e) => setGarudaPublisher(e.target.value)}
+                  placeholder="Nama Penerbit"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-0 focus-visible:border-red-600"
+                />
+              </div>
+
+              {/* Filter Tahun */}
+              <div className="lg:col-span-2 space-y-1.5">
+                <label className="text-xs font-bold text-foreground">
+                  <span>Filter Tahun</span>
+                </label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    value={garudaYearFrom}
+                    onChange={(e) => setGarudaYearFrom(e.target.value)}
+                    placeholder="Awal"
+                    className="h-10 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2 text-center"
+                  />
+                  <span className="text-xs text-muted-foreground font-bold">-</span>
+                  <Input
+                    type="number"
+                    value={garudaYearTo}
+                    onChange={(e) => setGarudaYearTo(e.target.value)}
+                    placeholder="Akhir"
+                    className="h-10 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2 text-center"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-1">
+              <Button
+                type="submit"
+                disabled={garudaLoading}
+                className="h-10 px-7 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs rounded-2xl shadow-md cursor-pointer flex items-center gap-2"
+              >
+                {garudaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                <span>Mencari</span>
+              </Button>
+            </div>
           </form>
 
           {garudaLoading ? (

@@ -157,6 +157,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
     const type = searchParams.get("type") || "article"; // "article" | "journal"
+    const select = searchParams.get("select") || "title"; // "title" | "abstract" | "author" | "doi"
+    const publisher = searchParams.get("publisher") || "";
+    const yearFrom = searchParams.get("year_from") || "";
+    const yearTo = searchParams.get("year_to") || "";
     const pageNum = parseInt(searchParams.get("page") || "1", 10);
 
     const cleanQ = query.trim();
@@ -167,9 +171,24 @@ export async function GET(request: Request) {
     // Fetch 3 pages in parallel for 3x speedup
     const pagePromises = [0, 1, 2].map((i) => {
       const currentGarudaPage = startGarudaPage + i;
-      const targetUrl = type === "journal"
-        ? `https://garuda.kemdiktisaintek.go.id/journal?page=${currentGarudaPage}&q=${encodeURIComponent(effectiveQuery)}`
-        : `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(effectiveQuery)}`;
+      let targetUrl = "";
+      if (type === "journal") {
+        targetUrl = `https://garuda.kemdiktisaintek.go.id/journal?page=${currentGarudaPage}&q=${encodeURIComponent(effectiveQuery)}`;
+        if (publisher.trim()) {
+          targetUrl += `&publisher=${encodeURIComponent(publisher.trim())}`;
+        }
+      } else {
+        targetUrl = `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&select=${encodeURIComponent(select)}&q=${encodeURIComponent(effectiveQuery)}`;
+        if (publisher.trim()) {
+          targetUrl += `&publisher=${encodeURIComponent(publisher.trim())}`;
+        }
+        if (yearFrom.trim()) {
+          targetUrl += `&year_from=${encodeURIComponent(yearFrom.trim())}`;
+        }
+        if (yearTo.trim()) {
+          targetUrl += `&year_to=${encodeURIComponent(yearTo.trim())}`;
+        }
+      }
       
       return type === "journal"
         ? fetchGarudaJournalSinglePage(targetUrl)
@@ -183,13 +202,15 @@ export async function GET(request: Request) {
     let totalResults = 0;
 
     for (const res of pageResults) {
-      if (res.totalResults > totalResults) {
-        totalResults = res.totalResults;
-      }
-      for (const item of res.items) {
-        if (!seenIds.has(item.id)) {
-          seenIds.add(item.id);
-          items.push(item);
+      if (res && Array.isArray(res.items)) {
+        if (res.totalResults > totalResults) {
+          totalResults = res.totalResults;
+        }
+        for (const item of res.items) {
+          if (item && item.id && !seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            items.push(item);
+          }
         }
       }
     }
