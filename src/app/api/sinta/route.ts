@@ -6,8 +6,8 @@ const SINTA_LEVEL_PAGE_OFFSETS: Record<string, number> = {
   "2": 126,
   "3": 385,
   "4": 660,
-  "5": 900,
-  "6": 1050,
+  "5": 1110,
+  "6": 1648,
 };
 
 const ACRONYM_EXPANSIONS: Record<string, string[]> = {
