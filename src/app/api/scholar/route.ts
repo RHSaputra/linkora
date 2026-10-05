@@ -115,11 +115,9 @@ export async function GET(request: Request) {
     const pageNum = parseInt(searchParams.get("page") || "1", 10);
 
     const cleanQ = query.trim();
-    if (!cleanQ) {
-      return NextResponse.json({ items: [], totalResults: 0 });
-    }
+    const effectiveQuery = cleanQ || (type === "journal" ? "jurnal" : "penelitian");
 
-    const scholarQueryStr = type === "journal" ? `source:"${cleanQ}"` : `allintitle:${cleanQ}`;
+    const scholarQueryStr = type === "journal" ? `source:"${effectiveQuery}"` : `allintitle:${effectiveQuery}`;
     const startOffset = (pageNum - 1) * 10;
     const targetUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(
       scholarQueryStr
@@ -138,7 +136,7 @@ export async function GET(request: Request) {
     }
 
     // 2. Fallback Attempt: OpenAlex Academic Database API (250M+ indexed works)
-    const openAlexItems = await fetchOpenAlexFallback(cleanQ, pageNum);
+    const openAlexItems = await fetchOpenAlexFallback(effectiveQuery, pageNum);
 
     return NextResponse.json({
       ok: true,

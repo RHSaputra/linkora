@@ -159,9 +159,8 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") || "article"; // "article" | "journal"
     const pageNum = parseInt(searchParams.get("page") || "1", 10);
 
-    if (!query.trim()) {
-      return NextResponse.json({ items: [], totalResults: 0 });
-    }
+    const cleanQ = query.trim();
+    const effectiveQuery = cleanQ || (type === "journal" ? "jurnal" : "penelitian");
 
     const startGarudaPage = (pageNum - 1) * 3 + 1;
 
@@ -169,8 +168,8 @@ export async function GET(request: Request) {
     const pagePromises = [0, 1, 2].map((i) => {
       const currentGarudaPage = startGarudaPage + i;
       const targetUrl = type === "journal"
-        ? `https://garuda.kemdiktisaintek.go.id/journal?page=${currentGarudaPage}&q=${encodeURIComponent(query.trim())}`
-        : `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(query.trim())}`;
+        ? `https://garuda.kemdiktisaintek.go.id/journal?page=${currentGarudaPage}&q=${encodeURIComponent(effectiveQuery)}`
+        : `https://garuda.kemdiktisaintek.go.id/documents?page=${currentGarudaPage}&q=${encodeURIComponent(effectiveQuery)}`;
       
       return type === "journal"
         ? fetchGarudaJournalSinglePage(targetUrl)

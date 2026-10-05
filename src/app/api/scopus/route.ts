@@ -111,14 +111,12 @@ export async function GET(request: Request) {
     }
 
     const cleanQ = query.trim();
-    if (!cleanQ) {
-      return NextResponse.json({ items: [], totalResults: 0 });
-    }
+    const effectiveQ = cleanQ || (type === "journal" ? "technology" : "research");
 
     const startIndex = (page - 1) * targetCount;
 
     // Check if query is an ISSN (e.g. 2502-0714 or 25020714)
-    const issnMatch = cleanQ.match(/^(\d{4})-?(\d{3}[\dX])$/i);
+    const issnMatch = effectiveQ.match(/^(\d{4})-?(\d{3}[\dX])$/i);
     const formattedISSN = issnMatch ? `${issnMatch[1]}-${issnMatch[2]}` : null;
     const rawISSN = issnMatch ? `${issnMatch[1]}${issnMatch[2]}` : null;
 
@@ -128,7 +126,7 @@ export async function GET(request: Request) {
       const batch1Size = Math.min(fetchCount, 25);
       const batch2Size = fetchCount > 25 ? Math.min(fetchCount - 25, 25) : 0;
 
-      const paramKey = formattedISSN ? `issn=${encodeURIComponent(formattedISSN)}` : `title=${encodeURIComponent(cleanQ)}`;
+      const paramKey = formattedISSN ? `issn=${encodeURIComponent(formattedISSN)}` : `title=${encodeURIComponent(effectiveQ)}`;
       const url1 = `https://api.elsevier.com/content/serial/title?${paramKey}&count=${batch1Size}&start=${startIndex}`;
 
       const promises: Promise<any>[] = [fetchScopusChunk(url1, apiKey)];
@@ -190,7 +188,7 @@ export async function GET(request: Request) {
       if (formattedISSN || rawISSN) {
         scopusQuery = `ISSN(${formattedISSN || rawISSN})`;
       } else {
-        scopusQuery = `TITLE(${cleanQ})`;
+        scopusQuery = `TITLE(${effectiveQ})`;
       }
 
       const searchUrl1 = `https://api.elsevier.com/content/search/scopus?query=${encodeURIComponent(

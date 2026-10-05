@@ -218,11 +218,6 @@ export function ScopusPage() {
   // ── Scopus Data Fetcher (30 items per page) ──
   const fetchScopusData = useCallback(
     async (q: string, activeTab: "article" | "journal", quartile: string, pageNum: number) => {
-      if (!q.trim()) {
-        setScopusItems([]);
-        setScopusTotalResults(0);
-        return;
-      }
       setScopusLoading(true);
       setScopusErrorMsg(null);
       try {
@@ -271,11 +266,6 @@ export function ScopusPage() {
 
   // ── GARUDA Scraper Fetcher (30 items per page) ──
   const fetchGarudaData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
-    if (!q.trim()) {
-      setGarudaItems([]);
-      setGarudaTotalResults(0);
-      return;
-    }
     setGarudaLoading(true);
     setGarudaErrorMsg(null);
     try {
@@ -301,10 +291,6 @@ export function ScopusPage() {
 
   // ── Google Scholar Fetcher (30 items per page) ──
   const fetchScholarData = useCallback(async (q: string, activeTab: "article" | "journal", pageNum: number) => {
-    if (!q.trim()) {
-      setScholarItems([]);
-      return;
-    }
     setScholarLoading(true);
     setScholarErrorMsg(null);
     try {
@@ -326,13 +312,13 @@ export function ScopusPage() {
   }, []);
 
   useEffect(() => {
-    if (provider === "scopus" && activeScopusQuery.trim()) {
+    if (provider === "scopus") {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusQuartile, scopusPage);
     } else if (provider === "sinta") {
       fetchSintaData(activeSintaQuery, sintaSubTab, sintaLevel, sintaPage);
-    } else if (provider === "garuda" && activeGarudaQuery.trim()) {
+    } else if (provider === "garuda") {
       fetchGarudaData(activeGarudaQuery, garudaSubTab, garudaPage);
-    } else if (provider === "scholar" && activeScholarQuery.trim()) {
+    } else if (provider === "scholar") {
       fetchScholarData(activeScholarQuery, scholarSubTab, scholarPage);
     }
   }, [
@@ -626,14 +612,6 @@ export function ScopusPage() {
 
           {scopusLoading ? (
             <Liko3DSearchLoading providerName="Scopus" brandColor="orange" />
-          ) : !activeScopusQuery.trim() ? (
-            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Search className="w-12 h-12 mx-auto text-orange-500/40" />
-              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk memulai pencarian Scopus</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Masukkan topik penelitian, judul artikel, atau nama jurnal pada kolom di atas untuk menampilkan hasil.
-              </p>
-            </div>
           ) : scopusItems.length === 0 && !scopusErrorMsg ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <Library className="w-12 h-12 mx-auto text-orange-500/40" />
@@ -1079,14 +1057,6 @@ export function ScopusPage() {
 
           {garudaLoading ? (
             <Liko3DSearchLoading providerName="GARUDA Portal" brandColor="red" />
-          ) : !activeGarudaQuery.trim() ? (
-            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Search className="w-12 h-12 mx-auto text-red-500/40" />
-              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari {garudaSubTab === "journal" ? "jurnal" : "artikel"} GARUDA</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Cari publikasi ilmiah Indonesia dari Garba Rujukan Digital Kemdiktisaintek.
-              </p>
-            </div>
           ) : garudaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <Library className="w-12 h-12 mx-auto text-red-500/40" />
@@ -1328,14 +1298,6 @@ export function ScopusPage() {
 
           {scholarLoading ? (
             <Liko3DSearchLoading providerName="Google Scholar" brandColor="blue" />
-          ) : !activeScholarQuery.trim() ? (
-            <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
-              <Search className="w-12 h-12 mx-auto text-blue-500/40" />
-              <h3 className="text-base font-bold text-foreground">Ketik kata kunci untuk mencari Google Scholar</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Cari referensi karya ilmiah, buku, dan artikel terindeks Google Scholar.
-              </p>
-            </div>
           ) : scholarItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <BookOpen className="w-12 h-12 mx-auto text-blue-500/40" />
