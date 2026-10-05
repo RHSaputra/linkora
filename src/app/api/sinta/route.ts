@@ -215,10 +215,17 @@ export async function GET(request: Request) {
     for (const qCandidate of queryCandidates) {
       const results = await fetchSintaQuery(qCandidate, sintaFilter, startSintaPage, type);
       for (const item of results) {
-        // Enforce level filter if specified for journals
-        if (type === "journal" && sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
-          if (item.sintaRating !== `S${sintaFilter}`) {
-            continue;
+        // Enforce level filter if specified
+        if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+          if (type === "journal") {
+            if (item.sintaRating !== `S${sintaFilter}`) {
+              continue;
+            }
+          } else if (type === "article") {
+            // Check if article's journal rating matches requested level
+            if (item.sintaRating && item.sintaRating !== `S${sintaFilter}`) {
+              continue;
+            }
           }
         }
         if (!seenIds.has(item.id)) {

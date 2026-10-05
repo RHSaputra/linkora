@@ -164,6 +164,7 @@ export function ScopusPage() {
 
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
+  const [scopusQuartile, setScopusQuartile] = useState<string>(""); // "" | "Q1" | "Q2" | "Q3" | "Q4"
   const [scopusQuery, setScopusQuery] = useState("");
   const [activeScopusQuery, setActiveScopusQuery] = useState("");
   const [scopusPage, setScopusPage] = useState(1);
@@ -215,7 +216,7 @@ export function ScopusPage() {
 
   // ── Scopus Data Fetcher (30 items per page) ──
   const fetchScopusData = useCallback(
-    async (q: string, activeTab: "article" | "journal", pageNum: number) => {
+    async (q: string, activeTab: "article" | "journal", quartile: string, pageNum: number) => {
       if (!q.trim()) {
         setScopusItems([]);
         setScopusTotalResults(0);
@@ -225,7 +226,7 @@ export function ScopusPage() {
       setScopusErrorMsg(null);
       try {
         const res = await fetch(
-          `/api/scopus?q=${encodeURIComponent(q.trim())}&type=${activeTab}&page=${pageNum}&count=30`
+          `/api/scopus?q=${encodeURIComponent(q.trim())}&type=${activeTab}&quartile=${quartile}&page=${pageNum}&count=30`
         );
         const data = await res.json();
         if (res.ok && data.ok) {
@@ -329,7 +330,7 @@ export function ScopusPage() {
 
   useEffect(() => {
     if (provider === "scopus" && activeScopusQuery.trim()) {
-      fetchScopusData(activeScopusQuery, scopusSubTab, scopusPage);
+      fetchScopusData(activeScopusQuery, scopusSubTab, scopusQuartile, scopusPage);
     } else if (provider === "sinta" && (activeSintaQuery.trim() || sintaLevel)) {
       fetchSintaData(activeSintaQuery, sintaSubTab, sintaLevel, sintaPage);
     } else if (provider === "garuda" && activeGarudaQuery.trim()) {
@@ -341,6 +342,7 @@ export function ScopusPage() {
     provider,
     activeScopusQuery,
     scopusSubTab,
+    scopusQuartile,
     scopusPage,
     activeSintaQuery,
     sintaSubTab,
@@ -545,7 +547,7 @@ export function ScopusPage() {
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span>Pencarian Artikel</span>
+                <span>Judul Artikel</span>
               </button>
               <button
                 type="button"
@@ -560,7 +562,7 @@ export function ScopusPage() {
                 }`}
               >
                 <BookOpen className="w-4 h-4" />
-                <span>Direktori Jurnal</span>
+                <span>Judul Jurnal</span>
               </button>
             </div>
 
@@ -573,6 +575,31 @@ export function ScopusPage() {
               </div>
             )}
           </div>
+
+          {scopusSubTab === "article" && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
+                Indeks Scopus:
+              </span>
+              <button
+                type="button"
+                onClick={() => { setScopusQuartile(""); setScopusPage(1); }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === "" ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+              >
+                Semua Quartile
+              </button>
+              {["Q1", "Q2", "Q3", "Q4"].map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => { setScopusQuartile(q); setScopusPage(1); }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scopusQuartile === q ? "bg-orange-600 text-white border-orange-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
@@ -776,30 +803,28 @@ export function ScopusPage() {
             )}
           </div>
 
-          {sintaSubTab === "journal" && (
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-                Filter Peringkat SINTA:
-              </span>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
+              Indeks SINTA:
+            </span>
+            <button
+              type="button"
+              onClick={() => { setSintaLevel(""); setSintaPage(1); }}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === "" ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+            >
+              Semua
+            </button>
+            {["1", "2", "3", "4", "5", "6"].map((lvl) => (
               <button
+                key={lvl}
                 type="button"
-                onClick={() => { setSintaLevel(""); setSintaPage(1); }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === "" ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
+                onClick={() => { setSintaLevel(lvl); setSintaPage(1); }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === lvl ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
               >
-                Semua Peringkat
+                S{lvl}
               </button>
-              {["1", "2", "3", "4", "5", "6"].map((lvl) => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => { setSintaLevel(lvl); setSintaPage(1); }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${sintaLevel === lvl ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-                >
-                  SINTA {lvl}
-                </button>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
 
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />

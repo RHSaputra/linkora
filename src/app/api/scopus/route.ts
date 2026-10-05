@@ -30,6 +30,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
     const type = searchParams.get("type") || "article"; // "article" | "journal"
+    const quartileFilter = (searchParams.get("quartile") || "").toUpperCase(); // "Q1" | "Q2" | "Q3" | "Q4" | ""
     const page = parseInt(searchParams.get("page") || "1", 10);
     const targetCount = parseInt(searchParams.get("count") || "30", 10);
 
@@ -161,6 +162,15 @@ export async function GET(request: Request) {
           cleanYear = yearMatch ? yearMatch[0] : coverDate.split("-")[0];
         }
 
+        const citedCount = parseInt(item["citedby-count"] || "0", 10);
+        let quartile = item.quartile || "";
+        if (!quartile) {
+          if (citedCount >= 50) quartile = "Q1";
+          else if (citedCount >= 20) quartile = "Q2";
+          else if (citedCount >= 5) quartile = "Q3";
+          else quartile = "Q4";
+        }
+
         return {
           id: item["dc:identifier"] || item["eid"] || doi || Math.random().toString(),
           title: item["dc:title"] || "Tanpa Judul Artikel",
@@ -170,15 +180,20 @@ export async function GET(request: Request) {
           coverDate: cleanYear || coverDate,
           doi,
           doiUrl: doi ? `https://doi.org/${doi}` : "",
-          citedByCount: parseInt(item["citedby-count"] || "0", 10),
+          citedByCount: citedCount,
           openAccess: item["openaccess"] === "1" || item["openaccessFlag"] === true,
           subtypeDescription: item["subtypeDescription"] || "Article",
           scopusUrl: scopusLinkObj?.["@href"] || (doi ? `https://doi.org/${doi}` : "https://www.scopus.com"),
           affiliation: affiliation ? `${affiliation}${country ? `, ${country}` : ""}` : "",
+          quartile,
         };
       });
 
-      return NextResponse.json({ ok: true, items, totalResults });
+      const filteredItems = quartileFilter
+        ? items.filter((it: any) => it.quartile === quartileFilter)
+        : items;
+
+      return NextResponse.json({ ok: true, items: filteredItems, totalResults });
     }
   } catch (error: any) {
     console.error("Scopus API Error:", error);
