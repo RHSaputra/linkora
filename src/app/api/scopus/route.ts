@@ -52,22 +52,40 @@ function extractJournalMetrics(item: any): { sjr: number; cs: number; quartile: 
   return { sjr, cs, quartile: getQuartileFromMetrics(sjr, cs) };
 }
 
-async function fetchMetricsForIssnList(issns: string[], apiKey: string): Promise<Map<string, { sjr: number; cs: number; quartile: string | undefined }>> {
+async function fetchMetricsForArticleList(
+  entries: any[],
+  apiKey: string
+): Promise<Map<string, { sjr: number; cs: number; quartile: string | undefined }>> {
   const metricsMap = new Map<string, { sjr: number; cs: number; quartile: string | undefined }>();
-  if (!issns.length) return metricsMap;
+  if (!entries.length) return metricsMap;
 
-  const lookupPromises = issns.map(async (issn) => {
-    const cleanIssn = issn.trim();
-    if (!cleanIssn) return;
-    const url = `https://api.elsevier.com/content/serial/title?issn=${encodeURIComponent(cleanIssn)}&count=1`;
+  const lookupTasks: { key: string; param: string }[] = [];
+  const seenKeys = new Set<string>();
+
+  for (const item of entries) {
+    const issn = (item["prism:issn"] || item["prism:eIssn"] || "").trim();
+    const pubName = (item["prism:publicationName"] || "").trim();
+
+    if (issn && !seenKeys.has(issn)) {
+      seenKeys.add(issn);
+      lookupTasks.push({ key: issn, param: `issn=${encodeURIComponent(issn)}` });
+    }
+    if (pubName && !seenKeys.has(pubName)) {
+      seenKeys.add(pubName);
+      lookupTasks.push({ key: pubName, param: `title=${encodeURIComponent(pubName)}` });
+    }
+  }
+
+  const promises = lookupTasks.map(async (task) => {
+    const url = `https://api.elsevier.com/content/serial/title?${task.param}&count=1`;
     const res = await fetchScopusChunk(url, apiKey);
     if (res.ok && res.data["serial-metadata-response"]?.entry?.[0]) {
       const entry = res.data["serial-metadata-response"].entry[0];
-      metricsMap.set(cleanIssn, extractJournalMetrics(entry));
+      metricsMap.set(task.key, extractJournalMetrics(entry));
     }
   });
 
-  await Promise.all(lookupPromises);
+  await Promise.all(promises);
   return metricsMap;
 }
 
@@ -202,12 +220,7 @@ export async function GET(request: Request) {
         rawEntries = [...rawEntries, ...results[1].data["search-results"]["entry"]];
       }
 
-      // Collect unique ISSNs from article entries for authentic journal metric lookup
-      const uniqueIssns = Array.from(
-        new Set(rawEntries.map((it: any) => it["prism:issn"] || it["prism:eIssn"]).filter(Boolean))
-      ) as string[];
-
-      const metricsMap = await fetchMetricsForIssnList(uniqueIssns, apiKey);
+      const metricsMap = await fetchMetricsForArticleList(rawEntries, apiKey);
 
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus");
@@ -215,6 +228,7 @@ export async function GET(request: Request) {
         const country = item.affiliation?.[0]?.["affiliation-country"] || "";
         const doi = item["prism:doi"] || "";
         const issn = item["prism:issn"] || item["prism:eIssn"] || "";
+        const pubName = (item["prism:publicationName"] || "").trim();
 
         let cleanYear = "";
         const coverDate = item["prism:coverDate"] || item["prism:coverDisplayDate"] || "";
@@ -224,7 +238,7 @@ export async function GET(request: Request) {
         }
 
         const citedCount = parseInt(item["citedby-count"] || "0", 10);
-        const journalMetric = metricsMap.get(issn);
+        const journalMetric = metricsMap.get(issn) || metricsMap.get(pubName);
         const quartile = journalMetric?.quartile;
 
         return {
