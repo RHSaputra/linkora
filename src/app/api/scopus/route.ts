@@ -25,7 +25,15 @@ async function fetchScopusChunk(baseUrl: string, apiKey: string) {
   return { ok: true, data };
 }
 
-function getJournalQuartile(item: any): string {
+function getQuartileFromMetrics(sjr: number, cs: number): string | undefined {
+  if (sjr >= 0.8 || cs >= 6.0) return "Q1";
+  if (sjr >= 0.40 || cs >= 2.5) return "Q2";
+  if (sjr >= 0.18 || cs >= 1.0) return "Q3";
+  if (sjr > 0 || cs > 0) return "Q4";
+  return undefined;
+}
+
+function extractJournalMetrics(item: any): { sjr: number; cs: number; quartile: string | undefined } {
   let sjr = 0;
   if (item.SJRList?.SJR) {
     const arr = Array.isArray(item.SJRList.SJR) ? item.SJRList.SJR : [item.SJRList.SJR];
@@ -41,109 +49,26 @@ function getJournalQuartile(item: any): string {
     cs = parseFloat(item["citeScoreCurrentMetric"] || "0");
   }
 
-  const title = (item["dc:title"] || "").toLowerCase();
-  const publisher = (item["dc:publisher"] || "").toLowerCase();
-
-  if (sjr >= 0.8 || cs >= 6.0) return "Q1";
-  if (sjr >= 0.45 || cs >= 2.5) return "Q2";
-  if (sjr >= 0.20 || cs >= 1.0) return "Q3";
-  if (sjr > 0 || cs > 0) return "Q4";
-
-  if (
-    title.includes("acm transactions") ||
-    title.includes("ieee transactions") ||
-    title.includes("nature") ||
-    title.includes("science") ||
-    title.includes("lancet") ||
-    title.includes("cell") ||
-    title.includes("advanced") ||
-    title.includes("acs ") ||
-    title.includes("nano")
-  ) {
-    return "Q1";
-  }
-  if (
-    title.includes("journal of") ||
-    title.includes("international journal") ||
-    publisher.includes("elsevier") ||
-    publisher.includes("springer") ||
-    publisher.includes("wiley") ||
-    publisher.includes("ieee")
-  ) {
-    return "Q2";
-  }
-  if (
-    title.includes("bulletin") ||
-    title.includes("letters") ||
-    title.includes("advances") ||
-    publisher.includes("mdpi") ||
-    publisher.includes("frontiers")
-  ) {
-    return "Q3";
-  }
-  return "Q4";
+  return { sjr, cs, quartile: getQuartileFromMetrics(sjr, cs) };
 }
 
-function getArticleQuartile(item: any): string {
-  if (item.quartile && ["Q1", "Q2", "Q3", "Q4"].includes(item.quartile.toUpperCase())) {
-    return item.quartile.toUpperCase();
-  }
+async function fetchMetricsForIssnList(issns: string[], apiKey: string): Promise<Map<string, { sjr: number; cs: number; quartile: string | undefined }>> {
+  const metricsMap = new Map<string, { sjr: number; cs: number; quartile: string | undefined }>();
+  if (!issns.length) return metricsMap;
 
-  const pubName = (item["prism:publicationName"] || "").toLowerCase();
-  const citedCount = parseInt(item["citedby-count"] || "0", 10);
-  const subtype = (item["subtypeDescription"] || "").toLowerCase();
+  const lookupPromises = issns.map(async (issn) => {
+    const cleanIssn = issn.trim();
+    if (!cleanIssn) return;
+    const url = `https://api.elsevier.com/content/serial/title?issn=${encodeURIComponent(cleanIssn)}&count=1`;
+    const res = await fetchScopusChunk(url, apiKey);
+    if (res.ok && res.data["serial-metadata-response"]?.entry?.[0]) {
+      const entry = res.data["serial-metadata-response"].entry[0];
+      metricsMap.set(cleanIssn, extractJournalMetrics(entry));
+    }
+  });
 
-  if (citedCount >= 30) return "Q1";
-  if (citedCount >= 15) return "Q2";
-
-  if (
-    pubName.includes("nature") ||
-    pubName.includes("science") ||
-    pubName.includes("lancet") ||
-    pubName.includes("cell") ||
-    pubName.includes("nano") ||
-    pubName.includes("ieee transactions") ||
-    pubName.includes("acm transactions") ||
-    pubName.includes("advanced") ||
-    pubName.includes("acs ") ||
-    pubName.includes("neurology") ||
-    pubName.includes("food control") ||
-    pubName.includes("management education") ||
-    pubName.includes("electric power systems") ||
-    pubName.includes("review of") ||
-    pubName.includes("annual review")
-  ) {
-    return "Q1";
-  }
-
-  if (
-    pubName.includes("ieee") ||
-    pubName.includes("acm") ||
-    pubName.includes("international journal") ||
-    pubName.includes("applied") ||
-    pubName.includes("communications") ||
-    pubName.includes("journal of research") ||
-    pubName.includes("educational research") ||
-    pubName.includes("engineering") ||
-    pubName.includes("computers")
-  ) {
-    return "Q2";
-  }
-
-  if (
-    pubName.includes("journal") ||
-    pubName.includes("letters") ||
-    pubName.includes("bulletin") ||
-    pubName.includes("advances") ||
-    pubName.includes("proceedings") ||
-    pubName.includes("frontiers") ||
-    pubName.includes("mdpi") ||
-    subtype.includes("review")
-  ) {
-    return "Q3";
-  }
-
-  return "Q4";
+  await Promise.all(lookupPromises);
+  return metricsMap;
 }
 
 export async function GET(request: Request) {
@@ -216,7 +141,7 @@ export async function GET(request: Request) {
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus-source");
         const subjectAreas = item["subject-area"]?.map((sa: any) => sa["$"]) || [];
-        const quartile = getJournalQuartile(item);
+        const { quartile } = extractJournalMetrics(item);
         return {
           id: item["source-id"] || item["prism:issn"] || Math.random().toString(),
           title: item["dc:title"] || "Tanpa Judul Jurnal",
@@ -247,7 +172,6 @@ export async function GET(request: Request) {
       if (formattedISSN || rawISSN) {
         scopusQuery = `ISSN(${formattedISSN || rawISSN})`;
       } else {
-        // Enforce article title focus if type === "article"
         scopusQuery = `TITLE(${cleanQ})`;
       }
 
@@ -278,11 +202,19 @@ export async function GET(request: Request) {
         rawEntries = [...rawEntries, ...results[1].data["search-results"]["entry"]];
       }
 
+      // Collect unique ISSNs from article entries for authentic journal metric lookup
+      const uniqueIssns = Array.from(
+        new Set(rawEntries.map((it: any) => it["prism:issn"] || it["prism:eIssn"]).filter(Boolean))
+      ) as string[];
+
+      const metricsMap = await fetchMetricsForIssnList(uniqueIssns, apiKey);
+
       const items = rawEntries.map((item: any) => {
         const scopusLinkObj = item.link?.find((l: any) => l["@ref"] === "scopus");
         const affiliation = item.affiliation?.[0]?.["affilname"] || "";
         const country = item.affiliation?.[0]?.["affiliation-country"] || "";
         const doi = item["prism:doi"] || "";
+        const issn = item["prism:issn"] || item["prism:eIssn"] || "";
 
         let cleanYear = "";
         const coverDate = item["prism:coverDate"] || item["prism:coverDisplayDate"] || "";
@@ -292,14 +224,15 @@ export async function GET(request: Request) {
         }
 
         const citedCount = parseInt(item["citedby-count"] || "0", 10);
-        const quartile = getArticleQuartile(item);
+        const journalMetric = metricsMap.get(issn);
+        const quartile = journalMetric?.quartile;
 
         return {
           id: item["dc:identifier"] || item["eid"] || doi || Math.random().toString(),
           title: item["dc:title"] || "Tanpa Judul Artikel",
           creator: item["dc:creator"] || "Penulis Scopus",
           publicationName: item["prism:publicationName"] || "Jurnal Scopus",
-          issn: item["prism:issn"] || item["prism:eIssn"] || "",
+          issn,
           coverDate: cleanYear || coverDate,
           doi,
           doiUrl: doi ? `https://doi.org/${doi}` : "",
