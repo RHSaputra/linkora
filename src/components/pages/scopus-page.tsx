@@ -20,9 +20,22 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  User,
+  AlignLeft,
+  Hash,
+  Calendar,
+  SlidersHorizontal,
+  Folder,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useCollections, dispatchRefresh } from "@/hooks/use-data";
@@ -1079,54 +1092,90 @@ export function ScopusPage() {
             )}
           </div>
 
-          <form onSubmit={handleSearchSubmit} className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-red-500/20 shadow-md space-y-4">
+          <form onSubmit={handleSearchSubmit} className="p-4 sm:p-5 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-red-500/20 shadow-xl shadow-red-500/5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
               {/* Cari Berdasarkan */}
               <div className="lg:col-span-3 space-y-1.5">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-red-500" />
                   <span>Cari Berdasarkan</span>
                 </label>
-                <select
+                <Select
                   value={garudaSelect}
-                  onChange={(e) => setGarudaSelect(e.target.value as any)}
-                  className="w-full h-10 px-3 py-2 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-foreground font-semibold focus:outline-hidden focus:border-red-600 cursor-pointer"
+                  onValueChange={(value) => setGarudaSelect(value as any)}
                 >
-                  <option value="title">Judul</option>
-                  <option value="abstract">Abstrak</option>
-                  <option value="author">Pengarang</option>
-                  <option value="doi">DOI</option>
-                </select>
+                  <SelectTrigger className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 text-foreground font-semibold focus:ring-2 focus:ring-red-500/30 focus:border-red-500 cursor-pointer transition-all">
+                    <SelectValue placeholder="Pilih Kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl p-1.5 z-50">
+                    <SelectItem value="title" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-red-500/10 focus:text-red-600 dark:focus:text-red-400">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
+                          <FileText className="w-3.5 h-3.5" />
+                        </div>
+                        <span>Judul</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="abstract" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-amber-500/10 focus:text-amber-600 dark:focus:text-amber-400">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                          <AlignLeft className="w-3.5 h-3.5" />
+                        </div>
+                        <span>Abstrak</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="author" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-blue-500/10 focus:text-blue-600 dark:focus:text-blue-400">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                          <User className="w-3.5 h-3.5" />
+                        </div>
+                        <span>Pengarang</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="doi" className="py-2.5 px-3 text-xs font-semibold rounded-xl cursor-pointer transition-colors focus:bg-purple-500/10 focus:text-purple-600 dark:focus:text-purple-400">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                          <Hash className="w-3.5 h-3.5" />
+                        </div>
+                        <span>DOI</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Kata kunci */}
               <div className="lg:col-span-4 space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Search className="w-3.5 h-3.5 text-red-500" />
                   <span>Kata kunci</span>
                 </label>
                 <Input
                   value={garudaQuery}
                   onChange={(e) => setGarudaQuery(e.target.value)}
                   placeholder="sistem informasi"
-                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-0 focus-visible:border-red-600"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:border-red-600 transition-all font-medium"
                 />
               </div>
 
               {/* Penerbit */}
               <div className="lg:col-span-3 space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-red-500" />
                   <span>Penerbit</span>
                 </label>
                 <Input
                   value={garudaPublisher}
                   onChange={(e) => setGarudaPublisher(e.target.value)}
                   placeholder="Nama Penerbit"
-                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-0 focus-visible:border-red-600"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:border-red-600 transition-all font-medium"
                 />
               </div>
 
               {/* Filter Tahun */}
               <div className="lg:col-span-2 space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-red-500" />
                   <span>Filter Tahun</span>
                 </label>
                 <div className="flex items-center gap-1">
@@ -1135,7 +1184,7 @@ export function ScopusPage() {
                     value={garudaYearFrom}
                     onChange={(e) => setGarudaYearFrom(e.target.value)}
                     placeholder="Awal"
-                    className="h-10 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2 text-center"
+                    className="h-10 text-xs rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 px-2 text-center focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:border-red-600 transition-all font-mono"
                   />
                   <span className="text-xs text-muted-foreground font-bold">-</span>
                   <Input
@@ -1143,7 +1192,7 @@ export function ScopusPage() {
                     value={garudaYearTo}
                     onChange={(e) => setGarudaYearTo(e.target.value)}
                     placeholder="Akhir"
-                    className="h-10 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2 text-center"
+                    className="h-10 text-xs rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 px-2 text-center focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:border-red-600 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -1153,7 +1202,7 @@ export function ScopusPage() {
               <Button
                 type="submit"
                 disabled={garudaLoading}
-                className="h-10 px-7 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs rounded-2xl shadow-md cursor-pointer flex items-center gap-2"
+                className="h-10 px-7 bg-linear-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 active:scale-95 text-white font-bold text-xs rounded-2xl shadow-lg shadow-red-500/25 transition-all cursor-pointer flex items-center gap-2"
               >
                 {garudaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 <span>Mencari</span>
@@ -1523,18 +1572,30 @@ export function ScopusPage() {
 
           <div className="space-y-2 pt-1">
             <label className="text-xs font-bold text-foreground">Pilih Koleksi (Opsional):</label>
-            <select
-              value={selectedCollectionId}
-              onChange={(e) => setSelectedCollectionId(e.target.value)}
-              className="w-full h-10 px-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary"
+            <Select
+              value={selectedCollectionId || "default"}
+              onValueChange={(val) => setSelectedCollectionId(val === "default" ? "" : val)}
             >
-              <option value="">-- Simpan Tanpa Koleksi (Utama) --</option>
-              {collections?.map((col: any) => (
-                <option key={col.id} value={col.id}>
-                  📁 {col.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-10 text-xs rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-foreground font-medium focus:ring-2 focus:ring-primary/30">
+                <SelectValue placeholder="-- Simpan Tanpa Koleksi (Utama) --" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl p-1.5 z-50">
+                <SelectItem value="default" className="py-2 px-3 text-xs font-medium rounded-xl cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <BookmarkPlus className="w-3.5 h-3.5 text-slate-400" />
+                    <span>-- Simpan Tanpa Koleksi (Utama) --</span>
+                  </div>
+                </SelectItem>
+                {collections?.map((col: any) => (
+                  <SelectItem key={col.id} value={col.id} className="py-2 px-3 text-xs font-medium rounded-xl cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Folder className="w-3.5 h-3.5 text-primary" />
+                      <span>{col.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter className="pt-3 gap-2">
