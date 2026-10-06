@@ -182,6 +182,18 @@ export function ScopusPage() {
   const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal" | "scimago">("scopus");
   const [activeFullscreen, setActiveFullscreen] = useState<"cekjurnal" | "scimago" | null>(null);
 
+  // Toggle body class to hide sidebar and header overlays when in fullscreen mode
+  useEffect(() => {
+    if (activeFullscreen) {
+      document.body.classList.add("fullscreen-active");
+    } else {
+      document.body.classList.remove("fullscreen-active");
+    }
+    return () => {
+      document.body.classList.remove("fullscreen-active");
+    };
+  }, [activeFullscreen]);
+
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
   const [scopusQuartile, setScopusQuartile] = useState<string>(""); // "" | "Q1" | "Q2" | "Q3" | "Q4"
