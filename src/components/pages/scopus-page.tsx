@@ -21,16 +21,12 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  AlignLeft,
   Hash,
   Calendar,
   SlidersHorizontal,
   Folder,
   Brain,
   Sparkles,
-  Maximize2,
-  Minimize2,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,7 +72,7 @@ interface ScopusItem {
   quartile?: string;
 }
 
-interface SintaItem {
+export interface SintaItem {
   id: string;
   title: string;
   sintaRating: string;
@@ -90,7 +86,7 @@ interface SintaItem {
   citationsTotal: string;
 }
 
-interface GarudaItem {
+export interface GarudaItem {
   id: string;
   title: string;
   author: string;
@@ -531,7 +527,7 @@ export function ScopusPage() {
             : "Browser memblokir jendela baru. Gagal membuka web penerbit."
         );
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error(
         isEn
           ? "Publisher website cannot be accessed currently."
@@ -1007,6 +1003,13 @@ export function ScopusPage() {
             </Button>
           </form>
 
+          {sintaErrorMsg && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm font-medium flex items-center gap-3">
+              <Info className="w-5 h-5 shrink-0" />
+              <span>{sintaErrorMsg}</span>
+            </div>
+          )}
+
           {sintaLoading ? (
             <Liko3DSearchLoading providerName="SINTA Kemdiktisaintek" brandColor="teal" />
           ) : sintaItems.length === 0 ? (
@@ -1329,6 +1332,13 @@ export function ScopusPage() {
             </div>
           </form>
 
+          {garudaErrorMsg && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm font-medium flex items-center gap-3">
+              <Info className="w-5 h-5 shrink-0" />
+              <span>{garudaErrorMsg}</span>
+            </div>
+          )}
+
           {garudaLoading ? (
             <Liko3DSearchLoading providerName="GARUDA Portal" brandColor="red" />
           ) : garudaItems.length === 0 ? (
@@ -1627,6 +1637,13 @@ export function ScopusPage() {
             </Button>
           </form>
 
+          {scholarErrorMsg && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm font-medium flex items-center gap-3">
+              <Info className="w-5 h-5 shrink-0" />
+              <span>{scholarErrorMsg}</span>
+            </div>
+          )}
+
           {scholarLoading ? (
             <Liko3DSearchLoading providerName="Google Scholar" brandColor="blue" />
           ) : scholarItems.length === 0 ? (
@@ -1828,6 +1845,13 @@ export function ScopusPage() {
               </Button>
             </div>
           </form>
+
+          {semanticErrorMsg && (
+            <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm font-medium flex items-center gap-3">
+              <Info className="w-5 h-5 shrink-0" />
+              <span>{semanticErrorMsg}</span>
+            </div>
+          )}
 
           {semanticLoading ? (
             <Liko3DSearchLoading providerName="Semantic Scholar Engine" brandColor="blue" />
