@@ -33,9 +33,18 @@ export async function POST(_req: Request) {
     const callbackUrl = `${appUrl}/api/payment/callback`;
     const returnUrl = `${appUrl}/scopus`;
 
+    let paymentMethod = "VC"; // Default checkout page
+    try {
+      const body = await _req.json();
+      if (body.paymentMethod) paymentMethod = body.paymentMethod;
+    } catch (_e) {
+      // Use default VC
+    }
+
     const requestBody = {
       merchantCode,
       paymentAmount,
+      paymentMethod,
       merchantOrderId,
       productDetails,
       email,
