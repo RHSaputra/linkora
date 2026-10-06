@@ -247,13 +247,26 @@ function NavContent({
   const currentName = profileData?.name || session?.user?.name || "Linkorian";
   const currentImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;
 
+  const [subInfo, setSubInfo] = useState<{ isOwner?: boolean; plan?: string; trialDaysLeft?: number } | null>(null);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/user/subscription")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.ok) setSubInfo(data);
+        })
+        .catch(() => {});
+    }
+  }, [session?.user]);
+
   const navItems = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, tourId: "dashboard" },
     { href: "/links", label: t("nav.links"), icon: Link2, tourId: "links" },
     { href: "/collections", label: t("nav.collections"), icon: FolderOpen, tourId: "collections" },
     { href: "/notes", label: t("nav.notes"), icon: PenBox, tourId: "notes" },
     { href: "/roadmaps", label: t("nav.roadmaps") || "Roadmaps", icon: GitFork, tourId: "roadmaps" },
-    { href: "/scopus", label: locale === "en" ? "Research" : "Riset", icon: GraduationCap, tourId: "scopus" },
+    { href: "/scopus", label: locale === "en" ? "Research" : "Riset", icon: GraduationCap, tourId: "scopus", isPro: true },
   ];
 
   const now = new Date();
@@ -378,6 +391,12 @@ function NavContent({
                 <span className="relative z-10 whitespace-nowrap">
                   {item.label}
                 </span>
+
+                {item.isPro && (
+                  <span className="ml-auto relative z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[9px] font-black text-white uppercase tracking-wider shadow-xs animate-pulse">
+                    PRO 25K
+                  </span>
+                )}
               </div>
             </Link>
           );
@@ -412,10 +431,24 @@ function NavContent({
               <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                 {currentName}
               </p>
-              <p className="text-[10px] text-primary font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                {t("nav.profile")}
-              </p>
+              {subInfo?.isOwner ? (
+                <p className="text-[10px] font-bold text-amber-500 flex items-center gap-1">
+                  👑 Pemilik (Unlimited)
+                </p>
+              ) : subInfo?.plan === "PREMIUM" ? (
+                <p className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
+                  ⭐ Premium ({subInfo.trialDaysLeft} Hari)
+                </p>
+              ) : subInfo?.plan === "EXPIRED" ? (
+                <p className="text-[10px] font-bold text-red-400 flex items-center gap-1">
+                  🔒 Upgrade Rp 25k/Bulan
+                </p>
+              ) : (
+                <p className="text-[10px] text-primary font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                  Trial ({subInfo?.trialDaysLeft ?? 30} Hari)
+                </p>
+              )}
             </div>
           </button>
         ) : (
