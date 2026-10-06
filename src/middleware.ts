@@ -21,7 +21,11 @@ export async function middleware(request: NextRequest) {
 
   // Security & CDN Cache headers helper
   const addSecurityHeaders = (res: NextResponse, reqPath?: string) => {
-    res.headers.set("X-Frame-Options", "DENY")
+    if (reqPath && reqPath.startsWith("/api/cekjurnal-proxy")) {
+      res.headers.set("X-Frame-Options", "SAMEORIGIN")
+    } else {
+      res.headers.set("X-Frame-Options", "DENY")
+    }
     res.headers.set("X-Content-Type-Options", "nosniff")
     res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
     res.headers.set("X-XSS-Protection", "1; mode=block")
@@ -56,12 +60,14 @@ export async function middleware(request: NextRequest) {
           const requestHost = request.headers.get("host")
           if (requestHost && originHost !== requestHost) {
             return addSecurityHeaders(
-              NextResponse.json({ error: "Permintaan lintas domain (CSRF) ditolak" }, { status: 403 })
+              NextResponse.json({ error: "Permintaan lintas domain (CSRF) ditolak" }, { status: 403 }),
+              pathname
             )
           }
         } catch {
           return addSecurityHeaders(
-            NextResponse.json({ error: "Origin header tidak valid" }, { status: 403 })
+            NextResponse.json({ error: "Origin header tidak valid" }, { status: 403 }),
+            pathname
           )
         }
       }
@@ -71,7 +77,7 @@ export async function middleware(request: NextRequest) {
   // For API routes: let route handlers check auth themselves, but attach security headers
   if (pathname.startsWith("/api/")) {
     const response = NextResponse.next()
-    return addSecurityHeaders(response)
+    return addSecurityHeaders(response, pathname)
   }
 
   // Page routes: check JWT for redirect logic
