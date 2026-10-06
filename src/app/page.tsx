@@ -39,6 +39,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { PricingPromoSection } from "@/components/landing/pricing-promo";
+
 export default function LandingPage() {
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -147,6 +149,7 @@ export default function LandingPage() {
         <UseCases />
         <SmartSearchDemo />
         <Comparison />
+        <PricingPromoSection />
         <Testimonials />
         <CTA />
         <Footer />

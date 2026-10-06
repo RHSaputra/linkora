@@ -152,8 +152,15 @@ async function fetchGarudaJournalSinglePage(targetUrl: string) {
   }
 }
 
+import { enforceServerEntitlement } from "@/lib/server-entitlement-check";
+
 export async function GET(request: Request) {
   try {
+    const check = await enforceServerEntitlement();
+    if (!check.allowed) {
+      return check.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || "";
     const type = searchParams.get("type") || "article"; // "article" | "journal"

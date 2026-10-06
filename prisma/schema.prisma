@@ -34,6 +34,7 @@ model User {
 
   subscriptionPlan    String    @default("TRIAL") // TRIAL, PREMIUM, UNLIMITED, EXPIRED
   trialEndsAt         DateTime?
+  trialClaimedAt      DateTime?
   subscriptionEndsAt  DateTime?
 
   createdAt DateTime @default(now())

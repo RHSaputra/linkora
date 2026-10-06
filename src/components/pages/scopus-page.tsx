@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   GraduationCap,
   Search,
@@ -30,6 +31,8 @@ import {
   Crown,
   Zap,
   CreditCard,
+  Gift,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -261,15 +264,18 @@ export function ScopusPage() {
 
   // Subscription & Duitku Payment States
   const [subInfo, setSubInfo] = useState<{
-    isOwner: boolean;
-    plan: string;
-    hasAccess: boolean;
-    trialDaysLeft: number;
-    message: string;
+    isOwner?: boolean;
+    plan?: string;
+    hasAccess?: boolean;
+    trialClaimed?: boolean;
+    trialDaysLeft?: number;
+    message?: string;
+    authenticated?: boolean;
   } | null>(null);
   const [, setSubLoading] = useState(true);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [claimingTrial, setClaimingTrial] = useState(false);
 
   const fetchSubscriptionInfo = useCallback(async () => {
     try {
@@ -279,10 +285,12 @@ export function ScopusPage() {
       if (res.ok && data.ok) {
         setSubInfo({
           isOwner: data.isOwner,
-          plan: data.plan,
+          plan: data.plan || data.status,
           hasAccess: data.hasAccess,
+          trialClaimed: data.trialClaimed,
           trialDaysLeft: data.trialDaysLeft,
           message: data.message,
+          authenticated: data.authenticated,
         });
       }
     } catch (err) {
@@ -295,6 +303,24 @@ export function ScopusPage() {
   useEffect(() => {
     fetchSubscriptionInfo();
   }, [fetchSubscriptionInfo]);
+
+  const handleClaimTrial = async () => {
+    try {
+      setClaimingTrial(true);
+      const res = await fetch("/api/user/subscription/claim-trial", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        toast.success("Uji Coba Gratis 30 Hari berhasil diklaim!", "Trial Aktif");
+        fetchSubscriptionInfo();
+      } else {
+        toast.error(data.error || "Gagal mengklaim Uji Coba Gratis.", "Gagal");
+      }
+    } catch (_err) {
+      toast.error("Terjadi kesalahan saat mengklaim trial.", "Error");
+    } finally {
+      setClaimingTrial(false);
+    }
+  };
 
   const handleCreateDuitkuPayment = async () => {
     try {
@@ -662,17 +688,37 @@ export function ScopusPage() {
                   <span>Pemilik Web (Unlimited Selamanya)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && subInfo?.plan === "TRIAL" && (
-                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Uji Coba Gratis: Sisa {subInfo.trialDaysLeft} Hari</span>
-                </span>
-              )}
               {!subInfo?.isOwner && subInfo?.plan === "PREMIUM" && (
                 <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
                   <span>Premium Active (Sisa {subInfo.trialDaysLeft} Hari)</span>
                 </span>
+              )}
+              {!subInfo?.isOwner && subInfo?.trialClaimed && (subInfo?.plan === "TRIAL_ACTIVE" || subInfo?.plan === "TRIAL") && (
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Uji Coba Gratis: Sisa {subInfo.trialDaysLeft} Hari</span>
+                </span>
+              )}
+              {!subInfo?.isOwner && subInfo?.authenticated && !subInfo?.trialClaimed && (
+                <button
+                  type="button"
+                  onClick={handleClaimTrial}
+                  disabled={claimingTrial}
+                  className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-[11px] font-extrabold shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all animate-pulse disabled:opacity-50"
+                >
+                  {claimingTrial ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Gift className="w-3.5 h-3.5" />}
+                  <span>Klaim Trial Gratis 30 Hari Sekarang</span>
+                </button>
+              )}
+              {!subInfo?.authenticated && (
+                <Link
+                  href="/login"
+                  className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-[11px] font-bold flex items-center gap-1.5 transition-all"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Login untuk Klaim Trial / Upgrade Premium</span>
+                </Link>
               )}
               {!subInfo?.isOwner && subInfo?.plan === "EXPIRED" && (
                 <button
