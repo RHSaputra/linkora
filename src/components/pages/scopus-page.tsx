@@ -178,21 +178,8 @@ export function ScopusPage() {
   const { requireAuth } = useRequireAuth();
   const { collections } = useCollections();
 
-  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal" | "scimago"
-  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal" | "scimago">("scopus");
-  const [activeFullscreen, setActiveFullscreen] = useState<"cekjurnal" | "scimago" | null>(null);
-
-  // Toggle body class to hide sidebar and header overlays when in fullscreen mode
-  useEffect(() => {
-    if (activeFullscreen) {
-      document.body.classList.add("fullscreen-active");
-    } else {
-      document.body.classList.remove("fullscreen-active");
-    }
-    return () => {
-      document.body.classList.remove("fullscreen-active");
-    };
-  }, [activeFullscreen]);
+  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic"
+  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic">("scopus");
 
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
@@ -260,30 +247,6 @@ export function ScopusPage() {
   const [semanticItems, setSemanticItems] = useState<any[]>([]);
   const [semanticTotalResults, setSemanticTotalResults] = useState(0);
   const [semanticErrorMsg, setSemanticErrorMsg] = useState<string | null>(null);
-
-  // CekJurnal State
-  const [cekjurnalQuery, setCekjurnalQuery] = useState("");
-  const [activeCekjurnalQuery, setActiveCekjurnalQuery] = useState("");
-  const [cekjurnalSinta, setCekjurnalSinta] = useState("");
-  const [cekjurnalFreeApc, setCekjurnalFreeApc] = useState(false);
-  const [activeCekjurnalSinta, setActiveCekjurnalSinta] = useState("");
-  const [activeCekjurnalFreeApc, setActiveCekjurnalFreeApc] = useState(false);
-  const [cekjurnalPage, setCekjurnalPage] = useState(1);
-  const [cekjurnalLoading, setCekjurnalLoading] = useState(false);
-  const [cekjurnalItems, setCekjurnalItems] = useState<any[]>([]);
-  const [cekjurnalTotalResults, setCekjurnalTotalResults] = useState(0);
-  const [cekjurnalErrorMsg, setCekjurnalErrorMsg] = useState<string | null>(null);
-
-  // SCImago JR State
-  const [scimagoQuery, setScimagoQuery] = useState("");
-  const [activeScimagoQuery, setActiveScimagoQuery] = useState("");
-  const [scimagoQuartile, setScimagoQuartile] = useState("");
-  const [activeScimagoQuartile, setActiveScimagoQuartile] = useState("");
-  const [scimagoPage, setScimagoPage] = useState(1);
-  const [scimagoLoading, setScimagoLoading] = useState(false);
-  const [scimagoItems, setScimagoItems] = useState<any[]>([]);
-  const [scimagoTotalResults, setScimagoTotalResults] = useState(0);
-  const [scimagoErrorMsg, setScimagoErrorMsg] = useState<string | null>(null);
 
   // Save Modal State
   const [saveModalOpen, setSaveModalOpen] = useState(false);
@@ -446,73 +409,6 @@ export function ScopusPage() {
     []
   );
 
-  // ── CekJurnal Data Fetcher ──
-  const fetchCekjurnalData = useCallback(
-    async (qStr: string, sintaVal: string, freeApcVal: boolean, pageNum: number) => {
-      setCekjurnalLoading(true);
-      setCekjurnalErrorMsg(null);
-      try {
-        const params = new URLSearchParams();
-        if (qStr) params.set("q", qStr);
-        if (sintaVal) params.set("sinta", sintaVal);
-        if (freeApcVal) params.set("apc", "0");
-        params.set("page", pageNum.toString());
-        params.set("limit", "20");
-
-        const res = await fetch(`/api/cekjurnal?${params.toString()}`);
-        const data = await res.json();
-        if (res.ok) {
-          setCekjurnalItems(data.items || []);
-          setCekjurnalTotalResults(data.totalResults || 0);
-        } else {
-          setCekjurnalItems([]);
-          setCekjurnalTotalResults(0);
-          setCekjurnalErrorMsg(data.error || "Gagal mengambil data CekJurnal.id");
-        }
-      } catch (err: any) {
-        setCekjurnalItems([]);
-        setCekjurnalTotalResults(0);
-        setCekjurnalErrorMsg("Terjadi kesalahan jaringan saat menghubungi CekJurnal.id");
-      } finally {
-        setCekjurnalLoading(false);
-      }
-    },
-    []
-  );
-
-  // ── SCImago JR Data Fetcher ──
-  const fetchScimagoData = useCallback(
-    async (qStr: string, qVal: string, pageNum: number) => {
-      setScimagoLoading(true);
-      setScimagoErrorMsg(null);
-      try {
-        const params = new URLSearchParams();
-        if (qStr) params.set("q", qStr);
-        if (qVal) params.set("quartile", qVal);
-        params.set("page", pageNum.toString());
-        params.set("limit", "20");
-
-        const res = await fetch(`/api/scimago?${params.toString()}`);
-        const data = await res.json();
-        if (res.ok) {
-          setScimagoItems(data.items || []);
-          setScimagoTotalResults(data.totalResults || 0);
-        } else {
-          setScimagoItems([]);
-          setScimagoTotalResults(0);
-          setScimagoErrorMsg(data.error || "Gagal mengambil data SCImago Journal Rank");
-        }
-      } catch (err: any) {
-        setScimagoItems([]);
-        setScimagoTotalResults(0);
-        setScimagoErrorMsg("Terjadi kesalahan jaringan saat menghubungi SCImago Journal Rank");
-      } finally {
-        setScimagoLoading(false);
-      }
-    },
-    []
-  );
-
   useEffect(() => {
     if (provider === "scopus") {
       fetchScopusData(activeScopusQuery, scopusSubTab, scopusQuartile, scopusPage);
@@ -537,19 +433,6 @@ export function ScopusPage() {
         activeSemanticYearTo,
         activeSemanticOpenAccess,
         semanticPage
-      );
-    } else if (provider === "cekjurnal") {
-      fetchCekjurnalData(
-        activeCekjurnalQuery,
-        activeCekjurnalSinta,
-        activeCekjurnalFreeApc,
-        cekjurnalPage
-      );
-    } else if (provider === "scimago") {
-      fetchScimagoData(
-        activeScimagoQuery,
-        activeScimagoQuartile,
-        scimagoPage
       );
     }
   }, [
@@ -577,20 +460,11 @@ export function ScopusPage() {
     activeSemanticYearTo,
     activeSemanticOpenAccess,
     semanticPage,
-    activeCekjurnalQuery,
-    activeCekjurnalSinta,
-    activeCekjurnalFreeApc,
-    cekjurnalPage,
-    activeScimagoQuery,
-    activeScimagoQuartile,
-    scimagoPage,
     fetchScopusData,
     fetchSintaData,
     fetchGarudaData,
     fetchScholarData,
     fetchSemanticData,
-    fetchCekjurnalData,
-    fetchScimagoData,
   ]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -617,15 +491,6 @@ export function ScopusPage() {
       setActiveSemanticYearFrom(semanticYearFrom.trim());
       setActiveSemanticYearTo(semanticYearTo.trim());
       setActiveSemanticOpenAccess(semanticOpenAccess);
-    } else if (provider === "cekjurnal") {
-      setCekjurnalPage(1);
-      setActiveCekjurnalQuery(cekjurnalQuery.trim());
-      setActiveCekjurnalSinta(cekjurnalSinta);
-      setActiveCekjurnalFreeApc(cekjurnalFreeApc);
-    } else if (provider === "scimago") {
-      setScimagoPage(1);
-      setActiveScimagoQuery(scimagoQuery.trim());
-      setActiveScimagoQuartile(scimagoQuartile);
     }
   };
 
@@ -727,11 +592,11 @@ export function ScopusPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
-              Eksplorasi referensi ilmiah dari 6 sumber utama: Elsevier Scopus, SINTA, GARUDA, Google Scholar, CekJurnal.id, dan SCImago Journal Rank secara profesional dan transparan.
+              Eksplorasi referensi ilmiah dari 5 sumber utama: Elsevier Scopus, SINTA, GARUDA, Google Scholar, dan Semantic Scholar secara profesional dan transparan.
             </p>
 
-            {/* 6 Provider Selector Buttons: Symmetrical Grid Layout */}
-            <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
+            {/* 5 Provider Selector Buttons */}
+            <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5">
               <button
                 type="button"
                 onClick={() => setProvider("scopus")}
@@ -782,26 +647,14 @@ export function ScopusPage() {
 
               <button
                 type="button"
-                onClick={() => setProvider("cekjurnal")}
+                onClick={() => setProvider("semantic")}
                 className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
-                  provider === "cekjurnal"
-                    ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30"
+                  provider === "semantic"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
                 }`}
               >
-                <span>CekJurnal.id</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProvider("scimago")}
-                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
-                  provider === "scimago"
-                    ? "bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-500/30"
-                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
-                }`}
-              >
-                <span>SCImago JR</span>
+                <span>Semantic Scholar</span>
               </button>
             </div>
           </div>
@@ -831,16 +684,6 @@ export function ScopusPage() {
             {provider === "semantic" && (
               <div className="w-full h-full rounded-2xl bg-white p-3 border border-indigo-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
                 <img src="/Semantic scholar.png" alt="Semantic Scholar" className="w-full h-full object-contain" />
-              </div>
-            )}
-            {provider === "cekjurnal" && (
-              <div className="w-full h-full rounded-2xl bg-white p-3 border border-emerald-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
-                <img src="/cekjurnal.png" alt="CekJurnal.id" className="w-full h-full object-contain" />
-              </div>
-            )}
-            {provider === "scimago" && (
-              <div className="w-full h-full rounded-2xl bg-white p-3 border border-amber-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
-                <img src="/scimago.png" alt="SCImago Journal Rank" className="w-full h-full object-contain" />
               </div>
             )}
           </div>
@@ -2110,411 +1953,6 @@ export function ScopusPage() {
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* ── 6. CEKJURNAL SECTION ── */}
-      {provider === "cekjurnal" && (
-        <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-              <span className="px-3 py-1.5 text-xs font-bold text-teal-700 dark:text-teal-400 flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4" />
-                <span>Direktori Jurnal CekJurnal.id</span>
-              </span>
-            </div>
-
-            {cekjurnalTotalResults > 0 && (
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
-                <BookOpen className="w-3.5 h-3.5 text-teal-600" />
-                <span>Total: {cekjurnalTotalResults.toLocaleString()} Jurnal SINTA &amp; Scopus</span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="font-bold text-teal-600 dark:text-teal-400">Menampilkan {cekjurnalItems.length} card</span>
-              </div>
-            )}
-          </div>
-
-          {/* CekJurnal Filters: SINTA Level & Free APC */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-              Filter SINTA:
-            </span>
-            <button
-              type="button"
-              onClick={() => { setCekjurnalSinta(""); setCekjurnalPage(1); }}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${cekjurnalSinta === "" ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-            >
-              Semua SINTA
-            </button>
-            {["1", "2", "3", "4", "5", "6"].map((lvl) => (
-              <button
-                key={lvl}
-                type="button"
-                onClick={() => { setCekjurnalSinta(lvl); setCekjurnalPage(1); }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${cekjurnalSinta === lvl ? "bg-teal-700 text-white border-teal-700" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-              >
-                S{lvl}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => { setCekjurnalFreeApc(!cekjurnalFreeApc); setCekjurnalPage(1); }}
-              className={`ml-auto px-3.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${cekjurnalFreeApc ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-muted-foreground"}`}
-            >
-              <Check className={`w-3.5 h-3.5 ${cekjurnalFreeApc ? "opacity-100" : "opacity-0"}`} />
-              <span>Jurnal Free APC (Gratis)</span>
-            </button>
-          </div>
-
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-            <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
-            <Input
-              value={cekjurnalQuery}
-              onChange={(e) => setCekjurnalQuery(e.target.value)}
-              placeholder="Cari nama jurnal CekJurnal.id, ISSN, atau bidang ilmu..."
-              className="pl-12 pr-28 h-12 text-sm rounded-2xl bg-white/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-2 focus:ring-teal-500/30"
-            />
-            <Button
-              type="submit"
-              disabled={cekjurnalLoading}
-              className="absolute right-2 h-8 px-4 text-xs font-bold rounded-xl bg-teal-700 hover:bg-teal-800 text-white cursor-pointer"
-            >
-              {cekjurnalLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Cari Jurnal"}
-            </Button>
-          </form>
-
-          {cekjurnalLoading ? (
-            <Liko3DSearchLoading providerName="CekJurnal.id Engine" brandColor="teal" />
-          ) : cekjurnalErrorMsg ? (
-            <div className="p-8 text-center rounded-3xl bg-red-500/5 border border-red-500/20 space-y-2">
-              <p className="text-sm font-bold text-red-600 dark:text-red-400">{cekjurnalErrorMsg}</p>
-              <p className="text-xs text-muted-foreground">Silakan periksa koneksi atau coba ubah kata kunci pencarian Anda.</p>
-            </div>
-          ) : cekjurnalItems.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-3">
-              <BookOpen className="w-10 h-10 mx-auto text-slate-400" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada jurnal CekJurnal.id ditemukan</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Coba gunakan kata kunci umum atau ubah saringan SINTA / Free APC.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {cekjurnalItems.map((item) => {
-                  const isSaved = !!savedLinkIds[item.id];
-                  return (
-                    <div
-                      key={item.id}
-                      className="group p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="px-2.5 py-1 rounded-xl bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20 text-[11px] font-black">
-                            {item.sintaRating}
-                          </span>
-                          {item.scopusRank && (
-                            <span className="px-2.5 py-1 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 text-[11px] font-black">
-                              Scopus {item.scopusRank}
-                            </span>
-                          )}
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${item.isFreeApc ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-slate-100 dark:bg-slate-800 text-muted-foreground"}`}>
-                            {item.apcText}
-                          </span>
-                        </div>
-
-                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-teal-600 transition-colors">
-                          <a
-                            href={item.websiteUrl}
-                            onClick={(e) => handleSafeOpenUrl(e, item.websiteUrl, item.title)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline flex items-start gap-2"
-                          >
-                            <span className="flex-1">{item.title}</span>
-                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-teal-600" />
-                          </a>
-                        </h3>
-
-                        <p className="text-xs text-muted-foreground font-medium truncate flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{item.publisher}</span>
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                          <span className="font-mono">ISSN: {item.issn}</span>
-                          <span>•</span>
-                          <span>{item.language}</span>
-                          <span>•</span>
-                          <span>{item.frequency}</span>
-                        </div>
-
-                        {item.scope && (
-                          <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed pt-1">
-                            <span className="font-bold text-slate-600 dark:text-slate-400">Bidang Ilmu:</span> {item.scope}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-mono text-muted-foreground">CekJurnal Index</span>
-
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={isSaved ? "outline" : "default"}
-                          disabled={isSaved}
-                          onClick={() => openSaveModal(item.id, item.title, item.websiteUrl, `[CekJurnal] ${item.sintaRating} • ${item.publisher}`)}
-                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-teal-700 hover:bg-teal-800 text-white"}`}
-                        >
-                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* CekJurnal Pagination Controls */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={cekjurnalPage <= 1 || cekjurnalLoading}
-                  onClick={() => setCekjurnalPage((prev) => Math.max(1, prev - 1))}
-                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Halaman Sebelumnya</span>
-                </Button>
-                <span className="text-xs font-semibold text-muted-foreground font-mono">
-                  Halaman {cekjurnalPage} {cekjurnalTotalResults > 0 ? "dari " + Math.ceil(cekjurnalTotalResults / 20).toLocaleString() : ""}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={cekjurnalLoading || cekjurnalItems.length < 20}
-                  onClick={() => setCekjurnalPage((prev) => prev + 1)}
-                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Halaman Selanjutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── 7. SCIMAGO JR SECTION ── */}
-      {provider === "scimago" && (
-        <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-              <span className="px-3 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-                <Award className="w-4 h-4" />
-                <span>SCImago Journal &amp; Country Rank (Indonesia)</span>
-              </span>
-            </div>
-
-            {scimagoTotalResults > 0 && (
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
-                <Award className="w-3.5 h-3.5 text-amber-600" />
-                <span>Total: {scimagoTotalResults.toLocaleString()} Jurnal SJR Indonesia</span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">Menampilkan {scimagoItems.length} card</span>
-              </div>
-            )}
-          </div>
-
-          {/* SCImago Filters: Quartile Q1-Q4 */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
-              Quartile SJR:
-            </span>
-            <button
-              type="button"
-              onClick={() => { setScimagoQuartile(""); setScimagoPage(1); }}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scimagoQuartile === "" ? "bg-amber-600 text-white border-amber-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-            >
-              Semua Quartile
-            </button>
-            {["Q1", "Q2", "Q3", "Q4"].map((q) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => { setScimagoQuartile(q); setScimagoPage(1); }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border ${scimagoQuartile === q ? "bg-amber-600 text-white border-amber-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"}`}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-            <Search className="w-5 h-5 absolute left-4 text-muted-foreground pointer-events-none" />
-            <Input
-              value={scimagoQuery}
-              onChange={(e) => setScimagoQuery(e.target.value)}
-              placeholder="Cari jurnal SCImago Indonesia, ISSN, atau penerbit..."
-              className="pl-12 pr-28 h-12 text-sm rounded-2xl bg-white/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-2 focus:ring-amber-500/30"
-            />
-            <Button
-              type="submit"
-              disabled={scimagoLoading}
-              className="absolute right-2 h-8 px-4 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
-            >
-              {scimagoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Cari SCImago"}
-            </Button>
-          </form>
-
-          {scimagoLoading ? (
-            <Liko3DSearchLoading providerName="SCImago Journal Engine" brandColor="orange" />
-          ) : scimagoErrorMsg ? (
-            <div className="p-8 text-center rounded-3xl bg-red-500/5 border border-red-500/20 space-y-2">
-              <p className="text-sm font-bold text-red-600 dark:text-red-400">{scimagoErrorMsg}</p>
-              <p className="text-xs text-muted-foreground">Silakan periksa koneksi atau coba ubah kata kunci pencarian Anda.</p>
-            </div>
-          ) : scimagoItems.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-3">
-              <Award className="w-10 h-10 mx-auto text-slate-400" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada jurnal SCImago ditemukan</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Coba gunakan kata kunci umum atau sesuaikan filter Quartile.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {scimagoItems.map((item) => {
-                  const isSaved = !!savedLinkIds[item.id];
-                  return (
-                    <div
-                      key={item.id}
-                      className="group p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-black">
-                            {item.quartile}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold font-mono">
-                              SJR {item.sjr}
-                            </span>
-                            <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
-                              H-Index {item.hIndex}
-                            </span>
-                          </div>
-                        </div>
-
-                        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-amber-600 transition-colors">
-                          <a
-                            href={item.scimagoUrl}
-                            onClick={(e) => handleSafeOpenUrl(e, item.scimagoUrl, item.title)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline flex items-start gap-2"
-                          >
-                            <span className="flex-1">#{item.rank} {item.title}</span>
-                            <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-amber-600" />
-                          </a>
-                        </h3>
-
-                        <p className="text-xs text-muted-foreground font-medium truncate flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{item.publisher}</span>
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground font-mono">
-                          <span>ISSN: {item.issn}</span>
-                          <span>•</span>
-                          <span>{item.area}</span>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-mono text-muted-foreground">SCImago Index</span>
-
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={isSaved ? "outline" : "default"}
-                          disabled={isSaved}
-                          onClick={() => openSaveModal(item.id, item.title, item.scimagoUrl, `[SCImago JR] ${item.quartile} • SJR ${item.sjr} • H-Index ${item.hIndex}`)}
-                          className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-amber-600 hover:bg-amber-700 text-white"}`}
-                        >
-                          {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* SCImago Pagination Controls */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={scimagoPage <= 1 || scimagoLoading}
-                  onClick={() => setScimagoPage((prev) => Math.max(1, prev - 1))}
-                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Halaman Sebelumnya</span>
-                </Button>
-                <span className="text-xs font-semibold text-muted-foreground font-mono">
-                  Halaman {scimagoPage} {scimagoTotalResults > 0 ? "dari " + Math.ceil(scimagoTotalResults / 20).toLocaleString() : ""}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={scimagoLoading || scimagoItems.length < 20}
-                  onClick={() => setScimagoPage((prev) => prev + 1)}
-                  className="h-9 px-4 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Halaman Selanjutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Fullscreen Overlay Component */}
-      {activeFullscreen && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-xl p-3 sm:p-6 flex flex-col space-y-4 animate-in fade-in zoom-in-95 duration-200">
-          <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl shrink-0">
-            <div className="flex items-center gap-3">
-              <span className={`w-3 h-3 rounded-full animate-pulse ${activeFullscreen === "cekjurnal" ? "bg-emerald-500" : "bg-amber-500"}`} />
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  {activeFullscreen === "cekjurnal" ? "Direktori CekJurnal.id" : "SCImago Journal Rank Indonesia"} (Mode Layar Penuh)
-                </h3>
-                <p className="text-xs text-slate-400">Tampilan sistem terintegrasi penuh tanpa tautan keluar</p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setActiveFullscreen(null)}
-              className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-lg hover:scale-105 transition-all"
-            >
-              <Minimize2 className="w-4 h-4" />
-              <span>Keluar Full Screen</span>
-            </Button>
-          </div>
-          <div className="flex-1 w-full h-full rounded-2xl overflow-hidden border border-slate-800 bg-black shadow-2xl relative">
-            <iframe
-              src={activeFullscreen === "cekjurnal" ? "/api/cekjurnal-proxy" : "/api/scimago-proxy"}
-              title={activeFullscreen === "cekjurnal" ? "CekJurnal.id Fullscreen" : "SCImago JR Fullscreen"}
-              className="w-full h-full border-0"
-              allow="fullscreen"
-            />
-          </div>
         </div>
       )}
 
