@@ -175,8 +175,8 @@ export function ScopusPage() {
   const { requireAuth } = useRequireAuth();
   const { collections } = useCollections();
 
-  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic"
-  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic">("scopus");
+  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal"
+  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal">("scopus");
 
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
@@ -653,6 +653,18 @@ export function ScopusPage() {
               >
                 <span>Semantic Scholar</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("cekjurnal")}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                  provider === "cekjurnal"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>CekJurnal.id</span>
+              </button>
             </div>
           </div>
 
@@ -681,6 +693,11 @@ export function ScopusPage() {
             {provider === "semantic" && (
               <div className="w-full h-full rounded-2xl bg-white p-3 border border-indigo-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
                 <img src="/Semantic scholar.png" alt="Semantic Scholar" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "cekjurnal" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-emerald-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/cekjurnal.png" alt="CekJurnal.id" className="w-full h-full object-contain" />
               </div>
             )}
           </div>
@@ -1950,6 +1967,40 @@ export function ScopusPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── 6. CEKJURNAL SECTION ── */}
+      {provider === "cekjurnal" && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  Direktori Jurnal CekJurnal.id (Embedded Sistem)
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Tampilan 100% lengkap Direktori Jurnal SINTA 1-6, Scopus, Biaya Publikasi (APC), Bidang Ilmu & Bahasa langsung di dalam web.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Terintegrasi Penuh</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xl transition-all relative">
+            <iframe
+              src="/api/cekjurnal-proxy"
+              title="Direktori Jurnal CekJurnal.id"
+              className="w-full h-[85vh] min-h-[750px] border-0"
+              allow="fullscreen"
+            />
+          </div>
         </div>
       )}
 
