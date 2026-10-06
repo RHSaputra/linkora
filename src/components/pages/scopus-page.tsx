@@ -27,6 +27,9 @@ import {
   Folder,
   Brain,
   Sparkles,
+  Crown,
+  Zap,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -256,6 +259,62 @@ export function ScopusPage() {
   const [savingLink, setSavingLink] = useState(false);
   const [savedLinkIds, setSavedLinkIds] = useState<Record<string, boolean>>({});
 
+  // Subscription & Duitku Payment States
+  const [subInfo, setSubInfo] = useState<{
+    isOwner: boolean;
+    plan: string;
+    hasAccess: boolean;
+    trialDaysLeft: number;
+    message: string;
+  } | null>(null);
+  const [, setSubLoading] = useState(true);
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
+
+  const fetchSubscriptionInfo = useCallback(async () => {
+    try {
+      setSubLoading(true);
+      const res = await fetch("/api/user/subscription");
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSubInfo({
+          isOwner: data.isOwner,
+          plan: data.plan,
+          hasAccess: data.hasAccess,
+          trialDaysLeft: data.trialDaysLeft,
+          message: data.message,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSubscriptionInfo();
+  }, [fetchSubscriptionInfo]);
+
+  const handleCreateDuitkuPayment = async () => {
+    try {
+      setPaying(true);
+      const res = await fetch("/api/payment/create", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.paymentUrl) {
+        toast.success("Membuka halaman pembayaran Duitku Sandbox...", "Duitku Payment");
+        window.open(data.paymentUrl, "_blank", "noopener,noreferrer");
+        setPayModalOpen(false);
+      } else {
+        toast.error(data.error || "Gagal membuat transaksi Duitku.", "Error");
+      }
+    } catch (_err) {
+      toast.error("Terjadi kesalahan koneksi saat membuat invoice Duitku.", "Error");
+    } finally {
+      setPaying(false);
+    }
+  };
+
   // ── Scopus Data Fetcher (30 items per page) ──
   const fetchScopusData = useCallback(
     async (q: string, activeTab: "article" | "journal", quartile: string, pageNum: number) => {
@@ -465,6 +524,16 @@ export function ScopusPage() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (subInfo && !subInfo.hasAccess) {
+      setPayModalOpen(true);
+      toast.error(
+        "Masa uji coba gratis 30 hari telah berakhir. Berlangganan Paket Premium Rp 25.000 / bulan untuk melanjutkan penelusuran riset.",
+        "Akses Terkunci"
+      );
+      return;
+    }
+
     if (provider === "scopus") {
       setScopusPage(1);
       setActiveScopusQuery(scopusQuery.trim());
@@ -583,9 +652,39 @@ export function ScopusPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           {/* Left Column: Title, description, 4 tab buttons */}
           <div className="space-y-4 flex-1">
-            <h1 className="text-xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight leading-tight">
-              Pusat Penelusuran Riset Ilmiah
-            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight leading-tight">
+                Pusat Penelusuran Riset Ilmiah
+              </h1>
+              {subInfo?.isOwner && (
+                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-extrabold shadow-sm flex items-center gap-1.5 animate-pulse">
+                  <Crown className="w-3.5 h-3.5 fill-current" />
+                  <span>Pemilik Web (Unlimited Selamanya)</span>
+                </span>
+              )}
+              {!subInfo?.isOwner && subInfo?.plan === "TRIAL" && (
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Uji Coba Gratis: Sisa {subInfo.trialDaysLeft} Hari</span>
+                </span>
+              )}
+              {!subInfo?.isOwner && subInfo?.plan === "PREMIUM" && (
+                <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
+                  <Crown className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Premium Active (Sisa {subInfo.trialDaysLeft} Hari)</span>
+                </span>
+              )}
+              {!subInfo?.isOwner && subInfo?.plan === "EXPIRED" && (
+                <button
+                  type="button"
+                  onClick={() => setPayModalOpen(true)}
+                  className="px-3 py-1 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Uji Coba Berakhir (Upgrade Rp 25k/Bulan)</span>
+                </button>
+              )}
+            </div>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
               Eksplorasi referensi ilmiah dari 5 sumber utama: Elsevier Scopus, SINTA, GARUDA, Google Scholar, dan Semantic Scholar secara profesional dan transparan.
@@ -2045,6 +2144,68 @@ export function ScopusPage() {
               className="rounded-xl h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 shadow-xs cursor-pointer"
             >
               {savingLink ? <Loader2 className="w-4 h-4 animate-spin" /> : "Simpan ke Linkora"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Upgrade Premium Duitku (Rp 25.000 / Bulan) */}
+      <Dialog open={payModalOpen} onOpenChange={setPayModalOpen}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border border-amber-500/30 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-2xl space-y-5">
+          <DialogHeader className="space-y-2 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto sm:mx-0">
+              <Crown className="w-6 h-6 text-amber-500 animate-bounce" />
+            </div>
+            <DialogTitle className="text-xl font-bold font-heading text-foreground">
+              Upgrade Fitur Riset Premium
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Masa uji coba gratis 30 hari Anda telah berakhir. Berlangganan Paket Premium untuk akses tanpa batas ke 5 Mesin Riset Ilmiah (Scopus, SINTA, GARUDA, Scholar &amp; Semantic).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/20 space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-bold text-muted-foreground uppercase font-mono">Harga Langganan</span>
+              <div className="text-right">
+                <span className="text-2xl font-black text-amber-600 dark:text-amber-400">Rp 25.000</span>
+                <span className="text-xs text-muted-foreground"> / bulan</span>
+              </div>
+            </div>
+            <hr className="border-amber-500/20" />
+            <ul className="space-y-2 text-xs font-medium text-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Pencarian Unlimited Scopus, SINTA, GARUDA, Scholar &amp; AI</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Simpan Referensi Jurnal ke Linkora Tanpa Batas</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Proses Pembayaran Instan (QRIS, VA BCA/Mandiri/BRI, E-Wallet)</span>
+              </li>
+            </ul>
+          </div>
+
+          <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPayModalOpen(false)}
+              className="rounded-xl h-11 text-xs font-semibold sm:flex-1"
+            >
+              Nanti Saja
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCreateDuitkuPayment}
+              disabled={paying}
+              className="rounded-xl h-11 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs gap-2 shadow-lg shadow-amber-500/20 cursor-pointer sm:flex-1"
+            >
+              {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+              <span>Bayar Rp 25.000 (Duitku)</span>
             </Button>
           </DialogFooter>
         </DialogContent>
