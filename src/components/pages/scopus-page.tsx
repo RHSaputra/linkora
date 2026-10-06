@@ -554,7 +554,7 @@ export function ScopusPage() {
     if (subInfo && !subInfo.hasAccess) {
       setPayModalOpen(true);
       toast.error(
-        "Masa uji coba gratis 30 hari telah berakhir. Berlangganan Paket Premium Rp 25.000 / bulan untuk melanjutkan penelusuran riset.",
+        "Fitur Riset Ilmiah wajib berlangganan Paket Premium Rp 25.000 / bulan.",
         "Akses Terkunci"
       );
       return;
@@ -694,21 +694,14 @@ export function ScopusPage() {
                   <span>Premium Active (Sisa {subInfo.trialDaysLeft} Hari)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && subInfo?.trialClaimed && (subInfo?.plan === "TRIAL_ACTIVE" || subInfo?.plan === "TRIAL") && (
-                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Uji Coba Gratis: Sisa {subInfo.trialDaysLeft} Hari</span>
-                </span>
-              )}
-              {!subInfo?.isOwner && subInfo?.authenticated && !subInfo?.trialClaimed && (
+              {!subInfo?.isOwner && subInfo?.authenticated && subInfo?.plan !== "PREMIUM" && (
                 <button
                   type="button"
-                  onClick={handleClaimTrial}
-                  disabled={claimingTrial}
-                  className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-[11px] font-extrabold shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all animate-pulse disabled:opacity-50"
+                  onClick={() => setPayModalOpen(true)}
+                  className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-[11px] font-extrabold shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all animate-pulse"
                 >
-                  {claimingTrial ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Gift className="w-3.5 h-3.5" />}
-                  <span>Klaim Trial Gratis 30 Hari Sekarang</span>
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Berlangganan Premium Rp 25.000 / Bulan</span>
                 </button>
               )}
               {!subInfo?.authenticated && (
@@ -717,18 +710,8 @@ export function ScopusPage() {
                   className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-[11px] font-bold flex items-center gap-1.5 transition-all"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Login untuk Klaim Trial / Upgrade Premium</span>
+                  <span>Login &amp; Berlangganan Premium Rp 25.000 / Bulan</span>
                 </Link>
-              )}
-              {!subInfo?.isOwner && subInfo?.plan === "EXPIRED" && (
-                <button
-                  type="button"
-                  onClick={() => setPayModalOpen(true)}
-                  className="px-3 py-1 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Uji Coba Berakhir (Upgrade Rp 25k/Bulan)</span>
-                </button>
               )}
             </div>
 

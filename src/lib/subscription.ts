@@ -7,8 +7,6 @@ export const PREMIUM_RESEARCH_PRICE = 25000;
 export type EntitlementStatus =
   | "UNLIMITED"
   | "PREMIUM"
-  | "TRIAL_ACTIVE"
-  | "TRIAL_AVAILABLE"
   | "EXPIRED"
   | "GUEST";
 
@@ -37,7 +35,7 @@ export async function getUserEntitlement(email?: string | null): Promise<Entitle
       trialDaysLeft: 0,
       subscriptionEndsAt: null,
       trialEndsAt: null,
-      message: "Pengguna belum login. Silakan masuk untuk mengakses fitur Riset.",
+      message: "Pengguna belum login. Silakan masuk untuk berlangganan Premium Rp 25.000 / bulan.",
     };
   }
 
@@ -67,8 +65,6 @@ export async function getUserEntitlement(email?: string | null): Promise<Entitle
       createdAt: true,
       subscriptionPlan: true,
       subscriptionEndsAt: true,
-      trialEndsAt: true,
-      trialClaimedAt: true,
     },
   });
 
@@ -77,13 +73,13 @@ export async function getUserEntitlement(email?: string | null): Promise<Entitle
       ok: true,
       authenticated: true,
       isOwner: false,
-      status: "TRIAL_AVAILABLE",
+      status: "EXPIRED",
       hasAccess: false,
       trialClaimed: false,
-      trialDaysLeft: 30,
+      trialDaysLeft: 0,
       subscriptionEndsAt: null,
       trialEndsAt: null,
-      message: "Akun Anda berhak klaim Uji Coba Gratis 30 Hari. Silakan klik Klaim Trial.",
+      message: "Fitur Riset wajib berlangganan Paket Premium Rp 25.000 / bulan.",
     };
   }
 
@@ -101,87 +97,22 @@ export async function getUserEntitlement(email?: string | null): Promise<Entitle
       trialClaimed: true,
       trialDaysLeft: daysLeft,
       subscriptionEndsAt: user.subscriptionEndsAt,
-      trialEndsAt: user.trialEndsAt,
+      trialEndsAt: null,
       message: `Status Premium Aktif (Sisa ${daysLeft} Hari).`,
     };
   }
 
-  // 4. Active Trial Check (Must have been explicitly claimed)
-  if (user.trialClaimedAt && user.trialEndsAt && user.trialEndsAt > now) {
-    const daysLeft = Math.ceil((user.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return {
-      ok: true,
-      authenticated: true,
-      isOwner: false,
-      status: "TRIAL_ACTIVE",
-      hasAccess: true,
-      trialClaimed: true,
-      trialDaysLeft: daysLeft,
-      subscriptionEndsAt: null,
-      trialEndsAt: user.trialEndsAt,
-      message: `Uji Coba Gratis Aktif (Sisa ${daysLeft} Hari).`,
-    };
-  }
-
-  // 5. Unclaimed Trial Check
-  if (!user.trialClaimedAt) {
-    return {
-      ok: true,
-      authenticated: true,
-      isOwner: false,
-      status: "TRIAL_AVAILABLE",
-      hasAccess: false,
-      trialClaimed: false,
-      trialDaysLeft: 30,
-      subscriptionEndsAt: null,
-      trialEndsAt: null,
-      message: "Uji Coba Gratis 30 Hari belum diklaim. Silakan klaim sekarang.",
-    };
-  }
-
-  // 6. Expired Trial & Expired Subscription
+  // 4. Non-Premium User (Mandatory Paid Requirement)
   return {
     ok: true,
     authenticated: true,
     isOwner: false,
     status: "EXPIRED",
     hasAccess: false,
-    trialClaimed: true,
+    trialClaimed: false,
     trialDaysLeft: 0,
     subscriptionEndsAt: user.subscriptionEndsAt,
-    trialEndsAt: user.trialEndsAt,
-    message: "Masa Uji Coba Gratis telah berakhir. Silakan berlangganan Premium Rp 25.000 / bulan.",
+    trialEndsAt: null,
+    message: "Fitur Riset wajib berlangganan Paket Premium Rp 25.000 / bulan.",
   };
-}
-
-export async function claimUserTrial(email: string) {
-  const normalizedEmail = email.toLowerCase().trim();
-
-  return await prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (!user) {
-      throw new Error("Pengguna tidak ditemukan.");
-    }
-
-    if (user.trialClaimedAt) {
-      throw new Error("Anda sudah pernah mengklaim Uji Coba Gratis sebelumnya.");
-    }
-
-    const now = new Date();
-    const trialEndsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    const updated = await tx.user.update({
-      where: { email: normalizedEmail },
-      data: {
-        subscriptionPlan: "TRIAL",
-        trialClaimedAt: now,
-        trialEndsAt,
-      },
-    });
-
-    return updated;
-  });
 }
