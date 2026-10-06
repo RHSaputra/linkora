@@ -15,6 +15,7 @@ function LoginFormContent() {
   const { t, locale } = useTranslation()
   const [error, setError] = useState("")
   const [notRegistered, setNotRegistered] = useState(false)
+  const [isGoogleAccount, setIsGoogleAccount] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -41,6 +42,7 @@ function LoginFormContent() {
     e.preventDefault()
     setError("")
     setNotRegistered(false)
+    setIsGoogleAccount(false)
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
@@ -63,6 +65,17 @@ function LoginFormContent() {
             locale === "en"
               ? "Account with this email is not registered yet. Please register first."
               : "Akun dengan email ini belum terdaftar. Silakan daftar akun terlebih dahulu."
+          )
+          setLoading(false)
+          return
+        }
+
+        if (checkData.isGoogle && !checkData.hasPassword) {
+          setIsGoogleAccount(true)
+          setError(
+            locale === "en"
+              ? "This account is registered using Google. Please click 'Continue with Google'."
+              : "Akun ini terdaftar menggunakan Google. Silakan masuk menggunakan tombol 'Masuk dengan Google'."
           )
           setLoading(false)
           return
@@ -94,6 +107,7 @@ function LoginFormContent() {
   async function handleGoogleSignIn() {
     setError("")
     setNotRegistered(false)
+    setIsGoogleAccount(false)
     setGoogleLoading(true)
     try {
       await signIn("google", { callbackUrl: "/dashboard" })
@@ -165,6 +179,17 @@ function LoginFormContent() {
               >
                 {locale === "en" ? "Register New Account Now →" : "Daftar Akun Baru Sekarang →"}
               </Link>
+            </div>
+          )}
+          {isGoogleAccount && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="inline-flex items-center gap-1 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs text-primary cursor-pointer"
+              >
+                {locale === "en" ? "Sign In with Google Now →" : "Masuk dengan Google Sekarang →"}
+              </button>
             </div>
           )}
         </motion.div>

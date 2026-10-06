@@ -404,17 +404,27 @@ export default function RegisterPage() {
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium space-y-1.5"
+                      className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium space-y-2"
                     >
                       <div>{error}</div>
                       {(error.toLowerCase().includes("terdaftar") || error.toLowerCase().includes("registered")) && (
-                        <div className="pt-0.5">
-                          <Link 
-                            href="/login" 
-                            className="inline-flex items-center gap-1 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs"
-                          >
-                            {locale === "en" ? "Sign In to Your Account Now →" : "Masuk ke Akun Anda Sekarang →"}
-                          </Link>
+                        <div className="pt-1">
+                          {error.toLowerCase().includes("google") ? (
+                            <button
+                              type="button"
+                              onClick={handleGoogleSignIn}
+                              className="inline-flex items-center gap-1.5 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs text-primary cursor-pointer"
+                            >
+                              {locale === "en" ? "Sign In with Google Now →" : "Masuk dengan Akun Google Anda Sekarang →"}
+                            </button>
+                          ) : (
+                            <Link 
+                              href="/login" 
+                              className="inline-flex items-center gap-1 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs"
+                            >
+                              {locale === "en" ? "Sign In to Your Account Now →" : "Masuk ke Akun Anda Sekarang →"}
+                            </Link>
+                          )}
                         </div>
                       )}
                     </motion.div>

@@ -24,12 +24,22 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
-      select: { id: true, email: true, password: true },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        accounts: {
+          select: { provider: true },
+        },
+      },
     });
+
+    const isGoogle = user?.accounts.some((a) => a.provider === "google") || false;
 
     return NextResponse.json({
       exists: !!user,
       hasPassword: !!user?.password,
+      isGoogle,
     });
   } catch (error) {
     console.error("[Check Email API Error]:", error);

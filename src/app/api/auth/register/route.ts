@@ -41,14 +41,30 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if user already exists and verified
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
+      include: { accounts: true },
     });
 
     if (existingUser) {
+      const isGoogleAccount = existingUser.accounts.some((a) => a.provider === "google");
+      if (isGoogleAccount) {
+        return NextResponse.json(
+          {
+            error: "Akun dengan email ini sudah terdaftar menggunakan Google. Silakan masuk (login) menggunakan akun Google Anda.",
+            isGoogleAccount: true,
+            redirectUrl: "/login?method=google",
+          },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
-        { error: "Email ini sudah terdaftar. Silakan masuk langsung ke akun Anda." },
+        {
+          error: "Akun dengan email ini sudah terdaftar. Silakan masuk langsung ke akun Anda.",
+          isExisting: true,
+          redirectUrl: "/login",
+        },
         { status: 400 }
       );
     }
