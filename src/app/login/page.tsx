@@ -14,6 +14,7 @@ function LoginFormContent() {
   const searchParams = useSearchParams()
   const { t, locale } = useTranslation()
   const [error, setError] = useState("")
+  const [notRegistered, setNotRegistered] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -39,13 +40,35 @@ function LoginFormContent() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError("")
+    setNotRegistered(false)
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
+    const email = (formData.get("email") as string || "").trim()
     const password = formData.get("password") as string
 
     try {
+      // Check if email exists in system first for helpful user guidance
+      const checkRes = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      if (checkRes.ok) {
+        const checkData = await checkRes.json()
+        if (!checkData.exists) {
+          setNotRegistered(true)
+          setError(
+            locale === "en"
+              ? "Account with this email is not registered yet. Please register first."
+              : "Akun dengan email ini belum terdaftar. Silakan daftar akun terlebih dahulu."
+          )
+          setLoading(false)
+          return
+        }
+      }
+
       const res = await signIn("credentials", {
         email,
         password,
@@ -53,7 +76,11 @@ function LoginFormContent() {
       })
 
       if (res?.error) {
-        setError(locale === "en" ? "Invalid email or password." : "Email atau kata sandi yang Anda masukkan salah.")
+        setError(
+          locale === "en"
+            ? "Incorrect password. Please check your password and try again."
+            : "Kata sandi yang Anda masukkan salah. Silakan periksa kembali."
+        )
       } else {
         router.push("/dashboard")
       }
@@ -66,6 +93,7 @@ function LoginFormContent() {
 
   async function handleGoogleSignIn() {
     setError("")
+    setNotRegistered(false)
     setGoogleLoading(true)
     try {
       await signIn("google", { callbackUrl: "/dashboard" })
@@ -126,9 +154,19 @@ function LoginFormContent() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="mb-6 p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium"
+          className="mb-6 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium space-y-2"
         >
-          {error}
+          <div>{error}</div>
+          {notRegistered && (
+            <div className="pt-1">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-1 font-bold underline underline-offset-4 hover:opacity-85 transition-opacity text-xs"
+              >
+                {locale === "en" ? "Register New Account Now →" : "Daftar Akun Baru Sekarang →"}
+              </Link>
+            </div>
+          )}
         </motion.div>
       )}
 

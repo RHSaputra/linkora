@@ -29,6 +29,7 @@ export default function RegisterPage() {
   // Multi-step Registration State
   const [step, setStep] = useState<"FORM" | "OTP">("FORM")
   const [registeredEmail, setRegisteredEmail] = useState("")
+  const [registeredPassword, setRegisteredPassword] = useState("")
   const [otp, setOtp] = useState("")
   const [otpLoading, setOtpLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
@@ -144,6 +145,7 @@ export default function RegisterPage() {
         setLoading(false)
       } else {
         setRegisteredEmail(email.toLowerCase().trim())
+        setRegisteredPassword(password)
         setResendCooldown(data.cooldownSeconds || 60)
         setStep("OTP")
         setLoading(false)
@@ -182,6 +184,18 @@ export default function RegisterPage() {
         setError(data.error || (locale === "en" ? "Invalid verification code" : "Kode verifikasi tidak valid"))
         setOtpLoading(false)
       } else {
+        // Automatically sign in the user to create an active session
+        if (registeredPassword) {
+          const signInRes = await signIn("credentials", {
+            email: registeredEmail,
+            password: registeredPassword,
+            redirect: false,
+          })
+          if (!signInRes?.error) {
+            router.push("/dashboard")
+            return
+          }
+        }
         router.push("/login?registered=true")
       }
     } catch (_err) {

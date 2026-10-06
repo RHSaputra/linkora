@@ -2,14 +2,12 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
+import { AUTH_SECRET_VALUE } from "@/lib/auth-secret"
+
 // Routes that are only accessible when NOT logged in
 const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
 
-
-const authSecret =
-  process.env.AUTH_SECRET ||
-  process.env.NEXTAUTH_SECRET ||
-  (process.env.NODE_ENV === "production" ? undefined : "linkora_dev_secret_only_local_environment_2026");
+const authSecret = AUTH_SECRET_VALUE;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

@@ -12,19 +12,9 @@ const clean = (val?: string) => (val ? val.trim().replace(/^["']|["']$/g, "") : 
 const googleClientId = clean(process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID)
 const googleClientSecret = clean(process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET)
 
-import crypto from "crypto"
+import { AUTH_SECRET_VALUE } from "@/lib/auth-secret"
 
-const rawAuthSecret = clean(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)
-if (!rawAuthSecret && process.env.NODE_ENV === "production") {
-  console.warn("[Security Warning] AUTH_SECRET is not set in environment. Generating ephemeral session secret.")
-}
-const ephemeralSecret =
-  typeof globalThis !== "undefined" && (globalThis as any).__linkora_ephemeral_secret
-    ? (globalThis as any).__linkora_ephemeral_secret
-    : ((globalThis as any).__linkora_ephemeral_secret = crypto.randomBytes(32).toString("hex"))
-
-const authSecret = rawAuthSecret || ephemeralSecret
-
+const authSecret = AUTH_SECRET_VALUE
 
 const providers: any[] = [
   CredentialsProvider({
@@ -101,7 +91,10 @@ if (googleClientId && googleClientSecret) {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   secret: authSecret,
   trustHost: true,
   pages: {
@@ -125,6 +118,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.image = null
         }
       }
+      if (!token.id && token.sub) {
+        token.id = token.sub
+      }
       if (trigger === "update" && session) {
         if (session.name !== undefined) token.name = session.name
         delete token.picture
@@ -141,7 +137,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         }
       }
-      // Pastikan token.picture selalu dihapus agar NextAuth tidak menyimpan avatar/base64 besar ke dalam cookie JWT
       delete token.picture
       return token
     },
