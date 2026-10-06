@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
 
   // Security & CDN Cache headers helper
   const addSecurityHeaders = (res: NextResponse, reqPath?: string) => {
-    if (reqPath && reqPath.startsWith("/api/cekjurnal-proxy")) {
+    if (reqPath && (reqPath.startsWith("/api/cekjurnal-proxy") || reqPath.startsWith("/api/scimago-proxy"))) {
       res.headers.set("X-Frame-Options", "SAMEORIGIN")
     } else {
       res.headers.set("X-Frame-Options", "DENY")

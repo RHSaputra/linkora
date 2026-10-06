@@ -28,6 +28,9 @@ import {
   Folder,
   Brain,
   Sparkles,
+  Maximize2,
+  Minimize2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,8 +178,9 @@ export function ScopusPage() {
   const { requireAuth } = useRequireAuth();
   const { collections } = useCollections();
 
-  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal"
-  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal">("scopus");
+  // Provider Tab: "scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal" | "scimago"
+  const [provider, setProvider] = useState<"scopus" | "sinta" | "garuda" | "scholar" | "semantic" | "cekjurnal" | "scimago">("scopus");
+  const [activeFullscreen, setActiveFullscreen] = useState<"cekjurnal" | "scimago" | null>(null);
 
   // Scopus State (Default query empty "")
   const [scopusSubTab, setScopusSubTab] = useState<"article" | "journal">("article");
@@ -589,15 +593,15 @@ export function ScopusPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
-              Eksplorasi referensi ilmiah dari empat sumber utama: Elsevier Scopus API, SINTA Kemdiktisaintek, GARUDA Rujukan, dan Google Scholar secara profesional dan transparan.
+              Eksplorasi referensi ilmiah dari 6 sumber utama: Elsevier Scopus, SINTA, GARUDA, Google Scholar, CekJurnal.id, dan SCImago Journal Rank secara profesional dan transparan.
             </p>
 
-            {/* 4 Provider Selector Buttons: Clean Text-Only Tabs (Extracted Logo Palettes) */}
-            <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* 6 Provider Selector Buttons: Symmetrical Grid Layout */}
+            <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
               <button
                 type="button"
                 onClick={() => setProvider("scopus")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
                   provider === "scopus"
                     ? "bg-orange-600 text-white border-orange-600 shadow-md ring-2 ring-orange-500/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
@@ -609,7 +613,7 @@ export function ScopusPage() {
               <button
                 type="button"
                 onClick={() => setProvider("sinta")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
                   provider === "sinta"
                     ? "bg-teal-700 text-white border-teal-700 shadow-md ring-2 ring-teal-600/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
@@ -621,7 +625,7 @@ export function ScopusPage() {
               <button
                 type="button"
                 onClick={() => setProvider("garuda")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
                   provider === "garuda"
                     ? "bg-red-600 text-white border-red-600 shadow-md ring-2 ring-red-500/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
@@ -633,7 +637,7 @@ export function ScopusPage() {
               <button
                 type="button"
                 onClick={() => setProvider("scholar")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
                   provider === "scholar"
                     ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-500/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
@@ -644,26 +648,26 @@ export function ScopusPage() {
 
               <button
                 type="button"
-                onClick={() => setProvider("semantic")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
-                  provider === "semantic"
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-500/30"
-                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
-                }`}
-              >
-                <span>Semantic Scholar</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setProvider("cekjurnal")}
-                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
                   provider === "cekjurnal"
                     ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30"
                     : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
                 }`}
               >
                 <span>CekJurnal.id</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProvider("scimago")}
+                className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border text-center ${
+                  provider === "scimago"
+                    ? "bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-500/30"
+                    : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:bg-white"
+                }`}
+              >
+                <span>SCImago JR</span>
               </button>
             </div>
           </div>
@@ -698,6 +702,11 @@ export function ScopusPage() {
             {provider === "cekjurnal" && (
               <div className="w-full h-full rounded-2xl bg-white p-3 border border-emerald-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
                 <img src="/cekjurnal.png" alt="CekJurnal.id" className="w-full h-full object-contain" />
+              </div>
+            )}
+            {provider === "scimago" && (
+              <div className="w-full h-full rounded-2xl bg-white p-3 border border-amber-500/20 shadow-sm flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+                <img src="/scimago.png" alt="SCImago Journal Rank" className="w-full h-full object-contain" />
               </div>
             )}
           </div>
@@ -1985,11 +1994,15 @@ export function ScopusPage() {
                 Tampilan 100% lengkap Direktori Jurnal SINTA 1-6, Scopus, Biaya Publikasi (APC), Bidang Ilmu & Bahasa langsung di dalam web.
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Terintegrasi Penuh</span>
-              </span>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Button
+                type="button"
+                onClick={() => setActiveFullscreen("cekjurnal")}
+                className="flex-1 sm:flex-none h-9 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white gap-2 cursor-pointer shadow-sm transition-all"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Layar Penuh</span>
+              </Button>
             </div>
           </div>
 
@@ -1998,6 +2011,78 @@ export function ScopusPage() {
               src="/api/cekjurnal-proxy"
               title="Direktori Jurnal CekJurnal.id"
               className="w-full h-[85vh] min-h-[750px] border-0"
+              allow="fullscreen"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── 7. SCIMAGO JR SECTION ── */}
+      {provider === "scimago" && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  SCImago Journal Rank Indonesia (SJR)
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Peringkat & performa jurnal terakreditasi Indonesia dari SCImago Journal & Country Rank langsung di dalam web.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Button
+                type="button"
+                onClick={() => setActiveFullscreen("scimago")}
+                className="flex-1 sm:flex-none h-9 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white gap-2 cursor-pointer shadow-sm transition-all"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Layar Penuh</span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="w-full rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xl transition-all relative">
+            <iframe
+              src="/api/scimago-proxy"
+              title="SCImago Journal Rank Indonesia"
+              className="w-full h-[85vh] min-h-[750px] border-0"
+              allow="fullscreen"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Overlay Component */}
+      {activeFullscreen && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-xl p-3 sm:p-6 flex flex-col space-y-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl shrink-0">
+            <div className="flex items-center gap-3">
+              <span className={`w-3 h-3 rounded-full animate-pulse ${activeFullscreen === "cekjurnal" ? "bg-emerald-500" : "bg-amber-500"}`} />
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  {activeFullscreen === "cekjurnal" ? "Direktori CekJurnal.id" : "SCImago Journal Rank Indonesia"} (Mode Layar Penuh)
+                </h3>
+                <p className="text-xs text-slate-400">Tampilan sistem terintegrasi penuh tanpa tautan keluar</p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setActiveFullscreen(null)}
+              className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-lg hover:scale-105 transition-all"
+            >
+              <Minimize2 className="w-4 h-4" />
+              <span>Keluar Full Screen</span>
+            </Button>
+          </div>
+          <div className="flex-1 w-full h-full rounded-2xl overflow-hidden border border-slate-800 bg-black shadow-2xl relative">
+            <iframe
+              src={activeFullscreen === "cekjurnal" ? "/api/cekjurnal-proxy" : "/api/scimago-proxy"}
+              title={activeFullscreen === "cekjurnal" ? "CekJurnal.id Fullscreen" : "SCImago JR Fullscreen"}
+              className="w-full h-full border-0"
               allow="fullscreen"
             />
           </div>
