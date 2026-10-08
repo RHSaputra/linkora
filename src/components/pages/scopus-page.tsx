@@ -39,6 +39,9 @@ import {
   Star,
   CheckCircle2,
   ArrowRight,
+  QrCode,
+  Wallet,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,6 +183,17 @@ function Liko3DSearchLoading({ providerName, brandColor = "orange" }: { provider
   );
 }
 
+const paymentMethodsList = [
+  { code: "NC", name: "QRIS", desc: "Scan QRIS E-Wallet & Mobile Banking", icon: QrCode, badge: "Instan" },
+  { code: "B1", name: "BCA VA", desc: "Transfer VA BCA Otomatis", icon: Building2, badge: "BCA" },
+  { code: "BT", name: "Permata VA", desc: "Virtual Account Permata Bank", icon: Building2 },
+  { code: "A1", name: "ATM / Transfer", desc: "ATM Bersama & Bank Lain", icon: CreditCard },
+  { code: "SP", name: "ShopeePay", desc: "Aplikasi ShopeePay", icon: Smartphone },
+  { code: "OV", name: "OVO", desc: "Aplikasi OVO", icon: Wallet },
+  { code: "DA", name: "DANA", desc: "Aplikasi DANA", icon: Smartphone },
+  { code: "VC", name: "Kartu Kredit", desc: "Visa, Mastercard, JCB", icon: CreditCard },
+];
+
 export function ScopusPage() {
   const { data: session } = useSession();
   const { locale } = useTranslation();
@@ -283,6 +297,7 @@ export function ScopusPage() {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const [claimingTrial, setClaimingTrial] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("NC");
 
   const isAuthenticated = Boolean(session?.user || subInfo?.authenticated);
   const hasAccess = Boolean(
@@ -337,13 +352,18 @@ export function ScopusPage() {
     }
   };
 
-  const handleCreateDuitkuPayment = async () => {
+  const handleCreateDuitkuPayment = async (overrideMethod?: string) => {
     try {
       setPaying(true);
-      const res = await fetch("/api/payment/create", { method: "POST" });
+      const methodToUse = overrideMethod || selectedPaymentMethod || "NC";
+      const res = await fetch("/api/payment/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentMethod: methodToUse }),
+      });
       const data = await res.json();
       if (res.ok && data.paymentUrl) {
-        toast.success("Membuka halaman pembayaran Duitku Sandbox...", "Duitku Payment");
+        toast.success("Membuka gerbang pembayaran Duitku...", "Duitku Payment");
         window.open(data.paymentUrl, "_blank", "noopener,noreferrer");
         setPayModalOpen(false);
       } else {
@@ -2247,11 +2267,50 @@ export function ScopusPage() {
                   </div>
                 </div>
 
+                {/* Interactive Payment Method Selector Grid */}
+                <div className="space-y-2 text-left pt-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                    <span>Pilih Metode Pembayaran Duitku:</span>
+                    <span className="text-[11px] text-amber-600 dark:text-amber-400 font-black font-mono">
+                      {paymentMethodsList.find((m) => m.code === selectedPaymentMethod)?.name}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {paymentMethodsList.map((method) => {
+                      const IconComp = method.icon;
+                      const isSelected = selectedPaymentMethod === method.code;
+                      return (
+                        <button
+                          key={method.code}
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod(method.code)}
+                          className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between relative active:scale-95 ${
+                            isSelected
+                              ? "bg-amber-500/15 border-amber-500 text-foreground ring-2 ring-amber-500/30 shadow-sm"
+                              : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-white hover:text-foreground"
+                          }`}
+                        >
+                          {method.badge && (
+                            <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-white text-[9px] font-black uppercase shadow-xs">
+                              {method.badge}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <IconComp className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-amber-500" : "text-slate-400"}`} />
+                            <span className="text-xs font-extrabold truncate">{method.name}</span>
+                          </div>
+                          <span className="text-[9px] text-muted-foreground leading-none line-clamp-1">{method.desc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Duitku Payment Action Button */}
                 <div className="pt-2 space-y-3">
                   <Button
                     type="button"
-                    onClick={handleCreateDuitkuPayment}
+                    onClick={() => handleCreateDuitkuPayment()}
                     disabled={paying}
                     className="w-full h-13 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm sm:text-base gap-2.5 shadow-xl shadow-amber-500/25 cursor-pointer active:scale-95 transition-all"
                   >
@@ -2263,7 +2322,7 @@ export function ScopusPage() {
                     ) : (
                       <>
                         <CreditCard className="w-5 h-5" />
-                        <span>Bayar &amp; Aktifkan Premium Rp 25.000</span>
+                        <span>Bayar via {paymentMethodsList.find((m) => m.code === selectedPaymentMethod)?.name} (Rp 25.000)</span>
                       </>
                     )}
                   </Button>
@@ -2350,7 +2409,7 @@ export function ScopusPage() {
 
       {/* Modal Upgrade Premium Duitku (Rp 25.000 / Bulan) */}
       <Dialog open={payModalOpen} onOpenChange={setPayModalOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border border-amber-500/30 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-2xl space-y-5">
+        <DialogContent className="sm:max-w-lg bg-white dark:bg-slate-900 border border-amber-500/30 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-2xl space-y-5">
           <DialogHeader className="space-y-2 text-center sm:text-left">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto sm:mx-0">
               <Crown className="w-6 h-6 text-amber-500 animate-bounce" />
@@ -2359,7 +2418,7 @@ export function ScopusPage() {
               Upgrade Fitur Riset Premium
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-              Masa uji coba gratis 30 hari Anda telah berakhir. Berlangganan Paket Premium untuk akses tanpa batas ke 5 Mesin Riset Ilmiah (Scopus, SINTA, GARUDA, Scholar &amp; Semantic).
+              Berlangganan Paket Premium untuk akses tanpa batas ke 5 Mesin Riset Ilmiah (Scopus, SINTA, GARUDA, Scholar &amp; Semantic).
             </DialogDescription>
           </DialogHeader>
 
@@ -2383,9 +2442,48 @@ export function ScopusPage() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Proses Pembayaran Instan (QRIS, VA BCA/Mandiri/BRI, E-Wallet)</span>
+                <span>Proses Pembayaran Instan via Duitku Payment Gateway</span>
               </li>
             </ul>
+          </div>
+
+          {/* Payment Method Selector Grid */}
+          <div className="space-y-2 text-left">
+            <div className="flex items-center justify-between text-xs font-bold text-foreground">
+              <span>Pilih Metode Pembayaran Duitku:</span>
+              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-black font-mono">
+                {paymentMethodsList.find((m) => m.code === selectedPaymentMethod)?.name}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {paymentMethodsList.map((method) => {
+                const IconComp = method.icon;
+                const isSelected = selectedPaymentMethod === method.code;
+                return (
+                  <button
+                    key={method.code}
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod(method.code)}
+                    className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between relative active:scale-95 ${
+                      isSelected
+                        ? "bg-amber-500/15 border-amber-500 text-foreground ring-2 ring-amber-500/30 shadow-sm"
+                        : "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-white hover:text-foreground"
+                    }`}
+                  >
+                    {method.badge && (
+                      <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-md bg-amber-500 text-white text-[9px] font-black uppercase shadow-xs">
+                        {method.badge}
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <IconComp className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-amber-500" : "text-slate-400"}`} />
+                      <span className="text-xs font-extrabold truncate">{method.name}</span>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground leading-none line-clamp-1">{method.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
@@ -2399,12 +2497,12 @@ export function ScopusPage() {
             </Button>
             <Button
               type="button"
-              onClick={handleCreateDuitkuPayment}
+              onClick={() => handleCreateDuitkuPayment()}
               disabled={paying}
               className="rounded-xl h-11 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs gap-2 shadow-lg shadow-amber-500/20 cursor-pointer sm:flex-1"
             >
               {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-              <span>Bayar Rp 25.000 (Duitku)</span>
+              <span>Bayar via {paymentMethodsList.find((m) => m.code === selectedPaymentMethod)?.name} (Rp 25.000)</span>
             </Button>
           </DialogFooter>
         </DialogContent>
