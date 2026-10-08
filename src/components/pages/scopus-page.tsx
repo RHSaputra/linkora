@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   GraduationCap,
   Search,
@@ -33,6 +34,11 @@ import {
   CreditCard,
   Gift,
   Lock,
+  LogIn,
+  UserPlus,
+  Star,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,6 +181,7 @@ function Liko3DSearchLoading({ providerName, brandColor = "orange" }: { provider
 }
 
 export function ScopusPage() {
+  const { data: session } = useSession();
   const { locale } = useTranslation();
   const isEn = locale === "en";
   const { requireAuth } = useRequireAuth();
@@ -276,6 +283,14 @@ export function ScopusPage() {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const [claimingTrial, setClaimingTrial] = useState(false);
+
+  const isAuthenticated = Boolean(session?.user || subInfo?.authenticated);
+  const hasAccess = Boolean(
+    subInfo?.hasAccess ||
+      subInfo?.isOwner ||
+      (subInfo?.authenticated && subInfo?.plan === "PREMIUM")
+  );
+  const isLocked = !hasAccess;
 
   const fetchSubscriptionInfo = useCallback(async () => {
     try {
@@ -688,13 +703,13 @@ export function ScopusPage() {
                   <span>Pemilik Web (Unlimited Selamanya)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && subInfo?.plan === "PREMIUM" && (
+              {!subInfo?.isOwner && hasAccess && (
                 <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Premium Active (Sisa {subInfo.trialDaysLeft} Hari)</span>
+                  <span>Premium Active (Sisa {subInfo?.trialDaysLeft || 30} Hari)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && subInfo?.authenticated && subInfo?.plan !== "PREMIUM" && (
+              {!subInfo?.isOwner && isAuthenticated && !hasAccess && (
                 <button
                   type="button"
                   onClick={() => setPayModalOpen(true)}
@@ -704,13 +719,13 @@ export function ScopusPage() {
                   <span>Berlangganan Premium Rp 25.000 / Bulan</span>
                 </button>
               )}
-              {!subInfo?.authenticated && (
+              {!isAuthenticated && (
                 <Link
                   href="/login"
                   className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-[11px] font-bold flex items-center gap-1.5 transition-all"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Login &amp; Berlangganan Premium Rp 25.000 / Bulan</span>
+                  <span>Masuk ke Akun / Berlangganan</span>
                 </Link>
               )}
             </div>
@@ -814,52 +829,62 @@ export function ScopusPage() {
         </div>
       </div>
 
-      {/* ── 1. SCOPUS SECTION ── */}
-      {provider === "scopus" && (
-        <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setScopusSubTab("article");
-                  setScopusPage(1);
-                }}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  scopusSubTab === "article"
-                    ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Judul Artikel</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setScopusSubTab("journal");
-                  setScopusPage(1);
-                }}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  scopusSubTab === "journal"
-                    ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Judul Jurnal</span>
-              </button>
-            </div>
+      {/* ── MAIN RESEARCH CONTENT & BLURRED LOCK CONTAINER ── */}
+      <div className="relative min-h-[550px] rounded-3xl">
+        <div
+          className={`transition-all duration-500 space-y-6 ${
+            isLocked
+              ? "filter blur-md md:blur-lg select-none pointer-events-none opacity-40 grayscale-[25%]"
+              : "opacity-100"
+          }`}
+        >
+          {/* ── 1. SCOPUS SECTION ── */}
+          {provider === "scopus" && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScopusSubTab("article");
+                      setScopusPage(1);
+                    }}
+                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      scopusSubTab === "article"
+                        ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Judul Artikel</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScopusSubTab("journal");
+                      setScopusPage(1);
+                    }}
+                    className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      scopusSubTab === "journal"
+                        ? "bg-white dark:bg-slate-900 text-orange-600 shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Judul Jurnal</span>
+                  </button>
+                </div>
 
-            {scopusTotalResults > 0 && (
-              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
-                <BookOpen className="w-3.5 h-3.5 text-orange-600" />
-                <span>Total Metadata: {scopusTotalResults.toLocaleString()} Publikasi Scopus</span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="font-bold text-orange-600 dark:text-orange-400">Menampilkan {scopusItems.length} card</span>
+                {scopusTotalResults > 0 && (
+                  <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
+                    <BookOpen className="w-3.5 h-3.5 text-orange-600" />
+                    <span>Total Metadata: {scopusTotalResults.toLocaleString()} Publikasi Scopus</span>
+                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">Menampilkan {scopusItems.length} card</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider font-mono mr-1">
@@ -2107,6 +2132,151 @@ export function ScopusPage() {
           )}
         </div>
       )}
+    </div>
+
+        {/* ── LOCKED OVERLAY POPUP CARDS ── */}
+        {isLocked && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-slate-950/20 dark:bg-slate-950/50 backdrop-blur-[3px] animate-in fade-in duration-300">
+            {!isAuthenticated ? (
+              /* 1. AUTH MODAL CARD (NOT LOGGED IN) */
+              <div className="w-full max-w-lg bg-white/95 dark:bg-slate-900/95 border-2 border-primary/30 dark:border-primary/40 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl text-center space-y-6 animate-in zoom-in-95 duration-300 ring-4 ring-primary/10">
+                <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent border border-primary/30 flex items-center justify-center mx-auto shadow-inner">
+                  <Lock className="w-8 h-8 text-primary animate-pulse" />
+                </div>
+
+                <div className="space-y-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-extrabold uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" /> Akses Fitur Terkunci
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-foreground">
+                    Fitur Riset Memerlukan Akun
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+                    Silakan masuk (login) atau mendaftar akun gratis terlebih dahulu untuk mengakses 5 Mesin Penelusuran Riset Ilmiah (Elsevier Scopus, SINTA, GARUDA, Google Scholar &amp; Semantic Scholar).
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start gap-2.5">
+                    <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-bold text-foreground">5 Sumber Ilmiah</p>
+                      <p className="text-[11px] text-muted-foreground">Scopus, SINTA, GARUDA &amp; Scholar</p>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start gap-2.5">
+                    <Brain className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-bold text-foreground">Integrasi Linkora</p>
+                      <p className="text-[11px] text-muted-foreground">Simpan referensi ke ruang kerja</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/login"
+                    className="flex-1 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Masuk (Login)</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="flex-1 h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+                  >
+                    <UserPlus className="w-4 h-4 text-primary" />
+                    <span>Daftar Akun Gratis</span>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* 2. PREMIUM PROMO OFFER CARD (LOGGED IN BUT NOT PREMIUM) */
+              <div className="w-full max-w-xl bg-gradient-to-b from-white/95 via-amber-50/90 to-white/95 dark:from-slate-900/95 dark:via-slate-900/95 dark:to-slate-900/95 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-500/10 backdrop-blur-2xl text-center space-y-6 animate-in zoom-in-95 duration-300 ring-4 ring-amber-500/10">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white text-[11px] font-black uppercase tracking-wider shadow-md animate-pulse">
+                    <Crown className="w-3.5 h-3.5 fill-current" /> PENAWARAN EKSKLUSIF FITUR RISET
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-heading font-black text-foreground tracking-tight">
+                    Buka Akses 5 Mesin Riset Ilmiah
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+                    Berlangganan Paket Premium untuk akses tanpa batas ke jutaan publikasi ilmiah berkualitas tinggi (Elsevier Scopus Q1-Q4, SINTA 1-6, GARUDA, Google Scholar, dan Semantic Scholar).
+                  </p>
+                </div>
+
+                {/* Pricing Banner Box */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-left shadow-inner">
+                  <div>
+                    <span className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 uppercase font-mono tracking-wider block">
+                      Paket Langganan Riset Premium
+                    </span>
+                    <div className="flex items-baseline gap-1 mt-0.5">
+                      <span className="text-3xl sm:text-4xl font-black text-amber-600 dark:text-amber-400">Rp 25.000</span>
+                      <span className="text-xs font-semibold text-muted-foreground"> / bulan</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">Hanya Rp 833 / hari • Akses penuh tanpa batasan kuota</p>
+                  </div>
+                  <div className="shrink-0 text-center sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-amber-500/20">
+                    <span className="inline-block px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30">
+                      ⚡ Aktif Otomatis Instan
+                    </span>
+                  </div>
+                </div>
+
+                {/* Feature List Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left text-xs font-semibold text-foreground">
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Scopus, SINTA, GARUDA &amp; Scholar</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Simpan ke Ruang Kerja Linkora</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Metadata &amp; Link Sitasi Full Text</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Pembayaran QRIS, VA &amp; E-Wallet Duitku</span>
+                  </div>
+                </div>
+
+                {/* Duitku Payment Action Button */}
+                <div className="pt-2 space-y-3">
+                  <Button
+                    type="button"
+                    onClick={handleCreateDuitkuPayment}
+                    disabled={paying}
+                    className="w-full h-13 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm sm:text-base gap-2.5 shadow-xl shadow-amber-500/25 cursor-pointer active:scale-95 transition-all"
+                  >
+                    {paying ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Membuat Invoice Duitku...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5" />
+                        <span>Bayar &amp; Aktifkan Premium Rp 25.000</span>
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Pembayaran aman diproses resmi melalui Gerbang Pembayaran Duitku</span>
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Save to Linkora Modal */}
       <Dialog open={saveModalOpen} onOpenChange={setSaveModalOpen}>

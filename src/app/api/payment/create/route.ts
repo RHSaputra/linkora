@@ -17,7 +17,7 @@ export async function POST(_req: Request) {
     const name = session.user.name || "Pengguna Linkora";
 
     // Data transaksi Duitku
-    const merchantCode = process.env.DUITKU_MERCHANT_CODE || "DS17926";
+    const merchantCode = process.env.DUITKU_MERCHANT_CODE || "DS36252";
     const apiKey = process.env.DUITKU_API_KEY || "abcc4f1741cd592be280c4bfab5d612b";
     const env = process.env.DUITKU_ENV || "sandbox";
 
@@ -81,10 +81,11 @@ export async function POST(_req: Request) {
       });
     } else {
       console.error("Duitku API Inquiry Error:", data);
+      const errMsg = data.statusMessage || data.Message || data.message || "Gagal menghubungi gerbang pembayaran Duitku.";
       return NextResponse.json(
         {
           ok: false,
-          error: data.statusMessage || "Gagal menghubungi gerbang pembayaran Duitku.",
+          error: errMsg,
         },
         { status: 400 }
       );
