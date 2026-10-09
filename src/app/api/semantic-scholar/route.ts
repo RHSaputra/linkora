@@ -33,7 +33,7 @@ function cleanVenueName(venue: string): string {
     .trim();
 }
 
-async function fetchSintaJournalSearch(query: string): Promise<{ sintaRating: string; sintaProfileUrl: string } | null> {
+async function fetchSintaJournalSearch(query: string, rawVenueName: string): Promise<{ sintaRating: string; sintaProfileUrl: string } | null> {
   const cleanKey = (query || "").toLowerCase().trim();
   if (!cleanKey || cleanKey.length < 3 || cleanKey === "academic venue" || cleanKey === "semantic scholar publication") {
     return null;
@@ -60,13 +60,25 @@ async function fetchSintaJournalSearch(query: string): Promise<{ sintaRating: st
       const html = await res.text();
       const $ = cheerio.load(html);
 
+      const normalizedVenue = (rawVenueName || query).toLowerCase().replace(/[^\w\s]/gi, "");
+
       let foundMatch: { sintaRating: string; sintaProfileUrl: string } | null = null;
       $("div.col-md").each((_, el) => {
         const titleLinkEl = $(el).find(".affil-name a").first();
-        const title = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
+        const journalTitle = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
         const sintaProfileUrl = titleLinkEl.attr("href") || "";
 
-        if (!title || !sintaProfileUrl.includes("/journals/profile/")) return;
+        if (!journalTitle || !sintaProfileUrl.includes("/journals/profile/")) return;
+
+        // Verify that the found journal title matches or overlaps closely with the journal/venue name
+        const normalizedJournal = journalTitle.toLowerCase().replace(/[^\w\s]/gi, "");
+        const isMatch =
+          normalizedJournal.includes(normalizedVenue) ||
+          normalizedVenue.includes(normalizedJournal) ||
+          query.toLowerCase().trim() === normalizedJournal ||
+          normalizedJournal.split(/\s+/).some((word: string) => word.length > 3 && normalizedVenue.includes(word));
+
+        if (!isMatch) return;
 
         const accreditedText = $(el).find(".stat-prev .accredited").text().replace(/\s+/g, " ").trim();
         const sintaMatch = accreditedText.match(/S[1-6]/i);
@@ -91,73 +103,54 @@ async function fetchSintaJournalSearch(query: string): Promise<{ sintaRating: st
 
 async function resolveSintaDetailsForPaper(item: any): Promise<{ sintaRating: string; sintaProfileUrl: string }> {
   const venue = (item.venue || "").trim();
-  const title = (item.title || "").trim();
 
-  const candidates: string[] = [];
-
-  if (venue && venue !== "Semantic Scholar Publication" && venue !== "Academic Venue") {
-    candidates.push(venue);
-
-    const parenMatch = venue.match(/(.+)\((.+)\)/);
-    if (parenMatch) {
-      if (parenMatch[1].trim()) candidates.push(parenMatch[1].trim());
-      if (parenMatch[2].trim()) candidates.push(parenMatch[2].trim());
-    }
-
-    const cleaned = cleanVenueName(venue);
-    if (cleaned && !candidates.includes(cleaned)) {
-      candidates.push(cleaned);
-    }
-
-    const lowerVenue = venue.toLowerCase();
-    for (const [acr, expansion] of Object.entries(ACRONYM_EXPANSIONS)) {
-      if (lowerVenue === acr || lowerVenue.includes(`(${acr})`) || lowerVenue.includes(` ${acr} `)) {
-        if (!candidates.includes(expansion)) candidates.push(expansion);
-      }
-    }
+  // STRICT REQUIREMENT: Only search SINTA based on Journal / Venue Name.
+  // NEVER search SINTA based on article title to guarantee accuracy.
+  if (!venue || venue === "Semantic Scholar Publication" || venue === "Academic Venue") {
+    return { sintaRating: "", sintaProfileUrl: "" };
   }
 
-  if (candidates.length === 0 || venue === "Semantic Scholar Publication" || venue === "Academic Venue") {
-    const titleWords = title
-      .replace(/[^\w\s]/gi, "")
-      .split(/\s+/)
-      .filter((w: string) => w.length > 3)
-      .slice(0, 5)
-      .join(" ");
-    if (titleWords) {
-      candidates.push(titleWords);
+  const candidates: string[] = [venue];
+
+  const parenMatch = venue.match(/(.+)\((.+)\)/);
+  if (parenMatch) {
+    if (parenMatch[1].trim()) candidates.push(parenMatch[1].trim());
+    if (parenMatch[2].trim()) candidates.push(parenMatch[2].trim());
+  }
+
+  const cleaned = cleanVenueName(venue);
+  if (cleaned && !candidates.includes(cleaned)) {
+    candidates.push(cleaned);
+  }
+
+  const lowerVenue = venue.toLowerCase();
+  for (const [acr, expansion] of Object.entries(ACRONYM_EXPANSIONS)) {
+    if (lowerVenue === acr || lowerVenue.includes(`(${acr})`) || lowerVenue.includes(` ${acr} `)) {
+      if (!candidates.includes(expansion)) candidates.push(expansion);
     }
   }
 
   for (const cand of candidates) {
-    const sintaResult = await fetchSintaJournalSearch(cand);
+    const sintaResult = await fetchSintaJournalSearch(cand, venue);
     if (sintaResult && sintaResult.sintaRating) {
       return sintaResult;
     }
   }
 
+  // Fallback for verified Scopus / International Journals based strictly on venue / DOI
   const isInternationalOrScopus =
     /\b(scopus|ieee|springer|elsevier|acm|nature|mdpi|wiley|plos|arxiv|frontiers|taylor|francis|sciencedirect|emerald)\b/i.test(
-      venue || ""
-    ) ||
-    item.citationCount >= 5 ||
-    Boolean(item.doi);
-
-  const fallbackSintaUrl = `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(
-    venue && venue !== "Semantic Scholar Publication" && venue !== "Academic Venue" ? venue : title
-  )}`;
+      venue
+    ) || Boolean(item.doi);
 
   if (isInternationalOrScopus) {
     return {
       sintaRating: "SINTA S1 (Scopus)",
-      sintaProfileUrl: fallbackSintaUrl,
+      sintaProfileUrl: `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(venue)}`,
     };
   }
 
-  return {
-    sintaRating: "SINTA Registered",
-    sintaProfileUrl: fallbackSintaUrl,
-  };
+  return { sintaRating: "", sintaProfileUrl: "" };
 }
 
 export async function GET(request: Request) {
