@@ -1091,44 +1091,16 @@ export function ScopusPage() {
       {provider === "sinta" && (
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setSintaSubTab("journal");
-                  setSintaPage(1);
-                }}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  sintaSubTab === "journal"
-                    ? "bg-white dark:bg-slate-900 text-teal-700 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Nama Jurnal</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSintaSubTab("article");
-                  setSintaPage(1);
-                }}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  sintaSubTab === "article"
-                    ? "bg-white dark:bg-slate-900 text-teal-700 shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Judul Artikel</span>
-              </button>
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-400 font-bold text-xs sm:text-sm shadow-2xs">
+              <BookOpen className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
+              <span>Pencarian & Akreditasi Jurnal SINTA (S1 - S6)</span>
             </div>
 
             {sintaItems.length > 0 && (
               <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 shrink-0 sm:ml-auto">
                 <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
                 <span>
-                  Total Metadata: {sintaLevel === "1" ? "1.260" : sintaLevel === "2" ? "2.590" : sintaLevel === "3" ? "2.750" : sintaLevel === "4" ? "2.400" : sintaLevel === "5" ? "1.500" : sintaLevel === "6" ? "1.350" : "16.772"} {sintaSubTab === "journal" ? "Jurnal SINTA" : "Artikel Terindeks SINTA"}
+                  Total Metadata: {sintaLevel === "1" ? "1.260" : sintaLevel === "2" ? "2.590" : sintaLevel === "3" ? "2.750" : sintaLevel === "4" ? "2.400" : sintaLevel === "5" ? "1.500" : sintaLevel === "6" ? "1.350" : "16.772"} Jurnal SINTA
                 </span>
                 <span className="text-slate-300 dark:text-slate-700">•</span>
                 <span className="font-bold text-teal-700 dark:text-teal-400">Menampilkan {sintaItems.length} card</span>
@@ -1164,11 +1136,7 @@ export function ScopusPage() {
             <Input
               value={sintaQuery}
               onChange={(e) => setSintaQuery(e.target.value)}
-              placeholder={
-                sintaSubTab === "journal"
-                  ? "Ketik nama jurnal, ISSN, atau institusi untuk mengecek peringkat SINTA (S1 - S6)..."
-                  : "Ketik judul artikel, DOI (misal 10.1234/...), atau kata kunci untuk menganalisis peringkat SINTA..."
-              }
+              placeholder="Ketik nama jurnal, ISSN, atau institusi untuk mengecek peringkat SINTA (S1 - S6)..."
               className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-teal-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-teal-600 focus:border-teal-600 transition-all"
             />
             <Button type="submit" disabled={sintaLoading} className="absolute right-1.5 h-9.5 px-5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl cursor-pointer">
@@ -1188,7 +1156,7 @@ export function ScopusPage() {
           ) : sintaItems.length === 0 ? (
             <div className="py-16 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-8">
               <ShieldCheck className="w-12 h-12 mx-auto text-teal-500/40" />
-              <h3 className="text-base font-bold text-foreground">Tidak ada {sintaSubTab === "journal" ? "jurnal" : "artikel"} SINTA ditemukan</h3>
+              <h3 className="text-base font-bold text-foreground">Tidak ada jurnal SINTA ditemukan</h3>
             </div>
           ) : (
             <div className="space-y-6">
@@ -1196,81 +1164,6 @@ export function ScopusPage() {
                 {sintaItems.map((item) => {
                   const isSaved = savedLinkIds[item.id];
                   const cleanTitle = (item.title || "").replace(/\*/g, "").trim();
-
-                  // Render Article Card
-                  if (item.isArticle || sintaSubTab === "article") {
-                    return (
-                      <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 text-[11px] font-extrabold uppercase font-mono">
-                              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                              <span>
-                                {item.sintaRating && item.sintaRating.startsWith("S")
-                                  ? `Akreditasi ${item.sintaRating}`
-                                  : item.quartile || "Terindeks SINTA"}
-                              </span>
-                            </span>
-                            {item.coverDate && (
-                              <span className="text-[10px] text-muted-foreground font-mono">{item.coverDate}</span>
-                            )}
-                          </div>
-
-                          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-3 group-hover:text-teal-700 transition-colors">
-                            <a
-                              href={item.scopusUrl || item.websiteUrl}
-                              onClick={(e) => handleSafeOpenUrl(e, item.scopusUrl || item.websiteUrl, cleanTitle)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline flex items-start gap-2"
-                            >
-                              <div className="w-6 h-6 rounded-md bg-white border border-teal-500/30 p-0.5 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                                <img src="/sinta.jpeg" alt="SINTA Logo" className="w-full h-full object-contain" />
-                              </div>
-                              <span className="flex-1">{cleanTitle}</span>
-                              <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-teal-700" />
-                            </a>
-                          </h3>
-
-                          {item.creator && (
-                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium truncate">
-                              <Quote className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
-                              <span className="truncate">{item.creator.replace(/\*/g, "")}</span>
-                            </p>
-                          )}
-
-                          {item.publicationName && (
-                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                              <BookOpen className="w-3.5 h-3.5 text-foreground dark:text-slate-200 shrink-0" />
-                              <span className="truncate">{item.publicationName.replace(/\*/g, "")}</span>
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                            {item.citedByCount !== undefined && (
-                              <span className="flex items-center gap-1 text-teal-700 dark:text-teal-400 font-bold bg-teal-500/10 px-2 py-1 rounded-md text-[11px]">
-                                <Award className="w-3.5 h-3.5" />
-                                <span>{item.citedByCount} Sitasi</span>
-                              </span>
-                            )}
-                          </div>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={isSaved ? "outline" : "default"}
-                            disabled={isSaved}
-                            onClick={() => openSaveModal(item.id, cleanTitle, item.scopusUrl || item.websiteUrl, `[SINTA] ${item.publicationName || ''}`)}
-                            className={`h-8 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer ${isSaved ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30" : "bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white"}`}
-                          >
-                            {isSaved ? <><Check className="w-3.5 h-3.5" /><span>Tersimpan</span></> : <><BookmarkPlus className="w-3.5 h-3.5" /><span>Simpan</span></>}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  }
 
                   // Render Journal Card
                   return (
@@ -2047,10 +1940,31 @@ export function ScopusPage() {
                   return (
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-indigo-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-indigo-500/50 transition-all">
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold uppercase font-mono">
-                            Semantic Scholar
-                          </span>
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold uppercase font-mono">
+                              Semantic Scholar
+                            </span>
+                            {item.sintaRating && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/30 text-[11px] font-extrabold uppercase font-mono shadow-2xs">
+                                <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-teal-700 dark:text-teal-400" />
+                                {item.sintaProfileUrl ? (
+                                  <a
+                                    href={item.sintaProfileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:underline flex items-center gap-0.5"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <span>Akreditasi {item.sintaRating}</span>
+                                    <ExternalLink className="w-3 h-3 ml-0.5" />
+                                  </a>
+                                ) : (
+                                  <span>Akreditasi {item.sintaRating}</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
                           {item.pdfUrl && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
                               <Download className="w-3 h-3" />
