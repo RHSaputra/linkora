@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import { enforceServerEntitlement } from "@/lib/server-entitlement-check";
 
 const SINTA_LEVEL_PAGE_OFFSETS: Record<string, number> = {
   "1": 1,
@@ -21,6 +22,9 @@ const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   jpm: ["Jurnal Pendidikan Matematika"],
   jpipa: ["Jurnal Pendidikan IPA"],
 };
+
+// ── Cache for SINTA Journal Accreditation Ratings ──
+const sintaJournalRatingCache = new Map<string, { sintaRating: string; sintaProfileUrl?: string; institution?: string }>();
 
 async function fetchSintaSinglePage(targetUrl: string) {
   const controller = new AbortController();
@@ -59,7 +63,7 @@ async function fetchSintaSinglePage(targetUrl: string) {
 
       const accreditedText = $(el).find(".stat-prev .accredited").text().replace(/\s+/g, " ").trim();
       const sintaMatch = accreditedText.match(/S[1-6]/i);
-      const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : "SINTA";
+      const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : "SINTA Registered";
 
       const nums: string[] = [];
       $(el)
@@ -92,7 +96,90 @@ async function fetchSintaSinglePage(targetUrl: string) {
     });
 
     return items;
-  } catch (err) {
+  } catch (_err) {
+    return [];
+  }
+}
+
+async function getSintaJournalDetails(journalName: string, issn?: string) {
+  const searchKey = (issn || journalName || "").toLowerCase().trim();
+  if (!searchKey) return null;
+
+  if (sintaJournalRatingCache.has(searchKey)) {
+    return sintaJournalRatingCache.get(searchKey);
+  }
+
+  try {
+    const searchUrl = `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(journalName || issn || "")}`;
+    const journals = await fetchSintaSinglePage(searchUrl);
+    if (journals && journals.length > 0) {
+      const match = journals[0];
+      const details = {
+        sintaRating: match.sintaRating || "SINTA Registered",
+        sintaProfileUrl: match.sintaProfileUrl || "",
+        institution: match.institution || "",
+      };
+      sintaJournalRatingCache.set(searchKey, details);
+      return details;
+    }
+  } catch (_err) {
+    // Ignore error
+  }
+
+  const defaultDetails = { sintaRating: "SINTA Registered" };
+  sintaJournalRatingCache.set(searchKey, defaultDetails);
+  return defaultDetails;
+}
+
+// ── OpenAlex / DOI Resolver ──
+async function resolveArticleViaOpenAlex(queryOrDoi: string) {
+  const cleanStr = queryOrDoi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").trim();
+  const isDoi = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(cleanStr);
+
+  const endpoint = isDoi
+    ? `https://api.openalex.org/works/https://doi.org/${encodeURIComponent(cleanStr)}`
+    : `https://api.openalex.org/works?search=${encodeURIComponent(cleanStr)}&per-page=5`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(endpoint, {
+      signal: controller.signal,
+      headers: { "User-Agent": "LinkoraScholar/1.0 (mailto:support@linkorian.online)" },
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    const works = isDoi ? (data ? [data] : []) : data.results || [];
+
+    const items: any[] = [];
+    for (const work of works) {
+      const title = work.title || "";
+      if (!title) continue;
+
+      const containerTitle = work.primary_location?.source?.display_name || work.location?.source?.display_name || "";
+      const issn = work.primary_location?.source?.issn?.[0] || work.primary_location?.source?.issn_l || "";
+      const year = work.publication_year ? String(work.publication_year) : "-";
+      const doi = work.doi ? work.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, "") : "";
+      const creators = work.authorships?.map((a: any) => a.author?.display_name).filter(Boolean).join(", ") || "Penulis SINTA";
+      const citedByCount = work.cited_by_count || 0;
+      const articleUrl = work.doi || work.primary_location?.landing_page_url || "https://sinta.kemdiktisaintek.go.id";
+
+      items.push({
+        id: doi || work.id || Math.random().toString(),
+        title,
+        creator: creators,
+        publicationName: containerTitle || "Artikel Terindeks SINTA",
+        coverDate: year,
+        citedByCount,
+        scopusUrl: articleUrl,
+        issn,
+        isArticle: true,
+      });
+    }
+
+    return items;
+  } catch (_err) {
     return [];
   }
 }
@@ -126,7 +213,9 @@ async function fetchSintaSingleArticlePage(targetUrl: string) {
       const publicationName = $(el).find(".ar-pub").text().replace(/[\n\r\t]+/g, " ").trim();
       const year = $(el).find(".ar-year").text().replace(/[\n\r\t]+/g, " ").trim();
       const cited = $(el).find(".ar-cited").text().replace(/[\n\r\t]+/g, " ").trim();
-      const quartile = $(el).find(".ar-quartile").text().replace(/[\n\r\t]+/g, " ").trim();
+      const rawQuartile = $(el).find(".ar-quartile").text().replace(/[\n\r\t]+/g, " ").trim();
+      const sintaMatch = rawQuartile.match(/S[1-6]/i);
+      const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : undefined;
 
       const idMatch = articleUrl.match(/eid=([^&]+)/) || articleUrl.match(/\/(\d+)/);
       const id = idMatch ? idMatch[1] : Math.random().toString();
@@ -139,13 +228,14 @@ async function fetchSintaSingleArticlePage(targetUrl: string) {
         coverDate: year || "-",
         citedByCount: parseInt(cited.replace(/\D/g, "") || "0", 10),
         scopusUrl: articleUrl || "https://sinta.kemdiktisaintek.go.id",
-        quartile: quartile || "SINTA Indexed",
+        quartile: rawQuartile || "SINTA Indexed",
+        sintaRating,
         isArticle: true,
       });
     });
 
     return items;
-  } catch (err) {
+  } catch (_err) {
     return [];
   }
 }
@@ -175,8 +265,6 @@ async function fetchSintaQuery(searchQuery: string, sintaFilter: string, startPa
   return pageResults.flat();
 }
 
-import { enforceServerEntitlement } from "@/lib/server-entitlement-check";
-
 export async function GET(request: Request) {
   try {
     const check = await enforceServerEntitlement();
@@ -198,18 +286,15 @@ export async function GET(request: Request) {
 
     const startSintaPage = baseOffset + (pageNum - 1) * 3;
 
-    // 1. Build list of candidate search queries
     const cleanQ = query.trim();
     const queryCandidates: string[] = [cleanQ];
 
     if (cleanQ) {
-      // If ISSN with dash (e.g., 2502-0714 -> 25020714)
       const rawISSN = cleanQ.replace(/-/g, "");
       if (rawISSN !== cleanQ && /^\d+$/.test(rawISSN)) {
         queryCandidates.push(rawISSN);
       }
 
-      // If known acronym (e.g. JPTI)
       const lowerQ = cleanQ.toLowerCase();
       if (ACRONYM_EXPANSIONS[lowerQ]) {
         queryCandidates.push(...ACRONYM_EXPANSIONS[lowerQ]);
@@ -219,20 +304,13 @@ export async function GET(request: Request) {
     const items: any[] = [];
     const seenIds = new Set<string>();
 
+    // 1. Primary Scraper Loop
     for (const qCandidate of queryCandidates) {
       const results = await fetchSintaQuery(qCandidate, sintaFilter, startSintaPage, type);
       for (const item of results) {
-        // Enforce level filter if specified
         if (sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
-          if (type === "journal") {
-            if (item.sintaRating !== `S${sintaFilter}`) {
-              continue;
-            }
-          } else if (type === "article") {
-            // Check if article's journal rating matches requested level
-            if (item.sintaRating && item.sintaRating !== `S${sintaFilter}`) {
-              continue;
-            }
+          if (type === "journal" && item.sintaRating !== `S${sintaFilter}`) {
+            continue;
           }
         }
         if (!seenIds.has(item.id)) {
@@ -241,14 +319,52 @@ export async function GET(request: Request) {
         }
       }
 
-      if (items.length >= 10) break; // Found sufficient accurate results
+      if (items.length >= 10) break;
+    }
+
+    // 2. OpenAlex Fallback for Articles / DOIs if SINTA primary returned few items
+    if (type === "article" && cleanQ && items.length < 5) {
+      const openAlexItems = await resolveArticleViaOpenAlex(cleanQ);
+      for (const item of openAlexItems) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          items.push(item);
+        }
+      }
+    }
+
+    // 3. Enrich Article Items with SINTA Accreditation Rating (S1 - S6)
+    if (type === "article" && items.length > 0) {
+      await Promise.all(
+        items.map(async (item) => {
+          if (!item.sintaRating || item.sintaRating === "SINTA Indexed") {
+            if (item.publicationName) {
+              const details = await getSintaJournalDetails(item.publicationName, item.issn);
+              if (details?.sintaRating) {
+                item.sintaRating = details.sintaRating;
+                item.quartile = `${details.sintaRating} Accredited`;
+              }
+            }
+          } else if (item.sintaRating.startsWith("S")) {
+            item.quartile = `${item.sintaRating} Accredited`;
+          }
+        })
+      );
+    }
+
+    // 4. Filter by requested SINTA Level if specified
+    let finalItems = items;
+    if (type === "article" && sintaFilter && ["1", "2", "3", "4", "5", "6"].includes(sintaFilter)) {
+      finalItems = items.filter(
+        (it) => it.sintaRating === `S${sintaFilter}` || (it.quartile && it.quartile.includes(`S${sintaFilter}`))
+      );
     }
 
     return NextResponse.json({
       ok: true,
-      items,
-      hasMore: items.length >= targetCount,
-      count: items.length,
+      items: finalItems,
+      hasMore: finalItems.length >= targetCount,
+      count: finalItems.length,
       currentPage: pageNum,
     });
   } catch (error: any) {

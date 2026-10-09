@@ -1166,8 +1166,8 @@ export function ScopusPage() {
               onChange={(e) => setSintaQuery(e.target.value)}
               placeholder={
                 sintaSubTab === "journal"
-                  ? "Ketik nama jurnal SINTA, universitas, atau kata kunci terbitan..."
-                  : "Ketik judul artikel ilmiah terindeks SINTA..."
+                  ? "Ketik nama jurnal, ISSN, atau institusi untuk mengecek peringkat SINTA (S1 - S6)..."
+                  : "Ketik judul artikel, DOI (misal 10.1234/...), atau kata kunci untuk menganalisis peringkat SINTA..."
               }
               className="pl-12 pr-28 h-12 text-sm sm:text-base rounded-2xl bg-white dark:bg-slate-900 border-teal-500/30 shadow-md focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-teal-600 focus:border-teal-600 transition-all"
             />
@@ -1203,8 +1203,13 @@ export function ScopusPage() {
                       <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 text-[11px] font-bold uppercase font-mono">
-                              {item.quartile || "SINTA Indexed"}
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 text-[11px] font-extrabold uppercase font-mono">
+                              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                              <span>
+                                {item.sintaRating && item.sintaRating.startsWith("S")
+                                  ? `Akreditasi ${item.sintaRating}`
+                                  : item.quartile || "Terindeks SINTA"}
+                              </span>
                             </span>
                             {item.coverDate && (
                               <span className="text-[10px] text-muted-foreground font-mono">{item.coverDate}</span>
