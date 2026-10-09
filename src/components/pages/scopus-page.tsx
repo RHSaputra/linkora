@@ -1956,11 +1956,19 @@ export function ScopusPage() {
                                     className="hover:underline flex items-center gap-0.5"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <span>Akreditasi {item.sintaRating}</span>
+                                    <span>
+                                      {item.sintaRating.startsWith("SINTA") || item.sintaRating.startsWith("Akreditasi")
+                                        ? item.sintaRating
+                                        : `Akreditasi ${item.sintaRating}`}
+                                    </span>
                                     <ExternalLink className="w-3 h-3 ml-0.5" />
                                   </a>
                                 ) : (
-                                  <span>Akreditasi {item.sintaRating}</span>
+                                  <span>
+                                    {item.sintaRating.startsWith("SINTA") || item.sintaRating.startsWith("Akreditasi")
+                                      ? item.sintaRating
+                                      : `Akreditasi ${item.sintaRating}`}
+                                  </span>
                                 )}
                               </span>
                             )}
