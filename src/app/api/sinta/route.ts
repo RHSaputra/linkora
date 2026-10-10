@@ -23,79 +23,96 @@ const ACRONYM_EXPANSIONS: Record<string, string[]> = {
   jpipa: ["Jurnal Pendidikan IPA"],
 };
 
-async function fetchSintaJournalPage(targetUrl: string) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 6000);
-  try {
-    const res = await fetch(targetUrl, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-      },
-    }).finally(() => clearTimeout(timeoutId));
+async function fetchSintaJournalPage(targetUrl: string, retryCount = 1): Promise<any[]> {
+  for (let attempt = 0; attempt <= retryCount; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    try {
+      const res = await fetch(targetUrl, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        },
+      }).finally(() => clearTimeout(timeoutId));
 
-    if (!res.ok) return [];
-    const html = await res.text();
-    const $ = cheerio.load(html);
+      if (!res.ok) {
+        if (attempt < retryCount) {
+          await new Promise((r) => setTimeout(r, 400));
+          continue;
+        }
+        return [];
+      }
+      const html = await res.text();
+      const $ = cheerio.load(html);
 
-    const items: any[] = [];
-    $("div.col-md").each((_, el) => {
-      const titleLinkEl = $(el).find(".affil-name a").first();
-      const title = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
-      const sintaProfileUrl = titleLinkEl.attr("href") || "";
+      const items: any[] = [];
+      $("div.col-md").each((_, el) => {
+        const titleLinkEl = $(el).find(".affil-name a").first();
+        const title = titleLinkEl.text().replace(/[\n\r\t]+/g, " ").trim();
+        let sintaProfileUrl = titleLinkEl.attr("href") || "";
+        if (sintaProfileUrl.startsWith("/")) {
+          sintaProfileUrl = `https://sinta.kemdiktisaintek.go.id${sintaProfileUrl}`;
+        }
 
-      if (!title || !sintaProfileUrl.includes("/journals/profile/")) return;
+        if (!title || !sintaProfileUrl.includes("/journals/profile/")) return;
 
-      const websiteUrl = $(el).find('.affil-abbrev a[href*="http"]').first().attr("href") || "";
-      const institution = $(el).find(".affil-loc a").text().replace(/[\n\r\t]+/g, " ").trim();
+        const websiteUrl = $(el).find('.affil-abbrev a[href*="http"]').first().attr("href") || "";
+        const institution = $(el).find(".affil-loc a").text().replace(/[\n\r\t]+/g, " ").trim();
 
-      const rawIssnText = $(el).find(".profile-id").text() || "";
-      const cleanedIssnText = rawIssnText
-        .replace(/Subject Area.*/gi, "")
-        .replace(/[\n\r\t]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+        const rawIssnText = $(el).find(".profile-id").text() || "";
+        const cleanedIssnText = rawIssnText
+          .replace(/Subject Area.*/gi, "")
+          .replace(/[\n\r\t]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
 
-      const accreditedText = $(el).find(".stat-prev .accredited").text().replace(/\s+/g, " ").trim();
-      const sintaMatch = accreditedText.match(/S[1-6]/i);
-      const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : "SINTA Registered";
+        const accreditedText = $(el).find(".stat-prev .accredited").text().replace(/\s+/g, " ").trim();
+        const sintaMatch = accreditedText.match(/S[1-6]/i);
+        const sintaRating = sintaMatch ? sintaMatch[0].toUpperCase() : "SINTA Registered";
 
-      const nums: string[] = [];
-      $(el)
-        .find(".journal-list-stat .pr-num")
-        .each((_, numEl) => {
-          nums.push($(numEl).text().trim());
+        const nums: string[] = [];
+        $(el)
+          .find(".journal-list-stat .pr-num")
+          .each((_, numEl) => {
+            nums.push($(numEl).text().trim());
+          });
+
+        const impact = nums[0] || "-";
+        const h5Index = nums[1] || "-";
+        const citations5yr = nums[2] || "-";
+        const citationsTotal = nums[3] || "-";
+
+        const idMatch = sintaProfileUrl.match(/\/profile\/(\d+)/);
+        const id = idMatch ? idMatch[1] : Math.random().toString();
+
+        items.push({
+          id,
+          title,
+          sintaRating,
+          websiteUrl: websiteUrl || sintaProfileUrl,
+          sintaProfileUrl,
+          sintaRankingUrl: `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(title)}`,
+          institution: institution || "Institusi Pendidikan Indonesia",
+          issnText: cleanedIssnText || "-",
+          impact,
+          h5Index,
+          citations5yr,
+          citationsTotal,
         });
-
-      const impact = nums[0] || "-";
-      const h5Index = nums[1] || "-";
-      const citations5yr = nums[2] || "-";
-      const citationsTotal = nums[3] || "-";
-
-      const idMatch = sintaProfileUrl.match(/\/profile\/(\d+)/);
-      const id = idMatch ? idMatch[1] : Math.random().toString();
-
-      items.push({
-        id,
-        title,
-        sintaRating,
-        websiteUrl: websiteUrl || sintaProfileUrl,
-        sintaProfileUrl,
-        institution: institution || "Institusi Pendidikan Indonesia",
-        issnText: cleanedIssnText || "-",
-        impact,
-        h5Index,
-        citations5yr,
-        citationsTotal,
       });
-    });
 
-    return items;
-  } catch (_err) {
-    return [];
+      return items;
+    } catch (_err) {
+      if (attempt < retryCount) {
+        await new Promise((r) => setTimeout(r, 400));
+        continue;
+      }
+      return [];
+    }
   }
+  return [];
 }
 
 async function fetchSintaJournalQuery(searchQuery: string, sintaFilter: string, startPage: number) {
@@ -136,18 +153,58 @@ export async function GET(request: Request) {
     const startSintaPage = baseOffset + (pageNum - 1) * 3;
 
     const cleanQ = query.trim();
-    const queryCandidates: string[] = [cleanQ];
+    const queryCandidates: string[] = [];
 
     if (cleanQ) {
+      queryCandidates.push(cleanQ);
+
       const rawISSN = cleanQ.replace(/-/g, "");
       if (rawISSN !== cleanQ && /^\d+$/.test(rawISSN)) {
         queryCandidates.push(rawISSN);
       }
 
+      // Check parentheses: "Jurnal Teknologi Informasi (JTI)" -> "JTI" & "Jurnal Teknologi Informasi"
+      const parenMatch = cleanQ.match(/^(.+?)\s*\((.+?)\)$/);
+      if (parenMatch) {
+        if (parenMatch[2].trim() && !queryCandidates.includes(parenMatch[2].trim())) {
+          queryCandidates.push(parenMatch[2].trim());
+        }
+        if (parenMatch[1].trim() && !queryCandidates.includes(parenMatch[1].trim())) {
+          queryCandidates.push(parenMatch[1].trim());
+        }
+      }
+
+      // Check colon or dash: "UPGRADE : Jurnal Pendidikan..." -> "UPGRADE"
+      if (cleanQ.includes(":") || cleanQ.includes(" - ")) {
+        const parts = cleanQ.split(/[:\-]/).map((p: string) => p.trim()).filter(Boolean);
+        for (const p of parts) {
+          if (p.length >= 3 && !queryCandidates.includes(p)) {
+            queryCandidates.push(p);
+          }
+        }
+      }
+
+      // Common prefix strip: "Jurnal Ilmiah ..." -> "..."
+      const strippedPrefix = cleanQ
+        .replace(
+          /^(jurnal\s+ilmiah|jurnal|the\s+journal\s+of|journal\s+of|international\s+journal\s+of|indonesian\s+journal\s+of)\s+/i,
+          ""
+        )
+        .trim();
+      if (strippedPrefix && strippedPrefix.length >= 3 && !queryCandidates.includes(strippedPrefix)) {
+        queryCandidates.push(strippedPrefix);
+      }
+
       const lowerQ = cleanQ.toLowerCase();
       if (ACRONYM_EXPANSIONS[lowerQ]) {
-        queryCandidates.push(...ACRONYM_EXPANSIONS[lowerQ]);
+        for (const exp of ACRONYM_EXPANSIONS[lowerQ]) {
+          if (!queryCandidates.includes(exp)) {
+            queryCandidates.push(exp);
+          }
+        }
       }
+    } else {
+      queryCandidates.push("");
     }
 
     const items: any[] = [];
@@ -167,6 +224,7 @@ export async function GET(request: Request) {
         }
       }
 
+      // If we found sufficient results, no need to query further candidate variations
       if (items.length >= 10) break;
     }
 

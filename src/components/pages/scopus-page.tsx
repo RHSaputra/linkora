@@ -93,6 +93,7 @@ export interface SintaItem {
   sintaRating: string;
   websiteUrl: string;
   sintaProfileUrl: string;
+  sintaRankingUrl?: string;
   institution: string;
   issnText: string;
   impact: string;
@@ -1170,9 +1171,25 @@ export function ScopusPage() {
                     <div key={item.id} className="group relative flex flex-col justify-between p-5 rounded-2xl border border-teal-500/20 bg-white dark:bg-slate-900/90 shadow-md hover:shadow-xl hover:border-teal-500/50 transition-all">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-teal-700 dark:text-teal-400 font-extrabold text-xs whitespace-nowrap shrink-0">
-                            {item.sintaRating} Accredited
-                          </span>
+                          <a
+                            href={
+                              item.sintaRankingUrl ||
+                              `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(cleanTitle)}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/30 text-xs font-black tracking-wide hover:bg-teal-500/20 hover:text-teal-800 dark:hover:text-teal-300 transition-all cursor-pointer shadow-2xs group/sintabadge"
+                            title="Buka Halaman Ranking Jurnal SINTA Kemdiktisaintek"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400 shrink-0" />
+                            <span>
+                              {item.sintaRating.startsWith("SINTA") || item.sintaRating.startsWith("Akreditasi")
+                                ? item.sintaRating
+                                : `Akreditasi ${item.sintaRating}`}
+                            </span>
+                            <ExternalLink className="w-3 h-3 ml-0.5 opacity-60 group-hover/sintabadge:opacity-100 transition-opacity" />
+                          </a>
                           <span className="text-[10px] text-muted-foreground font-mono truncate">{item.issnText}</span>
                         </div>
 
@@ -1210,10 +1227,32 @@ export function ScopusPage() {
                       </div>
 
                       <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                        <a href={item.sintaProfileUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-teal-700 font-bold hover:underline flex items-center gap-1">
-                          <span>Profil SINTA</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={
+                              item.sintaRankingUrl ||
+                              `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(cleanTitle)}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-teal-700 dark:text-teal-400 font-bold hover:underline flex items-center gap-1"
+                            title="Buka Halaman Ranking SINTA"
+                          >
+                            <Award className="w-3 h-3" />
+                            <span>Ranking SINTA</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                          <span className="text-slate-300 dark:text-slate-700">•</span>
+                          <a
+                            href={item.sintaProfileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-teal-700 dark:text-teal-400 font-bold hover:underline flex items-center gap-1"
+                          >
+                            <span>Profil SINTA</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
                         <Button
                           type="button"
                           size="sm"
@@ -1471,10 +1510,23 @@ export function ScopusPage() {
                         </div>
 
                         <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                          <a href={item.garudaUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1">
-                            <span>Detail Jurnal</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                          <div className="flex items-center gap-2">
+                            <a href={item.garudaUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1">
+                              <span>Detail Jurnal</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <a
+                              href={`https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(cleanTitle)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1 cursor-pointer"
+                              title="Cek Peringkat Akreditasi di Halaman Ranking SINTA"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              <span>Ranking SINTA</span>
+                            </a>
+                          </div>
 
                           <Button
                             type="button"
@@ -1948,28 +2000,24 @@ export function ScopusPage() {
                             {item.sintaRating && (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/30 text-[11px] font-extrabold uppercase font-mono shadow-2xs">
                                 <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-teal-700 dark:text-teal-400" />
-                                {item.sintaProfileUrl ? (
-                                  <a
-                                    href={item.sintaProfileUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:underline flex items-center gap-0.5"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <span>
-                                      {item.sintaRating.startsWith("SINTA") || item.sintaRating.startsWith("Akreditasi")
-                                        ? item.sintaRating
-                                        : `Akreditasi ${item.sintaRating}`}
-                                    </span>
-                                    <ExternalLink className="w-3 h-3 ml-0.5" />
-                                  </a>
-                                ) : (
+                                <a
+                                  href={
+                                    item.sintaRankingUrl ||
+                                    `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(item.venue || cleanTitle)}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:underline flex items-center gap-0.5 cursor-pointer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  title="Buka Halaman Ranking SINTA Kemdiktisaintek"
+                                >
                                   <span>
                                     {item.sintaRating.startsWith("SINTA") || item.sintaRating.startsWith("Akreditasi")
                                       ? item.sintaRating
                                       : `Akreditasi ${item.sintaRating}`}
                                   </span>
-                                )}
+                                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                                </a>
                               </span>
                             )}
                           </div>
@@ -2019,19 +2067,41 @@ export function ScopusPage() {
                       </div>
 
                       <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                        {item.citationCount > 0 ? (
-                          <span className="flex items-center gap-1 text-indigo-600 font-bold bg-indigo-500/10 px-2 py-1 rounded-md text-[11px]">
-                            <Award className="w-3.5 h-3.5" />
-                            <span>{item.citationCount.toLocaleString()} Sitasi</span>
-                          </span>
-                        ) : item.pdfUrl ? (
-                          <a href={item.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
-                            <Download className="w-3.5 h-3.5" />
-                            <span>PDF Original</span>
-                          </a>
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground font-mono">Semantic Index</span>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {item.citationCount > 0 ? (
+                            <span className="flex items-center gap-1 text-indigo-600 font-bold bg-indigo-500/10 px-2 py-1 rounded-md text-[11px]">
+                              <Award className="w-3.5 h-3.5" />
+                              <span>{item.citationCount.toLocaleString()} Sitasi</span>
+                            </span>
+                          ) : item.pdfUrl ? (
+                            <a href={item.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                              <Download className="w-3.5 h-3.5" />
+                              <span>PDF Original</span>
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground font-mono">Semantic Index</span>
+                          )}
+
+                          {item.sintaRating && (
+                            <>
+                              <span className="text-slate-300 dark:text-slate-700">•</span>
+                              <a
+                                href={
+                                  item.sintaRankingUrl ||
+                                  `https://sinta.kemdiktisaintek.go.id/journals?q=${encodeURIComponent(item.venue || cleanTitle)}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[11px] text-teal-700 dark:text-teal-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                                title="Buka Halaman Ranking SINTA Kemdiktisaintek"
+                              >
+                                <Award className="w-3 h-3" />
+                                <span>Ranking SINTA</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </>
+                          )}
+                        </div>
 
                         <Button
                           type="button"
