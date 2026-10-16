@@ -63,9 +63,9 @@ export function AuthRequiredDialog() {
             </div>
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-background shadow-lg bg-background z-10">
               <img
-                src="/maskot.jpeg"
+                src="/maskotbaru.jpeg"
                 alt="Liko"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-center"
               />
             </div>
             <div className="absolute -bottom-1 -right-1 z-20 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md border-2 border-background">

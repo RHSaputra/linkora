@@ -93,9 +93,9 @@ export function LikoSuggestionNotification() {
             {/* Mascot Avatar */}
             <div className="relative w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border-2 border-primary/30 bg-background shadow-sm">
               <img
-                src="/maskot.jpeg"
+                src="/maskotbaru.jpeg"
                 alt="Liko AI"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-center"
               />
             </div>
 

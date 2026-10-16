@@ -115,9 +115,9 @@ export function AIRoadmapGeneratorDialog({
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-md bg-background shrink-0">
                 <img
-                  src="/maskot.jpeg"
+                  src="/maskotbaru.jpeg"
                   alt="Liko AI"
-                  className="w-full h-full object-cover object-top"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
               <div>

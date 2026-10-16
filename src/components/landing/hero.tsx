@@ -137,7 +137,7 @@ export function Hero() {
                           tabIndex={-1}
                           aria-hidden="true"
                           onContextMenu={(e) => e.preventDefault()}
-                          poster="/maskot.jpeg"
+                          poster="/maskotbaru.jpeg"
                           src="/vidio-liko.webm"
                           style={{ pointerEvents: "none", userSelect: "none" }}
                         />

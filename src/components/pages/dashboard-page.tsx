@@ -249,9 +249,9 @@ export function DashboardPage({
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <img
-                    src="/maskot.jpeg"
+                    src="/maskotbaru.jpeg"
                     alt="Liko Asisten AI"
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover object-center"
                   />
                 </motion.div>
               </div>

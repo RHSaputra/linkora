@@ -163,9 +163,9 @@ function Liko3DSearchLoading({ providerName, brandColor = "orange" }: { provider
         <div className="relative w-16 h-16 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full p-1.5 md:p-2 bg-white dark:bg-slate-800 shadow-2xl shadow-black/30 animate-[bounce_2s_infinite]">
           <div className="w-full h-full rounded-full overflow-hidden border-2 md:border-3 border-white dark:border-slate-900 bg-white">
             <img
-              src="/maskot.jpeg"
+              src="/maskotbaru.jpeg"
               alt="Liko AI Searching"
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-cover object-center"
             />
           </div>
         </div>

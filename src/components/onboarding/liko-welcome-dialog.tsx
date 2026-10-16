@@ -101,7 +101,7 @@ export function LikoWelcomeDialog({ onOpenEditProfile }: LikoWelcomeDialogProps)
                   tabIndex={-1}
                   aria-hidden="true"
                   onContextMenu={(e) => e.preventDefault()}
-                  poster="/maskot.jpeg"
+                  poster="/maskotbaru.jpeg"
                   src="/vidio-liko.webm"
                   style={{ transform: "translateZ(0)", WebkitTransform: "translateZ(0)", willChange: "transform", pointerEvents: "none", userSelect: "none" }}
                 >

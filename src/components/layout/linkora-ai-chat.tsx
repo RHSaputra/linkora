@@ -339,9 +339,9 @@ export function LinkoraAIChat() {
               {/* Inner container with mascot */}
               <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-background bg-background shadow-inner flex items-center justify-center">
                 <img 
-                  src="/maskot.jpeg" 
+                  src="/maskotbaru.jpeg" 
                   alt="Linkorian AI Mascot" 
-                  className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-cover object-center hover:scale-110 transition-transform duration-300"
                 />
               </div>
 
@@ -367,9 +367,9 @@ export function LinkoraAIChat() {
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full border border-primary/30 overflow-hidden shadow-md bg-background flex-shrink-0">
                   <img 
-                    src="/maskot.jpeg" 
+                    src="/maskotbaru.jpeg" 
                     alt="Linkorian AI" 
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover object-center"
                   />
                 </div>
                 <div>
@@ -402,7 +402,7 @@ export function LinkoraAIChat() {
                 >
                   {msg.role === "ai" && (
                     <div className="w-7 h-7 rounded-full border border-primary/30 overflow-hidden flex-shrink-0 mb-0.5 shadow-sm bg-background">
-                      <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
+                      <img src="/maskotbaru.jpeg" alt="Liko" className="w-full h-full object-cover object-center" />
                     </div>
                   )}
                   <div className="max-w-[80%] space-y-1.5">
@@ -494,7 +494,7 @@ export function LinkoraAIChat() {
                   className="flex justify-start items-end gap-2"
                 >
                   <div className="w-7 h-7 rounded-full border border-primary/30 overflow-hidden flex-shrink-0 mb-0.5 shadow-sm bg-background">
-                    <img src="/maskot.jpeg" alt="Liko" className="w-full h-full object-cover object-top" />
+                    <img src="/maskotbaru.jpeg" alt="Liko" className="w-full h-full object-cover object-center" />
                   </div>
                   <div className="bg-muted/80 backdrop-blur-sm p-3 rounded-2xl rounded-bl-sm border border-border/50 flex gap-1 items-center">
                     <motion.div className="w-1.5 h-1.5 bg-foreground/50 rounded-full" animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />

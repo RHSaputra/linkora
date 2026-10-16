@@ -211,9 +211,9 @@ export function LikoNoteConverterModal({
                 <div className="relative">
                   <div className="w-12 h-12 rounded-2xl overflow-hidden ring-2 ring-amber-500/40 shadow-lg bg-neutral-950 flex items-center justify-center">
                     <img
-                      src="/maskot.jpeg"
+                      src="/maskotbaru.jpeg"
                       alt="Liko Mascot"
-                      className="w-full h-full object-cover object-top"
+                      className="w-full h-full object-cover object-center"
                     />
                   </div>
                   <span className="absolute -bottom-1 -right-1 p-1 bg-amber-500 rounded-full text-neutral-950 shadow-sm">
@@ -366,9 +366,9 @@ export function LikoNoteConverterModal({
                     />
                     <div className="relative w-20 h-20 rounded-3xl overflow-hidden ring-4 ring-amber-500/50 shadow-2xl bg-neutral-950 flex items-center justify-center animate-pulse">
                       <img
-                        src="/maskot.jpeg"
+                        src="/maskotbaru.jpeg"
                         alt="Liko Working"
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover object-center"
                       />
                     </div>
                   </div>

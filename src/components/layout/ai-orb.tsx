@@ -59,9 +59,9 @@ export function AIOrb() {
           className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/50 shadow-lg shadow-primary/40 bg-background"
         >
           <img 
-            src="/maskot.jpeg" 
+            src="/maskotbaru.jpeg" 
             alt="Linkorian AI" 
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-center"
           />
         </motion.div>
       </motion.button>

@@ -76,9 +76,9 @@ export function LikoMascotAvatar({
         className={`relative rounded-full overflow-hidden border-2 border-slate-700/80 shadow-[0_12px_30px_rgba(0,0,0,0.5)] bg-slate-950 z-10 ${sizeClasses}`}
       >
         <img
-          src="/maskot.jpeg"
+          src="/maskotbaru.jpeg"
           alt="Liko AI Mascot"
-          className="w-full h-full object-cover object-top scale-105"
+          className="w-full h-full object-cover object-center scale-105"
         />
 
         {/* CYBER LASER SCANNER OVERLAY (Soft & Non-intrusive Cyan Line) */}

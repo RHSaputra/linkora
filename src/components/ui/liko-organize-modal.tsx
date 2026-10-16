@@ -234,9 +234,9 @@ export function LikoOrganizeModal() {
                     {/* Mascot Image */}
                     <div className="relative w-full h-full rounded-full overflow-hidden border border-cyan-400/50 shadow-md">
                       <img
-                        src="/maskot.jpeg"
+                        src="/maskotbaru.jpeg"
                         alt="Liko 3D Coin"
-                        className="w-full h-full object-cover object-top scale-105"
+                        className="w-full h-full object-cover object-center scale-105"
                       />
                     </div>
                   </div>

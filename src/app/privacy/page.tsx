@@ -287,9 +287,9 @@ export default function PrivacyPage() {
               {/* Liko Avatar Clean */}
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-border/60 bg-background shadow-md shrink-0">
                 <img
-                  src="/maskot.jpeg"
+                  src="/maskotbaru.jpeg"
                   alt="Liko Mascot Linkorian"
-                  className="w-full h-full object-cover object-top"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
 
