@@ -48,7 +48,7 @@ async function fetchGoogleScholarSinglePage(targetUrl: string) {
     });
 
     return items;
-  } catch (err) {
+  } catch (_err) {
     return [];
   }
 }
@@ -102,7 +102,7 @@ async function fetchOpenAlexFallback(query: string, pageNum: number) {
         citationsCount: item.cited_by_count || 0,
       };
     });
-  } catch (err) {
+  } catch (_err) {
     return [];
   }
 }

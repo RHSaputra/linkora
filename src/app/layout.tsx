@@ -109,7 +109,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased text-foreground bg-background overflow-x-hidden min-h-screen selection:bg-primary/30 selection:text-primary-foreground`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased text-foreground bg-background overflow-x-hidden min-h-screen selection:bg-primary/30 selection:text-primary-foreground`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <Providers>
             <BackgroundEffects />

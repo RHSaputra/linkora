@@ -45,5 +45,7 @@ next-env.d.ts
 /prisma/*.db-journal
 /backups/
 .blackboxcli/
-/scratch/
-
+# editor
+.vscode/
+android/.project
+scratch/

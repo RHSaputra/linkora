@@ -124,7 +124,7 @@ export function LanguageSwitcher({
             title="Pilih Bahasa / Change Language"
           >
             <FlagIcon locale={locale} />
-            <span className="uppercase text-[11px] font-bold tracking-wider text-foreground/80">
+            <span className="uppercase text-[11px] font-bold tracking-wider">
               {locale}
             </span>
           </Button>

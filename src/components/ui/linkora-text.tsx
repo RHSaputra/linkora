@@ -25,7 +25,7 @@ export function LinkorianText({
   const gradBottomId = "linkorian-grad-bottom";
 
   return (
-    <span className={`inline-flex items-baseline ${className}`}>
+    <span className={`inline-flex items-baseline whitespace-nowrap shrink-0 ${className}`}>
       Link
       <span className="inline-flex items-center justify-center mx-[0.02em]">
         <svg 

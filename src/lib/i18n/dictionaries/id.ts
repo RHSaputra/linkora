@@ -406,7 +406,6 @@ export const id = {
     navSolutions: "Solusi",
     navHowItWorks: "Cara Kerja",
     navUseCases: "Untuk Siapa",
-    navDemo: "Coba Demo",
     openDashboard: "Buka Dashboard",
     heroBadge: "Linkorian 2.0 Kini Tersedia",
     heroTitle: "Semua Link Penting, Catatan, & Peluang",

@@ -8,7 +8,6 @@ const PainPoints = dynamic(() => import("@/components/landing/pain-points").then
 const Solution = dynamic(() => import("@/components/landing/solution").then((m) => m.Solution));
 const HowItWorks = dynamic(() => import("@/components/landing/how-it-works").then((m) => m.HowItWorks));
 const UseCases = dynamic(() => import("@/components/landing/use-cases").then((m) => m.UseCases));
-const SmartSearchDemo = dynamic(() => import("@/components/landing/smart-search").then((m) => m.SmartSearchDemo));
 const Comparison = dynamic(() => import("@/components/landing/comparison").then((m) => m.Comparison));
 const Testimonials = dynamic(() => import("@/components/landing/testimonials").then((m) => m.Testimonials));
 const CTA = dynamic(() => import("@/components/landing/footer").then((m) => m.CTA));
@@ -147,7 +146,6 @@ export default function LandingPage() {
         <Solution />
         <HowItWorks />
         <UseCases />
-        <SmartSearchDemo />
         <Comparison />
         <PricingPromoSection />
         <Testimonials />

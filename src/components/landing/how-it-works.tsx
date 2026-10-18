@@ -17,7 +17,7 @@ const getSteps = (locale: string) => [
     icon: PlusCircle,
     color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-500/30",
-    activeBorder: "border border-blue-500/80 dark:border-blue-400 bg-blue-50/40 dark:bg-blue-950/20 ring-1 ring-blue-500/20",
+    activeBorder: "border border-blue-500/80 dark:border-blue-400 bg-white/95 dark:bg-slate-900/95 ring-1 ring-blue-500/20 backdrop-blur-md shadow-md",
     activeBadge: "border-blue-500 bg-blue-600 text-white shadow-xs",
     activeText: "text-blue-600 dark:text-blue-400",
     topBar: "via-blue-500",
@@ -32,7 +32,7 @@ const getSteps = (locale: string) => [
     icon: Layers,
     color: "text-indigo-600 dark:text-indigo-400",
     bg: "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-200 dark:border-indigo-500/30",
-    activeBorder: "border border-indigo-500/80 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 ring-1 ring-indigo-500/20",
+    activeBorder: "border border-indigo-500/80 dark:border-indigo-400 bg-white/95 dark:bg-slate-900/95 ring-1 ring-indigo-500/20 backdrop-blur-md shadow-md",
     activeBadge: "border-indigo-500 bg-indigo-600 text-white shadow-xs",
     activeText: "text-indigo-600 dark:text-indigo-400",
     topBar: "via-indigo-500",
@@ -47,7 +47,7 @@ const getSteps = (locale: string) => [
     icon: Search,
     color: "text-cyan-600 dark:text-cyan-400",
     bg: "bg-cyan-50 dark:bg-cyan-500/15 border-cyan-200 dark:border-cyan-500/30",
-    activeBorder: "border border-cyan-500/80 dark:border-cyan-400 bg-cyan-50/40 dark:bg-cyan-950/20 ring-1 ring-cyan-500/20",
+    activeBorder: "border border-cyan-500/80 dark:border-cyan-400 bg-white/95 dark:bg-slate-900/95 ring-1 ring-cyan-500/20 backdrop-blur-md shadow-md",
     activeBadge: "border-cyan-500 bg-cyan-600 text-white shadow-xs",
     activeText: "text-cyan-600 dark:text-cyan-400",
     topBar: "via-cyan-500",
@@ -59,7 +59,7 @@ export function HowItWorks() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeStepIndex, setActiveStepIndex] = useState<number>(-1)
   const [isDesktop, setIsDesktop] = useState(false)
-  const { t, locale } = useTranslation()
+  const { locale } = useTranslation()
 
   const steps = getSteps(locale)
 
@@ -138,9 +138,43 @@ export function HowItWorks() {
     }
   })
 
+  const bgVideoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (bgVideoRef.current) {
+      bgVideoRef.current.play().catch(() => {})
+    }
+  }, [])
+
   return (
-    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background py-14 sm:py-20 lg:py-0">
-      <div className="relative lg:sticky lg:top-0 h-auto lg:h-screen w-full lg:overflow-hidden flex flex-col items-center justify-center lg:py-[4vh]">
+    <section id="cara-kerja" ref={containerRef} className="relative h-auto lg:h-[300vh] bg-background scroll-mt-20">
+      <div className="relative lg:sticky lg:top-0 h-auto min-h-screen lg:h-screen w-full overflow-hidden flex flex-col items-center justify-center pt-24 pb-14 sm:pt-28 sm:pb-20 lg:py-[6vh]">
+        {/* Full-width Background Video (Crisp HD, Zero Blur) */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
+          <video
+            ref={bgVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
+            controls={false}
+            tabIndex={-1}
+            aria-hidden="true"
+            onContextMenu={(e) => e.preventDefault()}
+            className="w-full h-full object-cover object-center"
+            style={{ pointerEvents: "none", userSelect: "none" }}
+          >
+            <source src="/vidio-linkorian.webm" type="video/webm" />
+            <source src="/vidio%20linkorian.webm" type="video/webm" />
+          </video>
+
+          {/* Clean High-Contrast Overlay (NO BLUR - 100% Crisp HD Video) */}
+          <div className="absolute inset-0 bg-black/40 dark:bg-black/60 pointer-events-none" />
+        </div>
+
         <div className="container px-3.5 sm:px-6 relative z-10 flex flex-col items-center max-h-none lg:max-h-[92vh] w-full">
           
           <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-10 overflow-hidden py-1">
@@ -153,9 +187,9 @@ export function HowItWorks() {
                 stiffness: 110,
                 damping: 20,
               }}
-              className="text-xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3 text-slate-900 dark:text-foreground"
+              className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]"
             >
-              {locale === "en" ? "How " : "Bagaimana "}<LinkoraText /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-purple-400">{locale === "en" ? "Works" : "Bekerja?"}</span>
+              {locale === "en" ? "How " : "Bagaimana "}<LinkoraText /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">{locale === "en" ? "Works" : "Bekerja?"}</span>
             </motion.h2>
             <motion.p 
               initial={{ y: 20, opacity: 0 }}
@@ -167,7 +201,7 @@ export function HowItWorks() {
                 damping: 22,
                 delay: 0.08,
               }}
-              className="text-[11px] sm:text-base md:text-lg text-slate-600 dark:text-muted-foreground max-w-xl mx-auto leading-relaxed"
+              className="text-xs sm:text-base md:text-lg text-slate-100 max-w-xl mx-auto leading-relaxed font-medium drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]"
             >
               {locale === "en"
                 ? "Three simple steps to build your personal knowledge base and link management powerhouse."
@@ -253,8 +287,8 @@ export function HowItWorks() {
                           flex flex-col justify-between transition-colors duration-300
                           ${
                             isActive
-                              ? `${item.activeBorder} shadow-md shadow-blue-500/5`
-                              : "border border-slate-200 dark:border-border/80 bg-white dark:bg-card shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+                              ? `${item.activeBorder} shadow-2xl shadow-blue-500/20`
+                              : "border border-slate-200/90 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl hover:shadow-2xl hover:border-slate-300 dark:hover:border-slate-600"
                           }
                         `}
                       >

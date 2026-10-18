@@ -406,7 +406,6 @@ export const en = {
     navSolutions: "Solutions",
     navHowItWorks: "How It Works",
     navUseCases: "Use Cases",
-    navDemo: "Try Demo",
     openDashboard: "Open Dashboard",
     heroBadge: "Linkorian 2.0 Is Now Live",
     heroTitle: "All Your Links, Notes, & Goals",
