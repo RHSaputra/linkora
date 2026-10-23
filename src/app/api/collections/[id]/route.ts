@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeCollection, serializeLink } from "@/lib/types";
 import { auth } from "@/auth";
+import { invalidateUserCache } from "@/lib/cache";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -92,6 +93,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       create: { collectionId: id, linkId },
       update: {},
     });
+
+    await prisma.collection.update({
+      where: { id },
+      data: { updatedAt: new Date() },
+    });
+
+    await invalidateUserCache(session.user.id, "all");
 
     return NextResponse.json({ success: true });
   } catch (error) {

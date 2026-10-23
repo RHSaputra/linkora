@@ -85,9 +85,30 @@ export async function getUserEntitlement(email?: string | null): Promise<Entitle
 
   const now = new Date();
 
-  // 3. Active Premium Subscription (via Duitku)
-  if (user.subscriptionPlan === "PREMIUM" && user.subscriptionEndsAt && user.subscriptionEndsAt > now) {
-    const daysLeft = Math.ceil((user.subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  // 3. Active Unlimited Plan in Database
+  if (user.subscriptionPlan === "UNLIMITED") {
+    return {
+      ok: true,
+      authenticated: true,
+      isOwner: false,
+      status: "UNLIMITED",
+      hasAccess: true,
+      trialClaimed: true,
+      trialDaysLeft: 99999,
+      subscriptionEndsAt: null,
+      trialEndsAt: null,
+      message: "Status Akses Unlimited Aktif.",
+    };
+  }
+
+  // 4. Active Premium Subscription (via Duitku or manual grant)
+  if (
+    user.subscriptionPlan === "PREMIUM" &&
+    (!user.subscriptionEndsAt || user.subscriptionEndsAt > now)
+  ) {
+    const daysLeft = user.subscriptionEndsAt
+      ? Math.ceil((user.subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      : 99999;
     return {
       ok: true,
       authenticated: true,

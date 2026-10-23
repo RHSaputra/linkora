@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { invalidateUserCache } from "@/lib/cache";
 
 type RouteParams = { params: Promise<{ id: string; linkId: string }> };
 
@@ -27,6 +28,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    await prisma.collection.update({
+      where: { id },
+      data: { updatedAt: new Date() },
+    });
+
+    await invalidateUserCache(session.user.id, "all");
 
     return NextResponse.json({ success: true });
   } catch (error) {

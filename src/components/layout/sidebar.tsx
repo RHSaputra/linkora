@@ -247,18 +247,45 @@ function NavContent({
   const currentName = profileData?.name || session?.user?.name || "Linkorian";
   const currentImage = profileData?.image !== undefined ? profileData?.image : session?.user?.image;
 
-  const [subInfo, setSubInfo] = useState<{ isOwner?: boolean; plan?: string; trialDaysLeft?: number } | null>(null);
+  const userEmail = session?.user?.email?.toLowerCase().trim();
+  const isOwner = userEmail === "rahmatsaputra7818@gmail.com";
+
+  const [subInfo, setSubInfo] = useState<{ isOwner?: boolean; plan?: string; trialDaysLeft?: number } | null>(() => {
+    if (isOwner) return { isOwner: true, plan: "UNLIMITED", trialDaysLeft: 99999 };
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("linkora_subscription_cache");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && (!userEmail || parsed.email === userEmail)) return parsed.data;
+        }
+      } catch (_e) {}
+    }
+    return null;
+  });
 
   useEffect(() => {
+    if (isOwner) {
+      setSubInfo({ isOwner: true, plan: "UNLIMITED", trialDaysLeft: 99999 });
+      return;
+    }
     if (session?.user) {
       fetch("/api/user/subscription")
         .then((r) => r.json())
         .then((data) => {
-          if (data.ok) setSubInfo(data);
+          if (data.ok) {
+            setSubInfo(data);
+            try {
+              localStorage.setItem(
+                "linkora_subscription_cache",
+                JSON.stringify({ email: userEmail, data, timestamp: Date.now() })
+              );
+            } catch (_e) {}
+          }
         })
         .catch(() => {});
     }
-  }, [session?.user]);
+  }, [session?.user, isOwner, userEmail]);
 
   const navItems = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, tourId: "dashboard" },

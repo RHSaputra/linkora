@@ -12,6 +12,8 @@ export const createLinkSchema = z.object({
   thumbnail: z.string().optional().nullable(),
   isFavorite: z.boolean().default(false),
   reminderAt: z.string().optional().nullable(),
+  collectionId: z.string().optional().nullable(),
+  collectionIds: z.array(z.string()).optional(),
 });
 
 export const updateLinkSchema = createLinkSchema.partial().extend({

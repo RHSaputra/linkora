@@ -54,7 +54,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { useRequireAuth } from "@/hooks/use-require-auth";
-import { useCollections, dispatchRefresh } from "@/hooks/use-data";
+import { useCollections, dispatchRefresh, invalidateCache } from "@/hooks/use-data";
 import { toast } from "@/components/ui/custom-toast";
 import {
   Dialog,
@@ -195,6 +195,18 @@ const paymentMethodsList = [
   { code: "VC", name: "Kartu Kredit", desc: "Visa, Mastercard, JCB", icon: CreditCard },
 ];
 
+interface SubscriptionData {
+  isOwner?: boolean;
+  plan?: string;
+  hasAccess?: boolean;
+  trialClaimed?: boolean;
+  trialDaysLeft?: number;
+  message?: string;
+  authenticated?: boolean;
+}
+
+let cachedSubInfo: { email?: string; data: SubscriptionData; timestamp: number } | null = null;
+
 export function ScopusPage() {
   const { data: session } = useSession();
   const { locale } = useTranslation();
@@ -284,37 +296,90 @@ export function ScopusPage() {
   const [savingLink, setSavingLink] = useState(false);
   const [savedLinkIds, setSavedLinkIds] = useState<Record<string, boolean>>({});
 
-  // Subscription & Duitku Payment States
-  const [subInfo, setSubInfo] = useState<{
-    isOwner?: boolean;
-    plan?: string;
-    hasAccess?: boolean;
-    trialClaimed?: boolean;
-    trialDaysLeft?: number;
-    message?: string;
-    authenticated?: boolean;
-  } | null>(null);
-  const [, setSubLoading] = useState(true);
+  const userEmail = session?.user?.email?.toLowerCase().trim() || "";
+  const isDirectOwner = userEmail === "rahmatsaputra7818@gmail.com";
+
+  // Subscription & Duitku Payment States with Zero-Flicker Cache
+  const [subInfo, setSubInfo] = useState<SubscriptionData | null>(() => {
+    if (isDirectOwner) {
+      return {
+        isOwner: true,
+        hasAccess: true,
+        plan: "UNLIMITED",
+        authenticated: true,
+        trialDaysLeft: 99999,
+        message: "Akun Pemilik Website",
+      };
+    }
+    if (cachedSubInfo && (!userEmail || cachedSubInfo.email === userEmail)) {
+      return cachedSubInfo.data;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("linkora_subscription_cache");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && (!userEmail || parsed.email === userEmail) && Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+            return parsed.data;
+          }
+        }
+      } catch (_e) {}
+    }
+    return null;
+  });
+
+  const [subLoading, setSubLoading] = useState<boolean>(() => {
+    if (isDirectOwner) return false;
+    if (cachedSubInfo && (!userEmail || cachedSubInfo.email === userEmail)) return false;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("linkora_subscription_cache");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && (!userEmail || parsed.email === userEmail) && Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+            return false;
+          }
+        }
+      } catch (_e) {}
+    }
+    return true;
+  });
+
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const [claimingTrial, setClaimingTrial] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("NC");
 
-  const isAuthenticated = Boolean(session?.user || subInfo?.authenticated);
+  const isOwner = Boolean(isDirectOwner || subInfo?.isOwner);
+  const isAuthenticated = Boolean(session?.user || subInfo?.authenticated || isOwner);
   const hasAccess = Boolean(
-    subInfo?.hasAccess ||
-      subInfo?.isOwner ||
-      (subInfo?.authenticated && subInfo?.plan === "PREMIUM")
+    isOwner ||
+      subInfo?.hasAccess ||
+      (subInfo?.authenticated && (subInfo?.plan === "PREMIUM" || subInfo?.plan === "UNLIMITED"))
   );
-  const isLocked = !hasAccess;
+
+  // CRITICAL: Never lock or flicker while subscription is still verifying or if user already has access!
+  const isLocked = !subLoading && !hasAccess;
+
+  // Auto-close pay modal if user already has access
+  useEffect(() => {
+    if (hasAccess && payModalOpen) {
+      setPayModalOpen(false);
+    }
+  }, [hasAccess, payModalOpen]);
 
   const fetchSubscriptionInfo = useCallback(async () => {
+    if (isDirectOwner) {
+      setSubLoading(false);
+      return;
+    }
+
     try {
-      setSubLoading(true);
+      if (!subInfo) setSubLoading(true);
       const res = await fetch("/api/user/subscription");
       const data = await res.json();
       if (res.ok && data.ok) {
-        setSubInfo({
+        const resolvedInfo: SubscriptionData = {
           isOwner: data.isOwner,
           plan: data.plan || data.status,
           hasAccess: data.hasAccess,
@@ -322,14 +387,22 @@ export function ScopusPage() {
           trialDaysLeft: data.trialDaysLeft,
           message: data.message,
           authenticated: data.authenticated,
-        });
+        };
+        setSubInfo(resolvedInfo);
+        cachedSubInfo = { email: userEmail, data: resolvedInfo, timestamp: Date.now() };
+        try {
+          localStorage.setItem(
+            "linkora_subscription_cache",
+            JSON.stringify({ email: userEmail, data: resolvedInfo, timestamp: Date.now() })
+          );
+        } catch (_e) {}
       }
     } catch (err) {
       console.error(err);
     } finally {
       setSubLoading(false);
     }
-  }, []);
+  }, [isDirectOwner, subInfo, userEmail]);
 
   useEffect(() => {
     fetchSubscriptionInfo();
@@ -587,7 +660,7 @@ export function ScopusPage() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (subInfo && !subInfo.hasAccess) {
+    if (!subLoading && !hasAccess) {
       setPayModalOpen(true);
       toast.error(
         "Fitur Riset Ilmiah wajib berlangganan Paket Premium Rp 25.000 / bulan.",
@@ -672,6 +745,11 @@ export function ScopusPage() {
 
     try {
       setSavingLink(true);
+      const chosenCollectionId =
+        selectedCollectionId && selectedCollectionId !== "default"
+          ? selectedCollectionId.trim()
+          : undefined;
+
       const res = await fetch("/api/links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -680,17 +758,41 @@ export function ScopusPage() {
           title: targetItem.title.replace(/\*/g, ""),
           description: targetItem.desc.replace(/\*/g, ""),
           category: "Riset & Jurnal",
-          collectionId: selectedCollectionId || undefined,
+          collectionId: chosenCollectionId,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.id) {
+        if (chosenCollectionId) {
+          try {
+            await fetch(`/api/collections/${chosenCollectionId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ linkId: data.id }),
+            });
+          } catch (_e) {
+            // Secondary sync fallback
+          }
+        }
+
         setSavedLinkIds((prev) => ({ ...prev, [targetItem.id]: true }));
-        dispatchRefresh(["links", "collections", "dashboard"], false);
+        invalidateCache("/api/collections");
+        invalidateCache("/api/links");
+        dispatchRefresh(["links", "collections", "dashboard"], true);
+
+        const targetCol = collections?.find((c: any) => c.id === chosenCollectionId);
+        const successMsg = targetCol
+          ? (isEn
+              ? `"${targetItem.title}" saved to folder "${targetCol.name}"!`
+              : `"${targetItem.title}" berhasil disimpan ke folder "${targetCol.name}"!`)
+          : (isEn
+              ? `"${targetItem.title}" saved to Linkora!`
+              : `"${targetItem.title}" berhasil disimpan ke Linkora!`);
+
         toast.success(
-          isEn ? `"${targetItem.title}" saved to Linkora!` : `"${targetItem.title}" berhasil disimpan ke Linkora!`,
+          successMsg,
           isEn ? "Saved to Library" : "Tersimpan di Linkora"
         );
         setSaveModalOpen(false);
@@ -718,19 +820,19 @@ export function ScopusPage() {
               <h1 className="text-xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight leading-tight">
                 Pusat Penelusuran Riset Ilmiah
               </h1>
-              {subInfo?.isOwner && (
+              {isOwner && (
                 <span className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-extrabold shadow-sm flex items-center gap-1.5 animate-pulse">
                   <Crown className="w-3.5 h-3.5 fill-current" />
                   <span>Pemilik Web (Unlimited Selamanya)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && hasAccess && (
+              {!isOwner && hasAccess && (
                 <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
                   <Crown className="w-3.5 h-3.5 text-amber-500" />
                   <span>Premium Active (Sisa {subInfo?.trialDaysLeft || 30} Hari)</span>
                 </span>
               )}
-              {!subInfo?.isOwner && isAuthenticated && !hasAccess && (
+              {!subLoading && !isOwner && isAuthenticated && !hasAccess && (
                 <button
                   type="button"
                   onClick={() => setPayModalOpen(true)}
@@ -740,7 +842,7 @@ export function ScopusPage() {
                   <span>Berlangganan Premium Rp 25.000 / Bulan</span>
                 </button>
               )}
-              {!isAuthenticated && (
+              {!subLoading && !isAuthenticated && (
                 <Link
                   href="/login"
                   className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-[11px] font-bold flex items-center gap-1.5 transition-all"

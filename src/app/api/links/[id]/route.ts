@@ -48,8 +48,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id: linkId, tags, reminderAt, ...rest } = parsed.data;
+    const { id: linkId, tags, reminderAt, collectionId, collectionIds, ...rest } = parsed.data;
     void linkId;
+    void collectionId;
+    void collectionIds;
 
     const link = await prisma.link.update({
       where: { id, userId: session.user.id },

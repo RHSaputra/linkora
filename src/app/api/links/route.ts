@@ -174,6 +174,32 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+
+    // Collect all target collection IDs
+    const targetCollectionIds = new Set<string>();
+    if (data.collectionId && data.collectionId !== "default" && data.collectionId.trim() !== "") {
+      targetCollectionIds.add(data.collectionId.trim());
+    }
+    if (Array.isArray(data.collectionIds)) {
+      for (const cid of data.collectionIds) {
+        if (cid && cid !== "default" && typeof cid === "string" && cid.trim() !== "") {
+          targetCollectionIds.add(cid.trim());
+        }
+      }
+    }
+
+    let validCollectionIds: string[] = [];
+    if (targetCollectionIds.size > 0) {
+      const userCollections = await prisma.collection.findMany({
+        where: {
+          id: { in: Array.from(targetCollectionIds) },
+          userId,
+        },
+        select: { id: true },
+      });
+      validCollectionIds = userCollections.map((c) => c.id);
+    }
+
     const link = await prisma.link.create({
       data: {
         url: data.url,
@@ -187,11 +213,32 @@ export async function POST(request: NextRequest) {
         isFavorite: data.isFavorite,
         reminderAt: data.reminderAt ? new Date(data.reminderAt) : null,
         userId,
+        ...(validCollectionIds.length > 0
+          ? {
+              collections: {
+                create: validCollectionIds.map((collectionId) => ({
+                  collectionId,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        collections: {
+          include: { collection: true },
+        },
       },
     });
 
+    if (validCollectionIds.length > 0) {
+      await prisma.collection.updateMany({
+        where: { id: { in: validCollectionIds } },
+        data: { updatedAt: new Date() },
+      });
+    }
+
     // ── INVALIDATE USER LINK CACHE ON CREATION ──
-    await invalidateUserCache(userId, "links");
+    await invalidateUserCache(userId, validCollectionIds.length > 0 ? "all" : "links");
 
     return NextResponse.json(serializeLink(link), { status: 201 });
   } catch (error) {
