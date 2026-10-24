@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef } from "react"
 
 interface AiKnowledgeNetworkProps {
   isActive?: boolean
@@ -234,7 +234,6 @@ interface CardGeometry {
 }
 
 export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps) {
-  const [isHubLogo, setIsHubLogo] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const networkPlaneRef = useRef<HTMLDivElement>(null)
   const hubCoreGlowRef = useRef<HTMLDivElement>(null)
@@ -521,7 +520,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     }
     if (centralHubEl) {
       centralHubEl.style.transition = "none"
-      centralHubEl.classList.remove("is-visible")
+      centralHubEl.classList.remove("is-visible", "is-logo-active")
     }
 
     // Reset tendrils
@@ -922,7 +921,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       }}
     >
       {/* Scoped CSS Styles */}
-      <style jsx>{`
+      <style>{`
         .ai-knowledge-network-root {
           --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
           --bg-deep: #020617;
@@ -1100,6 +1099,45 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             0 0 38px rgba(56, 189, 248, 0.95),
             0 0 80px rgba(37, 99, 235, 0.7),
             inset 0 0 24px rgba(186, 230, 253, 0.6) !important;
+        }
+
+        .hub-icon-doc {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+          transition: opacity 0.35s var(--ease-out-expo), transform 0.35s var(--ease-out-expo);
+        }
+
+        .central-hub.is-logo-active .hub-icon-doc {
+          opacity: 0;
+          transform: scale(0.72) rotate(15deg);
+          pointer-events: none;
+        }
+
+        .hub-icon-logo {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transform: scale(0.72) rotate(-15deg);
+          pointer-events: none;
+          transition: opacity 0.35s var(--ease-out-expo), transform 0.35s var(--ease-out-expo);
+        }
+
+        .central-hub.is-logo-active .hub-icon-logo {
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+          pointer-events: auto;
         }
 
         /* Cards Layer */
@@ -1461,13 +1499,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           {/* Central Hub Element (Elemen Utama) */}
           <div
             ref={centralHubRef}
-            className={`central-hub ${isHubLogo ? "is-logo-active" : ""}`}
+            className="central-hub"
             role="button"
             tabIndex={0}
             aria-label="Pusat Jaringan Dokumen AI"
             onClick={(e) => {
               e.stopPropagation()
-              setIsHubLogo((prev) => !prev)
+              centralHubRef.current?.classList.toggle("is-logo-active")
               stateRef.current.selectedCardId = null
               stateRef.current.hoveredCardId = null
               applyCardHighlight(null)
@@ -1475,48 +1513,40 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           >
             <div className="relative w-3/5 h-3/5 flex items-center justify-center">
               {/* State A: Original Document + Magnifier Icon */}
-              <svg
-                viewBox="0 0 64 64"
-                className={`absolute inset-0 w-full h-full text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)] transition-all duration-300 ${
-                  isHubLogo
-                    ? "opacity-0 scale-75 rotate-12 pointer-events-none"
-                    : "opacity-100 scale-100 rotate-0"
-                }`}
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Document Outline with Folded Corner */}
-                <path
-                  d="M26 48H16C13.7909 48 12 46.2091 12 44V14C12 11.7909 13.7909 10 16 10H33.1716C34.2324 10 35.2499 10.4214 36 11.1716L42.8284 18C43.5786 18.7501 44 19.7676 44 20.8284V27"
-                  stroke="currentColor"
-                  strokeWidth="2.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M33 10V18C33 19.6569 34.3431 21 36 21H44"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {/* Document Content Lines */}
-                <line x1="19" y1="22" x2="27" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                <line x1="19" y1="29" x2="31" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                <line x1="19" y1="36" x2="25" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                {/* Magnifying Glass */}
-                <circle cx="40" cy="40" r="9.5" fill="rgba(30, 58, 138, 0.7)" stroke="#e0f2fe" strokeWidth="2.75" />
-                <line x1="47" y1="47" x2="54" y2="54" stroke="#e0f2fe" strokeWidth="3.2" strokeLinecap="round" />
-              </svg>
+              <div className="hub-icon-doc">
+                <svg
+                  viewBox="0 0 64 64"
+                  className="w-full h-full text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)]"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Document Outline with Folded Corner */}
+                  <path
+                    d="M26 48H16C13.7909 48 12 46.2091 12 44V14C12 11.7909 13.7909 10 16 10H33.1716C34.2324 10 35.2499 10.4214 36 11.1716L42.8284 18C43.5786 18.7501 44 19.7676 44 20.8284V27"
+                    stroke="currentColor"
+                    strokeWidth="2.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M33 10V18C33 19.6569 34.3431 21 36 21H44"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  {/* Document Content Lines */}
+                  <line x1="19" y1="22" x2="27" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="19" y1="29" x2="31" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="19" y1="36" x2="25" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  {/* Magnifying Glass */}
+                  <circle cx="40" cy="40" r="9.5" fill="rgba(30, 58, 138, 0.7)" stroke="#e0f2fe" strokeWidth="2.75" />
+                  <line x1="47" y1="47" x2="54" y2="54" stroke="#e0f2fe" strokeWidth="3.2" strokeLinecap="round" />
+                </svg>
+              </div>
 
               {/* State B: Linkorian Logo */}
-              <div
-                className={`absolute inset-0 w-full h-full flex items-center justify-center transition-all duration-300 ${
-                  isHubLogo
-                    ? "opacity-100 scale-100 rotate-0"
-                    : "opacity-0 scale-75 -rotate-12 pointer-events-none"
-                }`}
-              >
+              <div className="hub-icon-logo">
                 <img
                   src="/linkorian.jpeg"
                   alt="Linkorian Logo"
