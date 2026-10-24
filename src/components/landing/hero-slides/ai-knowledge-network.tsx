@@ -216,6 +216,177 @@ const AMBIENT_ITEMS = [
   { left: "88%", top: "32%", w: 48, h: 30, rot: -5, opacity: 0.28 },
 ]
 
+/**
+ * Detailed factual descriptions for the 7 supporting cards (Based on Linkorian platform features)
+ */
+interface CardDetail {
+  id: string
+  title: string
+  category: string
+  tagline: string
+  tint: "cyan" | "violet"
+  description: string
+  features: string[]
+  iconSvg: React.ReactNode
+}
+
+const CARD_DETAILS: CardDetail[] = [
+  {
+    id: "dokumen",
+    title: "Dokumen & Repositori Riset",
+    category: "Manajemen Dokumen",
+    tagline: "Pusat Pengelolaan Berkas & Literatur Akademis",
+    tint: "cyan",
+    description:
+      "Arsipkan dan kelola file PDF, dokumen ilmiah, dan materi belajar dengan rapi. Terintegrasi langsung dengan database referensi global (Scopus & Google Scholar) untuk mendukung kebutuhan akademik, tugas, dan riset kerja Anda.",
+    features: [
+      "Pengorganisasian dokumen riset & file proyek berbasis folder dan label",
+      "Integrasi pencarian jurnal ilmiah bereputasi (Scopus, Google Scholar, SINTA)",
+      "Terhubung langsung dengan alur roadmap belajar dan catatan pribadi",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="8" y1="13" x2="16" y2="13" />
+        <line x1="8" y1="17" x2="13" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    id: "artikel",
+    title: "Artikel & Reader Mode",
+    category: "Distraction-Free Reader",
+    tagline: "Pengalaman Membaca Fokus Tanpa Gangguan",
+    tint: "violet",
+    description:
+      "Simpan artikel web panjang, blog teknologi, berita, dan rilis industri untuk dibaca kapan saja. Fitur Reader Mode membersihkan halaman dari iklan, popup banner, dan pelacak, menghadirkan tipografi bersih yang nyaman di mata.",
+    features: [
+      "Mode membaca bersih (Clean Reader) otomatis tanpa iklan dan distraksi",
+      "Arsip bacaan terstruktur (Read-it-Later) dengan penanda status baca",
+      "Kliping kutipan penting dari artikel langsung menjadi catatan baru",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="8" y1="13" x2="14" y2="13" />
+        <line x1="8" y1="17" x2="16" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    id: "catatan",
+    title: "Catatan Riset & Markdown",
+    category: "Personal Knowledge Base",
+    tagline: "Second Brain Terhubung untuk Dokumentasi Ide",
+    tint: "cyan",
+    description:
+      "Ruang kerja editor catatan cerdas berbasis Markdown yang terhubung langsung dengan tautan web dan koleksi folder Anda. Catat resume riset, ide proyek, dan rangkuman penting dalam satu sistem pengetahuan terpadu.",
+    features: [
+      "Editor Markdown & Rich-Text terstruktur untuk pencatatan cepat",
+      "Tautkan catatan langsung ke URL referensi dan folder bookmark",
+      "Pencarian kontekstual instan untuk menemukan kembali ide-ide lama",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+        <line x1="9" y1="13" x2="15" y2="13" />
+        <line x1="9" y1="17" x2="13" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    id: "ringkasan",
+    title: "Ringkasan Kilat AI",
+    category: "AI Instant Summarizer",
+    tagline: "Ekstraksi Esensi Konten dalam 3 Detik",
+    tint: "violet",
+    description:
+      "Tidak sempat membaca artikel panjang 20 halaman? Fitur AI Summarizer di Linkorian secara instan menyaring inti sari materi dan mengekstrak poin-poin krusial dalam hitungan detik, menghemat waktu belajar dan riset Anda.",
+    features: [
+      "Ekstraksi poin-poin krusial (bullet summary) instan bertenaga AI",
+      "Hemat waktu membaca artikel dan dokumentasi panjang hingga 80%",
+      "Salin dan simpan ringkasan langsung ke editor catatan pribadi",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="9" y1="6" x2="20" y2="6" />
+        <line x1="9" y1="12" x2="20" y2="12" />
+        <line x1="9" y1="18" x2="20" y2="18" />
+        <circle cx="4.5" cy="6" r="1.2" fill="currentColor" />
+        <circle cx="4.5" cy="12" r="1.2" fill="currentColor" />
+        <circle cx="4.5" cy="18" r="1.2" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: "tautan",
+    title: "Manajemen Tautan & Bookmark",
+    category: "Bookmark Manager",
+    tagline: "Pengorganisasian URL Web Cerdas & Visual",
+    tint: "cyan",
+    description:
+      "Solusi visual modern untuk menyimpan dan merapikan ribuan tautan penting tanpa takut hilang atau menumpuk di tab browser. Linkorian otomatis mengambil metadata lengkap halaman web dan mengelompokkannya secara cerdas.",
+    features: [
+      "Auto-fetch metadata pratinjau (judul, deskripsi web, thumbnail, favicon)",
+      "Pengelompokan folder multi-level dan sistem tagging dinamis",
+      "Pencegahan bookmark duplikat serta pemantauan tautan aktif",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+      </svg>
+    ),
+  },
+  {
+    id: "roadmap",
+    title: "AI Roadmap & Learning Path",
+    category: "Perencana Belajar & Proyek",
+    tagline: "Kanvas Alur Visual Interaktif",
+    tint: "cyan",
+    description:
+      "Rancang peta jalan belajar terstruktur, alur kurikulum, atau milestone proyek dalam kanvas visual interaktif. Setiap node tahapan dapat disematkan tautan referensi dan catatan panduan agar target tercapai tanpa kehilangan arah.",
+    features: [
+      "Kanvas diagram interaktif dengan node langkah bertahap yang dinamis",
+      "Pelacakan kemajuan target (persentase progress) secara visual",
+      "Sematkan tautan riset dan catatan materi langsung pada setiap node",
+    ],
+    iconSvg: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="3" width="6" height="5" rx="1" />
+        <rect x="3" y="16" width="5" height="5" rx="1" />
+        <rect x="9.5" y="16" width="5" height="5" rx="1" />
+        <rect x="16" y="16" width="5" height="5" rx="1" />
+        <path d="M12 8v4m0 0H5.5v4M12 12v4m0-4h6.5v4" />
+      </svg>
+    ),
+  },
+  {
+    id: "ringkasan-ai",
+    title: "Analisis Mendalam oleh Liko AI",
+    category: "Liko — Asisten Cerdas Pengetahuan",
+    tagline: "Deep Reasoning & Tanya Jawab Kontekstual",
+    tint: "violet",
+    description:
+      "Kenalkan Liko, maskot asisten AI pintar Linkorian! Liko menganalisis hubungan antar-konten, mengenali entitas dan topik penting, serta siap diajak berdiskusi dan menjawab pertanyaan kontekstual seputar seluruh koleksi tautan dan dokumen Anda.",
+    features: [
+      "Tanya-jawab interaktif (Q&A) berbasis konten tautan & dokumen tersimpan",
+      "Ekstraksi entitas kunci, taksonomi topik, dan analisis mendalam",
+      "Rekomendasi koneksi cerdas antar-informasi yang saling berkaitan",
+    ],
+    iconSvg: (
+      <img
+        src="/maskotbaru.jpeg"
+        alt="Maskot Liko"
+        className="w-full h-full object-contain p-0.5 drop-shadow-[0_0_8px_rgba(167,139,250,0.7)]"
+      />
+    ),
+  },
+]
+
 interface CardGeometry {
   hubCx: number
   hubCy: number
@@ -239,6 +410,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   const networkPlaneRef = useRef<HTMLDivElement>(null)
   const hubCoreGlowRef = useRef<HTMLDivElement>(null)
   const centralHubRef = useRef<HTMLDivElement>(null)
+  const modalOverlayRef = useRef<HTMLDivElement>(null)
 
   // Card element refs
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map())
@@ -834,14 +1006,46 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   }
 
   /**
-   * Card Click Handler: Instant flow activation, toggles selection
+   * Card Detail Modal Control (Direct DOM manipulation to preserve 60fps animations & avoid re-render resets)
+   */
+  const openCardModal = (cardId: string) => {
+    if (!modalOverlayRef.current) return
+    const overlay = modalOverlayRef.current
+    const panels = overlay.querySelectorAll(".modal-panel")
+    panels.forEach((p) => p.classList.remove("is-active"))
+
+    const targetPanel = overlay.querySelector(`#modal-panel-${cardId}`)
+    if (targetPanel) {
+      targetPanel.classList.add("is-active")
+    }
+
+    overlay.classList.add("is-open")
+    overlay.setAttribute("aria-hidden", "false")
+    rootRef.current?.classList.add("modal-active")
+  }
+
+  const closeCardModal = () => {
+    if (!modalOverlayRef.current) return
+    const overlay = modalOverlayRef.current
+    overlay.classList.remove("is-open")
+    overlay.setAttribute("aria-hidden", "true")
+    const panels = overlay.querySelectorAll(".modal-panel")
+    panels.forEach((p) => p.classList.remove("is-active"))
+    rootRef.current?.classList.remove("modal-active")
+
+    // Reset selection and highlight to resting state
+    stateRef.current.selectedCardId = null
+    stateRef.current.hoveredCardId = null
+    applyCardHighlight(null)
+  }
+
+  /**
+   * Card Click Handler: Instant flow activation, toggles selection, opens explanation pop-up
    */
   const handleCardClick = (cardId: string) => {
-    // If currently selected card is clicked, deselect and return to resting state
-    if (stateRef.current.selectedCardId === cardId) {
-      stateRef.current.selectedCardId = null
-      stateRef.current.hoveredCardId = null
-      applyCardHighlight(null)
+    // If currently selected card is clicked again and modal is already open, close modal and return to resting state
+    if (stateRef.current.selectedCardId === cardId && modalOverlayRef.current?.classList.contains("is-open")) {
+      closeCardModal()
       return
     }
 
@@ -850,6 +1054,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     stateRef.current.hoveredCardId = null
     stateRef.current.flowStartTime = performance.now()
     applyCardHighlight(cardId)
+    openCardModal(cardId)
   }
 
   const handleCardHover = (cardId: string) => {
@@ -910,14 +1115,25 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     }
   }, [isActive])
 
+  // Listen for Escape key to close pop-up modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeCardModal()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
+
   return (
     <div
       ref={rootRef}
       className="ai-knowledge-network-root"
       onClick={() => {
-        stateRef.current.selectedCardId = null
-        stateRef.current.hoveredCardId = null
-        applyCardHighlight(null)
+        closeCardModal()
       }}
     >
       {/* Scoped CSS Styles */}
@@ -1347,6 +1563,91 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           transform-box: fill-box;
           transform-origin: center;
         }
+
+        .ai-knowledge-network-root.modal-active {
+          z-index: 50 !important;
+        }
+
+        /* Card Detail Pop-up Modal */
+        .card-modal-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 999;
+          background: rgba(2, 6, 23, 0.78);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.28s var(--ease-out-expo);
+        }
+
+        .card-modal-overlay.is-open {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .card-modal-dialog {
+          position: relative;
+          width: 100%;
+          max-width: 490px;
+          border-radius: 22px;
+          transform: scale(0.92) translateY(14px);
+          opacity: 0;
+          transition:
+            transform 0.3s var(--ease-out-expo),
+            opacity 0.3s var(--ease-out-expo);
+          overflow: hidden;
+          max-height: 92vh;
+          overflow-y: auto;
+        }
+
+        .card-modal-overlay.is-open .card-modal-dialog {
+          transform: scale(1) translateY(0);
+          opacity: 1;
+        }
+
+        .modal-panel {
+          display: none;
+          padding: 24px 22px 20px 22px;
+          border-radius: 22px;
+          color: #f8fafc;
+          text-align: left;
+        }
+
+        .modal-panel.is-active {
+          display: block;
+        }
+
+        .modal-panel-cyan {
+          background: linear-gradient(145deg, rgba(10, 24, 60, 0.97) 0%, rgba(5, 14, 38, 0.99) 100%);
+          border: 1.5px solid rgba(147, 197, 253, 0.55);
+          box-shadow:
+            0 25px 60px -10px rgba(0, 0, 0, 0.9),
+            0 0 35px rgba(56, 189, 248, 0.35),
+            inset 0 1px 16px rgba(186, 230, 253, 0.16);
+        }
+
+        .modal-panel-violet {
+          background: linear-gradient(145deg, rgba(28, 18, 70, 0.97) 0%, rgba(14, 10, 44, 0.99) 100%);
+          border: 1.5px solid rgba(167, 139, 250, 0.55);
+          box-shadow:
+            0 25px 60px -10px rgba(0, 0, 0, 0.9),
+            0 0 35px rgba(139, 92, 246, 0.35),
+            inset 0 1px 16px rgba(196, 181, 253, 0.16);
+        }
+
+        @media (max-width: 640px) {
+          .modal-panel {
+            padding: 18px 16px 16px 16px;
+          }
+          .card-modal-dialog {
+            max-width: 94vw;
+          }
+        }
       `}</style>
 
       {/* Decorative Ambient Depth Layer */}
@@ -1511,9 +1812,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             onClick={(e) => {
               e.stopPropagation()
               centralHubRef.current?.classList.toggle("is-logo-active")
-              stateRef.current.selectedCardId = null
-              stateRef.current.hoveredCardId = null
-              applyCardHighlight(null)
+              closeCardModal()
             }}
           >
             <div className="relative w-full h-full flex items-center justify-center p-2">
@@ -1614,6 +1913,144 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
               </article>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Interactive Card Detail Pop-up Modal */}
+      <div
+        ref={modalOverlayRef}
+        id="cardDetailModalOverlay"
+        className="card-modal-overlay"
+        onClick={(e) => {
+          e.stopPropagation()
+          closeCardModal()
+        }}
+        aria-hidden="true"
+      >
+        <div
+          className="card-modal-dialog"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          {CARD_DETAILS.map((detail) => (
+            <div
+              key={detail.id}
+              id={`modal-panel-${detail.id}`}
+              className={`modal-panel modal-panel-${detail.tint}`}
+            >
+              {/* Header: Category Badge + Close Button */}
+              <div className="flex items-center justify-between mb-4">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
+                    detail.tint === "violet"
+                      ? "bg-violet-500/15 border border-violet-400/35 text-violet-300 shadow-[0_0_12px_rgba(167,139,250,0.25)]"
+                      : "bg-sky-500/15 border border-sky-400/35 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.25)]"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      detail.tint === "violet" ? "bg-violet-400 animate-pulse" : "bg-sky-400 animate-pulse"
+                    }`}
+                  />
+                  {detail.category}
+                </span>
+
+                <button
+                  type="button"
+                  id={`btn-close-modal-${detail.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    closeCardModal()
+                  }}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="Tutup penjelasan"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Identity Row: Icon Box + Title + Tagline */}
+              <div className="flex items-center gap-3.5 mb-4">
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    detail.tint === "violet"
+                      ? "bg-violet-500/20 border border-violet-400/40 text-violet-300 shadow-[0_0_16px_rgba(167,139,250,0.35)]"
+                      : "bg-sky-500/20 border border-sky-400/40 text-sky-300 shadow-[0_0_16px_rgba(56,189,248,0.35)]"
+                  }`}
+                >
+                  <div className="w-7 h-7 flex items-center justify-center">
+                    {detail.iconSvg}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white tracking-tight leading-tight">
+                    {detail.title}
+                  </h3>
+                  <p className={`text-xs font-medium mt-0.5 ${detail.tint === "violet" ? "text-violet-300" : "text-sky-300"}`}>
+                    {detail.tagline}
+                  </p>
+                </div>
+              </div>
+
+              {/* Description Body */}
+              <p className="text-sm text-slate-200 leading-relaxed mb-4">
+                {detail.description}
+              </p>
+
+              {/* Key Features List */}
+              <div className="rounded-xl p-3.5 mb-5 bg-slate-900/60 border border-white/10">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                  Fungsi Real di Linkorian
+                </div>
+                <ul className="space-y-2">
+                  {detail.features.map((feat, fIdx) => (
+                    <li key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                      <svg
+                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                          detail.tint === "violet" ? "text-violet-400" : "text-sky-400"
+                        }`}
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Action Button */}
+              <div className="flex items-center justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  id={`btn-acknowledge-modal-${detail.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    closeCardModal()
+                  }}
+                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold tracking-wide transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
+                    detail.tint === "violet"
+                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/25"
+                      : "bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white shadow-sky-500/25"
+                  }`}
+                >
+                  <span>Mengerti & Tutup</span>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
