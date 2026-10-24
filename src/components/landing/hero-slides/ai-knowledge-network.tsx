@@ -170,7 +170,7 @@ const CARDS_CONFIG = [
   },
   {
     id: "ringkasan-ai",
-    title: "Ringkasan AI",
+    title: "Analisis AI",
     tint: "violet" as const,
     staggerIndex: 6,
     desktopOffset: { dx:  0.96, dy:  0.66 },
@@ -185,23 +185,24 @@ const CARDS_CONFIG = [
       <img
         src="/maskotbaru.jpeg"
         alt="Maskot Liko"
-        className="w-full h-full object-cover rounded-[7px] scale-105"
+        className="w-full h-full object-contain p-0.5 drop-shadow-[0_0_6px_rgba(167,139,250,0.6)]"
       />
     ),
   },
 ]
 
 /**
- * Secondary neural tendrils
+ * Secondary neural tendrils (Dihapus sesuai permintaan: tidak ada alur kosong tanpa card)
  */
-const TENDRILS_CONFIG = [
-  { id: "t1", startRx: -0.30, startRy: -1.0,  endDx: -0.32, endDy: -0.62, ctrlDx: -0.10, ctrlDy: -0.45 },
-  { id: "t2", startRx:  0.36, startRy: -1.0,  endDx:  0.44, endDy: -0.66, ctrlDx:  0.18, ctrlDy: -0.48 },
-  { id: "t3", startRx:  1.0,  startRy: -0.52, endDx:  0.62, endDy: -0.38, ctrlDx:  0.38, ctrlDy: -0.35 },
-  { id: "t4", startRx: -1.0,  startRy:  0.28, endDx: -0.58, endDy:  0.22, ctrlDx: -0.36, ctrlDy:  0.18 },
-  { id: "t5", startRx:  1.0,  startRy:  0.36, endDx:  0.64, endDy:  0.26, ctrlDx:  0.38, ctrlDy:  0.22 },
-  { id: "t6", startRx: -0.45, startRy:  1.0,  endDx: -0.42, endDy:  0.60, ctrlDx: -0.26, ctrlDy:  0.42 },
-]
+const TENDRILS_CONFIG: Array<{
+  id: string
+  startRx: number
+  startRy: number
+  endDx: number
+  endDy: number
+  ctrlDx: number
+  ctrlDy: number
+}> = []
 
 /**
  * Ambient background depth particles
@@ -552,7 +553,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       if (cardEl) {
         cardEl.style.transition = "none"
         cardEl.classList.remove("is-visible", "is-selected", "is-highlighted", "is-dimmed")
-        cardEl.style.transform = "translate(-50%, calc(-50% + 12px)) translateZ(25px) scale(0.94)"
+        cardEl.style.transform = "translate(-50%, calc(-50% + 12px)) scale(0.94)"
       }
 
       if (glowPath) {
@@ -661,7 +662,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         scheduleTimer(() => {
           if (cardEl) {
             cardEl.classList.add("is-visible")
-            cardEl.style.transform = "translate(-50%, -50%) translateZ(25px) scale(1)"
+            cardEl.style.transform = "translate(-50%, -50%) scale(1)"
           }
         }, staggerMs)
       })
@@ -717,11 +718,10 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         const floatDx = Math.cos(elapsedSec * 1.15 + phaseOffset) * 1.4 * ramp
         const floatDy = Math.sin(elapsedSec * 1.45 + phaseOffset) * 3.0 * ramp
 
-        // Elevated Z depth so right-side cards never sink behind 3D planes
-        const zElevation = isSelected ? 50 : isActive ? 35 : 25
+        cardEl.style.zIndex = isSelected ? "50" : isActive ? "40" : "25"
         const scaleVal = isSelected ? 1.07 : isActive ? 1.04 : 1.0
 
-        cardEl.style.transform = `translate(calc(-50% + ${floatDx.toFixed(1)}px), calc(-50% + ${floatDy.toFixed(1)}px)) translateZ(${zElevation}px) scale(${scaleVal})`
+        cardEl.style.transform = `translate(calc(-50% + ${floatDx.toFixed(1)}px), calc(-50% + ${floatDy.toFixed(1)}px)) scale(${scaleVal})`
 
         // Fast closed-form path update with floating card endpoint
         const curEx = geom.ex + floatDx
@@ -973,12 +973,11 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           will-change: transform, opacity;
         }
 
-        /* Perspective Stage */
+        /* Perspective Stage - Flat native pixel grid for crisp HD rendering */
         .network-perspective-host {
           position: relative;
           width: 100%;
           height: 100%;
-          perspective: 1400px;
           z-index: 5;
           display: flex;
           align-items: center;
@@ -990,16 +989,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           position: relative;
           width: 100%;
           height: 100%;
-          transform-style: preserve-3d;
-          transition: transform 0.7s var(--ease-out-expo);
-          will-change: transform;
-          transform: rotateY(-7deg) rotateX(2.5deg);
           pointer-events: none;
+          transform: none !important;
         }
 
         @media (max-width: 768px) {
           .network-plane {
-            transform: rotateY(-3deg) rotateX(1.5deg);
+            transform: none !important;
           }
         }
 
@@ -1039,23 +1035,22 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           overflow: visible;
           pointer-events: none;
           z-index: 4;
+          shape-rendering: geometricPrecision;
         }
 
         /* Central Hub Element */
         .central-hub {
           position: absolute;
           z-index: 30;
-          transform: translate(-50%, -50%) translateZ(35px) scale(0.82);
+          transform: translate(-50%, -50%) scale(0.82);
           opacity: 0;
           border-radius: 22px;
-          background: linear-gradient(145deg, rgba(37, 99, 235, 0.45) 0%, rgba(30, 58, 138, 0.70) 55%, rgba(49, 46, 129, 0.75) 100%);
-          border: 1.5px solid rgba(147, 197, 253, 0.85);
+          background: linear-gradient(145deg, rgba(29, 78, 216, 0.95) 0%, rgba(20, 40, 110, 0.98) 55%, rgba(30, 27, 85, 0.98) 100%);
+          border: 1.5px solid rgba(186, 230, 253, 0.9);
           box-shadow:
             0 0 28px rgba(59, 130, 246, 0.75),
             0 0 64px rgba(37, 99, 235, 0.45),
             inset 0 0 22px rgba(147, 197, 253, 0.45);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1066,7 +1061,8 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             transform 0.3s var(--ease-out-expo),
             box-shadow 0.3s var(--ease-out-expo),
             border-color 0.3s var(--ease-out-expo);
-          will-change: transform, opacity;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
 
         .central-hub::before {
@@ -1082,7 +1078,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .central-hub.is-visible {
           opacity: 1;
-          transform: translate(-50%, -50%) translateZ(35px) scale(1);
+          transform: translate(-50%, -50%) scale(1);
         }
 
         .central-hub:hover {
@@ -1150,21 +1146,19 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           z-index: 20;
         }
 
-        /* Knowledge Card */
+        /* Knowledge Card - HD Crystal Clear Styling */
         .knowledge-card {
           position: absolute;
           z-index: 25;
-          transform: translate(-50%, -50%) translateZ(25px) scale(0.94);
+          transform: translate(-50%, -50%) scale(0.94);
           opacity: 0;
           border-radius: 14px;
-          background: linear-gradient(135deg, rgba(15, 34, 84, 0.75) 0%, rgba(10, 22, 58, 0.85) 100%);
-          border: 1.2px solid rgba(96, 165, 250, 0.58);
+          background: linear-gradient(135deg, rgba(12, 28, 74, 0.96) 0%, rgba(7, 18, 52, 0.98) 100%);
+          border: 1.2px solid rgba(147, 197, 253, 0.65);
           box-shadow:
-            0 8px 28px -6px rgba(2, 6, 23, 0.75),
-            0 0 18px rgba(37, 99, 235, 0.34),
-            inset 0 1px 12px rgba(96, 165, 250, 0.22);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+            0 8px 24px -4px rgba(2, 6, 23, 0.85),
+            0 0 16px rgba(37, 99, 235, 0.3),
+            inset 0 1px 8px rgba(147, 197, 253, 0.25);
           padding: 12px 14px;
           display: flex;
           align-items: center;
@@ -1176,16 +1170,18 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             border-color 0.22s var(--ease-out-expo),
             box-shadow 0.22s var(--ease-out-expo),
             background 0.22s var(--ease-out-expo);
-          will-change: transform, opacity;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
         }
 
         .knowledge-card[data-tint="violet"] {
-          background: linear-gradient(135deg, rgba(30, 27, 94, 0.75) 0%, rgba(19, 18, 64, 0.85) 100%);
-          border-color: rgba(139, 92, 246, 0.68);
+          background: linear-gradient(135deg, rgba(30, 22, 90, 0.96) 0%, rgba(18, 14, 62, 0.98) 100%);
+          border-color: rgba(167, 139, 250, 0.7);
           box-shadow:
-            0 8px 28px -6px rgba(2, 6, 23, 0.78),
-            0 0 20px rgba(124, 58, 237, 0.36),
-            inset 0 1px 12px rgba(167, 139, 250, 0.24);
+            0 8px 24px -4px rgba(2, 6, 23, 0.85),
+            0 0 18px rgba(124, 58, 237, 0.32),
+            inset 0 1px 8px rgba(167, 139, 250, 0.25);
         }
 
         .knowledge-card.is-visible {
@@ -1196,7 +1192,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         .knowledge-card.is-highlighted {
           border-color: rgba(186, 230, 253, 0.98);
           box-shadow:
-            0 12px 34px -6px rgba(2, 6, 23, 0.85),
+            0 14px 34px -4px rgba(2, 6, 23, 0.85),
             0 0 28px rgba(56, 189, 248, 0.65),
             inset 0 0 18px rgba(125, 211, 252, 0.38);
           z-index: 35 !important;
@@ -1205,7 +1201,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         .knowledge-card[data-tint="violet"].is-highlighted {
           border-color: rgba(221, 214, 254, 0.98);
           box-shadow:
-            0 12px 34px -6px rgba(2, 6, 23, 0.85),
+            0 14px 34px -4px rgba(2, 6, 23, 0.85),
             0 0 28px rgba(167, 139, 250, 0.7),
             inset 0 0 18px rgba(196, 181, 253, 0.42);
         }
@@ -1214,9 +1210,9 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         .knowledge-card.is-selected {
           z-index: 50 !important;
           border-color: #ffffff !important;
-          background: linear-gradient(135deg, rgba(29, 78, 216, 0.85) 0%, rgba(30, 58, 138, 0.92) 100%) !important;
+          background: linear-gradient(135deg, rgba(29, 78, 216, 0.95) 0%, rgba(30, 58, 138, 0.98) 100%) !important;
           box-shadow:
-            0 16px 42px -4px rgba(2, 6, 23, 0.92),
+            0 18px 46px -4px rgba(2, 6, 23, 0.95),
             0 0 35px rgba(56, 189, 248, 0.95),
             0 0 70px rgba(37, 99, 235, 0.65),
             inset 0 0 22px rgba(186, 230, 253, 0.6) !important;
@@ -1224,9 +1220,9 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .knowledge-card[data-tint="violet"].is-selected {
           border-color: #ffffff !important;
-          background: linear-gradient(135deg, rgba(88, 28, 135, 0.85) 0%, rgba(46, 16, 101, 0.92) 100%) !important;
+          background: linear-gradient(135deg, rgba(88, 28, 135, 0.95) 0%, rgba(46, 16, 101, 0.98) 100%) !important;
           box-shadow:
-            0 16px 42px -4px rgba(2, 6, 23, 0.92),
+            0 18px 46px -4px rgba(2, 6, 23, 0.95),
             0 0 35px rgba(167, 139, 250, 0.95),
             0 0 70px rgba(124, 58, 237, 0.65),
             inset 0 0 22px rgba(221, 214, 254, 0.6) !important;
@@ -1238,23 +1234,29 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .card-icon-box {
           flex-shrink: 0;
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          background: rgba(59, 130, 246, 0.14);
-          border: 1px solid rgba(147, 197, 253, 0.28);
+          width: 36px;
+          height: 36px;
+          border-radius: 9px;
+          background: rgba(59, 130, 246, 0.18);
+          border: 1.2px solid rgba(147, 197, 253, 0.38);
           display: flex;
           align-items: center;
           justify-content: center;
           color: #bae6fd;
-          box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.18);
+          box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.22);
           overflow: hidden;
         }
 
         .knowledge-card[data-tint="violet"] .card-icon-box {
-          background: rgba(139, 92, 246, 0.16);
-          border-color: rgba(196, 181, 253, 0.32);
+          background: rgba(139, 92, 246, 0.22);
+          border-color: rgba(196, 181, 253, 0.45);
           color: #ddd6fe;
+        }
+
+        .central-hub img,
+        .card-icon-box img {
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: crisp-edges;
         }
 
         .card-body {
@@ -1267,14 +1269,17 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .card-title {
           font-size: 13.5px;
-          font-weight: 500;
+          font-weight: 600;
           letter-spacing: 0.01em;
-          color: #f0f9ff;
+          color: #ffffff;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          text-shadow: 0 0 10px rgba(147, 197, 253, 0.45);
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
           line-height: 1.2;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
         }
 
         .skeleton-rows {
@@ -1511,12 +1516,12 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
               applyCardHighlight(null)
             }}
           >
-            <div className="relative w-3/5 h-3/5 flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center p-2">
               {/* State A: Original Document + Magnifier Icon */}
               <div className="hub-icon-doc">
                 <svg
                   viewBox="0 0 64 64"
-                  className="w-full h-full text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)]"
+                  className="w-3/5 h-3/5 text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)]"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
@@ -1545,12 +1550,12 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
                 </svg>
               </div>
 
-              {/* State B: Linkorian Logo */}
+              {/* State B: Original High-Res 3D Linkorian Emblem (Enlarged to fill card) */}
               <div className="hub-icon-logo">
                 <img
-                  src="/linkorian.jpeg"
-                  alt="Linkorian Logo"
-                  className="w-full h-full object-cover rounded-xl shadow-md border border-cyan-300/40 drop-shadow-[0_0_16px_rgba(56,189,248,0.95)]"
+                  src="/linkorian-logo.png"
+                  alt="Logo Linkorian"
+                  className="w-[94%] h-[94%] object-contain rounded-[18px] drop-shadow-[0_0_24px_rgba(56,189,248,0.95)]"
                 />
               </div>
             </div>
