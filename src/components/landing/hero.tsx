@@ -104,7 +104,7 @@ export function Hero() {
           >
             {/* SLIDE 1: AI-Powered Knowledge Management (User's Gambar 2) */}
             <div className="w-full h-full shrink-0 flex items-center justify-center">
-              <Slide1Knowledge locale={locale} />
+              <Slide1Knowledge locale={locale} isActive={activeSlide === 0} />
             </div>
 
             {/* SLIDE 2: Semua Link Penting, Catatan & Peluang (User's Gambar 1 / Current Hero) */}
