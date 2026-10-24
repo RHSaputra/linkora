@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 interface AiKnowledgeNetworkProps {
   isActive?: boolean
@@ -182,11 +182,11 @@ const CARDS_CONFIG = [
     hasBullets:    true,
     hasThumbnail:  false,
     iconSvg: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2L12 3z" />
-        <path d="M19 3v3m-1.5-1.5h3" />
-        <path d="M5 17v2m-1-1h2" />
-      </svg>
+      <img
+        src="/maskotbaru.jpeg"
+        alt="Maskot Liko"
+        className="w-full h-full object-cover rounded-[7px] scale-105"
+      />
     ),
   },
 ]
@@ -234,6 +234,7 @@ interface CardGeometry {
 }
 
 export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps) {
+  const [isHubLogo, setIsHubLogo] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const networkPlaneRef = useRef<HTMLDivElement>(null)
   const hubCoreGlowRef = useRef<HTMLDivElement>(null)
@@ -1093,6 +1094,14 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             inset 0 0 28px rgba(186, 230, 253, 0.65);
         }
 
+        .central-hub.is-logo-active {
+          border-color: #38bdf8 !important;
+          box-shadow:
+            0 0 38px rgba(56, 189, 248, 0.95),
+            0 0 80px rgba(37, 99, 235, 0.7),
+            inset 0 0 24px rgba(186, 230, 253, 0.6) !important;
+        }
+
         /* Cards Layer */
         #cardsLayer {
           position: absolute;
@@ -1201,6 +1210,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           justify-content: center;
           color: #bae6fd;
           box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.18);
+          overflow: hidden;
         }
 
         .knowledge-card[data-tint="violet"] .card-icon-box {
@@ -1451,46 +1461,69 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           {/* Central Hub Element (Elemen Utama) */}
           <div
             ref={centralHubRef}
-            className="central-hub"
+            className={`central-hub ${isHubLogo ? "is-logo-active" : ""}`}
             role="button"
             tabIndex={0}
             aria-label="Pusat Jaringan Dokumen AI"
             onClick={(e) => {
               e.stopPropagation()
+              setIsHubLogo((prev) => !prev)
               stateRef.current.selectedCardId = null
               stateRef.current.hoveredCardId = null
               applyCardHighlight(null)
             }}
           >
-            <svg
-              viewBox="0 0 64 64"
-              className="w-3/5 h-3/5 text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)]"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Document Outline with Folded Corner */}
-              <path
-                d="M26 48H16C13.7909 48 12 46.2091 12 44V14C12 11.7909 13.7909 10 16 10H33.1716C34.2324 10 35.2499 10.4214 36 11.1716L42.8284 18C43.5786 18.7501 44 19.7676 44 20.8284V27"
-                stroke="currentColor"
-                strokeWidth="2.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M33 10V18C33 19.6569 34.3431 21 36 21H44"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {/* Document Content Lines */}
-              <line x1="19" y1="22" x2="27" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1="19" y1="29" x2="31" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1="19" y1="36" x2="25" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              {/* Magnifying Glass */}
-              <circle cx="40" cy="40" r="9.5" fill="rgba(30, 58, 138, 0.7)" stroke="#e0f2fe" strokeWidth="2.75" />
-              <line x1="47" y1="47" x2="54" y2="54" stroke="#e0f2fe" strokeWidth="3.2" strokeLinecap="round" />
-            </svg>
+            <div className="relative w-3/5 h-3/5 flex items-center justify-center">
+              {/* State A: Original Document + Magnifier Icon */}
+              <svg
+                viewBox="0 0 64 64"
+                className={`absolute inset-0 w-full h-full text-sky-100 drop-shadow-[0_0_12px_rgba(186,230,253,0.85)] transition-all duration-300 ${
+                  isHubLogo
+                    ? "opacity-0 scale-75 rotate-12 pointer-events-none"
+                    : "opacity-100 scale-100 rotate-0"
+                }`}
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Document Outline with Folded Corner */}
+                <path
+                  d="M26 48H16C13.7909 48 12 46.2091 12 44V14C12 11.7909 13.7909 10 16 10H33.1716C34.2324 10 35.2499 10.4214 36 11.1716L42.8284 18C43.5786 18.7501 44 19.7676 44 20.8284V27"
+                  stroke="currentColor"
+                  strokeWidth="2.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M33 10V18C33 19.6569 34.3431 21 36 21H44"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Document Content Lines */}
+                <line x1="19" y1="22" x2="27" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="19" y1="29" x2="31" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="19" y1="36" x2="25" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Magnifying Glass */}
+                <circle cx="40" cy="40" r="9.5" fill="rgba(30, 58, 138, 0.7)" stroke="#e0f2fe" strokeWidth="2.75" />
+                <line x1="47" y1="47" x2="54" y2="54" stroke="#e0f2fe" strokeWidth="3.2" strokeLinecap="round" />
+              </svg>
+
+              {/* State B: Linkorian Logo */}
+              <div
+                className={`absolute inset-0 w-full h-full flex items-center justify-center transition-all duration-300 ${
+                  isHubLogo
+                    ? "opacity-100 scale-100 rotate-0"
+                    : "opacity-0 scale-75 -rotate-12 pointer-events-none"
+                }`}
+              >
+                <img
+                  src="/linkorian.jpeg"
+                  alt="Linkorian Logo"
+                  className="w-full h-full object-cover rounded-xl shadow-md border border-cyan-300/40 drop-shadow-[0_0_16px_rgba(56,189,248,0.95)]"
+                />
+              </div>
+            </div>
           </div>
 
           {/* 7 Unique Supporting Cards */}
