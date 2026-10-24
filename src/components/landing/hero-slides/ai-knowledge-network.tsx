@@ -7,8 +7,32 @@ interface AiKnowledgeNetworkProps {
 }
 
 /**
+ * Closed-form Cubic Bezier point calculation (Zero DOM queries, 0ms lag)
+ */
+function getCubicBezierPoint(
+  t: number,
+  sx: number,
+  sy: number,
+  c1x: number,
+  c1y: number,
+  c2x: number,
+  c2y: number,
+  ex: number,
+  ey: number
+) {
+  const mt = 1 - t
+  const mt2 = mt * mt
+  const mt3 = mt2 * mt
+  const t2 = t * t
+  const t3 = t2 * t
+
+  const x = mt3 * sx + 3 * mt2 * t * c1x + 3 * mt * t2 * c2x + t3 * ex
+  const y = mt3 * sy + 3 * mt2 * t * c1y + 3 * mt * t2 * c2y + t3 * ey
+  return { x, y }
+}
+
+/**
  * 7 Unique Supporting Cards Configuration
- * Guaranteed single source of truth matching reference design.
  */
 const CARDS_CONFIG = [
   {
@@ -168,7 +192,7 @@ const CARDS_CONFIG = [
 ]
 
 /**
- * Secondary neural tendrils (subtle decorative glowing filaments radiating from the Hub)
+ * Secondary neural tendrils
  */
 const TENDRILS_CONFIG = [
   { id: "t1", startRx: -0.30, startRy: -1.0,  endDx: -0.32, endDy: -0.62, ctrlDx: -0.10, ctrlDy: -0.45 },
@@ -191,13 +215,31 @@ const AMBIENT_ITEMS = [
   { left: "88%", top: "32%", w: 48, h: 30, rot: -5, opacity: 0.28 },
 ]
 
+interface CardGeometry {
+  hubCx: number
+  hubCy: number
+  halfHub: number
+  cardCx: number
+  cardCy: number
+  halfW: number
+  halfH: number
+  sx: number
+  sy: number
+  c1x: number
+  c1y: number
+  c2x: number
+  c2y: number
+  ex: number
+  ey: number
+}
+
 export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const networkPlaneRef = useRef<HTMLDivElement>(null)
   const hubCoreGlowRef = useRef<HTMLDivElement>(null)
   const centralHubRef = useRef<HTMLDivElement>(null)
 
-  // Card element refs (for <article> tags)
+  // Card element refs
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map())
   // SVG path element refs
   const glowPathRefs = useRef<Map<string, SVGPathElement>>(new Map())
@@ -209,27 +251,18 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   const tendrilPathRefs = useRef<Map<string, SVGPathElement>>(new Map())
   const tendrilDotRefs = useRef<Map<string, SVGCircleElement>>(new Map())
 
-  // Mutable animation state
+  // Animation & Selection State
   const stateRef = useRef({
     phase: "IDLE",
+    selectedCardId: null as string | null,
     hoveredCardId: null as string | null,
+    flowStartTime: 0,
     timers: [] as NodeJS.Timeout[],
     rafId: null as number | null,
     steadyStartTime: 0,
     pathLengths: new Map<string, number>(),
     tendrilLengths: new Map<string, number>(),
-    geometry: new Map<
-      string,
-      {
-        hubCx: number
-        hubCy: number
-        halfHub: number
-        cardCx: number
-        cardCy: number
-        halfW: number
-        halfH: number
-      }
-    >(),
+    geometry: new Map<string, CardGeometry>(),
   })
 
   // Helper to schedule and track timers
@@ -251,28 +284,22 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   }
 
   /**
-   * Updates Bezier curve and waypoint dot for a given card
+   * Builds Bezier control points and path data string
    */
-  const updateCardBezier = (
-    cardId: string,
+  const computeBezierPoints = (
+    cfg: (typeof CARDS_CONFIG)[0],
+    hubCx: number,
+    hubCy: number,
+    halfHub: number,
+    cardCx: number,
+    cardCy: number,
+    halfW: number,
+    halfH: number,
     floatDx: number = 0,
     floatDy: number = 0
   ) => {
-    const geom = stateRef.current.geometry.get(cardId)
-    const cfg = CARDS_CONFIG.find((c) => c.id === cardId)
-    const glowPath = glowPathRefs.current.get(cardId)
-    const mainPath = mainPathRefs.current.get(cardId)
-    const waypointDot = waypointDotRefs.current.get(cardId)
-
-    if (!geom || !cfg || !glowPath || !mainPath || !waypointDot) return
-
-    const { hubCx, hubCy, halfHub, cardCx, cardCy, halfW, halfH } = geom
-
-    // Start point on Central Hub perimeter
     const sx = hubCx + cfg.hubPort.rx * halfHub
     const sy = hubCy + cfg.hubPort.ry * halfHub
-
-    // End point on target Card's inner facing edge with float offset
     const ex = cardCx + floatDx + cfg.cardPort.rx * halfW
     const ey = cardCy + floatDy + cfg.cardPort.ry * halfH
 
@@ -304,37 +331,11 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     }
 
     const pathData = `M ${sx.toFixed(2)} ${sy.toFixed(2)} C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${ex.toFixed(2)} ${ey.toFixed(2)}`
-    glowPath.setAttribute("d", pathData)
-    mainPath.setAttribute("d", pathData)
-
-    const totalLen = mainPath.getTotalLength()
-    stateRef.current.pathLengths.set(cardId, totalLen)
-
-    // Position waypoint dot
-    if (totalLen > 0) {
-      const pt = mainPath.getPointAtLength(totalLen * cfg.waypointRatio)
-      waypointDot.setAttribute("cx", pt.x.toFixed(2))
-      waypointDot.setAttribute("cy", pt.y.toFixed(2))
-    }
-
-    // Preserve dasharray
-    mainPath.style.strokeDasharray = `${totalLen}`
-    glowPath.style.strokeDasharray = `${totalLen}`
-
-    if (stateRef.current.phase === "IDLE" || stateRef.current.phase === "STAGE_1_HUB") {
-      mainPath.style.strokeDashoffset = `${totalLen}`
-      glowPath.style.strokeDashoffset = `${totalLen}`
-    } else if (
-      stateRef.current.phase === "STAGE_3_CARDS" ||
-      stateRef.current.phase === "STEADY"
-    ) {
-      mainPath.style.strokeDashoffset = "0"
-      glowPath.style.strokeDashoffset = "0"
-    }
+    return { sx, sy, c1x, c1y, c2x, c2y, ex, ey, pathData }
   }
 
   /**
-   * Recalculates responsive coordinates, positions cards, and updates SVG geometry
+   * Recalculates responsive coordinates, positions cards, and updates SVG geometry ONCE (or on resize)
    */
   const computeLayoutAndGeometry = () => {
     const rootEl = rootRef.current
@@ -349,7 +350,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     // On wide desktop (>= 1024px), place hub at 64% so left side is spacious for hero text.
     // On mobile & tablet, center the hub horizontally.
     const hubCx = isDesktop ? (vw >= 1280 ? vw * 0.65 : vw * 0.62) : vw * 0.50
-    // On mobile, if screen is tall, position hub slightly lower to leave ample room for top text.
+    // On mobile, position hub slightly lower to leave ample room for top text.
     const hubCy = isMobile ? Math.min(vh * 0.60, vh - 180) : vh * 0.48
 
     // Proportional hub and card dimensions
@@ -426,10 +427,14 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       }
     })
 
-    // Compute Card positions
+    // Compute Card positions & initial Bezier paths
     CARDS_CONFIG.forEach((cfg) => {
       const cardEl = cardRefs.current.get(cfg.id)
-      if (!cardEl) return
+      const glowPath = glowPathRefs.current.get(cfg.id)
+      const mainPath = mainPathRefs.current.get(cfg.id)
+      const waypointDot = waypointDotRefs.current.get(cfg.id)
+
+      if (!cardEl || !glowPath || !mainPath || !waypointDot) return
 
       const offset = isMobile ? cfg.mobileOffset : cfg.desktopOffset
       const cardCx = hubCx + offset.dx * spreadX
@@ -440,6 +445,44 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       cardEl.style.left   = `${cardCx}px`
       cardEl.style.top    = `${cardCy}px`
 
+      const pts = computeBezierPoints(
+        cfg,
+        hubCx,
+        hubCy,
+        halfHub,
+        cardCx,
+        cardCy,
+        cardWidth / 2,
+        cardHeight / 2,
+        0,
+        0
+      )
+
+      glowPath.setAttribute("d", pts.pathData)
+      mainPath.setAttribute("d", pts.pathData)
+
+      // Query length strictly ONCE on resize and cache it
+      const totalLen = mainPath.getTotalLength()
+      stateRef.current.pathLengths.set(cfg.id, totalLen)
+
+      mainPath.style.strokeDasharray = `${totalLen}`
+      glowPath.style.strokeDasharray = `${totalLen}`
+
+      // Position waypoint dot along the curve
+      const wp = getCubicBezierPoint(
+        cfg.waypointRatio,
+        pts.sx,
+        pts.sy,
+        pts.c1x,
+        pts.c1y,
+        pts.c2x,
+        pts.c2y,
+        pts.ex,
+        pts.ey
+      )
+      waypointDot.setAttribute("cx", wp.x.toFixed(2))
+      waypointDot.setAttribute("cy", wp.y.toFixed(2))
+
       stateRef.current.geometry.set(cfg.id, {
         hubCx,
         hubCy,
@@ -448,17 +491,25 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         cardCy,
         halfW: cardWidth / 2,
         halfH: cardHeight / 2,
+        sx: pts.sx,
+        sy: pts.sy,
+        c1x: pts.c1x,
+        c1y: pts.c1y,
+        c2x: pts.c2x,
+        c2y: pts.c2y,
+        ex: pts.ex,
+        ey: pts.ey,
       })
-
-      updateCardBezier(cfg.id, 0, 0)
     })
   }
 
   /**
-   * Reset all elements to initial state before animating
+   * Reset all elements to initial visual state before replaying sequence
    */
   const resetToInitialVisualState = () => {
     stateRef.current.phase = "IDLE"
+    stateRef.current.selectedCardId = null
+    stateRef.current.hoveredCardId = null
 
     const hubCoreGlowEl = hubCoreGlowRef.current
     const centralHubEl = centralHubRef.current
@@ -496,15 +547,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       const mainPath = mainPathRefs.current.get(cfg.id)
       const waypointDot = waypointDotRefs.current.get(cfg.id)
       const pulseDot = pulseDotRefs.current.get(cfg.id)
+      const totalLen = stateRef.current.pathLengths.get(cfg.id) || 200
 
       if (cardEl) {
         cardEl.style.transition = "none"
-        cardEl.classList.remove("is-visible", "is-highlighted", "is-dimmed")
-        cardEl.style.transform = "translate(-50%, calc(-50% + 12px)) scale(0.94)"
+        cardEl.classList.remove("is-visible", "is-selected", "is-highlighted", "is-dimmed")
+        cardEl.style.transform = "translate(-50%, calc(-50% + 12px)) translateZ(25px) scale(0.94)"
       }
-
-      updateCardBezier(cfg.id, 0, 0)
-      const totalLen = stateRef.current.pathLengths.get(cfg.id) || 200
 
       if (glowPath) {
         glowPath.style.transition = "none"
@@ -541,11 +590,10 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   }
 
   /**
-   * Coordinated 3-Stage Sequence
+   * Coordinated 3-Stage Animation Sequence
    */
   const playCoordinatedSequence = () => {
     clearAllTimersAndRaf()
-    stateRef.current.hoveredCardId = null
     resetToInitialVisualState()
 
     // STAGE 1: Central Hub & Core Glow (0ms - 650ms)
@@ -555,7 +603,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       centralHubRef.current?.classList.add("is-visible")
     }, 40)
 
-    // STAGE 2: SVG Connection Lines & Tendrils outward (450ms - 1250ms)
+    // STAGE 2: Connection Lines Outward (450ms - 1250ms)
     scheduleTimer(() => {
       stateRef.current.phase = "STAGE_2_LINES"
 
@@ -603,7 +651,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       })
     }, 450)
 
-    // STAGE 3: Supporting Cards Stagger in (950ms - 1750ms)
+    // STAGE 3: Supporting Cards Stagger In (950ms - 1750ms)
     scheduleTimer(() => {
       stateRef.current.phase = "STAGE_3_CARDS"
 
@@ -613,13 +661,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         scheduleTimer(() => {
           if (cardEl) {
             cardEl.classList.add("is-visible")
-            cardEl.style.transform = "translate(-50%, -50%) scale(1)"
+            cardEl.style.transform = "translate(-50%, -50%) translateZ(25px) scale(1)"
           }
         }, staggerMs)
       })
     }, 950)
 
-    // STAGE 4: Steady State (Continuous 60fps Floating + Welded Paths + Pulses)
+    // STAGE 4: Steady State (Continuous 60FPS Micro-Float + Data Pulses)
     scheduleTimer(() => {
       stateRef.current.phase = "STEADY"
       stateRef.current.steadyStartTime = performance.now()
@@ -628,16 +676,16 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         const cardEl = cardRefs.current.get(cfg.id)
         if (cardEl) {
           cardEl.style.transition =
-            "opacity 0.35s var(--ease-out-expo), border-color 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo)"
+            "opacity 0.25s var(--ease-out-expo), border-color 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo)"
         }
       })
 
       startSteadyStateLoop()
-    }, 1820)
+    }, 1800)
   }
 
   /**
-   * 60FPS Steady State Loop
+   * Ultra-smooth 60FPS loop with pure closed-form arithmetic (Zero Layout Thrashing)
    */
   const startSteadyStateLoop = () => {
     if (stateRef.current.rafId !== null) {
@@ -648,50 +696,78 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
       if (stateRef.current.phase !== "STEADY") return
 
       const elapsedSec = (now - stateRef.current.steadyStartTime) / 1000
+      const activeCardId =
+        stateRef.current.selectedCardId || stateRef.current.hoveredCardId
 
       CARDS_CONFIG.forEach((cfg) => {
         const cardEl = cardRefs.current.get(cfg.id)
+        const glowPath = glowPathRefs.current.get(cfg.id)
         const mainPath = mainPathRefs.current.get(cfg.id)
         const pulseDot = pulseDotRefs.current.get(cfg.id)
-        const pathLength = stateRef.current.pathLengths.get(cfg.id) || 0
+        const geom = stateRef.current.geometry.get(cfg.id)
 
+        if (!geom || !cardEl) return
+
+        const isSelected = stateRef.current.selectedCardId === cfg.id
+        const isActive = activeCardId === cfg.id
         const phaseOffset = cfg.staggerIndex * 0.95
         const ramp = Math.min(1, elapsedSec / 0.6)
+
+        // Float micro-offsets
         const floatDx = Math.cos(elapsedSec * 1.15 + phaseOffset) * 1.4 * ramp
-        const floatDy = Math.sin(elapsedSec * 1.45 + phaseOffset) * 3.2 * ramp
+        const floatDy = Math.sin(elapsedSec * 1.45 + phaseOffset) * 3.0 * ramp
 
-        const isHovered = stateRef.current.hoveredCardId === cfg.id
-        const scaleVal = isHovered ? 1.04 : 1.0
+        // Elevated Z depth so right-side cards never sink behind 3D planes
+        const zElevation = isSelected ? 50 : isActive ? 35 : 25
+        const scaleVal = isSelected ? 1.07 : isActive ? 1.04 : 1.0
 
-        if (cardEl) {
-          cardEl.style.transform = `translate(calc(-50% + ${floatDx.toFixed(2)}px), calc(-50% + ${floatDy.toFixed(2)}px)) scale(${scaleVal})`
-        }
+        cardEl.style.transform = `translate(calc(-50% + ${floatDx.toFixed(1)}px), calc(-50% + ${floatDy.toFixed(1)}px)) translateZ(${zElevation}px) scale(${scaleVal})`
 
-        // Dynamically keep Bezier curve welded to floating card port
-        updateCardBezier(cfg.id, floatDx, floatDy)
+        // Fast closed-form path update with floating card endpoint
+        const curEx = geom.ex + floatDx
+        const curEy = geom.ey + floatDy
+        const pathData = `M ${geom.sx.toFixed(1)} ${geom.sy.toFixed(1)} C ${geom.c1x.toFixed(1)} ${geom.c1y.toFixed(1)}, ${geom.c2x.toFixed(1)} ${geom.c2y.toFixed(1)}, ${curEx.toFixed(1)} ${curEy.toFixed(1)}`
 
-        // Traveling pulse particle along curve
-        if (pulseDot && mainPath && pathLength > 0) {
-          const cycleDuration = 3.2
+        if (glowPath) glowPath.setAttribute("d", pathData)
+        if (mainPath) mainPath.setAttribute("d", pathData)
+
+        // Data pulse particles
+        if (pulseDot) {
+          // If selected, pulse speed is 2.5x faster with full brightness
+          const cycleDuration = isSelected ? 1.3 : 3.2
           const rawProgress =
             ((elapsedSec + cfg.staggerIndex * 0.42) % cycleDuration) / cycleDuration
 
-          if (rawProgress <= 0.78) {
-            const normT = rawProgress / 0.78
+          if (rawProgress <= 0.82) {
+            const normT = rawProgress / 0.82
             const easedT =
               normT < 0.5
                 ? 2 * normT * normT
                 : 1 - Math.pow(-2 * normT + 2, 2) / 2
 
-            const pt = mainPath.getPointAtLength(easedT * pathLength)
-            pulseDot.setAttribute("cx", pt.x.toFixed(2))
-            pulseDot.setAttribute("cy", pt.y.toFixed(2))
+            // Instant closed-form point without calling SVG engine
+            const pt = getCubicBezierPoint(
+              easedT,
+              geom.sx,
+              geom.sy,
+              geom.c1x,
+              geom.c1y,
+              geom.c2x,
+              geom.c2y,
+              curEx,
+              curEy
+            )
+
+            pulseDot.setAttribute("cx", pt.x.toFixed(1))
+            pulseDot.setAttribute("cy", pt.y.toFixed(1))
 
             const edgeFade = Math.sin(normT * Math.PI)
-            const highlightBoost = isHovered
+            const highlightBoost = isSelected
               ? 1.0
-              : stateRef.current.hoveredCardId
-              ? 0.2
+              : isActive
+              ? 0.95
+              : activeCardId
+              ? 0.15
               : 0.85
             pulseDot.style.opacity = (edgeFade * highlightBoost).toFixed(2)
           } else {
@@ -707,17 +783,9 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
   }
 
   /**
-   * Interactive hover/focus highlight
+   * Visual state styling for selected/hovered card
    */
-  const setHighlightCard = (cardId: string | null) => {
-    if (
-      stateRef.current.phase !== "STAGE_3_CARDS" &&
-      stateRef.current.phase !== "STEADY"
-    )
-      return
-
-    stateRef.current.hoveredCardId = cardId
-
+  const applyCardHighlight = (activeId: string | null) => {
     CARDS_CONFIG.forEach((cfg) => {
       const cardEl = cardRefs.current.get(cfg.id)
       const glowPath = glowPathRefs.current.get(cfg.id)
@@ -726,31 +794,78 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
       if (!cardEl || !glowPath || !mainPath || !waypointDot) return
 
-      if (!cardId) {
-        cardEl.classList.remove("is-highlighted", "is-dimmed")
+      if (!activeId) {
+        // Normal resting state
+        cardEl.classList.remove("is-selected", "is-highlighted", "is-dimmed")
         glowPath.style.opacity = "0.85"
         glowPath.setAttribute("stroke-width", "5")
         mainPath.style.opacity = "1"
         mainPath.setAttribute("stroke-width", "2")
         waypointDot.style.opacity = "1"
-      } else if (cfg.id === cardId) {
-        cardEl.classList.add("is-highlighted")
-        cardEl.classList.remove("is-dimmed")
+        waypointDot.style.transform = "scale(1)"
+      } else if (cfg.id === activeId) {
+        // Active / Selected card
+        const isSelected = stateRef.current.selectedCardId === cfg.id
+        if (isSelected) {
+          cardEl.classList.add("is-selected")
+          cardEl.classList.remove("is-highlighted", "is-dimmed")
+        } else {
+          cardEl.classList.add("is-highlighted")
+          cardEl.classList.remove("is-selected", "is-dimmed")
+        }
         glowPath.style.opacity = "1"
-        glowPath.setAttribute("stroke-width", "8")
+        glowPath.setAttribute("stroke-width", isSelected ? "9.5" : "7.5")
         mainPath.style.opacity = "1"
-        mainPath.setAttribute("stroke-width", "2.8")
+        mainPath.setAttribute("stroke-width", isSelected ? "3.2" : "2.6")
         waypointDot.style.opacity = "1"
+        waypointDot.style.transform = isSelected ? "scale(1.5)" : "scale(1.2)"
       } else {
-        cardEl.classList.remove("is-highlighted")
+        // Inactive cards dimmed
+        cardEl.classList.remove("is-selected", "is-highlighted")
         cardEl.classList.add("is-dimmed")
-        glowPath.style.opacity = "0.18"
-        glowPath.setAttribute("stroke-width", "4")
-        mainPath.style.opacity = "0.28"
-        mainPath.setAttribute("stroke-width", "1.5")
-        waypointDot.style.opacity = "0.3"
+        glowPath.style.opacity = "0.15"
+        glowPath.setAttribute("stroke-width", "3.5")
+        mainPath.style.opacity = "0.2"
+        mainPath.setAttribute("stroke-width", "1.2")
+        waypointDot.style.opacity = "0.2"
+        waypointDot.style.transform = "scale(0.8)"
       }
     })
+  }
+
+  /**
+   * Card Click Handler: Instant flow activation, toggles selection
+   */
+  const handleCardClick = (cardId: string) => {
+    // If currently selected card is clicked, deselect and return to resting state
+    if (stateRef.current.selectedCardId === cardId) {
+      stateRef.current.selectedCardId = null
+      stateRef.current.hoveredCardId = null
+      applyCardHighlight(null)
+      return
+    }
+
+    // Lock selection on clicked card
+    stateRef.current.selectedCardId = cardId
+    stateRef.current.hoveredCardId = null
+    stateRef.current.flowStartTime = performance.now()
+    applyCardHighlight(cardId)
+  }
+
+  const handleCardHover = (cardId: string) => {
+    // If a card is already locked via click, hover preview is disabled
+    if (stateRef.current.selectedCardId !== null) return
+    stateRef.current.hoveredCardId = cardId
+    applyCardHighlight(cardId)
+  }
+
+  const handleCardLeave = (cardId: string) => {
+    // Never dismiss an active click selection on mouseleave
+    if (stateRef.current.selectedCardId !== null) return
+    if (stateRef.current.hoveredCardId === cardId) {
+      stateRef.current.hoveredCardId = null
+      applyCardHighlight(null)
+    }
   }
 
   // Handle Mount, Resize, and Activation
@@ -799,7 +914,11 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     <div
       ref={rootRef}
       className="ai-knowledge-network-root"
-      onClick={() => setHighlightCard(null)}
+      onClick={() => {
+        stateRef.current.selectedCardId = null
+        stateRef.current.hoveredCardId = null
+        applyCardHighlight(null)
+      }}
     >
       {/* Scoped CSS Styles */}
       <style jsx>{`
@@ -864,6 +983,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           display: flex;
           align-items: center;
           justify-content: center;
+          pointer-events: none;
         }
 
         .network-plane {
@@ -873,12 +993,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           transform-style: preserve-3d;
           transition: transform 0.7s var(--ease-out-expo);
           will-change: transform;
-          transform: rotateY(-11deg) rotateX(3.5deg);
+          transform: rotateY(-7deg) rotateX(2.5deg);
+          pointer-events: none;
         }
 
         @media (max-width: 768px) {
           .network-plane {
-            transform: rotateY(-5deg) rotateX(2deg);
+            transform: rotateY(-3deg) rotateX(1.5deg);
           }
         }
 
@@ -923,11 +1044,11 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         /* Central Hub Element */
         .central-hub {
           position: absolute;
-          z-index: 10;
-          transform: translate(-50%, -50%) scale(0.82);
+          z-index: 30;
+          transform: translate(-50%, -50%) translateZ(35px) scale(0.82);
           opacity: 0;
           border-radius: 22px;
-          background: linear-gradient(145deg, rgba(37, 99, 235, 0.42) 0%, rgba(30, 58, 138, 0.65) 55%, rgba(49, 46, 129, 0.72) 100%);
+          background: linear-gradient(145deg, rgba(37, 99, 235, 0.45) 0%, rgba(30, 58, 138, 0.70) 55%, rgba(49, 46, 129, 0.75) 100%);
           border: 1.5px solid rgba(147, 197, 253, 0.85);
           box-shadow:
             0 0 28px rgba(59, 130, 246, 0.75),
@@ -939,11 +1060,12 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          pointer-events: auto !important;
           transition:
             opacity 0.65s var(--ease-out-expo),
-            transform 0.65s var(--ease-out-expo),
-            box-shadow 0.35s var(--ease-out-expo),
-            border-color 0.35s var(--ease-out-expo);
+            transform 0.3s var(--ease-out-expo),
+            box-shadow 0.3s var(--ease-out-expo),
+            border-color 0.3s var(--ease-out-expo);
           will-change: transform, opacity;
         }
 
@@ -960,7 +1082,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .central-hub.is-visible {
           opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) translateZ(35px) scale(1);
         }
 
         .central-hub:hover {
@@ -971,14 +1093,24 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             inset 0 0 28px rgba(186, 230, 253, 0.65);
         }
 
+        /* Cards Layer */
+        #cardsLayer {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 20;
+        }
+
         /* Knowledge Card */
         .knowledge-card {
           position: absolute;
-          z-index: 8;
-          transform: translate(-50%, calc(-50% + 12px)) scale(0.94);
+          z-index: 25;
+          transform: translate(-50%, -50%) translateZ(25px) scale(0.94);
           opacity: 0;
           border-radius: 14px;
-          background: linear-gradient(135deg, rgba(15, 34, 84, 0.72) 0%, rgba(10, 22, 58, 0.82) 100%);
+          background: linear-gradient(135deg, rgba(15, 34, 84, 0.75) 0%, rgba(10, 22, 58, 0.85) 100%);
           border: 1.2px solid rgba(96, 165, 250, 0.58);
           box-shadow:
             0 8px 28px -6px rgba(2, 6, 23, 0.75),
@@ -991,17 +1123,17 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           align-items: center;
           gap: 11px;
           cursor: pointer;
+          pointer-events: auto !important;
           transition:
-            opacity 0.58s var(--ease-out-expo),
-            transform 0.58s var(--ease-out-expo),
-            border-color 0.3s var(--ease-out-expo),
-            box-shadow 0.3s var(--ease-out-expo),
-            background 0.3s var(--ease-out-expo);
+            opacity 0.45s var(--ease-out-expo),
+            border-color 0.22s var(--ease-out-expo),
+            box-shadow 0.22s var(--ease-out-expo),
+            background 0.22s var(--ease-out-expo);
           will-change: transform, opacity;
         }
 
         .knowledge-card[data-tint="violet"] {
-          background: linear-gradient(135deg, rgba(30, 27, 94, 0.74) 0%, rgba(19, 18, 64, 0.84) 100%);
+          background: linear-gradient(135deg, rgba(30, 27, 94, 0.75) 0%, rgba(19, 18, 64, 0.85) 100%);
           border-color: rgba(139, 92, 246, 0.68);
           box-shadow:
             0 8px 28px -6px rgba(2, 6, 23, 0.78),
@@ -1011,16 +1143,16 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
 
         .knowledge-card.is-visible {
           opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
         }
 
+        /* Hover Preview State */
         .knowledge-card.is-highlighted {
           border-color: rgba(186, 230, 253, 0.98);
           box-shadow:
             0 12px 34px -6px rgba(2, 6, 23, 0.85),
             0 0 28px rgba(56, 189, 248, 0.65),
             inset 0 0 18px rgba(125, 211, 252, 0.38);
-          z-index: 12;
+          z-index: 35 !important;
         }
 
         .knowledge-card[data-tint="violet"].is-highlighted {
@@ -1031,8 +1163,30 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             inset 0 0 18px rgba(196, 181, 253, 0.42);
         }
 
+        /* Locked Selected State (Triggered on Click) */
+        .knowledge-card.is-selected {
+          z-index: 50 !important;
+          border-color: #ffffff !important;
+          background: linear-gradient(135deg, rgba(29, 78, 216, 0.85) 0%, rgba(30, 58, 138, 0.92) 100%) !important;
+          box-shadow:
+            0 16px 42px -4px rgba(2, 6, 23, 0.92),
+            0 0 35px rgba(56, 189, 248, 0.95),
+            0 0 70px rgba(37, 99, 235, 0.65),
+            inset 0 0 22px rgba(186, 230, 253, 0.6) !important;
+        }
+
+        .knowledge-card[data-tint="violet"].is-selected {
+          border-color: #ffffff !important;
+          background: linear-gradient(135deg, rgba(88, 28, 135, 0.85) 0%, rgba(46, 16, 101, 0.92) 100%) !important;
+          box-shadow:
+            0 16px 42px -4px rgba(2, 6, 23, 0.92),
+            0 0 35px rgba(167, 139, 250, 0.95),
+            0 0 70px rgba(124, 58, 237, 0.65),
+            inset 0 0 22px rgba(221, 214, 254, 0.6) !important;
+        }
+
         .knowledge-card.is-dimmed {
-          opacity: 0.42;
+          opacity: 0.32 !important;
         }
 
         .card-icon-box {
@@ -1121,13 +1275,13 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
           fill: none;
           stroke-linecap: round;
           filter: blur(4px);
-          transition: opacity 0.35s var(--ease-out-expo), stroke-width 0.35s var(--ease-out-expo);
+          transition: opacity 0.25s var(--ease-out-expo), stroke-width 0.25s var(--ease-out-expo);
         }
 
         .conn-main-path {
           fill: none;
           stroke-linecap: round;
-          transition: opacity 0.35s var(--ease-out-expo), stroke-width 0.35s var(--ease-out-expo);
+          transition: opacity 0.25s var(--ease-out-expo), stroke-width 0.25s var(--ease-out-expo);
         }
 
         .conn-tendril-path {
@@ -1136,7 +1290,7 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
         }
 
         .conn-node-dot {
-          transition: opacity 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
+          transition: opacity 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
           transform-box: fill-box;
           transform-origin: center;
         }
@@ -1303,7 +1457,9 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             aria-label="Pusat Jaringan Dokumen AI"
             onClick={(e) => {
               e.stopPropagation()
-              setHighlightCard(null)
+              stateRef.current.selectedCardId = null
+              stateRef.current.hoveredCardId = null
+              applyCardHighlight(null)
             }}
           >
             <svg
@@ -1350,15 +1506,21 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
                 id={`card-${cfg.id}`}
                 data-card-id={cfg.id}
                 data-tint={cfg.tint}
-                role="region"
-                aria-label={cfg.title}
-                onMouseEnter={() => setHighlightCard(cfg.id)}
-                onMouseLeave={() => setHighlightCard(null)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Kartu ${cfg.title}`}
+                onMouseEnter={() => handleCardHover(cfg.id)}
+                onMouseLeave={() => handleCardLeave(cfg.id)}
                 onClick={(e) => {
                   e.stopPropagation()
-                  setHighlightCard(
-                    stateRef.current.hoveredCardId === cfg.id ? null : cfg.id
-                  )
+                  handleCardClick(cfg.id)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleCardClick(cfg.id)
+                  }
                 }}
               >
                 <div className="card-icon-box">{cfg.iconSvg}</div>

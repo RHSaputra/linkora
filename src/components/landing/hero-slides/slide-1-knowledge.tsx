@@ -29,13 +29,13 @@ export function Slide1Knowledge({ locale, isActive = true }: SlideProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* LEFT: Headline & Action Content */}
-          <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 sm:space-y-6 pointer-events-auto">
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 sm:space-y-6 pointer-events-none">
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.1 }}
-              className="text-3xl xs:text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-white leading-[1.15] max-w-xl"
+              className="text-3xl xs:text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-white leading-[1.15] max-w-xl pointer-events-auto select-text"
             >
               {isEn ? (
                 <>
@@ -59,7 +59,7 @@ export function Slide1Knowledge({ locale, isActive = true }: SlideProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.2 }}
-              className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-xl font-normal leading-relaxed"
+              className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-xl font-normal leading-relaxed pointer-events-auto select-text"
             >
               {isEn
                 ? "Linkorian combines intelligent search, document management, and an AI assistant to help you discover critical information faster and easier."
@@ -70,7 +70,7 @@ export function Slide1Knowledge({ locale, isActive = true }: SlideProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.3 }}
-              className="flex flex-col xs:flex-row gap-3 pt-2 w-full xs:w-auto justify-center lg:justify-start"
+              className="flex flex-col xs:flex-row gap-3 pt-2 w-full xs:w-auto justify-center lg:justify-start pointer-events-auto"
             >
               <Button
                 size="lg"
