@@ -411,7 +411,7 @@ function NavContent({
                 )}
                 
                 {/* Hover Glow */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/5 to-transparent" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-foreground/[0.04]" />
                 
                 <item.icon className={cn("h-5 w-5 relative z-10 transition-transform duration-300 group-hover:scale-110", isActive && "text-primary group-hover:text-glow")} />
                 
@@ -853,7 +853,7 @@ export function Sidebar({ onAddLink, onEditProfile }: SidebarProps) {
       {/* Floating Glass Dock (Permanent on Desktop, Slide-out Drawer on Mobile) */}
       <aside
         className={cn(
-          "fixed z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 glass-panel border-r lg:border-border",
+          "fixed z-50 flex flex-col transition-transform duration-300 lg:translate-x-0 glass-panel !bg-white dark:!bg-card/90 border-r lg:border-border shadow-md",
           "lg:left-6 lg:top-6 lg:bottom-6 lg:rounded-3xl lg:w-[260px]", // Floating permanently expanded on desktop
           "inset-y-0 left-0 w-64 rounded-r-3xl", // Classic drawer on mobile
           mobileOpen ? "translate-x-0" : "-translate-x-full"

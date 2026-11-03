@@ -16,23 +16,23 @@ export function BackgroundEffects() {
       {/* Deep Space / Pure White Background */}
       <div className="absolute inset-0 bg-background" />
 
-      {/* GPU-accelerated ambient glowing gradients (Pure CSS, zero JS thread overhead) */}
+      {/* GPU-accelerated ambient glowing gradients (Pure CSS, zero JS thread overhead - active in dark mode, pure clean white in light mode) */}
       <div
-        className="absolute -top-[15%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-35 dark:opacity-20 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
+        className="hidden dark:block absolute -top-[15%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-35 dark:opacity-20 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
         style={{
           background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)",
         }}
       />
 
       <div
-        className="absolute top-[25%] -right-[15%] w-[60%] h-[60%] rounded-full opacity-25 dark:opacity-15 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
+        className="hidden dark:block absolute top-[25%] -right-[15%] w-[60%] h-[60%] rounded-full opacity-25 dark:opacity-15 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
         style={{
           background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)",
         }}
       />
 
       <div
-        className="absolute -bottom-[15%] left-[25%] w-[50%] h-[50%] rounded-full opacity-15 dark:opacity-10 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
+        className="hidden dark:block absolute -bottom-[15%] left-[25%] w-[50%] h-[50%] rounded-full opacity-15 dark:opacity-10 blur-[90px] mix-blend-multiply dark:mix-blend-screen transform-gpu"
         style={{
           background: "radial-gradient(circle, var(--destructive) 0%, transparent 70%)",
         }}

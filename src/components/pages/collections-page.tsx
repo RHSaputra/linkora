@@ -14,6 +14,8 @@ import {
   Clock,
   ChevronRight,
   FolderPlus,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +82,7 @@ export function CollectionsPage({
   // ── LINK COLLECTIONS STATE ──
   const { collections, loading: loadingCollections, refresh: refreshCollections } = useCollections();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isFullLinkView, setIsFullLinkView] = useState(false);
   const [collectionLinks, setCollectionLinks] = useState<SerializedLink[]>([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
 
@@ -93,6 +96,7 @@ export function CollectionsPage({
   // ── NOTE COLLECTIONS (NOTE FOLDERS) STATE ──
   const { folders: noteFolders, loading: loadingNoteFolders, refresh: refreshNoteFolders } = useNoteFolders();
   const [selectedNoteFolderId, setSelectedNoteFolderId] = useState<string | null>(null);
+  const [isFullNoteView, setIsFullNoteView] = useState(false);
   const [folderNotes, setFolderNotes] = useState<any[]>([]);
   const [loadingFolderNotes, setLoadingFolderNotes] = useState(false);
   const [creatingNoteInFolder, setCreatingNoteInFolder] = useState(false);
@@ -104,6 +108,20 @@ export function CollectionsPage({
   const [noteFolderColor, setNoteFolderColor] = useState("#6366f1");
   const [savingNoteFolder, setSavingNoteFolder] = useState(false);
   const [deleteNoteFolderDialogOpen, setDeleteNoteFolderDialogOpen] = useState(false);
+
+  // Reset full view on folder change or tab change
+  useEffect(() => {
+    setIsFullLinkView(false);
+  }, [selectedId]);
+
+  useEffect(() => {
+    setIsFullNoteView(false);
+  }, [selectedNoteFolderId]);
+
+  useEffect(() => {
+    setIsFullLinkView(false);
+    setIsFullNoteView(false);
+  }, [activeTab]);
 
   // Auto Select first item when loaded
   useEffect(() => {
@@ -362,13 +380,17 @@ export function CollectionsPage({
     return text || (locale === "en" ? "Empty note" : "Catatan kosong");
   };
 
+  const isFullView = (activeTab === "links" && isFullLinkView) || (activeTab === "notes" && isFullNoteView);
+
   const selectedLinkCollection = collections.find((c) => c.id === selectedId);
   const selectedNoteFolder = noteFolders.find((f) => f.id === selectedNoteFolderId);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12">
-      {/* ── HEADER & CATEGORY SWITCHER TABS ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* ── HEADER & CATEGORY SWITCHER TABS (Hidden in Full View) ── */}
+      {!isFullView && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-bold tracking-tight text-foreground font-heading">{t("collections.title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{t("collections.subtitle")}</p>
@@ -436,10 +458,125 @@ export function CollectionsPage({
           </span>
         </button>
       </div>
+        </>
+      )}
 
       {/* ── TAB 1: KOLEKSI TAUTAN (LINK COLLECTIONS) ── */}
       {activeTab === "links" && (
-        <div className="space-y-6">
+        isFullLinkView && selectedLinkCollection ? (
+          /* ── FULL VIEW: TAMPILAN BARU (UKURAN CARD NORMAL SEPERTI SEMUA TAUTAN) ── */
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Top Bar Navigation & Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsFullLinkView(false)}
+                  className="h-9 px-3.5 rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
+                >
+                  <ArrowLeft className="w-4 h-4 text-primary" />
+                  <span>{locale === "en" ? "Back to Collections" : "Kembali ke Koleksi"}</span>
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{t("collections.title")} /</span>
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold"
+                    style={{
+                      backgroundColor: `${selectedLinkCollection.color}15`,
+                      borderColor: `${selectedLinkCollection.color}40`,
+                      color: selectedLinkCollection.color,
+                    }}
+                  >
+                    <FolderOpen className="h-3.5 w-3.5" />
+                    <span>{selectedLinkCollection.name}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <ViewModeSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setManageLinksOpen(true)}
+                  className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>{t("collections.manageLinks")}</span>
+                </Button>
+                <Button
+                  variant="destructive-ghost"
+                  size="icon-sm"
+                  onClick={handleDeleteCollection}
+                  title={t("common.delete")}
+                  className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Folder Header Banner */}
+            <div>
+              <h2
+                className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight flex items-center gap-2 text-foreground"
+                style={{ color: selectedLinkCollection.color }}
+              >
+                {selectedLinkCollection.name}
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {t("collections.savedLinksCount", { count: collectionLinks.length })}
+              </p>
+            </div>
+
+            {/* Full-width Cards Grid - EXACTLY SAME PROPORTIONS AS SEMUA TAUTAN */}
+            {loadingLinks ? (
+              <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-2xl animate-pulse" : "h-64 bg-muted rounded-2xl animate-pulse"} />
+                ))}
+              </div>
+            ) : collectionLinks.length === 0 ? (
+              <Card className="border-dashed rounded-3xl min-h-[260px] flex items-center justify-center bg-card/50">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <p className="text-sm font-medium text-muted-foreground">{t("collections.emptyInCollection")}</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 gap-1.5 rounded-xl text-xs font-semibold cursor-pointer"
+                    onClick={() => setManageLinksOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>{t("common.add")}</span>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}>
+                {collectionLinks.map((link, i) => (
+                  <LinkCard
+                    key={link.id}
+                    link={link}
+                    index={i}
+                    viewMode={viewMode}
+                    collectionId={selectedLinkCollection.id}
+                    onUpdate={() => {
+                      triggerRefresh();
+                      refreshCollections();
+                    }}
+                    onDelete={(deletedId) => {
+                      setCollectionLinks((prev) => prev.filter((l) => l.id !== deletedId));
+                    }}
+                    onEdit={openEditLink}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6">
           {/* Mobile Collections Chip Selector */}
           {collections.length > 0 && (
             <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none max-w-full">
@@ -494,9 +631,9 @@ export function CollectionsPage({
           )}
 
           {/* Grid Layout (Sidebar + Links View) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
             {/* Desktop Sidebar List */}
-            <div className="hidden lg:block space-y-2.5">
+            <div className="hidden lg:block w-full lg:w-64 xl:w-72 shrink-0 space-y-2.5">
               {loadingCollections ? (
                 [...Array(3)].map((_, i) => (
                   <div key={i} className="h-14 bg-muted/60 rounded-2xl animate-pulse" />
@@ -558,7 +695,7 @@ export function CollectionsPage({
             </div>
 
             {/* Selected Link Collection Detail View */}
-            <div className="lg:col-span-2">
+            <div className="flex-1 min-w-0 w-full">
               {selectedLinkCollection ? (
                 <div className="space-y-4">
                   {/* Selected Collection Clean Section Header */}
@@ -611,7 +748,7 @@ export function CollectionsPage({
                   </div>
 
                   {loadingLinks ? (
-                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6"}>
+                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"}>
                       {[...Array(3)].map((_, i) => (
                         <div key={i} className={viewMode === "compact" ? "h-14 bg-muted rounded-2xl animate-pulse" : "h-48 bg-muted rounded-2xl animate-pulse"} />
                       ))}
@@ -632,8 +769,8 @@ export function CollectionsPage({
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6"}>
-                      {collectionLinks.map((link, i) => (
+                    <div className={viewMode === "compact" ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"}>
+                      {collectionLinks.slice(0, 3).map((link, i) => (
                         <LinkCard
                           key={link.id}
                           link={link}
@@ -652,6 +789,34 @@ export function CollectionsPage({
                       ))}
                     </div>
                   )}
+
+                  {collectionLinks.length > 3 ? (
+                    <div className="flex justify-center pt-3 sm:pt-4">
+                      <Button
+                        onClick={() => setIsFullLinkView(true)}
+                        className="px-6 py-2.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm gap-2 shadow-md transition-all active:scale-95 cursor-pointer"
+                      >
+                        <span>
+                          {locale === "en"
+                            ? `View All (${collectionLinks.length} links)`
+                            : `Lihat Selengkapnya (${collectionLinks.length} tautan)`}
+                        </span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : collectionLinks.length > 0 ? (
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsFullLinkView(true)}
+                        className="text-xs text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer"
+                      >
+                        <span>{locale === "en" ? "Open Full View" : "Buka Tampilan Penuh"}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <Card className="border-dashed rounded-3xl h-full min-h-[260px] flex items-center justify-center bg-card/30">
@@ -663,11 +828,151 @@ export function CollectionsPage({
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* ── TAB 2: KOLEKSI CATATAN (NOTE COLLECTIONS / NOTE FOLDERS) ── */}
       {activeTab === "notes" && (
-        <div className="space-y-6">
+        isFullNoteView && selectedNoteFolder ? (
+          /* ── FULL VIEW: TAMPILAN BARU CATATAN (UKURAN NORMAL SEPERTI SEMUA TAUTAN) ── */
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Top Bar Navigation & Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsFullNoteView(false)}
+                  className="h-9 px-3.5 rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
+                >
+                  <ArrowLeft className="w-4 h-4 text-cyan-500" />
+                  <span>{locale === "en" ? "Back to Collections" : "Kembali ke Koleksi"}</span>
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{t("collections.title")} /</span>
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold"
+                    style={{
+                      backgroundColor: `${selectedNoteFolder.color || "#06b6d4"}15`,
+                      borderColor: `${selectedNoteFolder.color || "#06b6d4"}40`,
+                      color: selectedNoteFolder.color || "#06b6d4",
+                    }}
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>{selectedNoteFolder.name}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  onClick={handleCreateNoteInFolder}
+                  disabled={creatingNoteInFolder}
+                  size="sm"
+                  className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{creatingNoteInFolder ? t("common.loading") : t("notes.newNoteBtn")}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenNoteFolderModal(selectedNoteFolder)}
+                  className="h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/80 hover:bg-accent/50 cursor-pointer shadow-2xs"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>{locale === "en" ? "Edit" : "Ubah"}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setDeleteNoteFolderDialogOpen(true)}
+                  title={t("common.delete")}
+                  className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Folder Header Banner */}
+            <div>
+              <h2
+                className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight flex items-center gap-2 text-foreground"
+                style={{ color: selectedNoteFolder.color || "#06b6d4" }}
+              >
+                {selectedNoteFolder.name}
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {t("collections.savedNotesCount", { count: folderNotes.length })}
+              </p>
+            </div>
+
+            {/* Full-width Notes Grid - EXACTLY SAME PROPORTIONS AS SEMUA TAUTAN */}
+            {loadingFolderNotes ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-44 bg-muted/60 rounded-3xl animate-pulse" />
+                ))}
+              </div>
+            ) : folderNotes.length === 0 ? (
+              <Card className="border-dashed rounded-3xl min-h-[260px] flex items-center justify-center bg-card/50">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <p className="text-sm font-medium text-muted-foreground">{t("collections.emptyInNoteCollection")}</p>
+                  <Button
+                    size="sm"
+                    className="mt-4 gap-1.5 rounded-xl text-xs font-semibold cursor-pointer bg-cyan-500 hover:bg-cyan-600 text-white"
+                    onClick={handleCreateNoteInFolder}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>{t("collections.createFirstNoteInCollection")}</span>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {folderNotes.map((note) => (
+                  <div
+                    key={note.id}
+                    onClick={() => router.push(`/notes/${note.id}`)}
+                    className="group p-4 sm:p-5 rounded-2xl sm:rounded-3xl glass-panel border border-border/60 hover:border-cyan-500/40 transition-all duration-200 hover:shadow-lg cursor-pointer flex flex-col justify-between h-48 relative overflow-hidden bg-card/70"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-1.5 mb-2">
+                        <h3 className="font-bold text-foreground font-heading line-clamp-1 text-sm sm:text-base group-hover:text-cyan-500 transition-colors">
+                          {note.title || t("notes.untitledNote")}
+                        </h3>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {note.isPinned && <Pin className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />}
+                          {note.isFavorite && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                        {getCleanSnippet(note.content)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/40 text-[11px] text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 opacity-70" />
+                        {new Date(note.updatedAt).toLocaleDateString(locale === "en" ? "en-US" : "id-ID", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span className="flex items-center gap-1 text-cyan-500 font-semibold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <span>{locale === "en" ? "Open" : "Buka"}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6">
           {/* Mobile Note Collections Chip Selector */}
           {noteFolders.length > 0 && (
             <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none max-w-full">
@@ -723,9 +1028,9 @@ export function CollectionsPage({
           )}
 
           {/* Grid Layout (Sidebar + Notes View) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
             {/* Desktop Sidebar List */}
-            <div className="hidden lg:block space-y-2.5">
+            <div className="hidden lg:block w-full lg:w-64 xl:w-72 shrink-0 space-y-2.5">
               {loadingNoteFolders ? (
                 [...Array(3)].map((_, i) => (
                   <div key={i} className="h-14 bg-muted/60 rounded-2xl animate-pulse" />
@@ -790,7 +1095,7 @@ export function CollectionsPage({
             </div>
 
             {/* Selected Note Folder Detail View */}
-            <div className="lg:col-span-2">
+            <div className="flex-1 min-w-0 w-full">
               {selectedNoteFolder ? (
                 <div className="space-y-4">
                   {/* Selected Note Folder Clean Section Header */}
@@ -854,7 +1159,7 @@ export function CollectionsPage({
 
                   {/* Notes List Grid */}
                   {loadingFolderNotes ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                       {[...Array(3)].map((_, i) => (
                         <div key={i} className="h-44 bg-muted/60 rounded-3xl animate-pulse" />
                       ))}
@@ -874,8 +1179,8 @@ export function CollectionsPage({
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-6">
-                      {folderNotes.map((note) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                      {folderNotes.slice(0, 3).map((note) => (
                         <div
                           key={note.id}
                           onClick={() => router.push(`/notes/${note.id}`)}
@@ -913,6 +1218,34 @@ export function CollectionsPage({
                       ))}
                     </div>
                   )}
+
+                  {folderNotes.length > 3 ? (
+                    <div className="flex justify-center pt-3 sm:pt-4">
+                      <Button
+                        onClick={() => setIsFullNoteView(true)}
+                        className="px-6 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-xs sm:text-sm gap-2 shadow-md transition-all active:scale-95 cursor-pointer"
+                      >
+                        <span>
+                          {locale === "en"
+                            ? `View All (${folderNotes.length} notes)`
+                            : `Lihat Selengkapnya (${folderNotes.length} catatan)`}
+                        </span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : folderNotes.length > 0 ? (
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsFullNoteView(true)}
+                        className="text-xs text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer"
+                      >
+                        <span>{locale === "en" ? "Open Full View" : "Buka Tampilan Penuh"}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <Card className="border-dashed rounded-3xl h-full min-h-[260px] flex items-center justify-center bg-card/30">
@@ -924,6 +1257,7 @@ export function CollectionsPage({
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* ── DIALOG: BUAT/EDIT KOLEKSI TAUTAN ── */}
