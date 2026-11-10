@@ -96,7 +96,7 @@ export function RoadmapsPage() {
         refresh(true);
         router.push(`/roadmaps/${newRoadmap.id}`);
       } else {
-        const errorData = await res.json();
+        const errorData = await res.json().catch(() => ({}));
         toast.error(errorData.error || (locale === "en" ? "Failed to create roadmap" : "Gagal membuat roadmap"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
@@ -284,7 +284,7 @@ export function RoadmapsPage() {
               <div
                 key={roadmap.id}
                 onClick={() => router.push(`/roadmaps/${roadmap.id}`)}
-                className="group relative p-6 rounded-2xl border border-border/60 hover:border-primary/50 transition-all duration-200 glass-panel bg-card/95 hover:shadow-md flex flex-col justify-between gap-4 cursor-pointer"
+                className="group relative p-6 rounded-2xl border border-border dark:border-white/15 bg-card dark:bg-card hover:border-primary/50 dark:hover:border-primary/60 transition-all duration-200 glass-panel shadow-sm hover:shadow-md flex flex-col justify-between gap-4 cursor-pointer"
               >
                 {/* Card Top Header */}
                 <div className="flex items-start justify-between gap-3">

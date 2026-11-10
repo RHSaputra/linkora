@@ -3,10 +3,8 @@
  * World-class notification engine supporting:
  * 1. Web Audio API Crystal Chime (In-App Sound Alert)
  * 2. Web Notification API (OS Background System Push)
- * 3. Capacitor Local Notifications (Android Native Offline Alarms)
+ * 3. Pure Web Cross-Platform Notifications (Desktop, Tablet, Mobile)
  */
-
-import { Capacitor } from "@capacitor/core";
 
 // Audio Context Singleton for Web Audio API
 let audioCtx: AudioContext | null = null;
@@ -135,80 +133,4 @@ export function showWebNotification(options: {
   }
 }
 
-/**
- * Android / Native Capacitor Local Notifications Engine
- */
-export async function scheduleCapacitorLocalNotification(options: {
-  id: number;
-  title: string;
-  body: string;
-  scheduleDate: Date;
-  url?: string;
-  targetId?: string;
-}): Promise<boolean> {
-  if (!Capacitor.isNativePlatform()) {
-    return false;
-  }
 
-  try {
-    const { LocalNotifications } = await import("@capacitor/local-notifications");
-
-    // Request permissions on mobile
-    const permStatus = await LocalNotifications.checkPermissions();
-    if (permStatus.display !== "granted") {
-      const req = await LocalNotifications.requestPermissions();
-      if (req.display !== "granted") return false;
-    }
-
-    // Ensure notification channel exists (Android 8.0+)
-    if (Capacitor.getPlatform() === "android") {
-      await LocalNotifications.createChannel({
-        id: "linkora_reminders",
-        name: "Pengingat Linkorian",
-        description: "Notifikasi jadwal pengingat tautan dan catatan Linkorian",
-        importance: 5, // HIGH importance for heads-up alerts
-        visibility: 1,
-        vibration: true,
-        lights: true,
-        lightColor: "#6366f1",
-      });
-    }
-
-    // Schedule exact notification
-    await LocalNotifications.schedule({
-      notifications: [
-        {
-          id: options.id,
-          title: options.title,
-          body: options.body,
-          schedule: { at: options.scheduleDate, allowWhileIdle: true },
-          channelId: "linkora_reminders",
-          smallIcon: "ic_stat_name",
-          iconColor: "#6366f1",
-          extra: {
-            url: options.url,
-            targetId: options.targetId,
-          },
-        },
-      ],
-    });
-
-    return true;
-  } catch (err) {
-    console.warn("[Capacitor Notification] Could not schedule mobile alarm:", err);
-    return false;
-  }
-}
-
-/**
- * Cancel scheduled local notification on mobile
- */
-export async function cancelCapacitorLocalNotification(id: number): Promise<void> {
-  if (!Capacitor.isNativePlatform()) return;
-  try {
-    const { LocalNotifications } = await import("@capacitor/local-notifications");
-    await LocalNotifications.cancel({ notifications: [{ id }] });
-  } catch (err) {
-    console.warn("[Capacitor Notification] Could not cancel notification:", err);
-  }
-}

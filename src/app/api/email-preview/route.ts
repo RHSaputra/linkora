@@ -4,7 +4,8 @@ import { renderWelcomeEmail } from "@/lib/email/templates/welcome";
 import { renderPasswordResetEmail } from "@/lib/email/templates/password-reset";
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
+  try {
+    const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") || "otp";
   const appUrl = process.env.APP_URL || "http://localhost:3000";
 
@@ -53,4 +54,11 @@ export async function GET(req: Request) {
     html: result.html,
     text: result.text,
   });
+  } catch (error: any) {
+    console.error("[Email Preview Error]:", error);
+    return NextResponse.json(
+      { error: error?.message || "Failed to render email preview" },
+      { status: 500 }
+    );
+  }
 }

@@ -48,16 +48,16 @@ export default function RegisterPage() {
 
   useEffect(() => {
     fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
-      .then(r => r.json())
-      .then(data => setProvinces(data))
+      .then(r => (r.ok ? r.json() : []))
+      .then(data => { if (Array.isArray(data)) setProvinces(data); })
       .catch(console.error)
   }, [])
 
   useEffect(() => {
     if (selProvince) {
       fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selProvince.id}.json`)
-        .then(r => r.json())
-        .then(data => setRegencies(data))
+        .then(r => (r.ok ? r.json() : []))
+        .then(data => { if (Array.isArray(data)) setRegencies(data); })
         .catch(console.error)
     } else {
       setRegencies([])
@@ -69,8 +69,8 @@ export default function RegisterPage() {
   useEffect(() => {
     if (selRegency) {
       fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${selRegency.id}.json`)
-        .then(r => r.json())
-        .then(data => setDistricts(data))
+        .then(r => (r.ok ? r.json() : []))
+        .then(data => { if (Array.isArray(data)) setDistricts(data); })
         .catch(console.error)
     } else {
       setDistricts([])
@@ -81,8 +81,8 @@ export default function RegisterPage() {
   useEffect(() => {
     if (selDistrict) {
       fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${selDistrict.id}.json`)
-        .then(r => r.json())
-        .then(data => setVillages(data))
+        .then(r => (r.ok ? r.json() : []))
+        .then(data => { if (Array.isArray(data)) setVillages(data); })
         .catch(console.error)
     } else {
       setVillages([])
@@ -136,10 +136,10 @@ export default function RegisterPage() {
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError(data.error || (locale === "en" ? "An error occurred" : "Terjadi kesalahan"))
+        setError(data?.error || (locale === "en" ? "An error occurred" : "Terjadi kesalahan pada server"))
         recaptchaRef.current?.reset()
         setCaptchaToken(null)
         setLoading(false)
@@ -178,10 +178,10 @@ export default function RegisterPage() {
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError(data.error || (locale === "en" ? "Invalid verification code" : "Kode verifikasi tidak valid"))
+        setError(data?.error || (locale === "en" ? "Invalid verification code" : "Kode verifikasi tidak valid"))
         setOtpLoading(false)
       } else {
         // Automatically sign in the user to create an active session
@@ -218,10 +218,10 @@ export default function RegisterPage() {
         body: JSON.stringify({ email: registeredEmail }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError(data.error || (locale === "en" ? "Failed to resend code" : "Gagal mengirim ulang kode"))
+        setError(data?.error || (locale === "en" ? "Failed to resend code" : "Gagal mengirim ulang kode"))
       } else {
         setResendNotice(locale === "en" ? "A new verification code has been sent to your email." : "Kode verifikasi baru telah dikirim ke email Anda.")
         setResendCooldown(data.cooldownSeconds || 60)

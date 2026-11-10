@@ -48,10 +48,10 @@ function ResetPasswordForm() {
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError(data.error || (locale === "en" ? "Failed to reset password." : "Gagal mengatur ulang kata sandi."))
+        setError(data?.error || (locale === "en" ? "Failed to reset password." : "Gagal mengatur ulang kata sandi."))
         setLoading(false)
       } else {
         router.push("/login?reset=true")

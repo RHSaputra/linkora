@@ -150,10 +150,10 @@ export function CollectionsPage({
       setLoadingLinks(true);
       setCollectionLinks([]); // Clear stale data immediately to prevent hallucination across folders
       fetch(`/api/collections/${selectedId}`)
-        .then((r) => r.json())
+        .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!ignore) {
-            setCollectionLinks(data.links || []);
+            setCollectionLinks(data?.links || []);
           }
         })
         .catch(() => {
@@ -177,7 +177,7 @@ export function CollectionsPage({
       setLoadingFolderNotes(true);
       setFolderNotes([]); // Clear stale data immediately to prevent hallucination across folders
       fetch(`/api/notes?folderId=${selectedNoteFolderId}`)
-        .then((r) => r.json())
+        .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!ignore) {
             if (Array.isArray(data)) setFolderNotes(data);

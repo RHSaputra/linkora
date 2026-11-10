@@ -162,7 +162,7 @@ export function LinkCard({
       <div className="group relative w-full">
         <div
           onClick={handleCardClick}
-          className="glass-panel rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:border-border border border-border/80 bg-card/90 p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
+          className="glass-panel rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:border-border border border-border/80 dark:border-white/15 bg-card dark:bg-card p-2.5 sm:p-3 flex items-center justify-between gap-3 w-full"
         >
           {/* Left: Favicon / Details */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
@@ -354,7 +354,7 @@ export function LinkCard({
     <div className="group relative h-full flex flex-col w-full">
       <div
         onClick={handleCardClick}
-        className="glass-panel rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:border-border border border-border/80 bg-card/90 h-full flex flex-col justify-between"
+        className="glass-panel rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:border-border border border-border/80 dark:border-white/15 bg-card dark:bg-card h-full flex flex-col justify-between"
       >
         {/* ── CARD TOP BANNER / THUMBNAIL AREA ── */}
         <div className="relative w-full shrink-0">

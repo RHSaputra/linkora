@@ -39,9 +39,9 @@ export default function EmailPreviewPage() {
   useEffect(() => {
     setLoading(true)
     fetch(`/api/email-preview?type=${selectedType}`)
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        setEmailData(data)
+        if (data) setEmailData(data)
         setLoading(false)
       })
       .catch((err) => {
@@ -70,8 +70,8 @@ export default function EmailPreviewPage() {
         }),
       })
 
-      const data = await res.json()
-      if (data.success) {
+      const data = await res.json().catch(() => ({}))
+      if (data?.success) {
         setSendResult({
           success: true,
           message: `Email ${selectedType.toUpperCase()} berhasil dikirim ke ${testEmailRecipient}!`,

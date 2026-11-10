@@ -90,7 +90,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         toast.success(locale === "en" ? "New step added successfully" : "Langkah baru berhasil ditambahkan", locale === "en" ? "Success" : "Berhasil");
         fetchRoadmap();
       } else {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         toast.error(err.error || (locale === "en" ? "Failed to add node" : "Gagal menambah node"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {
@@ -181,7 +181,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         toast.success(locale === "en" ? "Connection created successfully" : "Koneksi berhasil dibuat", locale === "en" ? "Connected" : "Terhubung");
         fetchRoadmap();
       } else {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => ({}));
         toast.error(errData.error || (locale === "en" ? "Failed to connect nodes" : "Gagal menghubungkan node"), locale === "en" ? "Error" : "Error");
       }
     } catch (_err) {

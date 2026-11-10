@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, Plus, AlertTriangle, ExternalLink, Sparkles, Globe } from "lucide-react";
+import { Loader2, X, Plus, AlertTriangle, ExternalLink, Sparkles, Globe, RefreshCw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,7 @@ import { DEFAULT_CATEGORIES, getFaviconUrl } from "@/lib/utils";
 import { fetchMetadata, updateGlobalCacheLinks, updateGlobalCacheDashboard, dispatchRefresh } from "@/hooks/use-data";
 import { SerializedLink } from "@/lib/types";
 import { toast } from "@/components/ui/custom-toast";
-import { 
-  scheduleCapacitorLocalNotification, 
-  requestWebNotificationPermission 
-} from "@/lib/notification-service";
+import { requestWebNotificationPermission } from "@/lib/notification-service";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { useTranslation } from "@/components/providers/i18n-provider";
 import { LikoAnalyzeModal } from "@/components/ui/liko-ai-modal";
@@ -360,6 +357,123 @@ export function AddLinkDialog({
     onOpenChange(false);
   };
 
+  const handleUpdateDuplicateExisting = async () => {
+    const existing = duplicateData?.duplicates?.[0];
+    if (!existing) return;
+
+    let targetUrl = url.trim();
+    if (targetUrl && !targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      targetUrl = "https://" + targetUrl;
+    }
+
+    const updatedTitle = title?.trim() ? title.trim() : (existing.title || targetUrl);
+    const updatedDescription = description?.trim() ? description.trim() : (existing.description || null);
+    const updatedCategory = (category && category !== "Custom") ? category : (existing.category || category || "Custom");
+    const combinedTags = Array.isArray(tags) && tags.length > 0
+      ? Array.from(new Set([...(existing.tags || []), ...tags]))
+      : (existing.tags || []);
+    const updatedNotes = notes?.trim() ? notes.trim() : (existing.notes || null);
+    const updatedFavicon = favicon || existing.favicon || getFaviconUrl(targetUrl || existing.url);
+    const updatedThumbnail = thumbnail || existing.thumbnail || null;
+    const updatedIsFavorite = isFavorite || Boolean(existing.isFavorite);
+    const updatedReminderAt = reminderAt ? new Date(reminderAt).toISOString() : (existing.reminderAt || null);
+
+    const payload = {
+      id: existing.id,
+      url: targetUrl || existing.url,
+      title: updatedTitle,
+      description: updatedDescription,
+      category: updatedCategory,
+      tags: combinedTags,
+      notes: updatedNotes,
+      favicon: updatedFavicon,
+      thumbnail: updatedThumbnail,
+      isFavorite: updatedIsFavorite,
+      reminderAt: updatedReminderAt,
+    };
+
+    const updatedLink: SerializedLink = {
+      ...existing,
+      ...payload,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 1. Instantly update Global Cache Links
+    updateGlobalCacheLinks((items) =>
+      (items || []).map((item) => (item.id === existing.id ? updatedLink : item))
+    );
+
+    // 2. Instantly update Dashboard Cache
+    updateGlobalCacheDashboard((stats) => {
+      if (!stats) return stats;
+      return {
+        ...stats,
+        recentLinks: (stats.recentLinks || []).map((l) => (l.id === existing.id ? updatedLink : l)),
+        favoriteLinks: (stats.favoriteLinks || []).map((l) => (l.id === existing.id ? updatedLink : l)),
+        upcomingReminders: (stats.upcomingReminders || []).map((l) => (l.id === existing.id ? updatedLink : l)),
+      };
+    });
+
+    // 3. Dispatch refresh and custom event
+    dispatchRefresh(["links", "dashboard", "tags"], false);
+    window.dispatchEvent(new CustomEvent("liko-link-updated", { detail: { link: updatedLink } }));
+
+    // 4. Instantly close modal and reset form
+    setShowDuplicateModal(false);
+    resetForm();
+    onOpenChange(false);
+    onSuccess(updatedLink);
+    toast.success(
+      locale === "en" ? "Link successfully updated!" : "Tautan berhasil diperbarui!",
+      locale === "en" ? "Updated" : "Berhasil"
+    );
+
+    // 5. Send PATCH request in background
+    (async () => {
+      try {
+        const res = await fetch(`/api/links/${existing.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          const savedData: SerializedLink = await res.json().catch(() => null);
+          if (savedData) {
+            updateGlobalCacheLinks((items) =>
+              (items || []).map((item) => (item.id === existing.id ? savedData : item))
+            );
+            dispatchRefresh(["links", "dashboard", "tags"], false);
+
+            if (savedData.reminderAt && new Date(savedData.reminderAt) > new Date()) {
+              requestWebNotificationPermission().catch(() => {});
+            }
+          }
+        } else {
+          // Revert cache on server error
+          updateGlobalCacheLinks((items) =>
+            (items || []).map((item) => (item.id === existing.id ? existing : item))
+          );
+          dispatchRefresh(["links", "dashboard", "tags"], false);
+          const errorData = await res.json().catch(() => ({}));
+          toast.error(
+            errorData.error || (locale === "en" ? "Failed to update link on server." : "Gagal memperbarui tautan di server."),
+            locale === "en" ? "Failed" : "Gagal"
+          );
+        }
+      } catch (err: any) {
+        updateGlobalCacheLinks((items) =>
+          (items || []).map((item) => (item.id === existing.id ? existing : item))
+        );
+        dispatchRefresh(["links", "dashboard", "tags"], false);
+        toast.error(
+          err?.message || (locale === "en" ? "Connection error while updating link." : "Koneksi bermasalah saat memperbarui tautan."),
+          "Error"
+        );
+      }
+    })();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (requireAuth(t("links.saveLink"), t("auth.authRequiredDesc"))) {
@@ -480,14 +594,6 @@ export function AddLinkDialog({
 
               if (savedData.reminderAt && new Date(savedData.reminderAt) > new Date()) {
                 requestWebNotificationPermission().catch(() => {});
-                scheduleCapacitorLocalNotification({
-                  id: Math.abs(savedData.id.split("").reduce((a: number, b: string) => ((a << 5) - a) + b.charCodeAt(0), 0)),
-                  title: `⏰ Pengingat: ${savedData.title || "Tautan Linkorian"}`,
-                  body: `Waktunya meninjau tautan: ${savedData.url}`,
-                  scheduleDate: new Date(savedData.reminderAt),
-                  url: savedData.url,
-                  targetId: savedData.id,
-                }).catch(() => {});
               }
             }
           } else {
@@ -697,12 +803,23 @@ export function AddLinkDialog({
                       key="hint-duplicate"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2 mt-1.5"
+                      className="flex items-center justify-between gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2 mt-1.5"
                     >
-                      <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                      <p className="text-xs text-red-600 dark:text-red-400 leading-tight font-medium">
-                        Tautan ini sudah tersimpan di koleksimu. Analisis AI dan penambahan link diblokir.
-                      </p>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                        <p className="text-xs text-red-600 dark:text-red-400 leading-tight font-medium truncate">
+                          {locale === "en" ? "Duplicate link detected." : "Tautan ini sudah tersimpan di koleksimu."}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowDuplicateModal(true)}
+                        className="h-6 px-2 text-[11px] font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/15 rounded-lg shrink-0 cursor-pointer"
+                      >
+                        {locale === "en" ? "Options / Update" : "Opsi / Perbarui"}
+                      </Button>
                     </motion.div>
                   ) : fetchingMeta ? (
                     <motion.div
@@ -1056,26 +1173,27 @@ export function AddLinkDialog({
                     onClick={handleCancelDuplicateSave}
                     className="w-full sm:w-auto rounded-xl text-xs font-medium cursor-pointer"
                   >
-                    {locale === "en" ? "Discard / Cancel" : "Hapus"}
+                    {locale === "en" ? "Discard / Cancel" : "Batal"}
                   </Button>
                   {duplicateData.duplicates && duplicateData.duplicates.length > 0 && (
-                    <Button
-                      type="button"
-                      onClick={handleConfirmDuplicateSave}
-
-
-
-
-
-
-
-
-
-                      className="w-full sm:w-auto rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                    >
-
-                      <span>{locale === "en" ? "Save Anyway" : "Tetap Simpan"}</span>
-                    </Button>
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleConfirmDuplicateSave}
+                        className="w-full sm:w-auto rounded-xl text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span>{locale === "en" ? "Save Anyway" : "Tetap Simpan"}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleUpdateDuplicateExisting}
+                        className="w-full sm:w-auto rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        <span>{locale === "en" ? "Update Link" : "Perbarui Tautan"}</span>
+                      </Button>
+                    </>
                   )}
                 </div>
               </motion.div>

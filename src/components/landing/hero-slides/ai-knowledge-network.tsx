@@ -41,7 +41,7 @@ const CARDS_CONFIG = [
     tint: "blue" as const,
     staggerIndex: 0,
     desktopOffset: { dx: -0.70, dy: -0.76 },
-    mobileOffset:  { dx: -0.66, dy: -0.88 },
+    mobileOffset:  { dx: -1.02, dy: -0.74 },
     hubPort:       { side: "top-left", rx: -0.68, ry: -0.98 },
     cardPort:      { side: "right",    rx:  1.0,  ry: -0.18 },
     waypointRatio: 0.56,
@@ -63,7 +63,7 @@ const CARDS_CONFIG = [
     tint: "violet" as const,
     staggerIndex: 1,
     desktopOffset: { dx:  0.84, dy: -0.82 },
-    mobileOffset:  { dx:  0.66, dy: -0.88 },
+    mobileOffset:  { dx:  1.02, dy: -0.74 },
     hubPort:       { side: "top-right", rx:  0.72, ry: -0.98 },
     cardPort:      { side: "left",      rx: -1.0,  ry:  0.12 },
     waypointRatio: 0.52,
@@ -85,7 +85,7 @@ const CARDS_CONFIG = [
     tint: "blue" as const,
     staggerIndex: 2,
     desktopOffset: { dx: -1.04, dy: -0.12 },
-    mobileOffset:  { dx: -0.74, dy: -0.26 },
+    mobileOffset:  { dx: -1.05, dy:  0.0  },
     hubPort:       { side: "left",  rx: -1.0, ry: -0.12 },
     cardPort:      { side: "right", rx:  1.0, ry: -0.05 },
     waypointRatio: 0.62,
@@ -107,7 +107,7 @@ const CARDS_CONFIG = [
     tint: "violet" as const,
     staggerIndex: 3,
     desktopOffset: { dx:  1.12, dy: -0.06 },
-    mobileOffset:  { dx:  0.74, dy: -0.26 },
+    mobileOffset:  { dx:  1.05, dy:  0.0  },
     hubPort:       { side: "right", rx:  1.0, ry: -0.10 },
     cardPort:      { side: "left",  rx: -1.0, ry:  0.05 },
     waypointRatio: 0.45,
@@ -131,7 +131,7 @@ const CARDS_CONFIG = [
     tint: "blue" as const,
     staggerIndex: 4,
     desktopOffset: { dx: -0.88, dy:  0.52 },
-    mobileOffset:  { dx: -0.70, dy:  0.38 },
+    mobileOffset:  { dx: -1.02, dy:  0.74 },
     hubPort:       { side: "bottom-left", rx: -0.92, ry:  0.65 },
     cardPort:      { side: "right",       rx:  1.0,  ry:  0.15 },
     waypointRatio: 0.42,
@@ -151,7 +151,7 @@ const CARDS_CONFIG = [
     tint: "blue" as const,
     staggerIndex: 5,
     desktopOffset: { dx: -0.02, dy:  0.86 },
-    mobileOffset:  { dx: -0.36, dy:  0.96 },
+    mobileOffset:  { dx:  0.0,   dy:  1.28 },
     hubPort:       { side: "bottom", rx: -0.08, ry:  1.0 },
     cardPort:      { side: "top",    rx: -0.10, ry: -1.0 },
     waypointRatio: 0.50,
@@ -174,7 +174,7 @@ const CARDS_CONFIG = [
     tint: "violet" as const,
     staggerIndex: 6,
     desktopOffset: { dx:  0.96, dy:  0.66 },
-    mobileOffset:  { dx:  0.54, dy:  0.92 },
+    mobileOffset:  { dx:  1.02, dy:  0.74 },
     hubPort:       { side: "bottom-right", rx:  0.76, ry:  0.92 },
     cardPort:      { side: "left",         rx: -1.0,  ry:  0.08 },
     waypointRatio: 0.55,
@@ -526,10 +526,10 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     // On mobile, position hub slightly lower to leave ample room for top text.
     const hubCy = isMobile ? Math.min(vh * 0.60, vh - 180) : vh * 0.48
 
-    // Proportional hub and card dimensions
-    const hubSize = isSmallMobile ? 74 : (isMobile ? 86 : Math.min(118, Math.max(96, vw * 0.082)))
-    const cardWidth  = isSmallMobile ? 132 : (isMobile ? 148 : Math.min(186, Math.max(156, vw * 0.125)))
-    const cardHeight = isSmallMobile ? 54  : (isMobile ? 60  : 66)
+    // Proportional hub and card dimensions (strictly responsive for HP/Mobile vs Tablet/Desktop)
+    const hubSize = isSmallMobile ? 54 : (isMobile ? 62 : Math.min(118, Math.max(96, vw * 0.082)))
+    const cardWidth  = isSmallMobile ? 96 : (isMobile ? 108 : Math.min(186, Math.max(156, vw * 0.125)))
+    const cardHeight = isSmallMobile ? 42 : (isMobile ? 46  : 66)
 
     // Radial reach calculations
     const maxHorizontalReach = Math.min(
@@ -542,11 +542,11 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
     )
 
     const spreadX = isMobile
-      ? Math.max(115, Math.min(maxHorizontalReach / 0.75, 230))
+      ? Math.max(88, (hubCx - (isSmallMobile ? 8 : 12) - cardWidth / 2) / 1.02)
       : Math.max(180, Math.min(maxHorizontalReach / 1.16, 270))
 
     const spreadY = isMobile
-      ? Math.max(145, Math.min(maxVerticalReach / 0.96, 260))
+      ? Math.max(95, Math.min(maxVerticalReach / 1.30, 115))
       : Math.max(175, Math.min(maxVerticalReach / 0.86, 265))
 
     // Position central hub & radial glow
@@ -1638,6 +1638,63 @@ export function AiKnowledgeNetwork({ isActive = true }: AiKnowledgeNetworkProps)
             0 25px 60px -10px rgba(0, 0, 0, 0.9),
             0 0 35px rgba(139, 92, 246, 0.35),
             inset 0 1px 16px rgba(196, 181, 253, 0.16);
+        }
+
+        @media (max-width: 768px) {
+          .knowledge-card {
+            padding: 5px 7px;
+            gap: 5px;
+            border-radius: 9px;
+            box-shadow:
+              0 4px 14px -2px rgba(2, 6, 23, 0.85),
+              0 0 10px rgba(37, 99, 235, 0.25);
+          }
+
+          .card-icon-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+          }
+
+          .card-icon-box svg {
+            width: 12px;
+            height: 12px;
+          }
+
+          .card-title {
+            font-size: 10px;
+            line-height: 1.1;
+          }
+
+          .skeleton-rows {
+            gap: 2.5px;
+          }
+
+          .skeleton-row {
+            gap: 3px;
+          }
+
+          .skeleton-dot {
+            width: 3px;
+            height: 3px;
+          }
+
+          .skeleton-bar {
+            height: 3px;
+          }
+
+          .article-thumb {
+            display: none;
+          }
+
+          .central-hub {
+            border-radius: 16px;
+          }
+
+          .central-hub svg {
+            width: 65%;
+            height: 65%;
+          }
         }
 
         @media (max-width: 640px) {

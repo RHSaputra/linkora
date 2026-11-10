@@ -48,13 +48,13 @@
   --radius: 0.75rem;
 
   /* Neutrals Light */
-  --background: oklch(1 0 0);
+  --background: oklch(0.965 0.008 260);
   /* Crisp icy white */
   --foreground: oklch(0.20 0.05 270);
   /* Deep indigo/slate text */
-  --card: oklch(1 0 0 / 0.95);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.20 0.05 270);
-  --popover: oklch(1 0 0 / 0.98);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.20 0.05 270);
 
   /* Brand Light */
@@ -63,10 +63,10 @@
   --primary-hover: oklch(0.50 0.24 282);
   --primary-muted: oklch(0.56 0.24 282 / 0.12);
 
-  --secondary: oklch(0.94 0.02 270);
+  --secondary: oklch(0.93 0.015 260);
   --secondary-foreground: oklch(0.20 0.05 270);
 
-  --muted: oklch(0.93 0.02 270);
+  --muted: oklch(0.92 0.015 260);
   --muted-foreground: oklch(0.42 0.05 270);
 
   --accent: oklch(0.62 0.19 200);
@@ -90,8 +90,8 @@
   --info-foreground: oklch(0.99 0 0);
   --info-muted: oklch(0.60 0.18 230 / 0.12);
 
-  --border: oklch(0.20 0.05 270 / 0.10);
-  --input: oklch(0.20 0.05 270 / 0.12);
+  --border: oklch(0.88 0.012 260);
+  --input: oklch(0.88 0.012 260);
   --ring: oklch(0.56 0.24 282);
 }
 
@@ -99,10 +99,10 @@
   /* Neutrals Dark */
   --background: oklch(0.09 0.02 270);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.15 0.025 270);
+  --card: oklch(0.24 0.025 265);
   /* Elevated card surface with distinct contrast against background */
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.15 0.025 270 / 0.95);
+  --popover: oklch(0.24 0.025 265);
   --popover-foreground: oklch(0.98 0 0);
 
   /* Brand Dark (High Contrast WCAG AAA) */
@@ -111,10 +111,10 @@
   --primary-hover: oklch(0.72 0.20 282);
   --primary-muted: oklch(0.65 0.22 282 / 0.18);
 
-  --secondary: oklch(0.20 0.03 270);
+  --secondary: oklch(0.28 0.025 265);
   --secondary-foreground: oklch(0.98 0 0);
 
-  --muted: oklch(0.19 0.03 270);
+  --muted: oklch(0.27 0.025 265);
   --muted-foreground: oklch(0.76 0.03 270);
   /* High contrast readable secondary text */
 
@@ -139,9 +139,9 @@
   --info-foreground: oklch(0.09 0.02 270);
   --info-muted: oklch(0.72 0.16 230 / 0.18);
 
-  --border: oklch(0.98 0 0 / 0.12);
+  --border: oklch(0.98 0 0 / 0.20);
   /* Clear visible borders around cards */
-  --input: oklch(0.98 0 0 / 0.14);
+  --input: oklch(0.98 0 0 / 0.22);
   --ring: oklch(0.65 0.22 282);
 }
 
@@ -203,7 +203,7 @@
   }
 
   .glass-panel {
-    @apply bg-card/85 dark:bg-card/90 backdrop-blur-md border border-border/80 shadow-md;
+    @apply bg-card dark:bg-card border border-border dark:border-white/15 shadow-sm hover:shadow-md transition-shadow dark:shadow-xl dark:shadow-black/50;
   }
 
   .glass-panel-hover {

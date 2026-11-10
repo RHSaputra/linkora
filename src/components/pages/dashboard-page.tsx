@@ -101,13 +101,14 @@ export function DashboardPage({
       } else {
         setLoadingRecent(true);
         fetch(`/api/dashboard/recent?filter=${recentFilter}`)
-          .then((r) => r.json())
+          .then((r) => (r.ok ? r.json() : null))
           .then((data) => {
             if (Array.isArray(data)) {
               recentCacheRef.current[recentFilter] = data;
               setFilteredRecentLinks(data);
             }
           })
+          .catch(() => {})
           .finally(() => setLoadingRecent(false));
       }
     }

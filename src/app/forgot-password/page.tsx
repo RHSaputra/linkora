@@ -26,10 +26,10 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError(data.error || (locale === "en" ? "An error occurred. Please try again." : "Terjadi kesalahan. Silakan coba lagi."))
+        setError(data?.error || (locale === "en" ? "An error occurred. Please try again." : "Terjadi kesalahan. Silakan coba lagi."))
       } else {
         setSubmitted(true)
         setMessage(

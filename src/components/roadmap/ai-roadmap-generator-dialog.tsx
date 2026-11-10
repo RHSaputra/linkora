@@ -96,7 +96,7 @@ export function AIRoadmapGeneratorDialog({
           router.push(`/roadmaps/${roadmapData.id}`);
         }
       } else {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         toast.error(err.error || (locale === "en" ? "Failed to generate workflow with Liko AI" : "Gagal membuat alur dengan Liko AI"), "Error");
       }
     } catch (_err) {

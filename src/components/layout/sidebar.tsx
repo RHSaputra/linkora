@@ -271,9 +271,9 @@ function NavContent({
     }
     if (session?.user) {
       fetch("/api/user/subscription")
-        .then((r) => r.json())
+        .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
-          if (data.ok) {
+          if (data?.ok) {
             setSubInfo(data);
             try {
               localStorage.setItem(

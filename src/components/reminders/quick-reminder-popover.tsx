@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/custom-toast";
 import {
-  scheduleCapacitorLocalNotification,
-  cancelCapacitorLocalNotification,
   requestWebNotificationPermission,
   playNotificationSound,
 } from "@/lib/notification-service";
@@ -136,22 +134,11 @@ export function QuickReminderPopover({
       }
 
       if (targetDate) {
-        // Schedule mobile native notification and request web notification permission
         requestWebNotificationPermission().catch(() => {});
-        scheduleCapacitorLocalNotification({
-          id: notificationId,
-          title: locale === "en" ? `⏰ Reminder for ${type === "link" ? "Link" : "Note"}: ${title}` : `⏰ Pengingat ${type === "link" ? "Tautan" : "Catatan"}: ${title}`,
-          body: locale === "en" ? `Time to review: ${title}` : `Waktunya meninjau: ${title}`,
-          scheduleDate: targetDate,
-          url,
-          targetId,
-        }).catch(() => {});
-
         playNotificationSound();
         const formattedDate = format(targetDate, locale === "en" ? "EEEE, MMMM d, yyyy 'at' HH:mm" : "EEEE, d MMMM yyyy 'pukul' HH:mm", { locale: locale === "en" ? undefined : idLocale });
         toast.success(locale === "en" ? `Reminder set for ${formattedDate}` : `Pengingat disetel untuk ${formattedDate}`, locale === "en" ? "Reminder Active" : "Pengingat Aktif");
       } else {
-        cancelCapacitorLocalNotification(notificationId).catch(() => {});
         toast.info(locale === "en" ? "Reminder successfully disabled." : "Pengingat berhasil dinonaktifkan.", locale === "en" ? "Reminder Cleared" : "Pengingat Dihapus");
       }
 
